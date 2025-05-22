@@ -1,23 +1,13 @@
 {
-  "routes": [
+  "version": 2,
+  "builds": [
     {
-      "src": "/(.*)",
-      "dest": "/$1",
-      "headers": {
-        "WWW-Authenticate": "Basic realm=\"Restricted Area\""
-      },
-      "status": 401,
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1",
-      "middleware": ["auth"]
+      "src": "package.json",
+      "use": "@vercel/next"
     }
   ],
-  "middleware": {
-    "auth": {
-      "module": "middleware/auth"
-    }
-  }
+  "routes": [
+    // ... your routes
+  ]
+  // "middleware": [...] REMOVED
 }
