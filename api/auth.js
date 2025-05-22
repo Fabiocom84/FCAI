@@ -6,6 +6,8 @@ export default async function handler(req, res) {
     const storedUsername = process.env.AUTH_USERNAME;
     const storedPassword = process.env.AUTH_PASSWORD;
 
+    console.log('La funzione /api/auth è stata chiamata');
+
     if (username === storedUsername && password === storedPassword) {
       // Autenticazione riuscita
       const token = 'ilMioTokenSegreto'; // Ricorda di generare token sicuri in produzione
