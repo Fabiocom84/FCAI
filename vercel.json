@@ -7,7 +7,5 @@
     }
   ],
   "routes": [
-    // ... your routes
   ]
-  // "middleware": [...] REMOVED
 }
