@@ -1,0 +1,23 @@
+{
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1",
+      "headers": {
+        "WWW-Authenticate": "Basic realm=\"Restricted Area\""
+      },
+      "status": 401,
+      "continue": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1",
+      "middleware": ["auth"]
+    }
+  ],
+  "middleware": {
+    "auth": {
+      "module": "middleware/auth"
+    }
+  }
+}
