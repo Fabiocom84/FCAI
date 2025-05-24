@@ -104,7 +104,11 @@
     const password = document.getElementById('password').value;
     const rememberMe = document.getElementById('rememberMe').checked;
 
+    console.log('Tentativo di login con:', { username: username, rememberMe: rememberMe }); // LOG 1
+
     const authUrl = '/api/auth'; // URL della Serverless Function
+
+    console.log('URL della funzione di autenticazione:', authUrl); // LOG 2
 
     fetch(authUrl, {
       method: 'POST',
@@ -114,12 +118,18 @@
       body: JSON.stringify({ username: username, password: password })
     })
     .then(response => {
-      if (!response.ok) {
-        return response.json().then(err => { throw new Error(err.message || 'Errore durante l\'autenticazione'); });
-      }
-      return response.json();
+        console.log('Risposta dal server:', response); // LOG 3
+        if (!response.ok) {
+            console.log('Errore nella risposta HTTP:', response.status); // LOG 4
+            return response.json().then(err => {
+                console.error('Errore dal server (non OK):', err); // LOG 5
+                throw new Error(err.message || 'Errore durante l\'autenticazione');
+            });
+        }
+        return response.json();
     })
     .then(data => {
+      console.log('Dati ricevuti dal server (OK):', data); // LOG 6
       if (data.success) {
         console.log('Autenticazione riuscita!', data);
         if (rememberMe) {
@@ -131,6 +141,7 @@
           sessionStorage.setItem('authToken', data.token); // Memorizza il token
           console.log('Opzione "Ricorda i miei dati" non selezionata. sessionStorage impostato.');
         }
+        console.log('Reindirizzamento a index.html'); // LOG 7
         window.location.href = 'index.html';
       } else {
         console.log('Credenziali errate dal server Vercel:', data.message);
