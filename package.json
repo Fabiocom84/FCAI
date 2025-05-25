@@ -1,0 +1,22 @@
+{
+  "name": "programma",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "generate-config": "node scripts/generate-config.js",
+    "build": "npm run generate-config && echo 'Build completata'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fabiocom84/FCAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Fabiocom84/FCAI/issues"
+  },
+  "homepage": "https://github.com/Fabiocom84/FCAI#readme",
+  "description": ""
+}
