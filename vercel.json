@@ -1,5 +1,5 @@
 {
   "version": 2,
-  "routes": [
-  ]
+  "public": "public",
+  "routes": []
 }
