@@ -9,6 +9,15 @@ if (!backendUrl) {
 
 const configContent = `window.BACKEND_URL = "${backendUrl}";`;
 
-fs.writeFileSync('js/config.js', configContent);
+// Modifica il percorso per scrivere il file dentro la cartella 'public/js'
+const outputPath = 'public/js/config.js';
 
-console.log("Generated js/config.js with backend URL.");
+// Crea la directory 'public/js' se non esiste
+const publicJsDir = 'public/js';
+if (!fs.existsSync(publicJsDir)) {
+  fs.mkdirSync(publicJsDir, { recursive: true });
+}
+
+fs.writeFileSync(outputPath, configContent);
+
+console.log(`Generated ${outputPath} with backend URL.`);
