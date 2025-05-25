@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segretario AI</title>
+    <style>
+    body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        text-align: center; /* Centra il titolo */
+    }
+
+    h1 {
+        font-size: 1.5em;
+        color: #555;
+        margin-bottom: 20px;
+        text-transform: uppercase; /* Titolo in maiuscolo */
+    }
+
+    .button-container {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .button {
+        display: flex;
+        justify-content: center; /* Centra l'icona orizzontalmente */
+        align-items: center; /* Centra l'icona verticalmente */
+        padding: 15px 20px;
+        text-align: center;
+        text-decoration: none;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 1.5em; /* Dimensione dell'icona */
+        flex-grow: 1;
+        margin-right: 5px;
+    }
+
+    .button:last-child {
+        margin-right: 0;
+    }
+
+    .insert-button {
+        background-color: #28a745; /* Verde */
+    }
+
+    .chat-button {
+        background-color: #ffc107; /* Giallo scuro */
+        color: #333;
+    }
+
+    .search-button {
+        background-color: #dc3545; /* Rosso chiaro */
+    }
+
+    .button img {
+        max-width: 40px;
+        max-height: 40px;
+    }
+
+    .help-button-container {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .help-button {
+        background-color: #6c757d; /* Grigio scuro */
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 1.2em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .legend {
+        position: absolute;
+        top: 50px; /* Posiziona sotto il pulsante aiuto */
+        right: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 10; /* Assicura che sia sopra altri elementi */
+        display: none; /* Inizialmente nascosto */
+        text-align: left;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .legend-icon {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .legend-icon img {
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    .legend-text {
+        font-size: 0.9em;
+    }
+
+    .latest-entries {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: left;
+    }
+
+    .latest-entries h2 {
+        font-size: 1.2em;
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .entry-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 0.9em;
+        color: #555;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .entry-item:last-child {
+        border-bottom: none;
+    }
+
+    .entry-date-time {
+        font-weight: bold;
+        margin-right: 10px;
+        color: #777;
+    }
+
+    /* Stili per il Modal */
+    .modal-overlay {
+        display: none; /* Inizialmente nascosto */
+        position: fixed; /* Sovrappone tutto */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
+        z-index: 20; /* Deve essere sopra la pagina principale */
+    }
+
+    .modal {
+        display: none; /* Inizialmente nascosto */
+        position: fixed; /* Posizione fissa all'interno del viewport */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Centra il modal */
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 30; /* Deve essere sopra l'overlay */
+        width: 90%; /* Larghezza adattabile su mobile */
+        max-width: 600px; /* Larghezza massima su schermi più grandi */
+    }
+
+    .modal-header {
+    display: flex;
+    justify-content: center; /* Centra orizzontalmente gli elementi figli */
+    align-items: center; /* Allinea verticalmente gli elementi figli */
+    margin-bottom: 15px;
+    position: relative; /* Mantiene il contesto per il posizionamento assoluto degli altri elementi */
+    }
+
+    .modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #333;
+    text-align: center; /* Centra il testo */
+    text-transform: uppercase; /* Metti il testo in maiuscolo */
+    }
+
+    .close-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 2em;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .close-button:hover {
+        color: #000;
+    }
+
+    .modal-body {
+        margin-bottom: 20px;
+    }
+
+    .input-option {
+        margin-bottom: 15px;
+    }
+
+    .input-option h3 {
+        font-size: 1.1em;
+        color: #555;
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: sans-serif;
+        font-size: 1em;
+        margin-bottom: 10px;
+        min-height: 100px;
+    }
+
+    input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .file-name {
+        font-size: 0.9em;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    #startButton, #stopButton {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-right: 10px;
+    }
+
+    #startButton {
+        background-color: #5cb85c; /* Verde */
+        color: white;
+    }
+
+    #stopButton {
+        background-color: #d9534f; /* Rosso */
+        color: white;
+    }
+
+    #recordingStatus {
+        font-size: 0.9em;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    .save-button {
+        background-color: #007bff; /* Blu */
+        color: white;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.1em;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .save-button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Stili specifici per il pulsante aiuto nel modal */
+    .modal-header .help-button-container {
+        position: absolute;
+        top: 0;
+        right: 30px; /* Spazio per il pulsante di chiusura */
+    }
+
+    .modal-header .help-button {
+        background-color: #6c757d; /* Grigio scuro */
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 1em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        padding: 0;
+        line-height: 1;
+    }
+
+    /* Modifica per la legenda del modal */
+    #insertDataLegend {
+        z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
+    }
+
+    /* Stili per le altre legende (se necessario portarli in primo piano in altri contesti) */
+    #chatLegend {
+        /* z-index: ... */
+    }
+
+    #searchLegend {
+        /* z-index: ... */
+    }
+
+    #settingsLegend {
+        /* z-index: ... */
+    }
+</style>
+</head>
+
+<script>
+    // Funzione per verificare se l'utente è autenticato
+    function isAuthenticated() {
+        // Controlla sia localStorage che sessionStorage
+        return localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true';
+    }
+
+    // Se non sei autenticato, reindirizza alla pagina di login
+    if (!isAuthenticated()) {
+        window.location.href = '/login.html';
+    }
+</script>
+
+<script src="js/config.js"></script>
+
+<body>
+    <h1>SEGRETARIO AI</h1>
+
+    <div class="help-button-container">
+        <button class="help-button" data-legend="mainPageLegend">?</button>
+    </div>
+
+    <div class="button-container">
+        <a href="#" class="button insert-button"><img src="/img/plus.png" alt="Inserisci"></a>
+        <a href="#" class="button chat-button"><img src="/img/chat.png" alt="Chat"></a>
+        <a href="#" class="button search-button"><img src="/img/search.png" alt="Ricerca"></a>
+    </div>
+
+    <div class="latest-entries">
+    <h2>Ultimi Inserimenti</h2>
+    <ul id="latestEntriesList" style="list-style: none; padding: 0;">
+        </ul>
+    </div>
+
+    <div id="insertDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Inserisci Nuovi Dati</h2>
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="insertDataLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeInsertModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-option">
+                    <h3>Inserisci Testo</h3>
+                    <textarea id="manualTextInput" placeholder="Inserisci qui il tuo testo..."></textarea>
+                </div>
+
+                <div class="input-option">
+                    <h3>Carica File</h3>
+                    <input type="file" id="fileUpload">
+                    <p class="file-name"></p>
+                </div>
+
+                <div class="input-option">
+                    <h3>Registra Vocale</h3>
+                    <button id="startButton">Avvia Registrazione</button>
+                    <button id="stopButton" disabled>Ferma Registrazione</button>
+                    <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
+                    <textarea id="voiceTranscription" placeholder="Trascrizione del vocale..." readonly></textarea>
+                </div>
+
+                <button class="save-button" id="saveDataButton">Salva Dati</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="chatModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chat AI</h2>
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="chatLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeChatModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Contenuto della chat...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ricerca Dati</h2>
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="searchLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeSearchModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Form di ricerca...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainPageLegend" class="legend">
+        <h3>Aiuto - Pagina Principale</h3>
+        <div class="legend-item">
+            <div class="legend-icon insert-button"><img src="/img/plus.png" alt="Inserisci"></div>
+            <div class="legend-text">Inserisci una nuova riga di dati nel database.</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon chat-button"><img src="/img/chat.png" alt="Chat"></div>
+            <div class="legend-text">Apri la chat con l'intelligenza artificiale per analizzare il database.</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon search-button"><img src="/img/search.png" alt="Ricerca"></div>
+            <div class="legend-text">Visualizza e cerca tra gli inserimenti effettuati nel database.</div>
+        </div>
+    </div>
+
+    <div id="insertDataLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Inserisci Nuovi Dati</h3>
+        <div class="legend-item">
+            <h3>Inserisci Testo</h3>
+            <div class="legend-text">: Digita o incolla il testo che vuoi aggiungere al database.</div>
+        </div>
+        <div class="legend-item">
+            <h3>Carica File</h3>
+            <div class="legend-text">: Seleziona un file di testo da caricare e il suo contenuto verrà aggiunto.</div>
+        </div>
+        <div class="legend-item">
+            <h3>Registra Vocale</h3>
+            <div class="legend-text">: Avvia la registrazione vocale e il testo trascritto verrà aggiunto.</div>
+        </div>
+        <div class="legend-item">
+            <button class="save-button">Salva Dati</button>
+            <div class="legend-text">Clicca per salvare i dati inseriti nel database.</div>
+        </div>
+    </div>
+
+    <div id="chatLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Chat AI</h3>
+        <div class="legend-item">
+            <div class="legend-text">Interagisci con l'intelligenza artificiale per porre domande e ottenere analisi sui dati.</div>
+        </div>
+    </div>
+
+    <div id="searchLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Ricerca Dati</h3>
+        <div class="legend-item">
+            <div class="legend-text">Utilizza i filtri e i campi di ricerca per trovare informazioni specifiche nel database.</div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/insert-data-modal.js"></script>
+    <script src="/js/legend.js"></script>
+
+<script>
+    // Questo script dovrebbe essere eseguito SOLO dopo un login SUCCESSO nella pagina login.html
+    // In uno scenario reale, questo flag verrebbe impostato dopo una verifica SERVER-SIDE delle credenziali.
+    // Per ora, lo simuleremo.
+    // ... (il codice di login.html imposterà 'isAuthenticated' su 'true' in localStorage) ...
+
+    // Eventuali altre inizializzazioni della pagina principale possono andare qui
+    console.log('Utente autenticato. Pagina principale caricata.');
+
+    // Esempio: apri il modal di inserimento (da rimuovere, è solo per mostrare che la pagina è accessibile)
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     document.getElementById('insertDataModal').style.display = 'block';
+    //     document.getElementById('modalOverlay').style.display = 'block';
+    // });
+</script>
+
+</body>
+</html>
