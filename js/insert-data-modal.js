@@ -137,7 +137,7 @@ formData.append('file', file);
 }
 
 fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
-method: 'POST',
+  method: 'POST',
 body: formData, // Invia FormData senza impostare Content-Type
 })
 .then(response => response.json())

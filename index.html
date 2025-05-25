@@ -358,6 +358,10 @@
     }
 </script>
 
+<script>
+  window.BACKEND_URL = "${process.env.NEXT_PUBLIC_BACKEND_URL}";
+</script>
+
 <body>
     <h1>SEGRETARIO AI</h1>
 
@@ -492,9 +496,6 @@
         </div>
     </div>
 
-    <script>
-        window.BACKEND_URL = "${process.env.NEXT_PUBLIC_BACKEND_URL}";
-    </script>
     <script src="js/main.js"></script>
     <script src="js/insert-data-modal.js"></script>
     <script src="js/legend.js"></script>
