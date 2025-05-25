@@ -51,7 +51,7 @@ function closeSettingsModal() {
 }
 
 function loadLatestEntries() {
-      const backendUrl = const backendUrl = window.BACKEND_URL;
+      const backendUrl = window.BACKEND_URL;
 
   fetch(`${backendUrl}/api/latest-entries`, { // Usa l'URL del backend
     method: 'GET',
