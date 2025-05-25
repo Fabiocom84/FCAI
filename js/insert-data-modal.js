@@ -136,7 +136,7 @@ if (file) {
 formData.append('file', file);
 }
 
-fetch('process.env.NEXT_PUBLIC_BACKEND_URL/api/upload-and-save', {
+fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
 method: 'POST',
 body: formData, // Invia FormData senza impostare Content-Type
 })
@@ -235,7 +235,7 @@ alert("Nessun testo o file da salvare.");
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
 
-        fetch('process.env.NEXT_PUBLIC_BACKEND_URL/api/transcribe-voice', {
+        fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
             method: 'POST',
             body: formData,
         })
