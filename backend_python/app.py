@@ -4,35 +4,47 @@ from flask_cors import CORS
 import gspread
 from datetime import datetime
 import logging
-from google.oauth2 import credentials
+# from google.oauth2 import credentials # Not directly used in the new approach
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.cloud import speech_v1
-from flask import Flask
-from flask_cors import CORS
-from google.oauth2 import service_account
+# from flask import Flask # Already imported above
+# from flask_cors import CORS # Already imported above
+from google.oauth2 import service_account # Still needed for some specific credential types
 import io
+from google.auth import default # Import default for automatic credential loading
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:8080", "null"]) # Aggiungi "null" alle origini consentite
+CORS(app, origins=["http://localhost:8080", "null", "https://oidc.vercel.com/fabios-projects-20334498"]) # Aggiungi "null" alle origini consentite
 
 # Configura il logging
 logging.basicConfig(level=logging.INFO)
 
 # Percorso al file JSON della chiave del Service Account
-CREDENTIALS_PATH = 'C:/Users/fabio/Desktop/Segretario AI/Pagina web/index 13/backend_python/segretario-ai-web-app-4bb451e9acd5.json'
+# Non è più necessario specificare CREDENTIALS_PATH qui,
+# in quanto le librerie utilizzeranno GOOGLE_APPLICATION_CREDENTIALS
+# impostato nel Dockerfile.
+# CREDENTIALS_PATH = '/app/backend_python/segretario-ai-web-app-4bb451e9acd5.json'
+
 SPREADSHEET_ID = '1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8'
 WORKSHEET_NAME = 'Foglio1'
-DRIVE_FOLDER_ID = '1C-sveS2MD3oPRfOVuy97PoiTyImh3vPa'  # <-- Inserisci qui l'ID della cartella
-client = speech_v1.SpeechClient.from_service_account_file(CREDENTIALS_PATH)
+DRIVE_FOLDER_ID = '1C-sveS2MD3oPRfOVuy97PoiTyImh3vPa' # <-- Inserisci qui l'ID della cartella
+
+# Inizializza il client Speech-to-Text.
+# La libreria google-cloud-speech-v1 cercherà automaticamente le credenziali
+# tramite la variabile d'ambiente GOOGLE_APPLICATION_CREDENTIALS.
+client = speech_v1.SpeechClient()
 
 default_language_code = "it-IT"
 supported_audio_encoding = "WEBM_OPUS"
 default_sample_rate_hertz = 48000
 
 def access_spreadsheet():
+    """Accede al foglio di calcolo Google Sheets utilizzando le credenziali del Service Account."""
     try:
-        gc = gspread.service_account(filename=CREDENTIALS_PATH)
+        # gspread cercherà automaticamente le credenziali tramite la variabile
+        # d'ambiente GOOGLE_APPLICATION_CREDENTIALS.
+        gc = gspread.service_account()
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
         worksheet = spreadsheet.worksheet(WORKSHEET_NAME)
         logging.info("Foglio di calcolo Google Sheets acceduto con successo.")
@@ -42,8 +54,11 @@ def access_spreadsheet():
         return None
 
 def get_drive_service():
+    """Inizializza il servizio Google Drive utilizzando le credenziali del Service Account."""
     try:
-        creds = service_account.Credentials.from_service_account_file(CREDENTIALS_PATH)
+        # Utilizza google.auth.default() per ottenere le credenziali predefinite,
+        # che includeranno quelle specificate in GOOGLE_APPLICATION_CREDENTIALS.
+        creds, project = default()
         drive_service = build('drive', 'v3', credentials=creds)
         logging.info("Servizio Google Drive inizializzato con successo.")
         return drive_service
@@ -60,7 +75,7 @@ def upload_file_to_drive(drive_service, file_data, file_name, mime_type):
         file_metadata = {'name': file_name, 'parents': [DRIVE_FOLDER_ID]}
         logging.info(f"Metadati del file: {file_metadata}")
         media = MediaIoBaseUpload(file_data, mimetype=mime_type, resumable=True)
-        request = drive_service.files().create(body=file_metadata, media_body=media) # Modifica qui
+        request = drive_service.files().create(body=file_metadata, media_body=media)
         response = None
         while response is None:
             status, response = request.next_chunk()
@@ -222,4 +237,5 @@ def save_transcription():
         return jsonify({'error': 'Impossibile accedere al foglio di calcolo.'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)

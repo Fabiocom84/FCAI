@@ -51,7 +51,9 @@ function closeSettingsModal() {
 }
 
 function loadLatestEntries() {
-  fetch('http://localhost:5000/api/latest-entries', {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL; // Ottieni l'URL del backend dalla variabile d'ambiente
+
+  fetch(`${backendUrl}/api/latest-entries`, { // Usa l'URL del backend
     method: 'GET',
   })
     .then(response => {
