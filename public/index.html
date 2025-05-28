@@ -9,18 +9,20 @@
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
+            /* Sfondo principale più chiaro */
+            background-color: #f8f9fa; /* Un grigio molto chiaro */
             text-align: center;
-            background-image: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            /* Gradiente sfumato molto leggero */
+            background-image: linear-gradient(to bottom, #f8f9fa, #e9ecef); /* Da un grigio chiarissimo a uno leggermente più scuro */
             background-repeat: no-repeat;
-            background-attachment: fixed;
+            background-attachment: fixed; /* Mantiene lo sfondo fisso durante lo scrolling */
         }
 
         h1 {
             font-size: 1.5em;
             color: #555;
-            margin-bottom: 24px;
-            text-transform: uppercase;
+            margin-bottom: 24px; /* Leggermente aumentato per la scala */
+            text-transform: uppercase; /* Titolo in maiuscolo */
         }
 
         .button-container {
@@ -32,8 +34,8 @@
 
         .button {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Centra l'icona orizzontalmente */
+            align-items: center; /* Centra l'icona verticalmente */
             padding: 16px 20px;
             text-align: center;
             text-decoration: none;
@@ -41,7 +43,7 @@
             border: none;
             border-radius: 5px;
             box-sizing: border-box;
-            font-size: 1.5em;
+            font-size: 1.5em; /* Dimensione dell'icona */
             flex-grow: 1;
             margin-right: 8px;
         }
@@ -51,16 +53,16 @@
         }
 
         .insert-button {
-            background-color: #28a745;
+            background-color: #28a745; /* Verde */
         }
 
         .chat-button {
-            background-color: #ffc107;
+            background-color: #ffc107; /* Giallo scuro */
             color: #333;
         }
 
         .search-button {
-            background-color: #dc3545;
+            background-color: #dc3545; /* Rosso chiaro */
         }
 
         .button img {
@@ -75,7 +77,7 @@
         }
 
         .help-button {
-            background-color: #6c757d;
+            background-color: #6c757d; /* Grigio scuro */
             color: white;
             border: none;
             border-radius: 50%;
@@ -91,15 +93,15 @@
 
         .legend {
             position: absolute;
-            top: 50px;
+            top: 50px; /* Posiziona sotto il pulsante aiuto */
             right: 10px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 15px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-            display: none;
+            z-index: 10; /* Assicura che sia sopra altri elementi */
+            display: none; /* Inizialmente nascosto */
             text-align: left;
         }
 
@@ -139,10 +141,10 @@
         .latest-entries h2 {
             font-size: 1.2em;
             margin-top: 0;
-            margin-bottom: 12px;
-            padding-bottom: 4px;
+            margin-bottom: 12px; /* Leggermente modificato per la scala */
+            padding-bottom: 4px; /* Aggiunto un po' di padding bottom */
             color: #333;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #eee; /* Aggiunto un bordo per separazione visiva */
         }
 
         .entry-item {
@@ -167,57 +169,57 @@
 
         /* Stili per il Modal */
         .modal-overlay {
-            display: none;
-            position: fixed;
+            display: none; /* Inizialmente nascosto */
+            position: fixed; /* Sovrappone tutto */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
+            z-index: 20; /* Deve essere sopra la pagina principale */
         }
 
         .modal {
-            display: none;
-            position: fixed;
+            display: none; /* Inizialmente nascosto */
+            position: fixed; /* Posizione fissa all'interno del viewport */
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); /* Centra il modal */
             background-color: white;
-            padding: 24px;
+            padding: 24px; /* Leggermente modificato per la scala */
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 30;
-            width: 90%;
-            max-width: 600px;
+            z-index: 30; /* Deve essere sopra l'overlay */
+            width: 90%; /* Larghezza adattabile su mobile */
+            max-width: 600px; /* Larghezza massima su schermi più grandi */
         }
 
         .modal-header {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Centra orizzontalmente gli elementi figli */
+            align-items: center; /* Allinea verticalmente gli elementi figli */
             margin-bottom: 20px;
-            position: relative;
+            position: relative; /* Mantiene il contesto per il posizionamento assoluto degli altri elementi */
         }
 
         .modal-header h2 {
             margin: 0;
             font-size: 1.5em;
-            text-align: center;
-            text-transform: uppercase;
+            text-align: center; /* Centra il testo */
+            text-transform: uppercase; /* Metti il testo in maiuscolo */
         }
 
         /* Stili per i titoli dei modal per coerenza colore */
         #insertDataModal .modal-header h2 {
-            color: #28a745;
+            color: #28a745; /* Verde */
         }
 
         #chatModal .modal-header h2 {
-            color: #ffc107;
+            color: #ffc107; /* Giallo */
         }
 
         #searchModal .modal-header h2 {
-            color: #dc3545;
+            color: #dc3545; /* Rosso */
         }
 
         .close-button {
@@ -242,33 +244,25 @@
             margin-bottom: 24px;
         }
 
-        .modal-body .input-method {
-            margin-bottom: 18px;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
+        .input-option {
+            margin-bottom: 18px; /* Spazio leggermente ridotto tra le modalità */
+            padding: 12px; /* Padding interno leggermente ridotto */
+            border: 1px solid #e0e0e0; /* Bordo grigio chiaro e sottile */
             border-radius: 4px;
             text-align: left;
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
+            background-color: #f9f9f9; /* Leggero sfondo per differenziare */
         }
 
-        .modal-body .input-method h3 {
-            font-size: 1.1em;
+        .input-option h3 {
+            font-size: 1.1em; /* Dimensione del titolo leggermente ridotta */
             color: #555;
             margin-top: 0;
             margin-bottom: 8px;
-            font-weight: normal;
-            margin-left: 8px;
+            font-weight: normal; /* Peso del font normale per non appesantire */
         }
 
-        .modal-body .input-method .input-icon {
-            font-size: 1.2em;
-            color: #28a745;
-            margin-right: 5px;
-        }
-
-        .modal-body .input-method textarea {
+        /* Stili per gli elementi interni */
+        .input-option textarea {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -277,48 +271,48 @@
             font-family: sans-serif;
             font-size: 1em;
             margin-bottom: 8px;
-            min-height: 60px;
+            min-height: 60px; /* Altezza minima ridotta */
         }
 
-        .modal-body .input-method input[type="file"] {
+        .input-option input[type="file"] {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
             font-size: 0.9em;
         }
 
-        .modal-body .input-method p.file-name {
+        .input-option p.file-name {
             font-size: 0.8em;
             color: #777;
             margin-top: 4px;
         }
 
-        .modal-body .input-method button {
+        .input-option button {
             padding: 8px 12px;
-            border: 1px solid #ccc;
+            border: 1px solid #ccc; /* Aggiunto un bordo ai bottoni */
             border-radius: 3px;
             cursor: pointer;
             font-size: 0.9em;
             margin-right: 5px;
-            background-color: white;
+            background-color: white; /* Sfondo bianco per i bottoni */
             color: #333;
         }
 
-        .modal-body .input-method button:hover {
+        .input-option button:hover {
             background-color: #eee;
         }
 
-        .modal-body .input-method button:last-child {
+        .input-option button:last-child {
             margin-right: 0;
         }
 
-        .modal-body .input-method #recordingStatus {
+        .input-option #recordingStatus {
             font-size: 0.8em;
             color: #777;
             margin-top: 4px;
         }
 
-        .modal-body .input-method #voiceTranscription {
+        .input-option #voiceTranscription {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -327,22 +321,23 @@
             font-family: sans-serif;
             font-size: 1em;
             margin-top: 8px;
-            min-height: 60px;
+            min-height: 60px; /* Altezza minima ridotta */
         }
 
         .save-button {
-            margin-top: 15px;
+            margin-top: 15px; /* Spazio dal gruppo delle modalità */
+            /* ... altri stili del bottone salva ... */
         }
 
         /* Stili specifici per il pulsante aiuto nel modal */
         .modal-header .help-button-container {
             position: absolute;
             top: 0;
-            right: 30px;
+            right: 30px; /* Spazio per il pulsante di chiusura */
         }
 
         .modal-header .help-button {
-            background-color: #6c757d;
+            background-color: #6c757d; /* Grigio scuro */
             color: white;
             border: none;
             border-radius: 50%;
@@ -360,7 +355,7 @@
 
         /* Modifica per la legenda del modal */
         #insertDataLegend {
-            z-index: 40;
+            z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
         }
 
         /* Stili per le altre legende (se necessario portarli in primo piano in altri contesti) */
@@ -381,12 +376,12 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: #f8f9fa;
+            background-color: #f8f9fa; /* Stesso colore dello sfondo principale o una tonalità leggermente diversa */
             color: #777;
             text-align: center;
             padding: 12px 0;
             font-size: 0.8em;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #e9ecef; /* Un bordo sottile per separare dal contenuto */
         }
 
         /* Potresti aggiungere media queries per adattare lo stile su schermi più piccoli se necessario */
