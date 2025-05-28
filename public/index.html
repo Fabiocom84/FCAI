@@ -245,88 +245,79 @@
         }
 
         .input-option {
-            margin-bottom: 18px; /* Spazio leggermente ridotto tra le modalità */
-            padding: 12px; /* Padding interno leggermente ridotto */
-            border: 1px solid #e0e0e0; /* Bordo grigio chiaro e sottile */
-            border-radius: 4px;
-            text-align: left;
-            background-color: #f9f9f9; /* Leggero sfondo per differenziare */
+            margin-bottom: 20px;
         }
 
         .input-option h3 {
-            font-size: 1.1em; /* Dimensione del titolo leggermente ridotta */
+            font-size: 1.1em;
             color: #555;
             margin-top: 0;
-            margin-bottom: 8px;
-            font-weight: normal; /* Peso del font normale per non appesantire */
+            margin-bottom: 5px;
         }
 
-        /* Stili per gli elementi interni */
-        .input-option textarea {
+        textarea {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 3px;
+            border-radius: 4px;
             box-sizing: border-box;
             font-family: sans-serif;
             font-size: 1em;
-            margin-bottom: 8px;
-            min-height: 60px; /* Altezza minima ridotta */
+            margin-bottom: 10px;
+            min-height: 100px;
         }
 
-        .input-option input[type="file"] {
+        input[type="file"] {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             box-sizing: border-box;
+        }
+
+        .file-name {
             font-size: 0.9em;
-        }
-
-        .input-option p.file-name {
-            font-size: 0.8em;
             color: #777;
-            margin-top: 4px;
+            margin-top: 5px;
         }
 
-        .input-option button {
-            padding: 8px 12px;
-            border: 1px solid #ccc; /* Aggiunto un bordo ai bottoni */
-            border-radius: 3px;
+        #startButton, #stopButton {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em;
-            margin-right: 5px;
-            background-color: white; /* Sfondo bianco per i bottoni */
-            color: #333;
-        }
-
-        .input-option button:hover {
-            background-color: #eee;
-        }
-
-        .input-option button:last-child {
-            margin-right: 0;
-        }
-
-        .input-option #recordingStatus {
-            font-size: 0.8em;
-            color: #777;
-            margin-top: 4px;
-        }
-
-        .input-option #voiceTranscription {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            box-sizing: border-box;
-            font-family: sans-serif;
             font-size: 1em;
-            margin-top: 8px;
-            min-height: 60px; /* Altezza minima ridotta */
+            margin-right: 10px;
+        }
+
+        #startButton {
+            background-color: #5cb85c; /* Verde */
+            color: white;
+        }
+
+        #stopButton {
+            background-color: #d9534f; /* Rosso */
+            color: white;
+        }
+
+        #recordingStatus {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
         }
 
         .save-button {
-            margin-top: 15px; /* Spazio dal gruppo delle modalità */
-            /* ... altri stili del bottone salva ... */
+            background-color: #007bff; /* Blu */
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .save-button:hover {
+            background-color: #0056b3;
         }
 
         /* Stili specifici per il pulsante aiuto nel modal */
