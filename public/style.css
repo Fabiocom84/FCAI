@@ -1,0 +1,385 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    /* Sfondo principale più chiaro */
+    background-color: #f8f9fa; /* Un grigio molto chiaro */
+    text-align: center;
+    /* Gradiente sfumato molto leggero */
+    background-image: linear-gradient(to bottom, #f8f9fa, #e9ecef); /* Da un grigio chiarissimo a uno leggermente più scuro */
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Mantiene lo sfondo fisso durante lo scrolling */
+}
+
+h1 {
+    font-size: 1.5em;
+    color: #555;
+    margin-bottom: 24px; /* Leggermente aumentato per la scala */
+    text-transform: uppercase; /* Titolo in maiuscolo */
+}
+
+.button-container {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.button {
+    display: flex;
+    justify-content: center; /* Centra l'icona orizzontalmente */
+    align-items: center; /* Centra l'icona verticalmente */
+    padding: 16px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1.5em; /* Dimensione dell'icona */
+    flex-grow: 1;
+    margin-right: 8px;
+}
+
+.button:last-child {
+    margin-right: 0;
+}
+
+.insert-button {
+    background-color: #28a745; /* Verde */
+}
+
+.chat-button {
+    background-color: #ffc107; /* Giallo scuro */
+    color: #333;
+}
+
+.search-button {
+    background-color: #dc3545; /* Rosso chiaro */
+}
+
+.button img {
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.help-button-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.help-button {
+    background-color: #6c757d; /* Grigio scuro */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.legend {
+    position: absolute;
+    top: 50px; /* Posiziona sotto il pulsante aiuto */
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10; /* Assicura che sia sopra altri elementi */
+    display: none; /* Inizialmente nascosto */
+    text-align: left;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.legend-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.legend-icon img {
+    max-width: 80%;
+    max-height: 80%;
+}
+
+.legend-text {
+    font-size: 0.9em;
+}
+
+.latest-entries {
+    margin-top: 24px;
+    padding: 16px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.latest-entries h2 {
+    font-size: 1.2em;
+    margin-top: 0;
+    margin-bottom: 12px; /* Leggermente modificato per la scala */
+    padding-bottom: 4px; /* Aggiunto un po' di padding bottom */
+    color: #333;
+    border-bottom: 1px solid #eee; /* Aggiunto un bordo per separazione visiva */
+}
+
+.entry-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+    color: #555;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.entry-item:last-child {
+    border-bottom: none;
+}
+
+.entry-date-time {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #777;
+}
+
+/* Stili per il Modal */
+.modal-overlay {
+    display: none; /* Inizialmente nascosto */
+    position: fixed; /* Sovrappone tutto */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
+    z-index: 20; /* Deve essere sopra la pagina principale */
+}
+
+.modal {
+    display: none; /* Inizialmente nascosto */
+    position: fixed; /* Posizione fissa all'interno del viewport */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centra il modal */
+    background-color: white;
+    padding: 24px; /* Leggermente modificato per la scala */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 30; /* Deve essere sopra l'overlay */
+    width: 90%; /* Larghezza adattabile su mobile */
+    max-width: 600px; /* Larghezza massima su schermi più grandi */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: center; /* Centra orizzontalmente gli elementi figli */
+    align-items: center; /* Allinea verticalmente gli elementi figli */
+    margin-bottom: 20px;
+    position: relative; /* Mantiene il contesto per il posizionamento assoluto degli altri elementi */
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    text-align: center; /* Centra il testo */
+    text-transform: uppercase; /* Metti il testo in maiuscolo */
+}
+
+/* Stili per i titoli dei modal per coerenza colore */
+#insertDataModal .modal-header h2 {
+    color: #28a745; /* Verde */
+}
+
+#chatModal .modal-header h2 {
+    color: #ffc107; /* Giallo */
+}
+
+#searchModal .modal-header h2 {
+    color: #dc3545; /* Rosso */
+}
+
+.close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 2em;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.input-option {
+    margin-bottom: 18px; /* Spazio leggermente ridotto tra le modalità */
+    padding: 12px; /* Padding interno leggermente ridotto */
+    border: 1px solid #e0e0e0; /* Bordo grigio chiaro e sottile */
+    border-radius: 4px;
+    text-align: left;
+    background-color: #f9f9f9; /* Leggero sfondo per differenziare */
+}
+
+.input-option h3 {
+    font-size: 1.1em; /* Dimensione del titolo leggermente ridotta */
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-weight: normal; /* Peso del font normale per non appesantire */
+}
+
+/* Stili per gli elementi interni */
+.input-option textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 1em;
+    margin-bottom: 8px;
+    min-height: 60px; /* Altezza minima ridotta */
+}
+
+.input-option input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    font-size: 0.9em;
+}
+
+.input-option p.file-name {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 4px;
+}
+
+.input-option button {
+    padding: 8px 12px;
+    border: 1px solid #ccc; /* Aggiunto un bordo ai bottoni */
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-right: 5px;
+    background-color: white; /* Sfondo bianco per i bottoni */
+    color: #333;
+}
+
+.input-option button:hover {
+    background-color: #eee;
+}
+
+.input-option button:last-child {
+    margin-right: 0;
+}
+
+.input-option #recordingStatus {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 4px;
+}
+
+.input-option #voiceTranscription {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 1em;
+    margin-top: 8px;
+    min-height: 60px; /* Altezza minima ridotta */
+}
+
+.save-button {
+    margin-top: 15px; /* Spazio dal gruppo delle modalità */
+    /* ... altri stili del bottone salva ... */
+}
+
+/* Stili specifici per il pulsante aiuto nel modal */
+.modal-header .help-button-container {
+    position: absolute;
+    top: 0;
+    right: 30px; /* Spazio per il pulsante di chiusura */
+}
+
+.modal-header .help-button {
+    background-color: #6c757d; /* Grigio scuro */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    line-height: 1;
+}
+
+/* Modifica per la legenda del modal */
+#insertDataLegend {
+    z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
+}
+
+/* Stili per le altre legende (se necessario portarli in primo piano in altri contesti) */
+#chatLegend {
+    /* z-index: ... */
+}
+
+#searchLegend {
+    /* z-index: ... */
+}
+
+#settingsLegend {
+    /* z-index: ... */
+}
+
+.release-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f8f9fa; /* Stesso colore dello sfondo principale o una tonalità leggermente diversa */
+    color: #777;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 0.8em;
+    border-top: 1px solid #e9ecef; /* Un bordo sottile per separare dal contenuto */
+}
+
+/* Potresti aggiungere media queries per adattare lo stile su schermi più piccoli se necessario */
+@media (max-width: 600px) {
+    .release-info {
+        font-size: 0.7em;
+    }
+}
