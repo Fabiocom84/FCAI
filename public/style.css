@@ -416,12 +416,12 @@ h1 {
     color: #777; /* Tonalità di grigio per l'istruzione */
     margin-top: 4px; /* Leggero spazio sopra il testo di istruzione */
     margin-bottom: 10px; /* Leggero spazio sotto il testo di istruzione */
-    text-align: left; /* Allineamento a sinistra per coerenza */
+    text-align: center; /* Allineamento a sinistra per coerenza */
 }
 
 .form-group:nth-child(2) {
-    margin-top: 13px; /* Riduzione del margine superiore per avvicinarlo al primo */
-    margin-bottom: 5px; /* Aumento del margine inferiore per allontanarlo dal terzo */
+    margin-top: 10px; /* Riduzione del margine superiore per avvicinarlo al primo */
+    margin-bottom: 2px; /* Aumento del margine inferiore per allontanarlo dal terzo */
 }
 
 .input-option img {
