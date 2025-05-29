@@ -401,6 +401,19 @@ h1 {
     background-color: #f5c6cb;
 }
 
+#recordingStatus {
+    font-size: 0.8em; /* Riduzione della dimensione del testo */
+    color: #777; /* Tonalità di grigio per l'istruzione */
+    margin-top: 4px; /* Leggero spazio sopra il testo di istruzione */
+    margin-bottom: 10px; /* Leggero spazio sotto il testo di istruzione */
+    text-align: left; /* Allineamento a sinistra per coerenza */
+}
+
+.form-group:nth-child(2) {
+    margin-top: 16px; /* Riduzione del margine superiore per avvicinarlo al primo */
+    margin-bottom: 8px; /* Aumento del margine inferiore per allontanarlo dal terzo */
+}
+
 .input-option img {
     max-width: 24px;
     max-height: 24px;
