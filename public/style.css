@@ -185,6 +185,8 @@ h1 {
     z-index: 30; /* Deve essere sopra l'overlay */
     width: 90%; /* Larghezza adattabile su mobile */
     max-width: 600px; /* Larghezza massima su schermi più grandi */
+    max-height: 80%;
+    overflow-y: auto;
 }
 
 .modal-header {

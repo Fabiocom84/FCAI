@@ -36,27 +36,30 @@
                 <span class="close-button" onclick="closeInsertModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="input-option">
-                    <i class="fas fa-keyboard"><img src="img/writing.png"> <h3>Inserisci Testo</h3>
-                    <textarea id="manualTextInput" placeholder="Inserisci qui il tuo testo..."></textarea>
-                </div>
+    <div class="input-option">
+        <img src="img/writing.png" alt="Inserisci Testo">
+        <h3>Inserisci Testo</h3>
+        <textarea id="manualTextInput" placeholder="Inserisci qui il tuo testo..."></textarea>
+    </div>
 
-                <div class="input-option">
-                    <i class="fas fa-file-upload"><img src="img/file.png"> <h3>Carica File</h3>
-                    <input type="file" id="fileUpload">
-                    <p class="file-name"></p>
-                </div>
+    <div class="input-option">
+        <img src="img/file.png" alt="Carica File">
+        <h3>Carica File</h3>
+        <input type="file" id="fileUpload">
+        <p class="file-name"></p>
+    </div>
 
-                <div class="input-option">
-                    <i class="fas fa-microphone"><img src="img/voice.png"> <h3>Registra Vocale</h3>
-                    <button id="startButton">Avvia Registrazione</button>
-                    <button id="stopButton" disabled>Ferma Registrazione</button>
-                    <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-                    <textarea id="voiceTranscription" placeholder="Trascrizione del vocale..." readonly></textarea>
-                </div>
+    <div class="input-option">
+        <img src="img/voice.png" alt="Registra Vocale">
+        <h3>Registra Vocale</h3>
+        <button id="startButton">Avvia Registrazione</button>
+        <button id="stopButton" disabled>Ferma Registrazione</button>
+        <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
+        <textarea id="voiceTranscription" placeholder="Trascrizione del vocale..." readonly></textarea>
+    </div>
 
-                <button class="save-button" id="saveDataButton">Salva Dati</button>
-            </div>
+    <button class="save-button" id="saveDataButton">Salva Dati</button>
+</div>
         </div>
     </div>
     <div id="modalOverlay" class="modal-overlay"></div>
