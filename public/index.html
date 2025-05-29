@@ -4,22 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segretario AI</title>
-    <link rel="stylesheet" href="style.css"> </head>
-
-<script>
-    // Funzione per verificare se l'utente è autenticato
-    function isAuthenticated() {
-        // Controlla sia localStorage che sessionStorage
-        return localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true';
-    }
-
-    // Se non sei autenticato, reindirizza alla pagina di login
-    if (!isAuthenticated()) {
-        window.location.href = '/login.html';
-    }
-</script>
-
-<script src="js/config.js"></script>
+    <link rel="stylesheet" href="style.css">
+    </head>
 
 <body>
     <h1>SEGRETARIO AI</h1>
@@ -29,9 +15,9 @@
     </div>
 
     <div class="button-container">
-        <a href="#" class="button insert-button"><img src="/img/plus.png" alt="Inserisci"></a>
-        <a href="#" class="button chat-button"><img src="/img/chat.png" alt="Chat"></a>
-        <a href="#" class="button search-button"><img src="/img/search.png" alt="Ricerca"></a>
+        <a href="#" class="button insert-button"><img src="img/plus.png" alt="Inserisci"></a>
+        <a href="#" class="button chat-button"><img src="img/chat.png" alt="Chat"></a>
+        <a href="#" class="button search-button"><img src="img/search.png" alt="Ricerca"></a>
     </div>
 
     <div class="latest-entries">
@@ -51,25 +37,25 @@
             </div>
             <div class="modal-body">
                 <div class="input-option">
-                    <h3>Inserisci Testo</h3>
+                    <i class="fas fa-keyboard"><img src="img/writing.png"> <h3>Inserisci Testo</h3>
                     <textarea id="manualTextInput" placeholder="Inserisci qui il tuo testo..."></textarea>
                 </div>
 
                 <div class="input-option">
-                    <h3>Carica File</h3>
+                    <i class="fas fa-file-upload"><img src="img/file.png"> <h3>Carica File</h3>
                     <input type="file" id="fileUpload">
                     <p class="file-name"></p>
                 </div>
 
                 <div class="input-option">
-                    <h3>Registra Vocale</h3>
+                    <i class="fas fa-microphone"><img src="img/voice.png"> <h3>Registra Vocale</h3>
                     <button id="startButton">Avvia Registrazione</button>
                     <button id="stopButton" disabled>Ferma Registrazione</button>
                     <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
                     <textarea id="voiceTranscription" placeholder="Trascrizione del vocale..." readonly></textarea>
                 </div>
 
-                <button class="save-button" id="saveDataButton">Salva Dati</button>
+                <button class="save-button" id="saveDataButton">Salva Dati <i class="fas fa-save"></i></button>
             </div>
         </div>
     </div>
@@ -108,15 +94,15 @@
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
         <div class="legend-item">
-            <div class="legend-icon insert-button"><img src="/img/plus.png" alt="Inserisci"></div>
+            <div class="legend-icon insert-button"><img src="img/plus.png" alt="Inserisci"></div>
             <div class="legend-text">Inserisci una nuova riga di dati nel database.</div>
         </div>
         <div class="legend-item">
-            <div class="legend-icon chat-button"><img src="/img/chat.png" alt="Chat"></div>
+            <div class="legend-icon chat-button"><img src="img/chat.png" alt="Chat"></div>
             <div class="legend-text">Apri la chat con l'intelligenza artificiale per analizzare il database.</div>
         </div>
         <div class="legend-item">
-            <div class="legend-icon search-button"><img src="/img/search.png" alt="Ricerca"></div>
+            <div class="legend-icon search-button"><img src="img/search.png" alt="Ricerca"></div>
             <div class="legend-text">Visualizza e cerca tra gli inserimenti effettuati nel database.</div>
         </div>
     </div>
@@ -156,12 +142,16 @@
     </div>
 
     <footer class="release-info">
-        Versione 1.0 - Rilasciata il 26 Maggio 2025
+        Versione 1.2 - Rilasciata il 29 Maggio 2025
     </footer>
 
-    <script src="/js/main.js"></script>
-    <script src="/js/insert-data-modal.js"></script>
-    <script src="/js/legend.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/insert-data-modal.js"></script>
+    <script src="js/legend.js"></script>
+    <script src="js/chat-modal.js"></script>
+    <script src="js/search-modal.js"></script>
 
 <script>
     // Questo script dovrebbe essere eseguito SOLO dopo un login SUCCESSO nella pagina login.html
