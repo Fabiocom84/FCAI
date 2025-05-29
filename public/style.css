@@ -291,19 +291,29 @@ h1 {
 
 .voice-controls {
     display: flex;
-    gap: 6px; /* Ridotto il gap tra i pulsanti vocali */
-    margin-top: 6px; /* Ridotto il margine sopra i controlli vocali */
+    justify-content: center; /* Allinea i pulsanti al centro */
+    gap: 10px; /* Spazio tra i pulsanti */
+    margin-top: 8px;
 }
 
 .voice-controls button {
-    padding: 6px 10px; /* Ridotto il padding dei pulsanti vocali */
+    padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.85em; /* Leggera riduzione della dimensione del testo dei pulsanti vocali */
+    font-size: 0.9em;
     background-color: white;
     color: #333;
     transition: background-color 0.3s ease;
+    display: flex; /* Permette di allineare icona e testo */
+    align-items: center; /* Allinea verticalmente icona e testo */
+    gap: 5px; /* Spazio tra icona e testo nel pulsante */
+}
+
+.voice-controls button img {
+    max-width: 16px; /* Dimensioni dell'icona */
+    max-height: 16px;
+    vertical-align: middle;
 }
 
 .voice-controls button:hover {
@@ -410,8 +420,8 @@ h1 {
 }
 
 .form-group:nth-child(2) {
-    margin-top: 16px; /* Riduzione del margine superiore per avvicinarlo al primo */
-    margin-bottom: 8px; /* Aumento del margine inferiore per allontanarlo dal terzo */
+    margin-top: 13px; /* Riduzione del margine superiore per avvicinarlo al primo */
+    margin-bottom: 5px; /* Aumento del margine inferiore per allontanarlo dal terzo */
 }
 
 .input-option img {
