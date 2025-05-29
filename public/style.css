@@ -237,16 +237,17 @@ h1 {
     margin-bottom: 24px;
 }
 
+/* Stili per le immagini PNG negli input-option */
 .input-option {
     margin-bottom: 18px;
-    padding: 15px; /* Aumenta leggermente il padding interno */
-    border: 1px solid #ccc; /* Bordo più sottile e chiaro */
+    padding: 15px;
+    border: 1px solid #ccc;
     border-radius: 4px;
     text-align: left;
-    background-color: #fefefe; /* Bianco sporco leggermente più chiaro */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Leggera ombra per staccare */
-    display: flex; /* Per allineare icona e testo */
-    flex-direction: row; /* Icona a sinistra del testo */
+    background-color: #fefefe;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex; /* Mantiene flex per l'allineamento */
+    flex-direction: row; /* Assicura che gli elementi siano in riga */
     align-items: center; /* Allineamento verticale al centro */
 }
 
@@ -256,7 +257,7 @@ h1 {
     margin-top: 0;
     margin-bottom: 8px;
     font-weight: normal;
-    margin-left: 10px; /* Spazio tra icona e testo */
+    margin-left: 0; /* Resetta il margin-left se precedentemente impostato */
 }
 
 .input-option i { /* Esempio per Font Awesome */
@@ -277,7 +278,7 @@ h1 {
     font-size: 1em;
     margin-bottom: 8px;
     min-height: 60px;
-    margin-left: 0; /* Resetta il margin left per occupare tutto lo spazio */
+    margin-left: 0; /* Resetta il margin-left */
 }
 
 .input-option input[type="file"] {
@@ -330,8 +331,8 @@ h1 {
 .input-option img {
     max-width: 24px;
     max-height: 24px;
-    margin-right: 10px;
-    vertical-align: middle;
+    margin-right: 10px; /* Spazio a destra dell'icona */
+    vertical-align: middle; /* Allineamento verticale al centro */
 }
 
 .save-button {
@@ -339,24 +340,42 @@ h1 {
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    background-color: #28a745; /* Verde principale */
+    background-color: #28a745;
     color: white;
     font-size: 1em;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-    display: flex; /* Per allineare testo e icona */
-    align-items: center;
-    justify-content: center;
+    display: flex; /* Utilizza flex per allineare icona e testo */
+    align-items: center; /* Allineamento verticale al centro */
+    justify-content: center; /* Assicura che l'icona sia a sinistra del testo */
+    padding-left: 25px; /* Aggiunge spazio per l'icona ::before */
+    position: relative; /* Necessario per posizionare ::before */
 }
 
 .save-button:hover {
-    background-color: #1e7e34; /* Verde più scuro all'hover */
+    background-color: #1e7e34;
 }
 
 .save-button i { /* Stile per l'icona di salvataggio (se aggiunta) */
     margin-left: 8px;
     font-size: 1.2em;
+}
+
+.save-button img {
+    max-width: 24px; /* Adatta la dimensione se necessario */
+    max-height: 24px;
+    margin-right: 8px; /* Spazio a destra dell'icona */
+    vertical-align: middle;
+}
+
+.save-button::before {
+    content: url('img/save.png'); /* Assicurati di avere un'immagine save.png */
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 /* Stili specifici per il pulsante aiuto nel modal */
