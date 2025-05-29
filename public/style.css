@@ -179,13 +179,13 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%); /* Centra il modal */
     background-color: white;
-    padding: 24px; /* Leggermente modificato per la scala */
+    padding: 16px; /* Leggermente modificato per la scala */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 30; /* Deve essere sopra l'overlay */
-    width: 90%; /* Larghezza adattabile su mobile */
-    max-width: 600px; /* Larghezza massima su schermi più grandi */
-    max-height: 80%;
+    width: 95%; /* Larghezza adattabile su mobile */
+    max-width: 500px; /* Larghezza massima su schermi più grandi */
+    max-height: 90%;
     overflow-y: auto;
 }
 
@@ -193,13 +193,13 @@ h1 {
     display: flex;
     justify-content: center; /* Centra orizzontalmente gli elementi figli */
     align-items: center; /* Allinea verticalmente gli elementi figli */
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     position: relative; /* Mantiene il contesto per il posizionamento assoluto degli altri elementi */
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1.5em;
+    font-size: 1.3em;
     text-align: center; /* Centra il testo */
     text-transform: uppercase; /* Metti il testo in maiuscolo */
 }
@@ -238,66 +238,69 @@ h1 {
 .modal-body {
     margin-bottom: 24px;
     display: flex;
-    flex-direction: column; /* Imposta gli elementi in colonna */
-    gap: 16px; /* Spazio tra i form-group */
-    overflow-y: auto; /* Se necessario, abilita lo scrolling */
-    max-height: calc(100vh - 180px); /* Regola l'altezza massima in base al viewport */
+    flex-direction: column;
+    gap: 12px; /* Ridotto il gap tra i form-group */
+    /* Rimuoviamo l'altezza massima fissa per ora per vedere l'ingombro reale */
+    /* max-height: calc(100vh - 180px); */
+    overflow-y: auto; /* Manteniamo lo scroll come fallback se il contenuto è troppo lungo */
+    padding: 16px; /* Aggiungiamo un po' di padding interno */
 }
 
 .form-group {
     display: flex;
-    flex-direction: column; /* Etichetta e input in colonna */
-    gap: 8px; /* Spazio tra etichetta e input */
+    flex-direction: column;
+    gap: 6px; /* Ridotto il gap tra etichetta e input */
+    margin-bottom: 10px; /* Aggiunto un po' di margine bottom per separazione */
 }
 
 .input-label-icon {
     display: flex;
-    align-items: center; /* Allinea icona e testo verticalmente */
-    gap: 10px; /* Spazio tra icona e testo dell'etichetta */
-    margin-bottom: 4px; /* Leggero spazio sotto l'etichetta */
+    align-items: center;
+    gap: 8px; /* Ridotto il gap tra icona e testo */
+    margin-bottom: 2px; /* Ridotto il margine sotto l'etichetta */
 }
 
 .input-label-icon img {
-    max-width: 20px; /* Ridimensiona l'icona se necessario */
-    max-height: 20px;
+    max-width: 18px; /* Ulteriore riduzione dell'icona */
+    max-height: 18px;
     vertical-align: middle;
 }
 
 .input-label-icon h3 {
-    font-size: 1em;
+    font-size: 0.95em; /* Leggera riduzione della dimensione del testo dell'etichetta */
     color: #555;
-    margin: 0; /* Rimuove margini predefiniti */
-    font-weight: bold; /* Rende l'etichetta più visibile */
+    margin: 0;
+    font-weight: bold;
 }
 
 .form-group textarea,
 .form-group input[type="file"] {
     width: 100%;
-    padding: 10px; /* Aumenta il padding per la leggibilità */
+    padding: 8px; /* Ridotto il padding degli input */
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     font-family: sans-serif;
-    font-size: 1em;
-    min-height: 40px; /* Altezza minima per gli input */
+    font-size: 0.9em; /* Leggera riduzione della dimensione del testo degli input */
+    min-height: 30px; /* Ridotta l'altezza minima degli input */
 }
 
 .form-group textarea {
-    min-height: 80px; /* Altezza maggiore per la textarea */
+    min-height: 60px; /* Altezza minima per la textarea */
 }
 
 .voice-controls {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px; /* Ridotto il gap tra i pulsanti vocali */
+    margin-top: 6px; /* Ridotto il margine sopra i controlli vocali */
 }
 
 .voice-controls button {
-    padding: 8px 12px;
+    padding: 6px 10px; /* Ridotto il padding dei pulsanti vocali */
     border: 1px solid #ccc;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.85em; /* Leggera riduzione della dimensione del testo dei pulsanti vocali */
     background-color: white;
     color: #333;
     transition: background-color 0.3s ease;
@@ -406,20 +409,20 @@ h1 {
 }
 
 .save-button {
-    margin-top: 24px; /* Spazio sopra il pulsante Salva */
-    padding: 12px 16px;
+    margin-top: 16px; /* Ridotto il margine sopra il pulsante Salva */
+    padding: 10px 14px; /* Ridotto il padding del pulsante Salva */
     border: none;
     border-radius: 5px;
     background-color: #28a745;
     color: white;
-    font-size: 1.1em;
+    font-size: 1em; /* Leggera riduzione della dimensione del testo del pulsante Salva */
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-    display: block; /* Rende il pulsante a tutta larghezza */
+    display: block;
     width: 100%;
-    box-sizing: border-box; /* Assicura che padding e bordo siano inclusi nella larghezza */
-    text-align: center; /* Centra il testo all'interno del pulsante */
+    box-sizing: border-box;
+    text-align: center;
 }
 
 .save-button:hover {
