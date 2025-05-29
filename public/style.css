@@ -237,6 +237,74 @@ h1 {
 
 .modal-body {
     margin-bottom: 24px;
+    display: flex;
+    flex-direction: column; /* Imposta gli elementi in colonna */
+    gap: 16px; /* Spazio tra i form-group */
+    overflow-y: auto; /* Se necessario, abilita lo scrolling */
+    max-height: calc(100vh - 180px); /* Regola l'altezza massima in base al viewport */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column; /* Etichetta e input in colonna */
+    gap: 8px; /* Spazio tra etichetta e input */
+}
+
+.input-label-icon {
+    display: flex;
+    align-items: center; /* Allinea icona e testo verticalmente */
+    gap: 10px; /* Spazio tra icona e testo dell'etichetta */
+    margin-bottom: 4px; /* Leggero spazio sotto l'etichetta */
+}
+
+.input-label-icon img {
+    max-width: 20px; /* Ridimensiona l'icona se necessario */
+    max-height: 20px;
+    vertical-align: middle;
+}
+
+.input-label-icon h3 {
+    font-size: 1em;
+    color: #555;
+    margin: 0; /* Rimuove margini predefiniti */
+    font-weight: bold; /* Rende l'etichetta più visibile */
+}
+
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px; /* Aumenta il padding per la leggibilità */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 1em;
+    min-height: 40px; /* Altezza minima per gli input */
+}
+
+.form-group textarea {
+    min-height: 80px; /* Altezza maggiore per la textarea */
+}
+
+.voice-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.voice-controls button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    background-color: white;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.voice-controls button:hover {
+    background-color: #eee;
 }
 
 /* Stili per le immagini PNG negli input-option */
@@ -338,46 +406,24 @@ h1 {
 }
 
 .save-button {
-    margin-top: 15px;
-    padding: 10px 15px;
+    margin-top: 24px; /* Spazio sopra il pulsante Salva */
+    padding: 12px 16px;
     border: none;
     border-radius: 5px;
     background-color: #28a745;
     color: white;
-    font-size: 1em;
+    font-size: 1.1em;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-    display: flex; /* Utilizza flex per allineare icona e testo */
-    align-items: center; /* Allineamento verticale al centro */
-    justify-content: center; /* Assicura che l'icona sia a sinistra del testo */
-    padding-left: 25px; /* Aggiunge spazio per l'icona ::before */
-    position: relative; /* Necessario per posizionare ::before */
+    display: block; /* Rende il pulsante a tutta larghezza */
+    width: 100%;
+    box-sizing: border-box; /* Assicura che padding e bordo siano inclusi nella larghezza */
+    text-align: center; /* Centra il testo all'interno del pulsante */
 }
 
 .save-button:hover {
     background-color: #1e7e34;
-}
-
-.save-button i { /* Stile per l'icona di salvataggio (se aggiunta) */
-    margin-left: 8px;
-    font-size: 1.2em;
-}
-
-.save-button img {
-    max-width: 24px; /* Adatta la dimensione se necessario */
-    max-height: 24px;
-    margin-right: 8px; /* Spazio a destra dell'icona */
-    vertical-align: middle;
-}
-
-.save-button::before {
-    content: url('img/save.png'); /* Assicurati di avere un'immagine save.png */
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    margin-right: 5px;
-    vertical-align: middle;
 }
 
 /* Stili specifici per il pulsante aiuto nel modal */
