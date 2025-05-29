@@ -238,24 +238,36 @@ h1 {
 }
 
 .input-option {
-    margin-bottom: 18px; /* Spazio leggermente ridotto tra le modalità */
-    padding: 12px; /* Padding interno leggermente ridotto */
-    border: 1px solid #e0e0e0; /* Bordo grigio chiaro e sottile */
+    margin-bottom: 18px;
+    padding: 15px; /* Aumenta leggermente il padding interno */
+    border: 1px solid #ccc; /* Bordo più sottile e chiaro */
     border-radius: 4px;
     text-align: left;
-    background-color: #f9f9f9; /* Leggero sfondo per differenziare */
+    background-color: #fefefe; /* Bianco sporco leggermente più chiaro */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Leggera ombra per staccare */
+    display: flex; /* Per allineare icona e testo */
+    flex-direction: row; /* Icona a sinistra del testo */
+    align-items: center; /* Allineamento verticale al centro */
 }
 
 .input-option h3 {
-    font-size: 1.1em; /* Dimensione del titolo leggermente ridotta */
+    font-size: 1.1em;
     color: #555;
     margin-top: 0;
     margin-bottom: 8px;
-    font-weight: normal; /* Peso del font normale per non appesantire */
+    font-weight: normal;
+    margin-left: 10px; /* Spazio tra icona e testo */
+}
+
+.input-option i { /* Esempio per Font Awesome */
+    margin-right: 10px;
+    color: #777; /* Colore grigio tenue per le icone */
+    font-size: 1.2em;
 }
 
 /* Stili per gli elementi interni */
-.input-option textarea {
+.input-option textarea,
+.input-option input[type="file"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -264,62 +276,87 @@ h1 {
     font-family: sans-serif;
     font-size: 1em;
     margin-bottom: 8px;
-    min-height: 60px; /* Altezza minima ridotta */
+    min-height: 60px;
+    margin-left: 0; /* Resetta il margin left per occupare tutto lo spazio */
 }
 
 .input-option input[type="file"] {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    font-size: 0.9em;
+    padding-top: 5px; /* Allineamento verticale migliore */
 }
 
-.input-option p.file-name {
-    font-size: 0.8em;
-    color: #777;
-    margin-top: 4px;
+.input-option textarea:focus,
+.input-option input[type="file"]:focus {
+    border-color: #5cb85c; /* Verde chiaro al focus (simile al bootstrap) */
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Leggera ombra al focus */
+    outline: none; /* Rimuove l'outline predefinito */
 }
 
 .input-option button {
     padding: 8px 12px;
-    border: 1px solid #ccc; /* Aggiunto un bordo ai bottoni */
+    border: 1px solid #ccc;
     border-radius: 3px;
     cursor: pointer;
     font-size: 0.9em;
     margin-right: 5px;
-    background-color: white; /* Sfondo bianco per i bottoni */
+    background-color: white;
     color: #333;
+    transition: background-color 0.3s ease; /* Transizione per l'hover */
 }
 
 .input-option button:hover {
     background-color: #eee;
 }
 
-.input-option button:last-child {
-    margin-right: 0;
+#startButton {
+    background-color: #d4edda; /* Verde molto chiaro */
+    color: #155724; /* Verde scuro testo */
+    border-color: #c3e6cb;
 }
 
-.input-option #recordingStatus {
-    font-size: 0.8em;
-    color: #777;
-    margin-top: 4px;
+#startButton:hover {
+    background-color: #c3e6cb;
 }
 
-.input-option #voiceTranscription {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    box-sizing: border-box;
-    font-family: sans-serif;
-    font-size: 1em;
-    margin-top: 8px;
-    min-height: 60px; /* Altezza minima ridotta */
+#stopButton {
+    background-color: #f8d7da; /* Rosso molto chiaro */
+    color: #721c24; /* Rosso scuro testo */
+    border-color: #f5c6cb;
+}
+
+#stopButton:hover {
+    background-color: #f5c6cb;
+}
+
+.input-option img {
+    max-width: 24px;
+    max-height: 24px;
+    margin-right: 10px;
+    vertical-align: middle;
 }
 
 .save-button {
-    margin-top: 15px; /* Spazio dal gruppo delle modalità */
-    /* ... altri stili del bottone salva ... */
+    margin-top: 15px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745; /* Verde principale */
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+    display: flex; /* Per allineare testo e icona */
+    align-items: center;
+    justify-content: center;
+}
+
+.save-button:hover {
+    background-color: #1e7e34; /* Verde più scuro all'hover */
+}
+
+.save-button i { /* Stile per l'icona di salvataggio (se aggiunta) */
+    margin-left: 8px;
+    font-size: 1.2em;
 }
 
 /* Stili specifici per il pulsante aiuto nel modal */
