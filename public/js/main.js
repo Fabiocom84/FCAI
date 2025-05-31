@@ -93,14 +93,19 @@ function updateLatestEntries(data) {
                     transcriptionText = entry['trascrizione'].substring(0, 50) + '...';
                     listItem.innerHTML = `<span class="entry-date-time">${entry['data/ora']}</span> - ${transcriptionText}`;
 
+                    // Aggiungi il riferimento commessa se presente
+                    if (entry.riferimento) {
+                        listItem.innerHTML += ` - <span class="entry-riferimento">Riferimento: ${entry.riferimento}</span>`;
+                    }
+
                     // Aggiungi un link per visualizzare il file se l'URL è presente
                     if (entry.url) {
                         const viewLink = document.createElement('a');
                         viewLink.href = entry.url;
                         viewLink.textContent = 'Visualizza File';
-                        viewLink.target = '_blank'; // Apri in una nuova scheda
-                        viewLink.classList.add('view-file-link'); // Aggiungi una classe per lo stile (opzionale)
-                        listItem.appendChild(document.createTextNode(' - ')); // Aggiungi un separatore
+                        viewLink.target = '_blank';
+                        viewLink.classList.add('view-file-link');
+                        listItem.appendChild(document.createTextNode(' - '));
                         listItem.appendChild(viewLink);
                     }
 

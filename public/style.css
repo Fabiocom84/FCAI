@@ -160,6 +160,12 @@ h1 {
     color: #777;
 }
 
+.entry-riferimento {
+    font-weight: bold;
+    color: #555; /* Un colore leggermente diverso dal testo principale */
+    margin-left: 0.5em; /* Un po' di spazio a sinistra */
+}
+
 /* Stili per il Modal */
 .modal-overlay {
     display: none; /* Inizialmente nascosto */
