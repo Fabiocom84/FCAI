@@ -165,7 +165,7 @@
 
 <script>
     console.log('Controllo autenticazione in index.html...');
-    const authToken = localStorage.getItem('authToken'); // O sessionStorage.getItem('authToken') se non hai usato "Ricorda i miei dati"
+    const authToken = sessionStorage.getItem('authToken'); // O sessionStorage.getItem('authToken') se non hai usato "Ricorda i miei dati"
 
     if (!authToken) {
         console.log('Nessun token trovato, reindirizzamento a login.html');
