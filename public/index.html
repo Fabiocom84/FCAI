@@ -165,24 +165,24 @@
 
 <script>
     console.log('Controllo autenticazione in index.html...');
-    const authToken = sessionStorage.getItem('authToken'); // O sessionStorage.getItem('authToken') se non hai usato "Ricorda i miei dati"
+    let authToken = localStorage.getItem('authToken');
+    let storageType = 'localStorage';
 
-    if (!authToken) {
-        console.log('Nessun token trovato, reindirizzamento a login.html');
-        window.location.href = '/login.html'; // Assicurati che il percorso sia corretto
-    } else {
-        console.log('Token presente, utente (presumibilmente) autenticato.');
-        // Qui puoi aggiungere codice per:
-        // 1. Verificare la validità del token (potrebbe richiedere una chiamata al backend).
-        // 2. Includere il token nelle richieste successive al backend.
-        // 3. Inizializzare altre funzionalità della pagina principale.
+if (!authToken) {
+    authToken = sessionStorage.getItem('authToken');
+    storageType = 'sessionStorage';
+}
 
-        // Esempio (rimuovi se non necessario):
-        // document.addEventListener('DOMContentLoaded', function() {
-        //     document.getElementById('insertDataModal').style.display = 'block';
-        //     document.getElementById('modalOverlay').style.display = 'block';
-        // });
-    }
+if (!authToken) {
+    console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
+    window.location.href = '/';
+} else {
+    console.log('Token trovato in', storageType + ':', authToken);
+    // Qui puoi aggiungere codice per:
+    // 1. Verificare la validità del token (potrebbe richiedere una chiamata al backend).
+    // 2. Includere il token nelle richieste successive al backend.
+    // 3. Inizializzare altre funzionalità della pagina principale.
+}
 
     // Eventuali altre inizializzazioni della pagina principale possono andare qui
 </script>
