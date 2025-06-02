@@ -19,6 +19,7 @@ class InsertDataModal {
         this.isRecording = false;
         this.isSaving = false;
         this.isTranscribing = false; // Nuovo stato per l'elaborazione della trascrizione
+        this.riferimentoDropdown = this.modal.querySelector('#riferimentoDropdown');
 
         if (this.openButton) {
             this.openButton.addEventListener('click', this.open.bind(this));
@@ -72,6 +73,8 @@ class InsertDataModal {
         if (this.stopButton) {
             this.stopButton.disabled = true;
         }
+        if (this.riferimentoDropdown) 
+            this.riferimentoDropdown.selectedIndex = 0; // Resetta il dropdown alla prima opzione
 
          this.modal.style.display = "block";
          this.overlay.style.display = "block";
@@ -120,6 +123,7 @@ const voiceText = this.voiceTranscription ? this.voiceTranscription.value.trim()
 // const combinedText = manualText + (manualText && voiceText ? '\n' : '') + voiceText; // Non necessario per l'upload file
 
 const file = this.fileUploadInput && this.fileUploadInput.files.length > 0 ? this.fileUploadInput.files[0] : null;
+const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : ''; // Ottieni il valore selezionato
 
 console.log("File caricato:", file);
 
@@ -134,6 +138,8 @@ formData.append('manualTextInput', manualText);
 formData.append('voiceTranscription', voiceText);
 if (file) {
 formData.append('file', file);
+formData.append('riferimento', riferimento); // Aggiungi il riferimento ai dati da inviare
+
 }
 
 fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
@@ -163,6 +169,42 @@ this.saveButton.textContent = 'Salva Dati';
 alert("Nessun testo o file da salvare.");
 }
 }
+
+loadEtichette() {
+        if (!this.riferimentoDropdown) {
+            console.error("L'elemento con ID 'riferimentoDropdown' non è stato trovato nel DOM.");
+            return;
+        }
+
+        const backendUrl = window.BACKEND_URL; // Assicurati che BACKEND_URL sia definito
+
+        fetch(`${backendUrl}/api/get-etichette`, { // Assicurati che l'endpoint sia corretto
+            method: 'GET',
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(etichette => {
+            // Pulisci le opzioni esistenti tranne la prima (quella disabilitata)
+            while (this.riferimentoDropdown.options.length > 1) {
+                this.riferimentoDropdown.remove(1);
+            }
+
+            etichette.forEach(etichetta => {
+                const option = document.createElement('option');
+                option.value = etichetta;
+                option.textContent = etichetta;
+                this.riferimentoDropdown.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Errore nel caricamento delle etichette:", error);
+            // Potresti voler mostrare un messaggio di errore all'utente
+        });
+    }
 
     setupFileUploadHandler() {
         if (this.fileUploadInput && this.fileNameDisplay) {
