@@ -165,17 +165,20 @@
 
 <script>
     console.log('Controllo autenticazione in index.html...');
-    let authToken = localStorage.getItem('authToken');
-    let storageType = 'localStorage';
 
+let authToken = localStorage.getItem('authToken');
+let storageType = 'localStorage';
+
+//Controlla prima localStorage
 if (!authToken) {
+    console.log('Nessun token trovato in localStorage. Controllo sessionStorage.');
     authToken = sessionStorage.getItem('authToken');
     storageType = 'sessionStorage';
 }
 
 if (!authToken) {
     console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
-    window.location.href = '/';
+    window.location.href = '/login.html'; // Percorso esplicito a login.html
 } else {
     console.log('Token trovato in', storageType + ':', authToken);
     // Qui puoi aggiungere codice per:
