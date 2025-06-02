@@ -46,6 +46,7 @@ class InsertDataModal {
 
         this.setupFileUploadHandler();
         this.setupVoiceRecordingHandlers();
+        this.loadEtichette();
     }
 
     open() {
