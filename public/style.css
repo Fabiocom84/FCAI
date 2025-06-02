@@ -256,7 +256,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 6px; /* Ridotto il gap tra etichetta e input */
-    margin-bottom: 10px; /* Aggiunto un po' di margine bottom per separazione */
+    margin-bottom: 5px; /* Aggiunto un po' di margine bottom per separazione */
 }
 
 .input-label-icon {
@@ -426,7 +426,7 @@ h1 {
 }
 
 .form-group:nth-child(2) {
-    margin-top: 10px; /* Riduzione del margine superiore per avvicinarlo al primo */
+    margin-top: 2px; /* Riduzione del margine superiore per avvicinarlo al primo */
     margin-bottom: 2px; /* Aumento del margine inferiore per allontanarlo dal terzo */
 }
 
