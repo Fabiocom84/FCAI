@@ -242,7 +242,7 @@ h1 {
 }
 
 .modal-body {
-    margin-bottom: 24px;
+    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
     gap: 6px; /* Ridotto il gap tra i form-group */
