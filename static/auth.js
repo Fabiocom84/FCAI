@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   // Imposta gli header CORS
   res.setHeader('Access-Control-Allow-Origin', '*'); // Permetti tutte le origini (solo per sviluppo, in produzione specifica la tua origine)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Specifica i metodi consentiti
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Specifica gli header consentiti
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Specifica gli header consent
 
   // Gestisci la richiesta OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
