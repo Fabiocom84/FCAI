@@ -35,7 +35,8 @@
                 </div>
                 <span class="close-button" onclick="closeInsertModal()">&times;</span>
             </div>
-            <div class="modal-body">
+            
+ <div class="modal-body">
     <div class="form-group">
         <div class="input-label-icon">
             <img src="img/writing.png" alt="Inserisci Testo">
@@ -59,19 +60,32 @@
             <h3>Registra Vocale</h3>
         </div>
         <div class="voice-controls">
-        <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
-        <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
-    </div>
+            <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
+            <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
+        </div>
         <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
         <textarea id="voiceTranscription" placeholder="Trascrizione del vocale..." readonly></textarea>
     </div>
 
+    <div class="form-group">
+        <div class="input-label-icon">
+            <img src="img/tag.png" alt="Riferimento">
+            <h3>Riferimento</h3>
+        </div>
+        <select id="riferimentoDropdown">
+            <option value="" disabled selected>Seleziona un riferimento</option>
+            </select>
+    </div>
+
     <button class="save-button" id="saveDataButton">Salva Dati</button>
 </div>
+
+
         </div>
     </div>
-    <div id="modalOverlay" class="modal-overlay"></div>
 
+<div id="modalOverlay" class="modal-overlay"></div>
+    
     <div id="chatModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
