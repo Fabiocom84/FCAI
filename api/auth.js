@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
     if (username === storedUsername && password === storedPassword) {
       // Autenticazione riuscita
-      const token = 'ailMioTokenSegreto'; // Ricorda di generare token sicuri in produzione
+      const token = 'ilMioTokenSegreto'; // Ricorda di generare token sicuri in produzione
       console.log('Autenticazione riuscita per l\'utente:', username);
       res.status(200).json({ success: true, token: token });
     } else {
