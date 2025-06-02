@@ -245,7 +245,7 @@ h1 {
     margin-bottom: 24px;
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Ridotto il gap tra i form-group */
+    gap: 6px; /* Ridotto il gap tra i form-group */
     /* Rimuoviamo l'altezza massima fissa per ora per vedere l'ingombro reale */
     /* max-height: calc(100vh - 180px); */
     overflow-y: auto; /* Manteniamo lo scroll come fallback se il contenuto è troppo lungo */
@@ -293,6 +293,10 @@ h1 {
 
 .form-group textarea {
     min-height: 60px; /* Altezza minima per la textarea */
+}
+
+.form-group:nth-child(3) {
+    margin-top: 2px; /* Riduzione del margine superiore */
 }
 
 .voice-controls {
