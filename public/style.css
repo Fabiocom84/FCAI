@@ -296,7 +296,7 @@ h1 {
 }
 
 .form-group:nth-child(3) {
-    margin-top: 2px; /* Riduzione del margine superiore */
+    margin-top: 5px; /* Riduzione del margine superiore */
 }
 
 .voice-controls {
