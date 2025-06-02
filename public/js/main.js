@@ -50,34 +50,66 @@ function closeSettingsModal() {
     }
 }
 
-function loadLatestEntries() {
-      const backendUrl = window.BACKEND_URL;
-  fetch(`${backendUrl}/api/latest-entries`, {
-    method: 'GET',
-  })
-    .then(response => {
-      // Verifica che la risposta sia OK (status code 200-299)
-      if (!response.ok) {
-        // Se la risposta non è OK, genera un errore con informazioni dettagliate
-        const errorMessage = `Errore HTTP! Stato: ${response.status}, Testo: ${response.statusText}`;
-        console.error(errorMessage); // Stampa l'errore nel console per debugging
-        throw new Error(errorMessage); // Propaga l'errore per essere catturato nel catch
-      }
-      // Se la risposta è OK, analizza il JSON
-      return response.json();
-    })
-    .then(data => {
-      // Gestisci i dati ricevuti
-      console.log("Dati ricevuti:", data);
-      updateLatestEntries(data);
-    })
-    .catch(error => {
-      // Gestisci gli errori di fetch o di parsing del JSON
-      console.error('Errore durante il recupero degli ultimi inserimenti dal backend:', error);
-      // Mostra un messaggio di errore all'utente (opzionale, ma consigliato)
-      // Esempio:
-      // alert('Si è verificato un errore durante il caricamento degli ultimi inserimenti. Riprovare più tardi.');
-    });
+function updateLatestEntries(data) {
+    const latestEntriesList = document.querySelector('.latest-entries ul');
+    if (latestEntriesList) {
+        latestEntriesList.innerHTML = '';
+
+        if (data && data.length > 0) {
+            data.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.style.marginBottom = '15px';
+                listItem.style.padding = '10px';
+                listItem.style.borderBottom = '1px solid #eee';
+
+                // Prima riga: DATA/ORA - RIFERIMENTO COMMESSA
+                const row1 = document.createElement('div');
+                row1.style.display = 'flex';
+                row1.style.alignItems = 'center';
+                row1.style.marginBottom = '5px';
+
+                const dateTimeSpan = document.createElement('span');
+                dateTimeSpan.textContent = entry['DATA/ORA'] || 'N/A';
+                dateTimeSpan.style.fontWeight = 'bold';
+                row1.appendChild(dateTimeSpan);
+
+                if (entry['RIFERIMENTO COMMESSA']) {
+                    const riferimentoSpan = document.createElement('span');
+                    riferimentoSpan.textContent = ` - Riferimento: ${entry['RIFERIMENTO COMMESSA']}`;
+                    riferimentoSpan.style.marginLeft = '10px';
+                    row1.appendChild(riferimentoSpan);
+                }
+
+                listItem.appendChild(row1);
+
+                // Seconda riga: TRASCRIZIONE (troncata)
+                const row2 = document.createElement('div');
+                row2.style.marginBottom = '5px';
+                const transcriptionSpan = document.createElement('span');
+                transcriptionSpan.textContent = entry['TRASCRIZIONE'] ? entry['TRASCRIZIONE'].substring(0, 50) + '...' : 'N/A';
+                row2.appendChild(transcriptionSpan);
+                listItem.appendChild(row2);
+
+                // Terza riga: URL (come link)
+                if (entry['URL']) {
+                    const viewLink = document.createElement('a');
+                    viewLink.href = entry['URL'];
+                    viewLink.textContent = 'Visualizza File';
+                    viewLink.target = '_blank';
+                    viewLink.classList.add('view-file-link');
+                    listItem.appendChild(viewLink);
+                }
+
+                latestEntriesList.appendChild(listItem);
+            });
+        } else {
+            const listItem = document.createElement('li');
+            listItem.textContent = 'Nessun inserimento recente.';
+            latestEntriesList.appendChild(listItem);
+        }
+    } else {
+        console.error('Elemento .latest-entries ul non trovato.');
+    }
 }
 
 function updateLatestEntries(data) {
