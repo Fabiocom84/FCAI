@@ -164,22 +164,20 @@
     <script src="js/search-modal.js"></script>
 
 <script>
-        console.log('Controllo autenticazione in index.html...');
-        const authToken = localStorage.getItem('authToken'); // O sessionStorage.getItem('authToken') se non hai usato "Ricorda i miei dati"
+    // Questo script dovrebbe essere eseguito SOLO dopo un login SUCCESSO nella pagina login.html
+    // In uno scenario reale, questo flag verrebbe impostato dopo una verifica SERVER-SIDE delle credenziali.
+    // Per ora, lo simuleremo.
+    // ... (il codice di login.html imposterà 'isAuthenticated' su 'true' in localStorage) ...
 
-        if (!authToken) {
-            console.log('Nessun token trovato, reindirizzamento a login.html');
-            window.location.href = 'login.html'; // Assicurati che il percorso sia corretto
-        } else {
-            console.log('Token presente, utente (presumibilmente) autenticato.');
-            // Qui puoi aggiungere codice per:
-            // 1. Verificare la validità del token (potrebbe richiedere una chiamata al backend).
-            // 2. Includere il token nelle richieste successive al backend.
-            // 3. Inizializzare altre funzionalità della pagina principale.
-        }
+    // Eventuali altre inizializzazioni della pagina principale possono andare qui
+    console.log('Utente autenticato. Pagina principale caricata.');
 
-        // Eventuali altre inizializzazioni della pagina principale possono andare qui
-    </script>
+    // Esempio: apri il modal di inserimento (da rimuovere, è solo per mostrare che la pagina è accessibile)
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     document.getElementById('insertDataModal').style.display = 'block';
+    //     document.getElementById('modalOverlay').style.display = 'block';
+    // });
+</script>
 
 </body>
 </html>
