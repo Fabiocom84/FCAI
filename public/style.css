@@ -431,7 +431,7 @@ h1 {
 
 .form-group:nth-child(2) {
     margin-top: 2px; /* Riduzione del margine superiore per avvicinarlo al primo */
-    margin-bottom: 2px; /* Aumento del margine inferiore per allontanarlo dal terzo */
+    margin-bottom: 0px; /* Aumento del margine inferiore per allontanarlo dal terzo */
 }
 
 .input-option img {
