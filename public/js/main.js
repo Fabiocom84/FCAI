@@ -50,6 +50,36 @@ function closeSettingsModal() {
     }
 }
 
+function loadLatestEntries() {
+      const backendUrl = window.BACKEND_URL;
+  fetch(`${backendUrl}/api/latest-entries`, {
+    method: 'GET',
+  })
+    .then(response => {
+      // Verifica che la risposta sia OK (status code 200-299)
+      if (!response.ok) {
+        // Se la risposta non è OK, genera un errore con informazioni dettagliate
+        const errorMessage = `Errore HTTP! Stato: ${response.status}, Testo: ${response.statusText}`;
+        console.error(errorMessage); // Stampa l'errore nel console per debugging
+        throw new Error(errorMessage); // Propaga l'errore per essere catturato nel catch
+      }
+      // Se la risposta è OK, analizza il JSON
+      return response.json();
+    })
+    .then(data => {
+      // Gestisci i dati ricevuti
+      console.log("Dati ricevuti:", data);
+      updateLatestEntries(data);
+    })
+    .catch(error => {
+      // Gestisci gli errori di fetch o di parsing del JSON
+      console.error('Errore durante il recupero degli ultimi inserimenti dal backend:', error);
+      // Mostra un messaggio di errore all'utente (opzionale, ma consigliato)
+      // Esempio:
+      // alert('Si è verificato un errore durante il caricamento degli ultimi inserimenti. Riprovare più tardi.');
+    });
+}
+
 function updateLatestEntries(data) {
     const latestEntriesList = document.querySelector('.latest-entries ul');
     if (latestEntriesList) {
@@ -101,56 +131,6 @@ function updateLatestEntries(data) {
                 }
 
                 latestEntriesList.appendChild(listItem);
-            });
-        } else {
-            const listItem = document.createElement('li');
-            listItem.textContent = 'Nessun inserimento recente.';
-            latestEntriesList.appendChild(listItem);
-        }
-    } else {
-        console.error('Elemento .latest-entries ul non trovato.');
-    }
-}
-
-function updateLatestEntries(data) {
-    const latestEntriesList = document.querySelector('.latest-entries ul');
-    if (latestEntriesList) {
-        latestEntriesList.innerHTML = '';
-
-        if (data && data.length > 0) {
-            data.forEach(entry => {
-                const listItem = document.createElement('li');
-                let transcriptionText = '';
-                if (entry && entry['data/ora'] && entry['trascrizione']) {
-                    transcriptionText = entry['trascrizione'].substring(0, 50) + '...';
-                    listItem.innerHTML = `<span class="entry-date-time">${entry['data/ora']}</span> - ${transcriptionText}`;
-
-                    // Aggiungi il riferimento commessa se presente
-                    if (entry.riferimento) {
-                        listItem.innerHTML += ` - <span class="entry-riferimento">Riferimento: ${entry.riferimento}</span>`;
-                    }
-
-                    // Aggiungi un link per visualizzare il file se l'URL è presente
-                    if (entry.url) {
-                        const viewLink = document.createElement('a');
-                        viewLink.href = entry.url;
-                        viewLink.textContent = 'Visualizza File';
-                        viewLink.target = '_blank';
-                        viewLink.classList.add('view-file-link');
-                        listItem.appendChild(document.createTextNode(' - '));
-                        listItem.appendChild(viewLink);
-                    }
-
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.classList.add('entry-item');
-                    link.appendChild(listItem);
-                    latestEntriesList.appendChild(link);
-                } else {
-                    listItem.textContent = 'Errore nel formato dei dati.';
-                    latestEntriesList.appendChild(listItem);
-                    console.error('Formato dei dati degli ultimi inserimenti non valido:', entry);
-                }
             });
         } else {
             const listItem = document.createElement('li');
