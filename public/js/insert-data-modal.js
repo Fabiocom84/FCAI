@@ -113,62 +113,61 @@ class InsertDataModal {
     }
 
     saveData() {
-console.log("Funzione saveData() chiamata.");
-if (this.isSaving) {
-console.log("Salvataggio già in corso, ignorando il clic.");
-return;
-}
+        console.log("Funzione saveData() chiamata.");
+        if (this.isSaving) {
+            console.log("Salvataggio già in corso, ignorando il clic.");
+            return;
+        }
 
-const manualText = this.manualTextInput ? this.manualTextInput.value.trim() : '';
-const voiceText = this.voiceTranscription ? this.voiceTranscription.value.trim() : '';
-// const combinedText = manualText + (manualText && voiceText ? '\n' : '') + voiceText; // Non necessario per l'upload file
+        const manualText = this.manualTextInput ? this.manualTextInput.value.trim() : '';
+        const voiceText = this.voiceTranscription ? this.voiceTranscription.value.trim() : '';
+        const file = this.fileUploadInput && this.fileUploadInput.files.length > 0 ? this.fileUploadInput.files[0] : null;
+        const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : ''; // Ottieni il valore selezionato
 
-const file = this.fileUploadInput && this.fileUploadInput.files.length > 0 ? this.fileUploadInput.files[0] : null;
-const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : ''; // Ottieni il valore selezionato
+        console.log("File caricato:", file);
+        console.log("Valore Riferimento:", riferimento);
 
-console.log("File caricato:", file);
+        if (manualText || voiceText || file || riferimento) {
+            this.isSaving = true;
+            this.saveButton.disabled = true;
+            this.saveButton.textContent = 'Salvataggio in corso...';
+            console.log("Inizio salvataggio (con file o solo testo/riferimento)...");
 
-if (manualText || voiceText || file) {
-this.isSaving = true;
-this.saveButton.disabled = true;
-this.saveButton.textContent = 'Salvataggio in corso...';
-console.log("Inizio salvataggio (con file)...");
+            const formData = new FormData();
+            formData.append('manualTextInput', manualText);
+            formData.append('voiceTranscription', voiceText);
+            formData.append('riferimento', riferimento); // <-- SPOSTATO QUI, SEMPRE INVIATO
 
-const formData = new FormData();
-formData.append('manualTextInput', manualText);
-formData.append('voiceTranscription', voiceText);
-if (file) {
-formData.append('file', file);
-formData.append('riferimento', riferimento); // Aggiungi il riferimento ai dati da inviare
+            if (file) {
+                formData.append('file', file);
+            }
 
-}
-
-fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
-  method: 'POST',
-body: formData, // Invia FormData senza impostare Content-Type
-})
-.then(response => response.json())
-.then(data => {
-console.log('Risposta dal backend (upload):', data);
-if (data.message === 'Dati salvati con successo.') {
-loadLatestEntries();
-this.close();
-} else {
-alert('Errore nel salvataggio: ' + data.error);
-}
-})
-.catch(error => {
-console.error('Errore durante la comunicazione con il backend (upload):', error);
-alert('Impossibile salvare i dati.');
-})
-.finally(() => {
-this.isSaving = false;
-this.saveButton.disabled = false;
-this.saveButton.textContent = 'Salva Dati';
-});
-} else {
-alert("Nessun testo o file da salvare.");
-}
+            fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
+                method: 'POST',
+                body: formData, // Invia FormData senza impostare Content-Type
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Risposta dal backend (upload):', data);
+                if (data.message === 'Dati salvati con successo.') {
+                    loadLatestEntries();
+                    this.close();
+            } else {
+                alert('Errore nel salvataggio: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Errore durante la comunicazione con il backend (upload):', error);
+            alert('Impossibile salvare i dati.');
+        })
+        .finally(() => {
+            this.isSaving = false;
+            this.saveButton.disabled = false;
+            this.saveButton.textContent = 'Salva Dati';
+        });
+    } else {
+       alert("Nessun testo, file o riferimento da salvare."); // Aggiorna il messaggio di allerta
+    }
 }
 
 loadEtichette() {
