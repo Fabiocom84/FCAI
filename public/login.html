@@ -108,7 +108,200 @@
         </form>
     </div>
 
-    <script>
+    <script src="https://unpkg.com/cbor-js@0.1.0/cbor.js"></script> <script>
+        // Funzioni helper per la conversione tra ArrayBuffer e Base64 (NECESSARIE per WebAuthn)
+        function arrayBufferToBase64(buffer) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // --- CONFIGURAZIONE DEGLI ENDPOINT WEBAUTHN DEL TUO BACKEND ---
+        // !!! SOSTITUISCI QUESTO URL CON QUELLO REALE DEL TUO SERVIZIO CLOUD RUN !!!
+        // L'URL dalla tua dashboard di Cloud Run è:
+        // https://segretario-ai-backend-service-980717648695.europe-west1.run.app
+        const BACKEND_BASE_URL = 'https://segretario-ai-backend-service-980717648695.europe-west1.run.app'; // <--- MODIFICA QUI!
+        const WEBAUTHN_REGISTER_BEGIN_URL = `${BACKEND_BASE_URL}/api/webauthn/register/begin`;
+        const WEBAUTHN_REGISTER_COMPLETE_URL = `${BACKEND_BASE_URL}/api/webauthn/register/complete`;
+        const WEBAUTHN_LOGIN_BEGIN_URL = `${BACKEND_BASE_URL}/api/webauthn/login/begin`;
+        const WEBAUTHN_LOGIN_COMPLETE_URL = `${BACKEND_BASE_URL}/api/webauthn/login/complete`;
+        // --- FINE CONFIGURAZIONE ENDPOINT ---
+
+        // --- FUNZIONE PER LA REGISTRAZIONE DELL'IMPRONTA (PRIMA VOLTA) ---
+        async function registerFingerprint() {
+            console.log("Inizio processo di registrazione impronta...");
+            document.getElementById('errorMessage').style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            if (!username) {
+                document.getElementById('errorMessage').textContent = "Inserisci un nome utente per registrare l'impronta.";
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            try {
+                // 1. Richiedi opzioni di registrazione al backend
+                console.log(`Chiamata a ${WEBAUTHN_REGISTER_BEGIN_URL} per l'utente: ${username}`);
+                const registrationOptionsResponse = await fetch(WEBAUTHN_REGISTER_BEGIN_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (!registrationOptionsResponse.ok) {
+                    const errorData = await registrationOptionsResponse.json();
+                    throw new Error(errorData.error || 'Errore durante la richiesta delle opzioni di registrazione.');
+                }
+                const data = await registrationOptionsResponse.json();
+                const options_b64 = data.options;
+
+                const options_bytes = base64ToArrayBuffer(options_b64);
+                const publicKeyOptions = cbor.decode(options_bytes);
+
+                publicKeyOptions.challenge = base64ToArrayBuffer(publicKeyOptions.challenge);
+                publicKeyOptions.user.id = base64ToArrayBuffer(publicKeyOptions.user.id);
+                if (publicKeyOptions.excludeCredentials) {
+                    publicKeyOptions.excludeCredentials.forEach(cred => {
+                        cred.id = base64ToArrayBuffer(cred.id);
+                    });
+                }
+
+                console.log("Opzioni di registrazione ricevute dal backend e decodificate:", publicKeyOptions);
+
+                const credential = await navigator.credentials.create({ publicKey: publicKeyOptions });
+                console.log("Credenziale creata dal browser:", credential);
+
+                const clientResponse_b64 = arrayBufferToBase64(cbor.encode({
+                    id: credential.id,
+                    rawId: arrayBufferToBase64(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+                        attestationObject: arrayBufferToBase64(credential.response.attestationObject),
+                    }
+                }));
+
+                console.log(`Invio risposta di registrazione a ${WEBAUTHN_REGISTER_COMPLETE_URL}`);
+                const attestationResponse = await fetch(WEBAUTHN_REGISTER_COMPLETE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ response: clientResponse_b64 })
+                });
+
+                if (!attestationResponse.ok) {
+                    const errorData = await attestationResponse.json();
+                    throw new Error(errorData.error || 'Errore durante la finalizzazione della registrazione.');
+                }
+
+                const result = await attestationResponse.json();
+                if (result.status === "success") {
+                    console.log("Registrazione impronta riuscita!", result.message);
+                    alert("Impronta digitale registrata con successo!");
+                } else {
+                    throw new Error(result.message || 'Errore nella registrazione impronta dal backend');
+                }
+
+            } catch (error) {
+                console.error("Errore durante la registrazione dell'impronta:", error);
+                document.getElementById('errorMessage').textContent = "Errore durante la registrazione dell'impronta: " + error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
+
+        // --- FUNZIONE PER L'AUTENTICAZIONE DELL'IMPRONTA (ACCESSO) ---
+        async function authenticateFingerprint() {
+            console.log("Inizio processo di autenticazione impronta...");
+            document.getElementById('errorMessage').style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            if (!username) {
+                document.getElementById('errorMessage').textContent = 'Inserisci il nome utente per l\'accesso con impronta.';
+                document.getElementById('errorMessage').style.display = 'block';
+                console.error("Nome utente mancante per l'autenticazione con impronta.");
+                return;
+            }
+
+            try {
+                // 1. Richiedi opzioni di autenticazione al backend
+                console.log(`Chiamata a ${WEBAUTHN_LOGIN_BEGIN_URL} per l'utente: ${username}`);
+                const assertionOptionsResponse = await fetch(WEBAUTHN_LOGIN_BEGIN_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (!assertionOptionsResponse.ok) {
+                    const errorData = await assertionOptionsResponse.json();
+                    throw new Error(errorData.error || 'Errore durante la richiesta delle opzioni di autenticazione.');
+                }
+                const data = await assertionOptionsResponse.json();
+                const options_b64 = data.options;
+
+                const options_bytes = base64ToArrayBuffer(options_b64);
+                const publicKeyOptions = cbor.decode(options_bytes);
+
+                publicKeyOptions.challenge = base64ToArrayBuffer(publicKeyOptions.challenge);
+                publicKeyOptions.allowCredentials.forEach(cred => {
+                    cred.id = base64ToArrayBuffer(cred.id);
+                });
+
+                console.log("Opzioni di autenticazione ricevute dal backend e decodificate:", publicKeyOptions);
+
+                const credential = await navigator.credentials.get({ publicKey: publicKeyOptions });
+                console.log("Credenziale ottenuta dal browser:", credential);
+
+                const clientResponse_b64 = arrayBufferToBase64(cbor.encode({
+                    id: credential.id,
+                    rawId: arrayBufferToBase64(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+                        authenticatorData: arrayBufferToBase64(credential.response.authenticatorData),
+                        signature: arrayBufferToBase64(credential.response.signature),
+                        userHandle: credential.response.userHandle ? arrayBufferToBase64(credential.response.userHandle) : null,
+                    }
+                }));
+
+                console.log(`Invio risposta di autenticazione a ${WEBAUTHN_LOGIN_COMPLETE_URL}`);
+                const assertionResponse = await fetch(WEBAUTHN_LOGIN_COMPLETE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ response: clientResponse_b64 })
+                });
+
+                if (!assertionResponse.ok) {
+                    const errorData = await assertionResponse.json();
+                    throw new Error(errorData.error || 'Errore durante la finalizzazione dell\'autenticazione.');
+                }
+
+                const result = await assertionResponse.json();
+                if (result.status === "success") {
+                    console.log("Autenticazione impronta riuscita!", result.message);
+                    alert("Accesso tramite impronta digitale riuscito!");
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('authToken', result.token || 'webauthn_token');
+                    console.log('Autenticazione WebAuthn riuscita. Reindirizzamento a index.html');
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error(result.message || 'Errore nell\'autenticazione impronta dal backend');
+                }
+
+            } catch (error) {
+                console.error("Errore durante l'autenticazione dell'impronta:", error);
+                document.getElementById('errorMessage').textContent = "Errore durante l'autenticazione dell'impronta: " + error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
         // Funzione per il rilevamento WebAuthn e aggiornamento UI
         function checkWebAuthnSupport() {
             const fingerprintBtn = document.getElementById('fingerprintLoginBtn');
@@ -135,10 +328,8 @@
             }
         }
 
-        // Chiamiamo la funzione al caricamento della pagina
         document.addEventListener('DOMContentLoaded', checkWebAuthnSupport);
 
-        // Listener per il login tradizionale
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
             console.log('Il form di login è stato inviato!');
@@ -148,7 +339,8 @@
 
             console.log('Tentativo di login con:', { username: username, rememberMe: rememberMe });
 
-            const authUrl = 'https://fcai-tau.vercel.app/api/auth'; // URL della Serverless Function
+            // Questo URL è per il login tradizionale, va bene che rimanga così se è corretto
+            const authUrl = 'https://fcai-tau.vercel.app/api/auth';
 
             console.log('URL della funzione di autenticazione:', authUrl);
 
@@ -198,49 +390,9 @@
             });
         });
 
-        // Listener per il bottone di accesso con impronta digitale - SPOSTATO E MODIFICATO
-        document.getElementById('fingerprintLoginBtn').addEventListener('click', async function() {
-            console.log('Tentativo di accesso con impronta digitale...');
-            document.getElementById('errorMessage').style.display = 'none'; // Nascondi messaggi di errore precedenti
-
-            const username = document.getElementById('username').value;
-            if (!username) {
-                document.getElementById('errorMessage').textContent = 'Inserisci il nome utente per l\'accesso con impronta.';
-                document.getElementById('errorMessage').style.display = 'block';
-                console.error("Nome utente mancante per l'autenticazione con impronta.");
-                return;
-            }
-
-            try {
-                // Questo è il punto in cui facciamo la chiamata al backend per iniziare l'autenticazione WebAuthn.
-                // Useremo un URL di esempio, dovrai sostituirlo con quello reale del tuo backend.
-                console.log(`Richiesta di opzioni WebAuthn per l'utente: ${username}`);
-                const response = await fetch('/api/webauthn/login/start-challenge', { // URL placeholder
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: username })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Errore durante la richiesta di sfida WebAuthn.');
-                }
-
-                const data = await response.json();
-                console.log("Risposta (simulata) dal backend per il challenge:", data);
-
-                // Per ora, ci fermiamo qui, come da richiesta.
-                // Nel prossimo step, useremo 'data' per interagire con l'API WebAuthn del browser.
-                alert("Il frontend ha richiesto le opzioni di autenticazione WebAuthn al backend (controlla la console per gli errori 404 previsti).");
-
-            } catch (error) {
-                console.error("Errore durante l'avvio dell'autenticazione con impronta:", error);
-                document.getElementById('errorMessage').textContent = 'Impossibile avviare l\'autenticazione con impronta: ' + error.message;
-                document.getElementById('errorMessage').style.display = 'block';
-            }
+        document.getElementById('fingerprintLoginBtn').addEventListener('click', function() {
+            authenticateFingerprint();
         });
     </script>
-</body>
+    </body>
 </html>
