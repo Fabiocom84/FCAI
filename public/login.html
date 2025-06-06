@@ -62,10 +62,7 @@
             cursor: pointer;
             font-size: 1em;
             width: 100%;
-        }
-
-        button:hover {
-            background-color: #0056b3;
+            margin-top: 10px; /* Aggiunto un po' di margine superiore per i bottoni */
         }
 
         button:hover {
@@ -74,7 +71,7 @@
 
         #fingerprintLoginBtn {
             background-color: #28a745; /* Un colore diverso per l'impronta */
-            display: none; /* Inizialmente nascosto */
+            display: none; /* Inizialmente nascosto, verrà mostrato dal JS */
         }
 
         #fingerprintLoginBtn:hover {
@@ -98,21 +95,21 @@
             <div class="form-group">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
+            </div>
             <div class="form-group">
                 <label for="rememberMe">
                     <input type="checkbox" id="rememberMe" name="rememberMe">
                     Ricorda i miei dati
                 </label>
             </div>
-            </div>
             <button type="submit">Accedi</button>
-            <button type="button" id="fingerprintLoginBtn">
+            <button type="button" id="fingerprintLoginBtn">Accedi con Impronta Digitale</button>
             <div id="errorMessage" class="error-message" style="display: none;">Credenziali errate.</div>
         </form>
     </div>
 
     <script>
-         // Funzione per il rilevamento WebAuthn e aggiornamento UI
+        // Funzione per il rilevamento WebAuthn e aggiornamento UI
         function checkWebAuthnSupport() {
             const fingerprintBtn = document.getElementById('fingerprintLoginBtn');
 
@@ -139,69 +136,111 @@
         }
 
         // Chiamiamo la funzione al caricamento della pagina
-        document.addEventListener('DOMContentLoaded', checkWebAuthnSupport); 
+        document.addEventListener('DOMContentLoaded', checkWebAuthnSupport);
 
-  document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    console.log('Il form di login è stato inviato!'); // Verifica se questo log compare
-    // ... il tuo codice fetch ...
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+        // Listener per il login tradizionale
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            console.log('Il form di login è stato inviato!');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
 
-    console.log('Tentativo di login con:', { username: username, rememberMe: rememberMe }); // LOG 1
+            console.log('Tentativo di login con:', { username: username, rememberMe: rememberMe });
 
-    const authUrl = 'https://fcai-tau.vercel.app/api/auth'; // URL della Serverless Function
+            const authUrl = 'https://fcai-tau.vercel.app/api/auth'; // URL della Serverless Function
 
-    console.log('URL della funzione di autenticazione:', authUrl); // LOG 2
+            console.log('URL della funzione di autenticazione:', authUrl);
 
-    fetch(authUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username: username, password: password })
-    })
-    .then(response => {
-        console.log('Risposta dal server:', response); // LOG 3
-        if (!response.ok) {
-            console.log('Errore nella risposta HTTP:', response.status); // LOG 4
-            return response.json().then(err => {
-                console.error('Errore dal server (non OK):', err); // LOG 5
-                throw new Error(err.message || 'Errore durante l\'autenticazione');
+            fetch(authUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => {
+                console.log('Risposta dal server:', response);
+                if (!response.ok) {
+                    console.log('Errore nella risposta HTTP:', response.status);
+                    return response.json().then(err => {
+                        console.error('Errore dal server (non OK):', err);
+                        throw new Error(err.message || 'Errore durante l\'autenticazione');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Dati ricevuti dal server (OK):', data);
+                if (data.success) {
+                    console.log('Autenticazione riuscita!', data);
+                    if (rememberMe) {
+                        localStorage.setItem('isAuthenticated', 'true');
+                        localStorage.setItem('authToken', data.token);
+                        console.log('Opzione "Ricorda i miei dati" selezionata. localStorage impostato.');
+                    } else {
+                        sessionStorage.setItem('isAuthenticated', 'true');
+                        sessionStorage.setItem('authToken', data.token);
+                        console.log('Opzione "Ricorda i miei dati" non selezionata. sessionStorage impostato.');
+                    }
+                    console.log('Reindirizzamento a index.html');
+                    window.location.href = 'index.html';
+                } else {
+                    console.log('Credenziali errate dal server Vercel:', data.message);
+                    document.getElementById('errorMessage').textContent = data.message || 'Credenziali errate.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Errore durante la comunicazione con il server Vercel:', error);
+                document.getElementById('errorMessage').textContent = 'Errore di comunicazione con il server.';
+                document.getElementById('errorMessage').style.display = 'block';
             });
-        }
-        return response.json();
-    })
-    .then(data => {
-      console.log('Dati ricevuti dal server (OK):', data); // LOG 6
-      if (data.success) {
-        console.log('Autenticazione riuscita!', data);
-        if (rememberMe) {
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('authToken', data.token); // Memorizza il token
-          console.log('Opzione "Ricorda i miei dati" selezionata. localStorage impostato.');
-        } else {
-          sessionStorage.setItem('isAuthenticated', 'true');
-          sessionStorage.setItem('authToken', data.token); // Memorizza il token
-          console.log('Opzione "Ricorda i miei dati" non selezionata. sessionStorage impostato.');
-        }
-        console.log('Reindirizzamento a index.html'); // LOG 7
-        window.location.href = 'index.html';
-      } else {
-        console.log('Credenziali errate dal server Vercel:', data.message);
-        document.getElementById('errorMessage').textContent = data.message || 'Credenziali errate.';
-        document.getElementById('errorMessage').style.display = 'block';
-      }
-    })
-    .catch(error => {
-      console.error('Errore durante la comunicazione con il server Vercel:', error);
-      document.getElementById('errorMessage').textContent = 'Errore di comunicazione con il server.';
-      document.getElementById('errorMessage').style.display = 'block';
-    });
-    document.getElementById('fingerprintLoginBtn').addEventListener('click', function() {
-            console.log('Tentativo di accesso con impronta digitale...');   
-  });
-</script>
+        });
+
+        // Listener per il bottone di accesso con impronta digitale - SPOSTATO E MODIFICATO
+        document.getElementById('fingerprintLoginBtn').addEventListener('click', async function() {
+            console.log('Tentativo di accesso con impronta digitale...');
+            document.getElementById('errorMessage').style.display = 'none'; // Nascondi messaggi di errore precedenti
+
+            const username = document.getElementById('username').value;
+            if (!username) {
+                document.getElementById('errorMessage').textContent = 'Inserisci il nome utente per l\'accesso con impronta.';
+                document.getElementById('errorMessage').style.display = 'block';
+                console.error("Nome utente mancante per l'autenticazione con impronta.");
+                return;
+            }
+
+            try {
+                // Questo è il punto in cui facciamo la chiamata al backend per iniziare l'autenticazione WebAuthn.
+                // Useremo un URL di esempio, dovrai sostituirlo con quello reale del tuo backend.
+                console.log(`Richiesta di opzioni WebAuthn per l'utente: ${username}`);
+                const response = await fetch('/api/webauthn/login/start-challenge', { // URL placeholder
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Errore durante la richiesta di sfida WebAuthn.');
+                }
+
+                const data = await response.json();
+                console.log("Risposta (simulata) dal backend per il challenge:", data);
+
+                // Per ora, ci fermiamo qui, come da richiesta.
+                // Nel prossimo step, useremo 'data' per interagire con l'API WebAuthn del browser.
+                alert("Il frontend ha richiesto le opzioni di autenticazione WebAuthn al backend (controlla la console per gli errori 404 previsti).");
+
+            } catch (error) {
+                console.error("Errore durante l'avvio dell'autenticazione con impronta:", error);
+                document.getElementById('errorMessage').textContent = 'Impossibile avviare l\'autenticazione con impronta: ' + error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
