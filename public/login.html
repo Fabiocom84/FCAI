@@ -68,6 +68,19 @@
             background-color: #0056b3;
         }
 
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #fingerprintLoginBtn {
+            background-color: #28a745; /* Un colore diverso per l'impronta */
+            display: none; /* Inizialmente nascosto */
+        }
+
+        #fingerprintLoginBtn:hover {
+            background-color: #218838;
+        }
+
         .error-message {
             color: red;
             margin-top: 10px;
@@ -93,11 +106,41 @@
             </div>
             </div>
             <button type="submit">Accedi</button>
+            <button type="button" id="fingerprintLoginBtn">
             <div id="errorMessage" class="error-message" style="display: none;">Credenziali errate.</div>
         </form>
     </div>
 
     <script>
+         // Funzione per il rilevamento WebAuthn e aggiornamento UI
+        function checkWebAuthnSupport() {
+            const fingerprintBtn = document.getElementById('fingerprintLoginBtn');
+
+            if (window.PublicKeyCredential) {
+                console.log("WebAuthn è supportato dal browser.");
+                PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+                    .then(function(available) {
+                        if (available) {
+                            console.log("È disponibile un autenticatore per la verifica dell'utente (es. impronta digitale).");
+                            fingerprintBtn.style.display = 'block'; // Mostra il bottone
+                        } else {
+                            console.log("Nessun autenticatore per la verifica dell'utente disponibile.");
+                            fingerprintBtn.style.display = 'none'; // Nascondi il bottone
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error("Errore durante il controllo dell'autenticatore:", error);
+                        fingerprintBtn.style.display = 'none'; // Nascondi il bottone in caso di errore
+                    });
+            } else {
+                console.warn("WebAuthn non è supportato dal browser.");
+                fingerprintBtn.style.display = 'none'; // Nascondi il bottone se WebAuthn non è supportato
+            }
+        }
+
+        // Chiamiamo la funzione al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', checkWebAuthnSupport); 
+
   document.getElementById('loginForm').addEventListener('submit', function(event) {
     event.preventDefault();
     console.log('Il form di login è stato inviato!'); // Verifica se questo log compare
@@ -156,6 +199,8 @@
       document.getElementById('errorMessage').textContent = 'Errore di comunicazione con il server.';
       document.getElementById('errorMessage').style.display = 'block';
     });
+    document.getElementById('fingerprintLoginBtn').addEventListener('click', function() {
+            console.log('Tentativo di accesso con impronta digitale...');   
   });
 </script>
 </body>
