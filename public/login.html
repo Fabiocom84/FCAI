@@ -236,7 +236,8 @@
                 const assertionOptionsResponse = await fetch(WEBAUTHN_LOGIN_BEGIN_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username })
+                    body: JSON.stringify({ username: username }),
+                    credentials: 'include'
                 });
 
                 if (!assertionOptionsResponse.ok) {
