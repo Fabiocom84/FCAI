@@ -1,13 +1,13 @@
 class InsertDataModal {
     constructor(modalId, overlayId, openButtonSelector) {
-	console.log("Creata una nuova istanza di InsertDataModal.");
+    console.log("Creata una nuova istanza di InsertDataModal.");
         this.modal = document.getElementById(modalId);
         this.overlay = document.getElementById(overlayId);
         this.openButton = document.querySelector(openButtonSelector);
         this.closeButton = this.modal ? this.modal.querySelector('.close-button') : null;
         this.saveButton = this.modal ? this.modal.querySelector('.save-button') : null;
         this.helpButtonModal = this.modal ? this.modal.querySelector('.modal-header .help-button') : null; // Ottieni il pulsante "?" nel modal
-        this.manualTextInput = this.modal ? this.modal.querySelector('#manualTextInput') : null;
+        // this.manualTextInput = this.modal ? this.modal.querySelector('#manualTextInput') : null; // RIMOSSO
         this.fileUploadInput = this.modal ? this.modal.querySelector('#fileUpload') : null;
         this.fileNameDisplay = this.modal ? this.modal.querySelector('.file-name') : null;
         this.startButton = this.modal ? this.modal.querySelector('#startButton') : null;
@@ -53,9 +53,6 @@ class InsertDataModal {
     console.log("InsertDataModal aperto");
     if (this.modal && this.overlay) {
         // Resetta i valori dei campi qui
-        if (this.manualTextInput) {
-            this.manualTextInput.value = '';
-        }
         if (this.fileUploadInput) {
             this.fileUploadInput.value = ''; // Resetta la selezione del file
         }
@@ -63,7 +60,7 @@ class InsertDataModal {
             this.fileNameDisplay.textContent = '';
         }
         if (this.voiceTranscription) {
-            this.voiceTranscription.value = '';
+            this.voiceTranscription.value = ''; // Resetta il campo di testo unificato
         }
         if (this.recordingStatus) {
             this.recordingStatus.textContent = 'Premi "Avvia Registrazione" per iniziare.';
@@ -74,7 +71,7 @@ class InsertDataModal {
         if (this.stopButton) {
             this.stopButton.disabled = true;
         }
-        if (this.riferimentoDropdown) 
+        if (this.riferimentoDropdown)
             this.riferimentoDropdown.selectedIndex = 0; // Resetta il dropdown alla prima opzione
 
          this.modal.style.display = "block";
@@ -119,24 +116,25 @@ class InsertDataModal {
             return;
         }
 
-        const manualText = this.manualTextInput ? this.manualTextInput.value.trim() : '';
-        const voiceText = this.voiceTranscription ? this.voiceTranscription.value.trim() : '';
+        // const manualText = this.manualTextInput ? this.manualTextInput.value.trim() : ''; // RIMOSSO
+        const textContent = this.voiceTranscription ? this.voiceTranscription.value.trim() : ''; // Ora prende il testo dal campo unificato
         const file = this.fileUploadInput && this.fileUploadInput.files.length > 0 ? this.fileUploadInput.files[0] : null;
         const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : ''; // Ottieni il valore selezionato
 
         console.log("File caricato:", file);
         console.log("Valore Riferimento:", riferimento);
+        console.log("Contenuto Testo (unified):", textContent); // Log del contenuto del campo unificato
 
-        if (manualText || voiceText || file || riferimento) {
+        // La condizione per salvare ora include solo il textContent, il file o il riferimento
+        if (textContent || file || riferimento) {
             this.isSaving = true;
             this.saveButton.disabled = true;
             this.saveButton.textContent = 'Salvataggio in corso...';
-            console.log("Inizio salvataggio (con file o solo testo/riferimento)...");
+            console.log("Inizio salvataggio (con testo unificato, file o riferimento)...");
 
             const formData = new FormData();
-            formData.append('manualTextInput', manualText);
-            formData.append('voiceTranscription', voiceText);
-            formData.append('riferimento', riferimento); // <-- SPOSTATO QUI, SEMPRE INVIATO
+            formData.append('textContent', textContent); // Invia il campo unificato come 'textContent' o come preferisci sul backend
+            formData.append('riferimento', riferimento);
 
             if (file) {
                 formData.append('file', file);
@@ -150,7 +148,12 @@ class InsertDataModal {
             .then(data => {
                 console.log('Risposta dal backend (upload):', data);
                 if (data.message === 'Dati salvati con successo.') {
-                    loadLatestEntries();
+                    // Assicurati che loadLatestEntries sia accessibile globalmente o passato come callback
+                    if (typeof loadLatestEntries === 'function') {
+                        loadLatestEntries(); // Carica gli ultimi inserimenti
+                    } else {
+                        console.warn("Funzione loadLatestEntries non trovata. Gli ultimi inserimenti potrebbero non essere aggiornati.");
+                    }
                     this.close();
             } else {
                 alert('Errore nel salvataggio: ' + data.error);
