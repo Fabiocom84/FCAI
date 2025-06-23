@@ -17,7 +17,7 @@
     <div class="button-container">
         <a href="#" class="button insert-button"><img src="img/plus.png" alt="Inserisci"></a>
         <a href="#" class="button chat-button"><img src="img/chat.png" alt="Chat"></a>
-        <a href="#" class="button search-button"><img src="img/search.png" alt="Ricerca"></a>
+        <a href="https://docs.google.com/spreadsheets/d/1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8/edit?usp=drive_link" class="button search-button" target="_blank" rel="noopener noreferrer"><img src="img/search.png" alt="Apri Google Sheets"></a>
     </div>
 
     <div class="latest-entries">
@@ -92,21 +92,6 @@
         </div>
     </div>
 
-    <div id="searchModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Ricerca Dati</h2>
-                <div class="help-button-container">
-                    <button class="help-button" data-legend="searchLegend">?</button>
-                </div>
-                <span class="close-button" onclick="closeSearchModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>Form di ricerca...</p>
-            </div>
-        </div>
-    </div>
-
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
         <div class="legend-item">
@@ -150,13 +135,6 @@
         </div>
     </div>
 
-    <div id="searchLegend" class="legend" style="display: none;">
-        <h3>Aiuto - Ricerca Dati</h3>
-        <div class="legend-item">
-            <div class="legend-text">Utilizza i filtri e i campi di ricerca per trovare informazioni specifiche nel database.</div>
-        </div>
-    </div>
-
     <footer class="release-info">
         Versione 2.3 - Rilasciata il 22 Giugno 2025
     </footer>
@@ -166,7 +144,6 @@
     <script src="js/insert-data-modal.js"></script>
     <script src="js/legend.js"></script>
     <script src="js/chat-modal.js"></script>
-    <script src="js/search-modal.js"></script>
 
 <script>
     console.log('Controllo autenticazione in index.html...');
