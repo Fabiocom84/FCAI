@@ -1,14 +1,180 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 20px;
-    /* Sfondo principale più chiaro */
-    background-color: #f8f9fa; /* Un grigio molto chiaro */
-    text-align: center;
-    /* Gradiente sfumato molto leggero */
-    background-image: linear-gradient(to bottom, #f8f9fa, #e9ecef); /* Da un grigio chiarissimo a uno leggermente più scuro */
+    padding: 0;
+    min-height: 100vh;
+    display: flex; /* Assicura che il contenuto possa essere centrato */
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Necessario per il pseudo-elemento */
+    overflow: hidden; /* Nasconde overflow se l'immagine è troppo grande */
+    background-color: #f0f2f5; /* Fallback color */
+}
+
+/* Pseudo-elemento per lo sfondo sfocato */
+body::before {
+    content: '';
+    position: fixed; /* Si attacca al viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('img/logo.png'); /* Percorso del tuo logo */
+    background-size: cover;
+    background-position: center center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Mantiene lo sfondo fisso durante lo scrolling */
+    background-attachment: fixed;
+    filter: blur(8px); /* Aumentato leggermente il blur per un maggiore contrasto. Regola a piacere. */
+    -webkit-filter: blur(8px);
+    transform: scale(1.05); /* Scalatura per evitare bordi sfocati con blur */
+    z-index: -2; /* Sotto l'overlay bianco */
+}
+
+/* Overlay bianco semi-trasparente sopra l'immagine sfocata */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6); /* Overlay bianco per rendere il testo ancora più leggibile */
+    z-index: -1; /* Tra l'immagine e il contenuto */
+}
+
+
+/* Contenitore principale della pagina di login (non sfocato) */
+.login-page-content {
+    position: relative; /* Per posizionare il contenuto sopra l'overlay */
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 20px; /* Un po' di padding per schermi piccoli */
+    box-sizing: border-box;
+}
+
+
+/* Il resto degli stili per .login-container e gli elementi al suo interno */
+.login-container {
+    background-color: rgba(255, 255, 255, 0.95); /* Leggermente trasparente per un effetto "vetro" */
+    padding: 40px; /* Aumentato il padding */
+    border-radius: 12px; /* Angoli più arrotondati */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata e morbida */
+    width: 100%;
+    max-width: 450px; /* Leggermente più largo */
+    text-align: center;
+    animation: fadeIn 0.8s ease-out; /* Animazione all'apertura */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500; /* Medium weight */
+    color: #333333; /* Grigio scuro per il titolo */
+    margin-bottom: 25px; /* Aumentato il margine */
+    text-transform: uppercase;
+    letter-spacing: 1px; /* Spaziatura tra le lettere */
+}
+
+.form-group {
+    margin-bottom: 20px; /* Aumentato il margine */
+    text-align: left;
+}
+
+label {
+    font-family: 'Roboto', sans-serif;
+    display: block;
+    margin-bottom: 8px; /* Aumentato il margine */
+    color: #666666; /* Grigio medio per le label */
+    font-size: 0.95em; /* Leggermente più grande */
+    font-weight: 500; /* Medium weight */
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px; /* Padding aumentato */
+    border: 1px solid #cccccc; /* Bordo più chiaro */
+    border-radius: 6px; /* Angoli più arrotondati */
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
+    color: #333333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transizione per focus */
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #2A76B8; /* Colore primario blu per il focus */
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); /* Ombra leggera al focus */
+    outline: none;
+}
+
+input[type="checkbox"] {
+    margin-right: 8px; /* Spazio tra checkbox e testo */
+    vertical-align: middle;
+    /* Stili per checkbox personalizzato se vuoi */
+    width: 16px;
+    height: 16px;
+    appearance: none; /* Rimuove l'aspetto predefinito */
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #2A76B8;
+    border-color: #2A76B8;
+}
+
+input[type="checkbox"]:checked::before {
+    content: '✔'; /* Simbolo di spunta */
+    display: block;
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+button[type="submit"] {
+    background-color: #2A76B8; /* Blu dal logo per il pulsante */
+    color: white;
+    padding: 14px 20px; /* Padding aumentato */
+    border: none;
+    border-radius: 6px; /* Angoli arrotondati */
+    cursor: pointer;
+    font-size: 1.1em; /* Testo più grande */
+    font-weight: 500; /* Medium weight */
+    width: 100%;
+    margin-top: 20px; /* Spazio sopra il pulsante */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transizione per hover */
+}
+
+button[type="submit"]:hover {
+    background-color: #1a5c96; /* Blu più scuro all'hover */
+    transform: translateY(-2px); /* Leggero sollevamento */
+}
+
+.error-message {
+    color: #dc3545; /* Rosso per messaggi di errore */
+    margin-top: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
 }
 
 h1 {
