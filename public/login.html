@@ -10,26 +10,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css"> </head>
 <body>
-    <div class="login-container">
-        <h2>Accedi al Segretario AI</h2>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Nome Utente:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            <div class="form-group">
-                <label for="rememberMe">
-                    <input type="checkbox" id="rememberMe" name="rememberMe">
-                    Ricorda i miei dati
-                </label>
-            </div>
-            </div>
-            <button type="submit">Accedi</button>
-            <div id="errorMessage" class="error-message" style="display: none;">Credenziali errate.</div>
-        </form>
+    <div class="login-page-content">
+        <div class="login-container">
+            <h2>Accedi al Segretario AI</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Nome Utente:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="rememberMe">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        Ricorda i miei dati
+                    </label>
+                </div>
+                <button type="submit">Accedi</button>
+                <div id="errorMessage" class="error-message" style="display: none;">Credenziali errate.</div>
+            </form>
+        </div>
     </div>
 
     <script>

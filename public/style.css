@@ -1,3 +1,4 @@
+/* Generale - già presente e funzionante per il login.html e base per index.html */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
@@ -11,26 +12,26 @@ body {
     background-color: #f0f2f5; /* Fallback color */
 }
 
-/* Pseudo-elemento per lo sfondo sfocato */
+/* Pseudo-elemento per lo sfondo sfocato - applicato a tutto il body */
 body::before {
     content: '';
-    position: fixed; /* Si attacca al viewport */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('img/logo.png'); /* Percorso del tuo logo */
+    background-image: url('img/logo.png'); /* Assicurati che il percorso sia corretto! */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    filter: blur(8px); /* Aumentato leggermente il blur per un maggiore contrasto. Regola a piacere. */
+    filter: blur(8px);
     -webkit-filter: blur(8px);
-    transform: scale(1.05); /* Scalatura per evitare bordi sfocati con blur */
-    z-index: -2; /* Sotto l'overlay bianco */
+    transform: scale(1.05);
+    z-index: -2;
 }
 
-/* Overlay bianco semi-trasparente sopra l'immagine sfocata */
+/* Overlay bianco semi-trasparente sopra l'immagine sfocata - applicato a tutto il body */
 body::after {
     content: '';
     position: fixed;
@@ -38,92 +39,91 @@ body::after {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.6); /* Overlay bianco per rendere il testo ancora più leggibile */
-    z-index: -1; /* Tra l'immagine e il contenuto */
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: -1;
 }
 
-
-/* Contenitore principale della pagina di login (non sfocato) */
+/* Contenitore principale della pagina di login (non sfocato) - da login.html */
 .login-page-content {
-    position: relative; /* Per posizionare il contenuto sopra l'overlay */
+    position: relative;
     z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     width: 100%;
-    padding: 20px; /* Un po' di padding per schermi piccoli */
+    padding: 20px;
     box-sizing: border-box;
 }
 
-
-/* Il resto degli stili per .login-container e gli elementi al suo interno */
+/* Stili per il contenitore del login - da login.html */
 .login-container {
-    background-color: rgba(255, 255, 255, 0.95); /* Leggermente trasparente per un effetto "vetro" */
-    padding: 40px; /* Aumentato il padding */
-    border-radius: 12px; /* Angoli più arrotondati */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata e morbida */
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 450px; /* Leggermente più largo */
+    max-width: 450px;
     text-align: center;
-    animation: fadeIn 0.8s ease-out; /* Animazione all'apertura */
+    animation: fadeIn 0.8s ease-out;
 }
 
+/* Animazione fadeIn - da login.html */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Stili comuni per h2, form-group, label, input, checkbox, button - da login.html */
 h2 {
     font-family: 'Roboto', sans-serif;
-    font-weight: 500; /* Medium weight */
-    color: #333333; /* Grigio scuro per il titolo */
-    margin-bottom: 25px; /* Aumentato il margine */
+    font-weight: 500;
+    color: #333333;
+    margin-bottom: 25px;
     text-transform: uppercase;
-    letter-spacing: 1px; /* Spaziatura tra le lettere */
+    letter-spacing: 1px;
 }
 
 .form-group {
-    margin-bottom: 20px; /* Aumentato il margine */
+    margin-bottom: 20px;
     text-align: left;
 }
 
 label {
     font-family: 'Roboto', sans-serif;
     display: block;
-    margin-bottom: 8px; /* Aumentato il margine */
-    color: #666666; /* Grigio medio per le label */
-    font-size: 0.95em; /* Leggermente più grande */
-    font-weight: 500; /* Medium weight */
+    margin-bottom: 8px;
+    color: #666666;
+    font-size: 0.95em;
+    font-weight: 500;
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 12px 15px; /* Padding aumentato */
-    border: 1px solid #cccccc; /* Bordo più chiaro */
-    border-radius: 6px; /* Angoli più arrotondati */
+    padding: 12px 15px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
     box-sizing: border-box;
     font-size: 1em;
     font-family: 'Roboto', sans-serif;
     color: #333333;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transizione per focus */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-    border-color: #2A76B8; /* Colore primario blu per il focus */
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); /* Ombra leggera al focus */
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
 }
 
 input[type="checkbox"] {
-    margin-right: 8px; /* Spazio tra checkbox e testo */
+    margin-right: 8px;
     vertical-align: middle;
-    /* Stili per checkbox personalizzato se vuoi */
     width: 16px;
     height: 16px;
-    appearance: none; /* Rimuove l'aspetto predefinito */
+    appearance: none;
     border: 1px solid #cccccc;
     border-radius: 3px;
     cursor: pointer;
@@ -138,7 +138,7 @@ input[type="checkbox"]:checked {
 }
 
 input[type="checkbox"]:checked::before {
-    content: '✔'; /* Simbolo di spunta */
+    content: '✔';
     display: block;
     color: white;
     font-size: 12px;
@@ -150,170 +150,185 @@ input[type="checkbox"]:checked::before {
     transform: translate(-50%, -50%);
 }
 
-
 button[type="submit"] {
-    background-color: #2A76B8; /* Blu dal logo per il pulsante */
+    background-color: #2A76B8;
     color: white;
-    padding: 14px 20px; /* Padding aumentato */
+    padding: 14px 20px;
     border: none;
-    border-radius: 6px; /* Angoli arrotondati */
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1.1em; /* Testo più grande */
-    font-weight: 500; /* Medium weight */
+    font-size: 1.1em;
+    font-weight: 500;
     width: 100%;
-    margin-top: 20px; /* Spazio sopra il pulsante */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Transizione per hover */
+    margin-top: 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button[type="submit"]:hover {
-    background-color: #1a5c96; /* Blu più scuro all'hover */
-    transform: translateY(-2px); /* Leggero sollevamento */
+    background-color: #1a5c96;
+    transform: translateY(-2px);
 }
 
 .error-message {
-    color: #dc3545; /* Rosso per messaggi di errore */
+    color: #dc3545;
     margin-top: 15px;
     font-size: 0.9em;
     font-weight: 500;
 }
 
-h1 {
-    font-size: 1.5em;
-    color: #555;
-    margin-bottom: 24px; /* Leggermente aumentato per la scala */
-    text-transform: uppercase; /* Titolo in maiuscolo */
+/* NUOVI STILI PER INDEX.HTML */
+
+/* Contenitore principale della pagina di gestione (non sfocato) */
+.main-content-wrapper {
+    position: relative; /* Per posizionare il contenuto sopra l'overlay */
+    z-index: 1; /* Assicura che sia sopra l'overlay */
+    background-color: rgba(255, 255, 255, 0.95); /* Stesso effetto del login-container */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 600px; /* Larghezza massima adatta alla pagina principale */
+    text-align: center;
+    animation: fadeIn 0.8s ease-out; /* Stessa animazione del login */
+    display: flex; /* Flexbox per organizzare i contenuti verticalmente */
+    flex-direction: column;
+    gap: 25px; /* Spazio tra gli elementi principali (h1, button-container, latest-entries) */
+    box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 }
 
+h1 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700; /* Bold per il titolo principale */
+    font-size: 2.2em; /* Dimensione maggiore */
+    color: #2A76B8; /* Utilizza il blu del logo */
+    margin-bottom: 0; /* Rimosso il margine inferiore, useremo il gap del wrapper */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.help-button-container {
+    position: absolute; /* Posizionamento rispetto al .main-content-wrapper */
+    top: 20px; /* Spostato un po' più in basso */
+    right: 20px; /* Spostato un po' più a sinistra */
+}
+
+/* Il resto di help-button rimane uguale */
+
 .button-container {
-    margin-bottom: 24px;
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
+    justify-content: center; /* Centra i pulsanti sulla riga */
+    gap: 15px; /* Spazio tra i pulsanti */
     width: 100%;
 }
 
 .button {
     display: flex;
-    justify-content: center; /* Centra l'icona orizzontalmente */
-    align-items: center; /* Centra l'icona verticalmente */
-    padding: 16px 20px;
+    flex-direction: column; /* Icona sopra il testo */
+    justify-content: center;
+    align-items: center;
+    padding: 15px; /* Padding leggermente ridotto per compattezza */
     text-align: center;
     text-decoration: none;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Angoli più arrotondati */
     box-sizing: border-box;
-    font-size: 1.5em; /* Dimensione dell'icona */
-    flex-grow: 1;
-    margin-right: 8px;
+    font-size: 0.9em; /* Testo del pulsante */
+    font-weight: 500;
+    flex-grow: 1; /* Permette ai pulsanti di riempire lo spazio */
+    min-width: 120px; /* Larghezza minima per i pulsanti */
+    max-width: calc(50% - 7.5px); /* Larghezza per 2 pulsanti per riga con gap */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.button:last-child {
+/* Rimuovi i margini specifici se usi gap per button-container */
+.button:not(:last-child) {
     margin-right: 0;
 }
 
 .insert-button {
     background-color: #28a745; /* Verde */
 }
+.insert-button:hover {
+    background-color: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
 
 .chat-button {
     background-color: #ffc107; /* Giallo scuro */
-    color: #333;
+    color: #333; /* Testo scuro per maggiore leggibilità */
+}
+.chat-button:hover {
+    background-color: #e0a800;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+/* Nuovo stile per il pulsante "Nuova Commessa" */
+.new-order-button {
+    background-color: #6f42c1; /* Un viola per differenziare */
+}
+.new-order-button:hover {
+    background-color: #5a3597;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
 .search-button {
-    background-color: #dc3545; /* Rosso chiaro */
+    background-color: #dc3545; /* Rosso */
+}
+.search-button:hover {
+    background-color: #c82333;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
 .button img {
-    max-width: 40px;
-    max-height: 40px;
+    max-width: 45px; /* Icone leggermente più grandi */
+    max-height: 45px;
+    margin-bottom: 8px; /* Spazio tra icona e testo */
 }
 
-.help-button-container {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-
-.help-button {
-    background-color: #6c757d; /* Grigio scuro */
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 1.2em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.legend {
-    position: absolute;
-    top: 50px; /* Posiziona sotto il pulsante aiuto */
-    right: 10px;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 10; /* Assicura che sia sopra altri elementi */
-    display: none; /* Inizialmente nascosto */
-    text-align: left;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.legend-icon {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.legend-icon img {
-    max-width: 80%;
-    max-height: 80%;
-}
-
-.legend-text {
-    font-size: 0.9em;
+/* Stile per il testo all'interno del pulsante (il nuovo <span>) */
+.button span {
+    display: block; /* Assicura che il testo vada a capo sotto l'icona */
+    font-size: 1em; /* Dimensione del font per il testo del pulsante */
+    font-weight: 500;
+    line-height: 1.2; /* Spazio tra le righe del testo */
 }
 
 .latest-entries {
-    margin-top: 24px;
-    padding: 16px;
+    margin-top: 0; /* Rimosso il margine superiore, useremo il gap del wrapper */
+    padding: 20px; /* Padding aumentato */
     background-color: white;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /* Angoli più arrotondati */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombra più morbida */
     text-align: left;
+    flex-grow: 1; /* Permette di riempire lo spazio rimanente */
 }
 
 .latest-entries h2 {
-    font-size: 1.2em;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 1.4em; /* Titolo più grande */
+    color: #333333;
     margin-top: 0;
-    margin-bottom: 12px; /* Leggermente modificato per la scala */
-    padding-bottom: 4px; /* Aggiunto un po' di padding bottom */
-    color: #333;
-    border-bottom: 1px solid #eee; /* Aggiunto un bordo per separazione visiva */
+    margin-bottom: 15px; /* Margine inferiore aumentato */
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eeeeee; /* Bordo più spesso */
 }
 
 .entry-item {
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
-    color: #555;
-    display: block;
+    padding: 12px 0; /* Padding aumentato */
+    border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
+    font-size: 0.95em;
+    color: #444; /* Colore testo leggermente più scuro */
+    display: flex; /* Flexbox per organizzare data/ora/riferimento */
+    justify-content: space-between; /* Distribuisce gli elementi */
+    align-items: center;
     text-decoration: none;
-    color: inherit;
 }
 
 .entry-item:last-child {
@@ -321,303 +336,255 @@ h1 {
 }
 
 .entry-date-time {
-    font-weight: bold;
-    margin-right: 10px;
+    font-weight: 400; /* Normale */
     color: #777;
+    font-size: 0.85em; /* Più piccolo */
+    flex-shrink: 0; /* Non si restringe */
+}
+
+.entry-text {
+    flex-grow: 1; /* Il testo occupa lo spazio rimanente */
+    margin: 0 10px; /* Margine tra data e riferimento */
+    white-space: nowrap; /* Evita il wrap del testo */
+    overflow: hidden; /* Nasconde il testo che sfora */
+    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
 }
 
 .entry-riferimento {
-    font-weight: bold;
-    color: #555; /* Un colore leggermente diverso dal testo principale */
-    margin-left: 0.5em; /* Un po' di spazio a sinistra */
+    font-weight: 500; /* Medium */
+    color: #2A76B8; /* Blu del logo per il riferimento */
+    flex-shrink: 0; /* Non si restringe */
 }
 
-/* Stili per il Modal */
+
+/* Stili per il Modal (già presenti, li ho solo spostati o minimamente modificati per la coerenza) */
 .modal-overlay {
-    display: none; /* Inizialmente nascosto */
-    position: fixed; /* Sovrappone tutto */
+    display: none;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
-    z-index: 20; /* Deve essere sopra la pagina principale */
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 20;
 }
 
 .modal {
-    display: none; /* Inizialmente nascosto */
-    position: fixed; /* Posizione fissa all'interno del viewport */
+    display: none;
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centra il modal */
+    transform: translate(-50%, -50%);
     background-color: white;
-    padding: 16px; /* Leggermente modificato per la scala */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 30; /* Deve essere sopra l'overlay */
-    width: 95%; /* Larghezza adattabile su mobile */
-    max-width: 500px; /* Larghezza massima su schermi più grandi */
+    padding: 25px; /* Aumentato padding */
+    border-radius: 10px; /* Angoli più arrotondati */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Ombra più pronunciata */
+    z-index: 30;
+    width: 95%;
+    max-width: 600px; /* Più largo per i modali */
     max-height: 90%;
     overflow-y: auto;
+    animation: fadeInModal 0.3s ease-out; /* Nuova animazione per i modali */
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.modal-content {
+    /* Potrebbe essere necessario un min-height se vuoi che i modali siano tutti di una certa dimensione minima */
 }
 
 .modal-header {
     display: flex;
-    justify-content: center; /* Centra orizzontalmente gli elementi figli */
-    align-items: center; /* Allinea verticalmente gli elementi figli */
-    margin-bottom: 16px;
-    position: relative; /* Mantiene il contesto per il posizionamento assoluto degli altri elementi */
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px; /* Aumentato il margine */
+    position: relative;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1.3em;
-    text-align: center; /* Centra il testo */
-    text-transform: uppercase; /* Metti il testo in maiuscolo */
+    font-size: 1.6em; /* Titolo più grande */
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
 }
 
 /* Stili per i titoli dei modal per coerenza colore */
 #insertDataModal .modal-header h2 {
-    color: #28a745; /* Verde */
+    color: #28a745;
 }
 
 #chatModal .modal-header h2 {
-    color: #ffc107; /* Giallo */
+    color: #ffc107;
 }
 
+#newOrderModal .modal-header h2 {
+    color: #6f42c1; /* Colore del nuovo pulsante */
+}
+
+/* Assumendo che ci sia un #searchModal nel tuo HTML */
 #searchModal .modal-header h2 {
-    color: #dc3545; /* Rosso */
+    color: #dc3545;
 }
 
 .close-button {
     position: absolute;
-    top: 0;
-    right: 0;
-    font-size: 2em;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 0;
-    line-height: 1;
+    top: -10px; /* Spostato leggermente fuori dal bordo superiore */
+    right: -10px; /* Spostato leggermente fuori dal bordo destro */
+    font-size: 2.5em; /* Più grande */
+    color: #888;
+    background-color: white; /* Sfondo bianco per il pulsante */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .close-button:hover {
-    color: #000;
+    color: #555;
+    transform: rotate(90deg); /* Rotazione all'hover */
+    background-color: #f0f0f0;
 }
 
 .modal-body {
     margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 6px; /* Ridotto il gap tra i form-group */
-    /* Rimuoviamo l'altezza massima fissa per ora per vedere l'ingombro reale */
-    /* max-height: calc(100vh - 180px); */
-    overflow-y: auto; /* Manteniamo lo scroll come fallback se il contenuto è troppo lungo */
-    padding: 16px; /* Aggiungiamo un po' di padding interno */
+    gap: 15px; /* Spazio aumentato tra i form-group */
+    padding: 0; /* Rimosso padding, gestito da form-group */
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px; /* Ridotto il gap tra etichetta e input */
-    margin-bottom: 5px; /* Aggiunto un po' di margine bottom per separazione */
+.modal-body .form-group {
+    background-color: #f8f9fa; /* Sfondo per raggruppare visivamente */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
 .input-label-icon {
     display: flex;
     align-items: center;
-    gap: 8px; /* Ridotto il gap tra icona e testo */
-    margin-bottom: 2px; /* Ridotto il margine sotto l'etichetta */
+    gap: 10px; /* Spazio tra icona e testo */
+    margin-bottom: 10px; /* Margine sotto l'etichetta */
 }
 
 .input-label-icon img {
-    max-width: 18px; /* Ulteriore riduzione dell'icona */
-    max-height: 18px;
-    vertical-align: middle;
+    max-width: 24px; /* Icona più grande */
+    max-height: 24px;
 }
 
 .input-label-icon h3 {
-    font-size: 0.95em; /* Leggera riduzione della dimensione del testo dell'etichetta */
-    color: #555;
-    margin: 0;
-    font-weight: bold;
+    font-size: 1.1em; /* Testo dell'etichetta più grande */
+    color: #333; /* Colore più scuro */
+    font-weight: 500;
 }
 
 .form-group textarea,
-.form-group input[type="file"] {
+.form-group input[type="file"],
+.form-group select,
+.form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
     width: 100%;
-    padding: 8px; /* Ridotto il padding degli input */
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 10px 12px; /* Padding uniforme */
+    border: 1px solid #cccccc;
+    border-radius: 6px; /* Angoli arrotondati */
     box-sizing: border-box;
-    font-family: sans-serif;
-    font-size: 0.9em; /* Leggera riduzione della dimensione del testo degli input */
-    min-height: 30px; /* Ridotta l'altezza minima degli input */
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif; /* Usa Roboto */
+    color: #333333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-group textarea {
-    min-height: 60px; /* Altezza minima per la textarea */
+    min-height: 80px; /* Altezza minima adeguata */
+    resize: vertical; /* Permetti ridimensionamento verticale */
 }
 
-.form-group:nth-child(3) {
-    margin-top: 5px; /* Riduzione del margine superiore */
+.form-group textarea:focus,
+.form-group input[type="file"]:focus,
+.form-group select:focus,
+.form-group input[type="text"]:focus {
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
+    outline: none;
 }
 
 .voice-controls {
     display: flex;
-    justify-content: center; /* Allinea i pulsanti al centro */
-    gap: 10px; /* Spazio tra i pulsanti */
-    margin-top: 8px;
+    justify-content: center;
+    gap: 15px; /* Spazio aumentato */
+    margin-top: 10px;
 }
 
 .voice-controls button {
-    padding: 8px 12px;
+    padding: 10px 15px; /* Padding aumentato */
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 6px; /* Angoli arrotondati */
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 1em; /* Testo più grande */
+    font-family: 'Roboto', sans-serif;
     background-color: white;
     color: #333;
-    transition: background-color 0.3s ease;
-    display: flex; /* Permette di allineare icona e testo */
-    align-items: center; /* Allinea verticalmente icona e testo */
-    gap: 5px; /* Spazio tra icona e testo nel pulsante */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spazio tra icona e testo */
 }
 
 .voice-controls button img {
-    max-width: 16px; /* Dimensioni dell'icona */
-    max-height: 16px;
-    vertical-align: middle;
+    max-width: 20px; /* Icone più grandi */
+    max-height: 20px;
 }
 
 .voice-controls button:hover {
     background-color: #eee;
-}
-
-/* Stili per le immagini PNG negli input-option */
-.input-option {
-    margin-bottom: 18px;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    text-align: left;
-    background-color: #fefefe;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    display: flex; /* Mantiene flex per l'allineamento */
-    flex-direction: row; /* Assicura che gli elementi siano in riga */
-    align-items: center; /* Allineamento verticale al centro */
-}
-
-.input-option h3 {
-    font-size: 1.1em;
-    color: #555;
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-weight: normal;
-    margin-left: 0; /* Resetta il margin-left se precedentemente impostato */
-}
-
-.input-option i { /* Esempio per Font Awesome */
-    margin-right: 10px;
-    color: #777; /* Colore grigio tenue per le icone */
-    font-size: 1.2em;
-}
-
-/* Stili per gli elementi interni */
-.input-option textarea,
-.input-option input[type="file"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    box-sizing: border-box;
-    font-family: sans-serif;
-    font-size: 1em;
-    margin-bottom: 8px;
-    min-height: 60px;
-    margin-left: 0; /* Resetta il margin-left */
-}
-
-.input-option input[type="file"] {
-    padding-top: 5px; /* Allineamento verticale migliore */
-}
-
-.input-option textarea:focus,
-.input-option input[type="file"]:focus {
-    border-color: #5cb85c; /* Verde chiaro al focus (simile al bootstrap) */
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Leggera ombra al focus */
-    outline: none; /* Rimuove l'outline predefinito */
-}
-
-.input-option button {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 0.9em;
-    margin-right: 5px;
-    background-color: white;
-    color: #333;
-    transition: background-color 0.3s ease; /* Transizione per l'hover */
-}
-
-.input-option button:hover {
-    background-color: #eee;
+    transform: translateY(-1px);
 }
 
 #startButton {
-    background-color: #d4edda; /* Verde molto chiaro */
-    color: #155724; /* Verde scuro testo */
+    background-color: #d4edda;
+    color: #155724;
     border-color: #c3e6cb;
 }
-
 #startButton:hover {
     background-color: #c3e6cb;
 }
 
 #stopButton {
-    background-color: #f8d7da; /* Rosso molto chiaro */
-    color: #721c24; /* Rosso scuro testo */
+    background-color: #f8d7da;
+    color: #721c24;
     border-color: #f5c6cb;
 }
-
 #stopButton:hover {
     background-color: #f5c6cb;
 }
 
 #recordingStatus {
-    font-size: 0.8em; /* Riduzione della dimensione del testo */
-    color: #777; /* Tonalità di grigio per l'istruzione */
-    margin-top: 4px; /* Leggero spazio sopra il testo di istruzione */
-    margin-bottom: 10px; /* Leggero spazio sotto il testo di istruzione */
-    text-align: center; /* Allineamento a sinistra per coerenza */
-}
-
-.form-group:nth-child(2) {
-    margin-top: 2px; /* Riduzione del margine superiore per avvicinarlo al primo */
-    margin-bottom: 0px; /* Aumento del margine inferiore per allontanarlo dal terzo */
-}
-
-.input-option img {
-    max-width: 24px;
-    max-height: 24px;
-    margin-right: 10px; /* Spazio a destra dell'icona */
-    vertical-align: middle; /* Allineamento verticale al centro */
+    font-size: 0.9em; /* Testo più grande */
+    color: #666; /* Colore più leggibile */
+    margin-top: 8px;
+    margin-bottom: 12px;
+    text-align: center;
 }
 
 .save-button {
-    margin-top: 16px; /* Ridotto il margine sopra il pulsante Salva */
-    padding: 10px 14px; /* Ridotto il padding del pulsante Salva */
+    margin-top: 20px; /* Margine più grande */
+    padding: 15px 20px; /* Padding aumentato */
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Angoli più arrotondati */
     background-color: #28a745;
     color: white;
-    font-size: 1em; /* Leggera riduzione della dimensione del testo del pulsante Salva */
+    font-size: 1.1em; /* Testo più grande */
+    font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -626,64 +593,143 @@ h1 {
 
 .save-button:hover {
     background-color: #1e7e34;
+    transform: translateY(-2px);
 }
 
-/* Stili specifici per il pulsante aiuto nel modal */
+/* Stili per il pulsante aiuto nel modal (già presente, riorganizzato) */
 .modal-header .help-button-container {
     position: absolute;
-    top: 0;
-    right: 30px; /* Spazio per il pulsante di chiusura */
+    top: 10px; /* Leggermente più in basso */
+    right: 45px; /* Spazio per il pulsante di chiusura */
 }
 
 .modal-header .help-button {
-    background-color: #6c757d; /* Grigio scuro */
+    background-color: #6c757d;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 1em;
+    width: 35px; /* Leggermente più grande */
+    height: 35px;
+    font-size: 1.1em;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     padding: 0;
     line-height: 1;
 }
 
+/* Legenda (già presente, riorganizzato) */
+.legend {
+    position: absolute;
+    top: 70px; /* Posiziona più in basso per non sovrapporsi all'header */
+    right: 20px; /* Spostato un po' più a sinistra */
+    background-color: white;
+    border: 1px solid #e0e0e0; /* Bordo più sottile e chiaro */
+    border-radius: 8px;
+    padding: 20px; /* Padding aumentato */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata */
+    z-index: 100; /* Assicura che sia sopra altri elementi e modali */
+    display: none;
+    text-align: left;
+    max-width: 350px; /* Larghezza massima per leggibilità */
+}
+
+.legend h3 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 1.3em;
+    color: #333333;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eeeeee;
+    padding-bottom: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: flex-start; /* Allinea in alto */
+    margin-bottom: 15px; /* Spazio tra gli item */
+}
+
+.legend-icon {
+    width: 35px; /* Icona più grande */
+    height: 35px;
+    margin-right: 15px; /* Spazio maggiore */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0; /* Evita che l'icona si restringa */
+}
+
+.legend-icon img {
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.legend-text {
+    font-size: 0.95em; /* Testo più grande */
+    color: #555;
+    line-height: 1.4;
+}
+
 /* Modifica per la legenda del modal */
-#insertDataLegend {
+#insertDataLegend, #chatLegend, #newOrderLegend { /* Aggiunto #newOrderLegend */
     z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
 }
 
-/* Stili per le altre legende (se necessario portarli in primo piano in altri contesti) */
-#chatLegend {
-    /* z-index: ... */
-}
-
-#searchLegend {
-    /* z-index: ... */
-}
-
-#settingsLegend {
-    /* z-index: ... */
-}
-
+/* Release info (già presente) */
 .release-info {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #f8f9fa; /* Stesso colore dello sfondo principale o una tonalità leggermente diversa */
+    background-color: #f8f9fa;
     color: #777;
     text-align: center;
     padding: 12px 0;
     font-size: 0.8em;
-    border-top: 1px solid #e9ecef; /* Un bordo sottile per separare dal contenuto */
+    border-top: 1px solid #e9ecef;
+    z-index: 5; /* Assicurati che sia sotto i modali e le legende, ma sopra lo sfondo */
 }
 
 @media (max-width: 600px) {
+    .main-content-wrapper {
+        padding: 25px; /* Meno padding su mobile */
+        margin: 10px; /* Margine per non toccare i bordi */
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    .button-container {
+        flex-direction: column; /* I pulsanti vanno in colonna su schermi piccoli */
+        gap: 10px; /* Riduci il gap su mobile */
+    }
+    .button {
+        width: 100%; /* I pulsanti occupano tutta la larghezza su mobile */
+        max-width: 100%; /* Annulla max-width per 2x2 */
+        margin-right: 0;
+        margin-bottom: 0; /* Il gap gestisce lo spazio */
+    }
+    .modal {
+        padding: 20px;
+    }
+    .close-button {
+        top: -5px;
+        right: -5px;
+        width: 35px;
+        height: 35px;
+        font-size: 2em;
+    }
+    .modal-header .help-button-container {
+        right: 35px;
+    }
+    .legend {
+        top: 10px;
+        right: 10px;
+        max-width: calc(100% - 40px);
+        padding: 15px;
+    }
     .release-info {
         font-size: 0.7em;
     }

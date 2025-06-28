@@ -4,29 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segretario AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    </head>
+</head>
 
 <body>
-    <h1>SEGRETARIO AI</h1>
+    <div class="main-content-wrapper">
+        <h1>SEGRETARIO AI</h1>
 
-    <div class="help-button-container">
-        <button class="help-button" data-legend="mainPageLegend">?</button>
-    </div>
+        <div class="help-button-container">
+            <button class="help-button" data-legend="mainPageLegend">?</button>
+        </div>
 
-    <div class="button-container">
-        <a href="#" class="button insert-button"><img src="img/plus.png" alt="Inserisci"></a>
-        <a href="#" class="button chat-button"><img src="img/chat.png" alt="Chat"></a>
-        <a href="https://docs.google.com/spreadsheets/d/1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8/edit?usp=drive_link" class="button search-button" target="_blank" rel="noopener noreferrer"><img src="img/search.png" alt="Apri Google Sheets"></a>
-    </div>
+        <div class="button-container">
+            <a href="#" class="button insert-button"><img src="img/plus.png" alt="Inserisci"><span>Inserisci Dati</span></a>
+            <a href="#" class="button chat-button"><img src="img/chat.png" alt="Chat"><span>Chat AI</span></a>
+            <a href="#" class="button new-order-button"><img src="img/new-order.png" alt="Nuova Commessa"><span>Nuova Commessa</span></a>
+            <a href="https://docs.google.com/spreadsheets/d/1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8/edit?usp=drive_link" class="button search-button" target="_blank" rel="noopener noreferrer"><img src="img/search.png" alt="Apri Google Sheets"><span>Apri Fogli Google</span></a>
+        </div>
 
-    <div class="latest-entries">
-    <h2>Ultimi Inserimenti</h2>
-    <ul id="latestEntriesList" style="list-style: none; padding: 0;">
-        </ul>
-    </div>
-
-    <div id="insertDataModal" class="modal">
+        <div class="latest-entries">
+            <h2>Ultimi Inserimenti</h2>
+            <ul id="latestEntriesList" style="list-style: none; padding: 0;">
+                </ul>
+        </div>
+    </div> <div id="insertDataModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Inserisci Dati</h2>
@@ -35,48 +39,65 @@
                 </div>
                 <span class="close-button" onclick="closeInsertModal()">&times;</span>
             </div>
-            
- <div class="modal-body">
-    <div class="form-group">
-        <div class="input-label-icon">
-            <img src="img/file.png" alt="Carica File">
-            <h3>Carica File</h3>
-        </div>
-        <input type="file" id="fileUpload">
-    </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-label-icon">
+                        <img src="img/file.png" alt="Carica File">
+                        <h3>Carica File</h3>
+                    </div>
+                    <input type="file" id="fileUpload">
+                </div>
 
-    <div class="form-group">
-        <div class="input-label-icon">
-            <img src="img/voice.png" alt="Registra Vocale">
-            <h3>Registra Vocale</h3>
-        </div>
-        <div class="voice-controls">
-            <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
-            <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
-        </div>
-        <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-        <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
-    </div>
+                <div class="form-group">
+                    <div class="input-label-icon">
+                        <img src="img/voice.png" alt="Registra Vocale">
+                        <h3>Registra Vocale</h3>
+                    </div>
+                    <div class="voice-controls">
+                        <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
+                        <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
+                    </div>
+                    <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
+                    <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
+                </div>
 
-    <div class="form-group">
-        <div class="input-label-icon">
-            <img src="img/tag.png" alt="Riferimento">
-            <h3>Riferimento</h3>
-        </div>
-        <select id="riferimentoDropdown">
-            <option value="" disabled selected>Seleziona un riferimento</option>
-            </select>
-    </div>
+                <div class="form-group">
+                    <div class="input-label-icon">
+                        <img src="img/tag.png" alt="Riferimento">
+                        <h3>Riferimento</h3>
+                    </div>
+                    <select id="riferimentoDropdown">
+                        <option value="" disabled selected>Seleziona un riferimento</option>
+                    </select>
+                </div>
 
-    <button class="save-button" id="saveDataButton">Salva Dati</button>
-</div>
-
-
+                <button class="save-button" id="saveDataButton">Salva Dati</button>
+            </div>
         </div>
     </div>
 
-<div id="modalOverlay" class="modal-overlay"></div>
-    
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="newOrderModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuova Commessa</h2>
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="newOrderLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Qui andranno i campi per l'inserimento dei dati della nuova commessa.</p>
+                <div class="form-group">
+                    <label for="orderName">Nome Commessa:</label>
+                    <input type="text" id="orderName" name="orderName" placeholder="Es. Progetto Alfa">
+                </div>
+                <button class="save-button">Salva Commessa</button>
+            </div>
+        </div>
+    </div>
+
     <div id="chatModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -101,6 +122,10 @@
         <div class="legend-item">
             <div class="legend-icon chat-button"><img src="img/chat.png" alt="Chat"></div>
             <div class="legend-text">Apri la chat con l'intelligenza artificiale per analizzare il database.</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon new-order-button"><img src="img/new-order.png" alt="Nuova Commessa"></div>
+            <div class="legend-text">Inserisci i dati per una nuova commessa.</div>
         </div>
         <div class="legend-item">
             <div class="legend-icon search-button"><img src="img/search.png" alt="Ricerca"></div>
@@ -128,6 +153,13 @@
         </div>
     </div>
 
+    <div id="newOrderLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Nuova Commessa</h3>
+        <div class="legend-item">
+            <div class="legend-text">Utilizza questo modulo per inserire dettagli di nuove commesse nel sistema.</div>
+        </div>
+    </div>
+
     <div id="chatLegend" class="legend" style="display: none;">
         <h3>Aiuto - Chat AI</h3>
         <div class="legend-item">
@@ -144,33 +176,37 @@
     <script src="js/insert-data-modal.js"></script>
     <script src="js/legend.js"></script>
     <script src="js/chat-modal.js"></script>
+    <script>
+        // Funzione per aprire il modale "Nuova Commessa"
+        document.querySelector('.new-order-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('newOrderModal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        });
 
-<script>
-    console.log('Controllo autenticazione in index.html...');
+        // Funzione per chiudere il modale "Nuova Commessa"
+        function closeNewOrderModal() {
+            document.getElementById('newOrderModal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
 
-let authToken = localStorage.getItem('authToken');
-let storageType = 'localStorage';
+        console.log('Controllo autenticazione in index.html...');
 
-//Controlla prima localStorage
-if (!authToken) {
-    console.log('Nessun token trovato in localStorage. Controllo sessionStorage.');
-    authToken = sessionStorage.getItem('authToken');
-    storageType = 'sessionStorage';
-}
+        let authToken = localStorage.getItem('authToken');
+        let storageType = 'localStorage';
 
-if (!authToken) {
-    console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
-    window.location.href = '/login.html'; // Percorso esplicito a login.html
-} else {
-    console.log('Token trovato in', storageType + ':', authToken);
-    // Qui puoi aggiungere codice per:
-    // 1. Verificare la validità del token (potrebbe richiedere una chiamata al backend).
-    // 2. Includere il token nelle richieste successive al backend.
-    // 3. Inizializzare altre funzionalità della pagina principale.
-}
+        if (!authToken) {
+            console.log('Nessun token trovato in localStorage. Controllo sessionStorage.');
+            authToken = sessionStorage.getItem('authToken');
+            storageType = 'sessionStorage';
+        }
 
-    // Eventuali altre inizializzazioni della pagina principale possono andare qui
-</script>
-
+        if (!authToken) {
+            console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
+            window.location.href = '/login.html'; // Percorso esplicito a login.html
+        } else {
+            console.log('Token trovato in', storageType + ':', authToken);
+        }
+    </script>
 </body>
 </html>
