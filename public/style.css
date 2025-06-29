@@ -257,7 +257,6 @@ h1 {
 
 .chat-button {
     background-color: #ffc107; /* Giallo scuro */
-    color: #333; /* Testo scuro per maggiore leggibilità */
 }
 .chat-button:hover {
     background-color: #e0a800;
