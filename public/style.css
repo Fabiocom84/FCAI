@@ -388,6 +388,7 @@ h1 {
     max-height: 90%;
     overflow-y: auto;
     animation: fadeInModal 0.3s ease-out; /* Nuova animazione per i modali */
+    flex-direction: column; /* Imposta il modal come colonna flex per il contenuto */
 }
 
 @keyframes fadeInModal {
@@ -396,7 +397,9 @@ h1 {
 }
 
 .modal-content {
-    /* Potrebbe essere necessario un min-height se vuoi che i modali siano tutti di una certa dimensione minima */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Il contenuto del modal occupa l'altezza disponibile */
 }
 
 .modal-header {
@@ -405,6 +408,7 @@ h1 {
     align-items: center;
     margin-bottom: 20px; /* Aumentato il margine */
     position: relative;
+    flex-shrink: 0; /* Impedisce all'header di restringersi */
 }
 
 .modal-header h2 {
@@ -696,6 +700,140 @@ h1 {
     z-index: 5; /* Assicurati che sia sotto i modali e le legende, ma sopra lo sfondo */
 }
 
+/* NUOVI STILI PER CHAT MODAL */
+
+.chat-modal-body {
+    flex-grow: 1; /* Permette al body di occupare lo spazio rimanente */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Spinge l'input in basso */
+    gap: 15px;
+    padding-bottom: 0; /* Rimuovi padding inferiore se l'input area ha padding proprio */
+}
+
+.chat-messages {
+    flex-grow: 1; /* Le conversazioni occupano lo spazio rimanente */
+    overflow-y: auto; /* Scorrevole se ci sono troppi messaggi */
+    padding-right: 10px; /* Spazio per la scrollbar */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Spazio tra i messaggi */
+    margin-bottom: 15px; /* Spazio prima dell'area di input */
+}
+
+/* Stili generali per ogni singolo messaggio */
+.message {
+    display: flex;
+    max-width: 80%; /* Messaggi non troppo larghi */
+    align-items: flex-end; /* Allinea il content alla fine del contenitore */
+}
+
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px; /* Bordi arrotondati come le bolle di chat */
+    line-height: 1.4;
+    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Stili per i messaggi dell'utente */
+.user-message {
+    align-self: flex-end; /* Allinea a destra */
+}
+
+.user-message .message-content {
+    background-color: #DCF8C6; /* Verde chiaro */
+    color: #333;
+    border-bottom-right-radius: 4px; /* Angolo piatto a destra */
+}
+
+/* Stili per i messaggi dell'AI (Frank) */
+.ai-message {
+    align-self: flex-start; /* Allinea a sinistra */
+}
+
+.ai-message .message-content {
+    background-color: #F1F0F0; /* Grigio chiaro */
+    color: #333;
+    border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
+}
+
+/* Aggiungi il nome dell'AI */
+.ai-message::before {
+    content: 'Frank: ';
+    font-weight: bold;
+    color: #555;
+    margin-right: 5px;
+    font-size: 0.9em;
+    align-self: flex-start; /* Allinea con l'inizio del messaggio */
+    margin-top: 2px; /* Allineamento fine con il testo */
+}
+
+.chat-input-area {
+    display: flex;
+    flex-direction: column; /* Input text sopra i pulsanti */
+    width: 100%;
+    padding: 10px 0 0; /* Padding superiore per separare dalla chat */
+    border-top: 1px solid #eee; /* Linea sottile sopra l'area di input */
+    box-sizing: border-box;
+}
+
+#chatInput {
+    width: 100%; /* Copre l'intera larghezza */
+    min-height: 40px; /* Altezza minima */
+    max-height: 150px; /* Altezza massima per evitare che sia troppo grande */
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px; /* Bordi arrotondati per un look moderno */
+    box-sizing: border-box;
+    font-size: 1em;
+    resize: none; /* Disabilita il ridimensionamento manuale */
+    overflow-y: auto; /* Scorri se il testo è troppo lungo */
+    margin-bottom: 10px; /* Spazio tra input e pulsanti */
+}
+
+.chat-controls {
+    display: flex;
+    justify-content: flex-end; /* Allinea i pulsanti a destra */
+    gap: 10px; /* Spazio tra i pulsanti */
+    width: 100%;
+}
+
+.chat-controls button {
+    background-color: #2A76B8; /* Blu del tema principale */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Pulsanti rotondi */
+    width: 45px; /* Dimensione fissa per rotondità */
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Impedisce ai pulsanti di ridursi */
+    padding: 0; /* Rimuovi padding predefinito */
+}
+
+.chat-controls button:hover {
+    background-color: #1a5c96;
+    transform: translateY(-1px);
+}
+
+.chat-controls button img {
+    width: 24px; /* Icone più piccole per i pulsanti rotondi */
+    height: 24px;
+}
+
+.chat-voice-button.recording-active {
+    background-color: #dc3545; /* Rosso quando in registrazione */
+}
+.chat-voice-button.recording-active:hover {
+    background-color: #c82333;
+}
+
+
 @media (max-width: 600px) {
     .main-content-wrapper {
         padding: 25px; /* Meno padding su mobile */
@@ -735,5 +873,24 @@ h1 {
     }
     .release-info {
         font-size: 0.7em;
+    }
+
+    /* Adattamenti per la chat modal su schermi piccoli */
+    .message {
+        max-width: 90%; /* Aumenta larghezza messaggi su mobile */
+    }
+    .chat-input-area {
+        padding: 5px 0 0;
+    }
+    #chatInput {
+        margin-bottom: 8px;
+    }
+    .chat-controls button {
+        width: 40px; /* Pulsanti leggermente più piccoli */
+        height: 40px;
+    }
+    .chat-controls button img {
+        width: 20px; /* Icone più piccole */
+        height: 20px;
     }
 }
