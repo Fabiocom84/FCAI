@@ -80,20 +80,31 @@ async function closeChatModal() {
     }
 }
 
-// Funzione per aggiungere un messaggio alla visualizzazione della chat
-function addMessage(sender, text) {
+// Modifica la funzione addMessage per accettare un ID opzionale
+function addMessage(sender, text, id = null) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message');
     messageDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+    if (id) {
+        messageDiv.id = id; // Assegna l'ID se fornito
+    }
 
     const messageContentDiv = document.createElement('div');
     messageContentDiv.classList.add('message-content');
     messageContentDiv.innerText = text;
 
+    // Se l'AI è "Frank", aggiungi il prefisso solo al contenuto del messaggio
+    if (sender === 'ai' && !id) { // Non aggiungere "Frank:" al messaggio "sta scrivendo..."
+        // In questo caso, il prefisso "Frank:" è già gestito dal CSS ::before.
+        // Se volessimo metterlo nel JS, potremmo fare:
+        // messageContentDiv.innerText = 'Frank: ' + text;
+        // Ma per coerenza con il CSS, lo lasciamo come è e il CSS aggiungerà il prefisso visivamente.
+    }
+
+
     messageDiv.appendChild(messageContentDiv);
     chatMessages.appendChild(messageDiv);
 
-    // Scorri all'ultimo messaggio
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -110,9 +121,22 @@ sendChatMessageBtn.addEventListener('click', async () => {
         addMessage('user', messageText);
         chatInput.value = ''; // Pulisci l'input
 
-        // TODO: Chiamata al backend per la risposta AI
         console.log("Sending to AI:", messageText);
-        // Simula una risposta AI per ora
+
+        // Aggiungi un messaggio "Frank sta scrivendo..."
+        const typingMessageId = 'typing-' + Date.now(); // ID univoco per il messaggio
+        addMessage('ai', 'Frank sta scrivendo...', typingMessageId); // Aggiungi con un ID per poterlo rimuovere/modificare
+
+        // Simula un ritardo per la risposta dell'AI
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Ritardo di 1.5 secondi
+
+        // Rimuovi il messaggio "Frank sta scrivendo..."
+        const typingMessageDiv = document.getElementById(typingMessageId);
+        if (typingMessageDiv) {
+            chatMessages.removeChild(typingMessageDiv);
+        }
+
+        // Ora aggiungi la vera risposta simulata
         addMessage('ai', 'Ho ricevuto il tuo messaggio: "' + messageText + '". Sono in fase di sviluppo per rispondere!');
     }
 });
