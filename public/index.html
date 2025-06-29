@@ -224,8 +224,22 @@
                 </div>
                 <span class="close-button" onclick="closeChatModal()">&times;</span>
             </div>
-            <div class="modal-body">
-                <p>Contenuto della chat...</p>
+            <div class="modal-body chat-modal-body"> <div class="chat-messages" id="chatMessages">
+                    <div class="message user-message">
+                        <div class="message-content">Ciao Segretario AI, puoi aiutarmi?</div>
+                    </div>
+                    <div class="message ai-message">
+                        <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
+                    <div class="chat-controls">
+                        <button id="startChatRecording" class="chat-voice-button"><img src="img/mic.png" alt="Registra Vocale"></button>
+                        <button id="sendChatMessage" class="chat-send-button"><img src="img/send.png" alt="Invia"></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
