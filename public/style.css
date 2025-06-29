@@ -290,6 +290,14 @@ h1 {
     margin-bottom: 8px; /* Spazio tra icona e testo */
 }
 
+.new-order-button {
+    background-color: #007bff; /* Un bel blu per il nuovo pulsante */
+}
+
+.new-order-button:hover {
+    background-color: #0056b3; /* Blu più scuro al passaggio del mouse */
+}
+
 /* Stile per il testo all'interno del pulsante (il nuovo <span>) */
 .button span {
     display: block; /* Assicura che il testo vada a capo sotto l'icona */
