@@ -1,3 +1,5 @@
+CSS
+
 /* Generale - già presente e funzionante per il login.html e base per index.html */
 body {
     font-family: 'Roboto', sans-serif;
@@ -211,41 +213,58 @@ h1 {
     right: 20px; /* Spostato un po' più a sinistra */
 }
 
-/* Il resto di help-button rimane uguale */
-
+/* Stili generali per il contenitore dei pulsanti */
 .button-container {
+    margin-bottom: 24px;
     display: flex;
     flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
-    justify-content: center; /* Centra i pulsanti sulla riga */
-    gap: 15px; /* Spazio tra i pulsanti */
-    width: 100%;
+    justify-content: center; /* Centra i pulsanti nella riga */
+    gap: 15px; /* Spazio tra i pulsanti orizzontalmente e verticalmente */
+    width: 100%; /* Assicura che il container occupi tutta la larghezza disponibile */
+    max-width: 500px; /* Imposta una larghezza massima per il container */
+    margin-left: auto;
+    margin-right: auto;
 }
 
+/* Stile base per tutti i pulsanti */
 .button {
     display: flex;
-    flex-direction: column; /* Icona sopra il testo */
-    justify-content: center;
-    align-items: center;
-    padding: 15px; /* Padding leggermente ridotto per compattezza */
+    flex-direction: column; /* Impila icona e testo verticalmente */
+    align-items: center; /* Centra orizzontalmente icona e testo all'interno del pulsante */
+    justify-content: center; /* Centra il contenuto verticalmente */
+    padding: 15px 10px;
     text-align: center;
     text-decoration: none;
-    color: white;
+    color: white; /* Testo bianco per tutti i pulsanti */
     border: none;
-    border-radius: 8px; /* Angoli più arrotondati */
+    border-radius: 5px;
     box-sizing: border-box;
-    font-size: 0.9em; /* Testo del pulsante */
+    flex-basis: calc(50% - 7.5px); /* Forza due pulsanti per riga (50% meno metà del gap) */
+    max-width: calc(50% - 7.5px);
+    min-height: 100px; /* Altezza minima per i pulsanti */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transizioni per hover */
+}
+
+/* Stile per le immagini all'interno dei pulsanti */
+.button img {
+    max-width: 45px; /* Icone leggermente più grandi */
+    max-height: 45px;
+    margin-bottom: 8px; /* Spazio tra icona e testo */
+}
+
+/* Stile per il testo all'interno dei pulsanti (il <span>) */
+.button span {
+    display: block; /* Assicura che il testo vada a capo sotto l'icona */
+    font-size: 1em; /* Dimensione del font per il testo del pulsante */
     font-weight: 500;
-    flex-grow: 1; /* Permette ai pulsanti di riempire lo spazio */
-    min-width: 120px; /* Larghezza minima per i pulsanti */
-    max-width: calc(50% - 7.5px); /* Larghezza per 2 pulsanti per riga con gap */
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1.2;
+    white-space: nowrap; /* Impedisce al testo di andare a capo */
+    overflow: hidden; /* Nasconde il testo che sfora */
+    text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
+    color: inherit; /* Assicura che erediti il colore bianco dal .button */
 }
 
-/* Rimuovi i margini specifici se usi gap per button-container */
-.button:not(:last-child) {
-    margin-right: 0;
-}
-
+/* Colori specifici e hover per ogni pulsante */
 .insert-button {
     background-color: #28a745; /* Verde */
 }
@@ -257,6 +276,7 @@ h1 {
 
 .chat-button {
     background-color: #ffc107; /* Giallo scuro */
+    /* NON aggiungere 'color: #333;' qui, erediterà 'white' dal .button */
 }
 .chat-button:hover {
     background-color: #e0a800;
@@ -264,12 +284,12 @@ h1 {
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
-/* Nuovo stile per il pulsante "Nuova Commessa" */
+/* Pulsante "Nuova Commessa" - Colore VIOLA */
 .new-order-button {
-    background-color: #6f42c1; /* Un viola per differenziare */
+    background-color: #6f42c1; /* Viola scuro */
 }
 .new-order-button:hover {
-    background-color: #5a3597;
+    background-color: #5a3597; /* Viola più scuro al passaggio del mouse */
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
@@ -281,28 +301,6 @@ h1 {
     background-color: #c82333;
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-.button img {
-    max-width: 45px; /* Icone leggermente più grandi */
-    max-height: 45px;
-    margin-bottom: 8px; /* Spazio tra icona e testo */
-}
-
-.new-order-button {
-    background-color: #007bff; /* Un bel blu per il nuovo pulsante */
-}
-
-.new-order-button:hover {
-    background-color: #0056b3; /* Blu più scuro al passaggio del mouse */
-}
-
-/* Stile per il testo all'interno del pulsante (il nuovo <span>) */
-.button span {
-    display: block; /* Assicura che il testo vada a capo sotto l'icona */
-    font-size: 1em; /* Dimensione del font per il testo del pulsante */
-    font-weight: 500;
-    line-height: 1.2; /* Spazio tra le righe del testo */
 }
 
 .latest-entries {
@@ -363,7 +361,7 @@ h1 {
 }
 
 
-/* Stili per il Modal (già presenti, li ho solo spostati o minimamente modificati per la coerenza) */
+/* Stili per il Modal */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -428,7 +426,7 @@ h1 {
 }
 
 #newOrderModal .modal-header h2 {
-    color: #6f42c1; /* Colore del nuovo pulsante */
+    color: #6f42c1; /* Colore viola per l'header del modal, come il pulsante */
 }
 
 /* Assumendo che ci sia un #searchModal nel tuo HTML */
@@ -602,7 +600,7 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Stili per il pulsante aiuto nel modal (già presente, riorganizzato) */
+/* Stili per il pulsante aiuto nel modal */
 .modal-header .help-button-container {
     position: absolute;
     top: 10px; /* Leggermente più in basso */
@@ -626,7 +624,7 @@ h1 {
     line-height: 1;
 }
 
-/* Legenda (già presente, riorganizzato) */
+/* Legenda */
 .legend {
     position: absolute;
     top: 70px; /* Posiziona più in basso per non sovrapporsi all'header */
@@ -684,7 +682,7 @@ h1 {
     z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
 }
 
-/* Release info (già presente) */
+/* Release info */
 .release-info {
     position: fixed;
     bottom: 0;
