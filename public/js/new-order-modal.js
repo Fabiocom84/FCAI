@@ -114,7 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // Invia i dati al backend
-                const response = await fetch(`${config.backendUrl}/api/new-commessa`, {
+                // Modificato da config.backendUrl a window.BACKEND_URL
+                const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -151,9 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Utilizza window.BACKEND_URL per coerenza
+        const backendUrl = window.BACKEND_URL;
+
         try {
             // Carica i Modelli
-            const modelloResponse = await fetch(`${config.backendUrl}/api/get-modelli`, {
+            const modelloResponse = await fetch(`${backendUrl}/api/get-modelli`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!modelloResponse.ok) throw new Error('Errore nel recupero dei modelli.');
@@ -170,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Dropdown Modelli popolato.');
 
             // Carica gli Status
-            const statusResponse = await fetch(`${config.backendUrl}/api/get-status`, {
+            const statusResponse = await fetch(`${backendUrl}/api/get-status`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
