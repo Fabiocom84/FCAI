@@ -7,15 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeNewOrderModalBtn = newOrderModal.querySelector('.close-button');
     const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 
+    // Elementi dei dropdown
+    const modelloSelect = document.getElementById('newOrderModello');
+    const statusSelect = document.getElementById('newOrderStatus');
+
     // Funzione per aprire il modale
     if (openNewOrderModalBtn) {
-        openNewOrderModalBtn.addEventListener('click', (event) => {
+        openNewOrderModalBtn.addEventListener('click', async (event) => { // Reso async per fetchDynamicDropdownOptions
             event.preventDefault();
             newOrderModal.style.display = 'block';
             modalOverlay.style.display = 'block';
             console.log('Modale Nuova Commessa aperto.');
-            // Qui potresti voler popolare dinamicamente i dropdown Modello e Status se la logica è già pronta
-            // fetchDynamicDropdownOptions(); 
+            // Popola dinamicamente i dropdown Modello e Status all'apertura del modale
+            await fetchDynamicDropdownOptions();
         });
     }
 
@@ -26,7 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resetta i campi del form quando il modale viene chiuso
         document.getElementById('newOrderCliente').value = '';
         document.getElementById('newOrderImpianto').value = '';
-        document.getElementById('newOrderModello').value = ''; // o resetta alla prima opzione
+        // Resetta i dropdown alla prima opzione disabilitata
+        if (modelloSelect) modelloSelect.selectedIndex = 0;
+        if (statusSelect) statusSelect.selectedIndex = 0;
         document.getElementById('newOrderVO').value = '';
         document.getElementById('newOrderCommessa').value = '';
         document.getElementById('newOrderData').value = '';
@@ -34,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('newOrderPaese').value = '';
         document.getElementById('newOrderAnno').value = '';
         document.getElementById('newOrderMatricola').value = '';
-        document.getElementById('newOrderStatus').value = ''; // o resetta alla prima opzione
         document.getElementById('newOrderNote').value = '';
         document.getElementById('newOrderImmagine').value = ''; // Resetta il campo file
         console.log('Modale Nuova Commessa chiuso e form resettato.');
@@ -71,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Raccogli i dati dal form
             const cliente = document.getElementById('newOrderCliente').value;
             const impianto = document.getElementById('newOrderImpianto').value;
-            const modello = document.getElementById('newOrderModello').value;
+            const modello = modelloSelect.value; // Ottieni il valore selezionato
             const vo = document.getElementById('newOrderVO').value;
             const commessa = document.getElementById('newOrderCommessa').value;
             const data = document.getElementById('newOrderData').value;
@@ -79,9 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const paese = document.getElementById('newOrderPaese').value;
             const anno = document.getElementById('newOrderAnno').value;
             const matricola = document.getElementById('newOrderMatricola').value;
-            const status = document.getElementById('newOrderStatus').value;
+            const status = statusSelect.value; // Ottieni il valore selezionato
             const note = document.getElementById('newOrderNote').value;
             const immagineFile = document.getElementById('newOrderImmagine').files[0]; // Prendi il primo file selezionato
+
+            // Validazione minima (puoi espandere questa logica)
+            if (!cliente || !impianto || !modello || !commessa || !data || !status) {
+                alert('Per favore, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
+                return;
+            }
 
             // Crea un oggetto FormData per inviare sia i dati di testo che il file
             const formData = new FormData();
@@ -107,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
-                        // Non impostare 'Content-Type': 'multipart/form-data' qui, 
+                        // Non impostare 'Content-Type': 'multipart/form-data' qui,
                         // fetch lo imposta automaticamente con FormData e il boundary corretto.
                     },
                     body: formData // Invia il FormData
@@ -131,48 +142,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
 
-// Funzione (placeholder) per caricare dinamicamente le opzioni dei dropdown
-// Questa funzione dovrà fare una chiamata al backend per recuperare i dati
-// e poi popolare gli elementi <select> corrispondenti.
-// Sarà implementata quando decideremo di rendere i dropdown dinamici.
-/*
-async function fetchDynamicDropdownOptions() {
-    const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    if (!authToken) return;
+    // Funzione per caricare dinamicamente le opzioni dei dropdown
+    async function fetchDynamicDropdownOptions() {
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            console.warn('Nessun token di autenticazione trovato per caricare i dropdown.');
+            return;
+        }
 
-    try {
-        // Esempio per Modello:
-        const modelloResponse = await fetch(`${config.backendUrl}/api/get-modelli`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        const modelli = await modelloResponse.json();
-        const modelloSelect = document.getElementById('newOrderModello');
-        modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
-        modelli.forEach(modello => {
-            const option = document.createElement('option');
-            option.value = modello.value; // Assumi che il backend restituisca { value: '...', text: '...' }
-            option.textContent = modello.text;
-            modelloSelect.appendChild(option);
-        });
+        try {
+            // Carica i Modelli
+            const modelloResponse = await fetch(`${config.backendUrl}/api/get-modelli`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!modelloResponse.ok) throw new Error('Errore nel recupero dei modelli.');
+            const modelli = await modelloResponse.json();
+            
+            // Pulisci e popola il dropdown Modello
+            modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
+            modelli.forEach(modello => {
+                const option = document.createElement('option');
+                option.value = modello;
+                option.textContent = modello;
+                modelloSelect.appendChild(option);
+            });
+            console.log('Dropdown Modelli popolato.');
 
-        // Esempio per Status:
-        const statusResponse = await fetch(`${config.backendUrl}/api/get-status`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        const statuses = await statusResponse.json();
-        const statusSelect = document.getElementById('newOrderStatus');
-        statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
-        statuses.forEach(status => {
-            const option = document.createElement('option');
-            option.value = status.value;
-            option.textContent = status.text;
-            statusSelect.appendChild(option);
-        });
+            // Carica gli Status
+            const statusResponse = await fetch(`${config.backendUrl}/api/get-status`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
+            const statuses = await statusResponse.json();
 
-    } catch (error) {
-        console.error('Errore nel caricamento delle opzioni dropdown:', error);
+            // Pulisci e popola il dropdown Status
+            statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
+            statuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                statusSelect.appendChild(option);
+            });
+            console.log('Dropdown Status popolato.');
+
+        } catch (error) {
+            console.error('Errore nel caricamento delle opzioni dropdown:', error);
+            alert('Errore nel caricamento delle opzioni per Modello e Status. Riprova più tardi.');
+        }
     }
-}
-*/
+});
