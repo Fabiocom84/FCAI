@@ -11,14 +11,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelloSelect = document.getElementById('newOrderModello');
     const statusSelect = document.getElementById('newOrderStatus');
 
+    // Elementi per l'animazione di caricamento
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'newOrderLoadingIndicator';
+    loadingIndicator.style.display = 'none'; // Inizialmente nascosto
+    loadingIndicator.style.position = 'absolute';
+    loadingIndicator.style.top = '50%';
+    loadingIndicator.style.left = '50%';
+    loadingIndicator.style.transform = 'translate(-50%, -50%)';
+    loadingIndicator.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    loadingIndicator.style.padding = '20px';
+    loadingIndicator.style.borderRadius = '8px';
+    loadingIndicator.style.zIndex = '1000';
+    loadingIndicator.style.textAlign = 'center';
+    loadingIndicator.innerHTML = `
+        <div class="spinner" style="
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s ease infinite;
+            margin: 0 auto 10px;
+        "></div>
+        <p>Salvataggio in corso...</p>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    newOrderModal.appendChild(loadingIndicator); // Aggiungi l'indicatore al modale
+
+    // Funzione per mostrare l'indicatore di caricamento
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+        saveNewOrderButton.disabled = true; // Disabilita il pulsante durante il caricamento
+        saveNewOrderButton.style.opacity = '0.7';
+        saveNewOrderButton.style.cursor = 'not-allowed';
+    }
+
+    // Funzione per nascondere l'indicatore di caricamento
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        saveNewOrderButton.disabled = false; // Riabilita il pulsante
+        saveNewOrderButton.style.opacity = '1';
+        saveNewOrderButton.style.cursor = 'pointer';
+    }
+
+
     // Funzione per aprire il modale
     if (openNewOrderModalBtn) {
-        openNewOrderModalBtn.addEventListener('click', async (event) => { // Reso async per fetchDynamicDropdownOptions
+        openNewOrderModalBtn.addEventListener('click', async (event) => {
             event.preventDefault();
             newOrderModal.style.display = 'block';
             modalOverlay.style.display = 'block';
             console.log('Modale Nuova Commessa aperto.');
-            // Popola dinamicamente i dropdown Modello e Status all'apertura del modale
             await fetchDynamicDropdownOptions();
         });
     }
@@ -30,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resetta i campi del form quando il modale viene chiuso
         document.getElementById('newOrderCliente').value = '';
         document.getElementById('newOrderImpianto').value = '';
-        // Resetta i dropdown alla prima opzione disabilitata
         if (modelloSelect) modelloSelect.selectedIndex = 0;
         if (statusSelect) statusSelect.selectedIndex = 0;
         document.getElementById('newOrderVO').value = '';
@@ -41,7 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('newOrderAnno').value = '';
         document.getElementById('newOrderMatricola').value = '';
         document.getElementById('newOrderNote').value = '';
-        document.getElementById('newOrderImmagine').value = ''; // Resetta il campo file
+        document.getElementById('newOrderImmagine').value = '';
+        hideLoading(); // Assicurati che l'indicatore sia nascosto alla chiusura
         console.log('Modale Nuova Commessa chiuso e form resettato.');
     };
 
@@ -73,10 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Raccogli i dati dal form
             const cliente = document.getElementById('newOrderCliente').value;
             const impianto = document.getElementById('newOrderImpianto').value;
-            const modello = modelloSelect.value; // Ottieni il valore selezionato
+            const modello = modelloSelect.value;
             const vo = document.getElementById('newOrderVO').value;
             const commessa = document.getElementById('newOrderCommessa').value;
             const data = document.getElementById('newOrderData').value;
@@ -84,17 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const paese = document.getElementById('newOrderPaese').value;
             const anno = document.getElementById('newOrderAnno').value;
             const matricola = document.getElementById('newOrderMatricola').value;
-            const status = statusSelect.value; // Ottieni il valore selezionato
+            const status = statusSelect.value;
             const note = document.getElementById('newOrderNote').value;
-            const immagineFile = document.getElementById('newOrderImmagine').files[0]; // Prendi il primo file selezionato
+            const immagineFile = document.getElementById('newOrderImmagine').files[0];
 
-            // Validazione minima (puoi espandere questa logica)
             if (!cliente || !impianto || !modello || !commessa || !data || !status) {
-                alert('Per favore, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
+                alert('Per favor, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
                 return;
             }
 
-            // Crea un oggetto FormData per inviare sia i dati di testo che il file
             const formData = new FormData();
             formData.append('cliente', cliente);
             formData.append('impianto', impianto);
@@ -109,20 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('status', status);
             formData.append('note', note);
             if (immagineFile) {
-                formData.append('immagine', immagineFile); // Allega il file immagine
+                formData.append('immagine', immagineFile);
             }
 
+            showLoading(); // Mostra l'indicatore di caricamento
+
             try {
-                // Invia i dati al backend
-                // Modificato da config.backendUrl a window.BACKEND_URL
                 const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
-                        // Non impostare 'Content-Type': 'multipart/form-data' qui,
-                        // fetch lo imposta automaticamente con FormData e il boundary corretto.
                     },
-                    body: formData // Invia il FormData
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -133,18 +177,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 console.log('Commessa salvata con successo:', result);
                 alert('Nuova commessa aggiunta con successo!');
-                closeNewOrderModal(); // Chiudi il modale dopo il successo
+                closeNewOrderModal();
 
-                // Qui potresti voler aggiornare la lista degli "Ultimi Inserimenti" se pertinente
-                // O triggerare un refresh dei dati principali
             } catch (error) {
                 console.error('Errore nel salvataggio della nuova commessa:', error);
                 alert('Errore nel salvataggio della nuova commessa: ' + error.message);
+            } finally {
+                hideLoading(); // Nascondi l'indicatore di caricamento in ogni caso
             }
         });
     }
 
-    // Funzione per caricare dinamicamente le opzioni dei dropdown
     async function fetchDynamicDropdownOptions() {
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
@@ -152,18 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Utilizza window.BACKEND_URL per coerenza
         const backendUrl = window.BACKEND_URL;
 
         try {
-            // Carica i Modelli
             const modelloResponse = await fetch(`${backendUrl}/api/get-modelli`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!modelloResponse.ok) throw new Error('Errore nel recupero dei modelli.');
             const modelli = await modelloResponse.json();
             
-            // Pulisci e popola il dropdown Modello
             modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
             modelli.forEach(modello => {
                 const option = document.createElement('option');
@@ -173,14 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             console.log('Dropdown Modelli popolato.');
 
-            // Carica gli Status
             const statusResponse = await fetch(`${backendUrl}/api/get-status`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
             const statuses = await statusResponse.json();
 
-            // Pulisci e popola il dropdown Status
             statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
             statuses.forEach(status => {
                 const option = document.createElement('option');
