@@ -169,6 +169,8 @@ startChatRecordingBtn.addEventListener('click', () => {
 // Rende closeChatModal accessibile globalmente per onclick in HTML
 window.closeChatModal = closeChatModal;
 
+openChatModalBtn.addEventListener('click', openChatModal);
+
 // Scorri in fondo ai messaggi all'avvio della pagina (se ce ne sono)
 document.addEventListener('DOMContentLoaded', () => {
     if (chatMessages) {
