@@ -216,33 +216,36 @@
     </div>
 
     <div id="chatModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Chat AI</h2>
-                <div class="help-button-container">
-                    <button class="help-button" data-legend="chatLegend">?</button>
-                </div>
-                <span class="close-button" onclick="closeChatModal()">&times;</span>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Chat AI</h2>
+            <div class="help-button-container">
+                <button class="help-button" data-legend="chatLegend">?</button>
             </div>
-            <div class="modal-body chat-modal-body"> <div class="chat-messages" id="chatMessages">
-                    <div class="message user-message">
-                        <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
-                    </div>
-                    <div class="message ai-message">
-                        <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
-                    </div>
+            <span class="close-button" onclick="closeChatModal()">&times;</span>
+        </div>
+        <div class="modal-body chat-modal-body"> 
+            <div class="chat-messages" id="chatMessages">
+                <div class="message user-message">
+                    <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
                 </div>
+                <div class="message ai-message">
+                    <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
+                </div>
+            </div>
 
-                <div class="chat-input-area">
-                    <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
-                    <div class="chat-controls">
-                        <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
-                        <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
-                    </div>
+            <div id="chatStatus" class="chat-status"></div> 
+
+            <div class="chat-input-area">
+                <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
+                <div class="chat-controls">
+                    <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
+                    <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
