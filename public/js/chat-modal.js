@@ -23,7 +23,7 @@ function openChatModal() {
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo ai messaggi esistenti
 }
 
-// Funzione per chiudere il modale della chat e salvare il contenuto
+// Funzione per chiudere il modale della chat
 async function closeChatModal() {
     chatModal.style.display = 'none';
     modalOverlay.style.display = 'none';
@@ -35,58 +35,14 @@ async function closeChatModal() {
         startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
         startChatRecordingBtn.classList.remove('recording-active');
     }
-
-    // Qui salveremo la trascrizione della chat in futuro, se necessario.
-    // Per ora, non c'è una rotta backend per `save_chat_transcript`.
-    // Puoi lasciare vuoto o commentare la logica di salvataggio della chat qui,
-    // o implementare l'endpoint `save_chat_transcript` nel backend.
-    // Per il momento, rimuovo la logica di salvataggio per evitare errori se l'endpoint non esiste.
-    /*
-    let chatTranscript = "";
-    const messages = chatMessages.querySelectorAll('.message-content');
-    messages.forEach(msg => {
-        const senderClass = msg.closest('.message').classList.contains('user-message') ? 'Utente' : 'AI';
-        chatTranscript += `${senderClass}: ${msg.innerText}\n`;
-    });
-
-    console.log("Saving chat transcript:", chatTranscript);
-
-    try {
-        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        if (!authToken) {
-            console.error('No authentication token found. Cannot save chat.');
-            // alert('Errore: sessione scaduta o non autenticata. Effettua nuovamente il login.');
-            // window.location.href = '/login.html'; // Reindirizza al login
-            return;
-        }
-
-        const response = await fetch(`${window.BACKEND_URL}/save_chat_transcript`, { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ transcript: chatTranscript })
-        });
-
-        if (response.ok) {
-            console.log('Chat transcript saved successfully!');
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to save chat transcript:', errorData.message);
-            // alert(`Errore nel salvataggio della chat: ${errorData.message || response.statusText}`);
-        }
-    } catch (error) {
-        console.error('Network error while saving chat transcript:', error);
-        // alert('Errore di rete durante il salvataggio della chat. Controlla la connessione.');
-    }
-    */
+    // Rimuovo la logica di salvataggio chat qui per semplicità e perché l'endpoint save_chat_transcript non è presente nel backend.
+    // Puoi aggiungerla nuovamente se implementi l'endpoint sul server.
 }
 
 // Funzione per aggiungere un messaggio alla chat UI
-function addMessage(sender, text) { // Rimosso 'id' che non era utilizzato qui
+function addMessage(sender, text) {
     const messageElement = document.createElement('div');
-    messageElement.classList.add('chat-message', sender); // Classe 'chat-message' aggiunta
+    messageElement.classList.add('chat-message', sender);
     if (text) {
         const messageContentDiv = document.createElement('div');
         messageContentDiv.classList.add('message-content');
