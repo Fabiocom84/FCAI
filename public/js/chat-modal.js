@@ -35,20 +35,43 @@ async function closeChatModal() {
         startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
         startChatRecordingBtn.classList.remove('recording-active');
     }
-    // Rimuovo la logica di salvataggio chat qui per semplicità e perché l'endpoint save_chat_transcript non è presente nel backend.
-    // Puoi aggiungerla nuovamente se implementi l'endpoint sul server.
 }
 
 // Funzione per aggiungere un messaggio alla chat UI
-function addMessage(sender, text) {
+function addMessage(sender, text, audioBase64 = null) { // Aggiungi audioBase64 come parametro opzionale
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', sender);
+    
     if (text) {
         const messageContentDiv = document.createElement('div');
         messageContentDiv.classList.add('message-content');
         messageContentDiv.textContent = text;
         messageElement.appendChild(messageContentDiv);
     }
+
+    if (audioBase64) {
+        // Se c'è audio, crea un elemento audio
+        const audio = new Audio();
+        audio.src = `data:audio/mpeg;base64,${audioBase64}`; // mp3 è il formato più comune per Eleven Labs
+        audio.controls = true; // Mostra i controlli per debug/interazione
+        audio.autoplay = true; // Riproduci automaticamente
+        
+        const audioContainer = document.createElement('div');
+        audioContainer.classList.add('audio-playback');
+        audioContainer.appendChild(audio);
+        messageElement.appendChild(audioContainer);
+
+        // Aggiungi un listener per sapere quando l'audio finisce (per futuri sviluppi)
+        audio.onended = () => {
+            console.log("Riproduzione audio completata.");
+            // Potresti voler riabilitare qualche UI qui
+        };
+        audio.onerror = (e) => {
+            console.error("Errore durante la riproduzione audio:", e);
+            // Potresti aggiungere un messaggio di errore nell'UI
+        };
+    }
+
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo
 }
@@ -75,20 +98,23 @@ async function sendChatMessage(messageText) {
             body: formData,
         });
 
+        // Modifica qui: il backend ora restituisce JSON, non un blob audio
+        const responseData = await response.json(); 
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Errore del server: ${response.status} - ${errorData.error || 'Errore sconosciuto'}`);
+            throw new Error(`Errore del server: ${response.status} - ${responseData.error || 'Errore sconosciuto'}`);
         }
 
-        // Il backend restituisce un file audio (MP3)
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        const audio = new Audio(audioUrl);
-        audio.play();
+        const aiResponseText = responseData.response; // Estrai il testo della risposta
+        const audioBase64 = responseData.audio;     // Estrai l'audio Base64
 
-        // Puoi anche aggiungere un messaggio di feedback visivo per la risposta audio
-        addMessage('ai', "Ascolta la mia risposta vocale!");
+        if (audioBase64) {
+            // Riproduci e mostra il messaggio AI con audio
+            addMessage('ai', aiResponseText, audioBase64); 
+        } else {
+            // Se non c'è audio, mostra solo il messaggio AI testuale
+            addMessage('ai', aiResponseText + " (Audio non disponibile)"); // Feedback per l'utente
+        }
 
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
