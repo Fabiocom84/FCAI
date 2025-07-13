@@ -217,7 +217,7 @@ h1 {
     margin-bottom: 24px;
     display: flex;
     flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
-    justify-content: center; /* Centra i pulsanti nella riga */
+    justify-content: flex-start; /* Allinea i pulsanti a sinistra */
     gap: 15px; /* Spazio tra i pulsanti orizzontalmente e verticalmente */
     width: 100%; /* Assicura che il container occupi tutta la larghezza disponibile */
     max-width: 500px; /* Imposta una larghezza massima per il container */
@@ -923,9 +923,10 @@ h1 {
     height: 24px;
 }
 
-/* Stile specifico per il pulsante di aggiornamento AI DB, se vuoi un colore diverso */
+/* Stile specifico per il pulsante di aggiornamento AI DB, con margine per distanziare */
 #updateAIDbBtn {
     background-color: #6c757d; /* Grigio scuro, come un'azione secondaria */
+    margin-right: 30px; /* Aggiungi un margine a destra per distanziarlo dagli altri */
 }
 
 #updateAIDbBtn:hover {
@@ -942,5 +943,9 @@ h1 {
     .chat-controls .icon-button img {
         width: 20px; /* Icone più piccole */
         height: 20px;
+    }
+    #updateAIDbBtn {
+        margin-right: 0; /* Rimuovi il margine su schermi piccoli se va in colonna */
+        margin-bottom: 15px; /* Aggiungi un margine inferiore se va in colonna */
     }
 }
