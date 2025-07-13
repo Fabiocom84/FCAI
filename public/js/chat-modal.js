@@ -10,6 +10,9 @@ const sendChatMessageBtn = document.getElementById('sendChatMessage');
 const modalOverlay = document.getElementById('modalOverlay');
 const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
 
+// NUOVO: Elemento DOM per il pulsante di aggiornamento DB
+const updateAIDbBtn = document.getElementById('updateAIDbBtn');
+
 // Setup del riconoscimento vocale
 let recognition;
 let isRecording = false;
@@ -88,6 +91,7 @@ async function sendChatMessage(messageText) {
     chatStatus.textContent = "Il Segretario AI sta elaborando..."; // Feedback all'utente
     sendChatMessageBtn.disabled = true; // Disabilita il pulsante invia
     startChatRecordingBtn.disabled = true; // Disabilita il pulsante microfono
+    updateAIDbBtn.disabled = true; // NUOVO: Disabilita il pulsante di aggiornamento DB durante l'elaborazione della chat
 
     const formData = new FormData();
     formData.append('text', messageText); // Invia il testo direttamente
@@ -124,7 +128,66 @@ async function sendChatMessage(messageText) {
         chatInput.value = ''; // Pulisci l'input
         sendChatMessageBtn.disabled = false; // Riabilita il pulsante invia
         startChatRecordingBtn.disabled = false; // Riabilita il pulsante microfono
+        updateAIDbBtn.disabled = false; // NUOVO: Riabilita il pulsante di aggiornamento DB
         chatInput.focus();
+    }
+}
+
+// NUOVO: Funzione per aggiornare la Knowledge Base AI
+async function updateAIDB() {
+    // 1. Doppia conferma
+    const confirmation = confirm("Sei sicuro di voler procedere con l'aggiornamento della knowledge base AI? Questa operazione potrebbe richiedere qualche minuto.");
+    if (!confirmation) {
+        return; // L'utente ha annullato
+    }
+
+    chatStatus.textContent = "Aggiornamento Knowledge Base in corso...";
+    updateAIDbBtn.disabled = true; // Disabilita il pulsante durante l'aggiornamento
+    sendChatMessageBtn.disabled = true; // Disabilita anche gli altri pulsanti
+    startChatRecordingBtn.disabled = true;
+
+    try {
+        // Questi valori dovranno essere specifici per il tuo progetto e Google Sheet.
+        // Potresti doverli passare come variabili globali o da una configurazione frontend.
+        const spreadsheetId = "YOUR_SPREADSHEET_ID_HERE"; // SOSTITUISCI CON L'ID DEL TUO GOOGLE SHEET
+        const sheetName = "YOUR_SHEET_NAME_HERE";       // SOSTITUISCI CON IL NOME DEL FOGLIO
+
+        const response = await fetch(`${window.BACKEND_URL}/ingestion-db-function`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                spreadsheet_id: spreadsheetId,
+                sheet_name: sheetName
+            }),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || 'Errore sconosciuto'}`);
+        }
+
+        chatStatus.textContent = "Knowledge Base aggiornata con successo! Ricaricamento del database locale...";
+
+        // *** IMPORTANTE: QUI DEVI AGGIUNGERE LA LOGICA PER RICARICARE IL DATABASE LOCALE DEL FRONTEBD ***
+        // Se il tuo frontend carica una copia locale del DB (es. un client ChromaDB in-browser),
+        // devi chiamare qui la funzione che scarica la versione aggiornata da GCS e la ricarica.
+        // Esempio (potrebbe essere una funzione definita altrove nel tuo codice frontend):
+        // await reloadLocalKnowledgeBase(); // <--- DA IMPLEMENTARE NEL TUO PROGETTO
+        
+        chatStatus.textContent = "Knowledge Base AI aggiornata e pronta all'uso! 🎉";
+        alert("Knowledge Base AI aggiornata e pronta all'uso!");
+
+    } catch (error) {
+        console.error("Errore nell'aggiornamento della Knowledge Base AI:", error);
+        chatStatus.textContent = `Errore aggiornamento: ${error.message}.`;
+        alert(`Errore nell'aggiornamento della Knowledge Base AI: ${error.message}`);
+    } finally {
+        updateAIDbBtn.disabled = false; // Riabilita il pulsante
+        sendChatMessageBtn.disabled = false;
+        startChatRecordingBtn.disabled = false;
     }
 }
 
@@ -201,6 +264,11 @@ startChatRecordingBtn.addEventListener('click', () => {
         // onend gestirà il resto
     }
 });
+
+// NUOVO: Event listener per il pulsante di aggiornamento DB
+if (updateAIDbBtn) { // Controlla se l'elemento esiste prima di aggiungere l'event listener
+    updateAIDbBtn.addEventListener('click', updateAIDB);
+}
 
 // Rende closeChatModal accessibile globalmente per onclick in HTML
 window.closeChatModal = closeChatModal;

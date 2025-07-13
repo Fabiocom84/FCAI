@@ -894,3 +894,53 @@ h1 {
         height: 20px;
     }
 }
+
+/* Stile per pulsanti con solo icona (es. il nuovo pulsante "Aggiorna AI DB") */
+.icon-button {
+    background-color: #007bff; /* Un blu standard per i pulsanti informativi */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Rendi il pulsante rotondo */
+    width: 45px; /* Dimensione fissa per rotondità */
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Impedisce al pulsante di ridursi */
+    padding: 0; /* Rimuovi padding predefinito */
+}
+
+.icon-button:hover {
+    background-color: #0056b3; /* Blu più scuro all'hover */
+    transform: translateY(-1px);
+}
+
+.icon-button img {
+    width: 24px; /* Dimensione dell'icona all'interno del pulsante */
+    height: 24px;
+}
+
+/* Stile specifico per il pulsante di aggiornamento AI DB, se vuoi un colore diverso */
+#updateAIDbBtn {
+    background-color: #6c757d; /* Grigio scuro, come un'azione secondaria */
+}
+
+#updateAIDbBtn:hover {
+    background-color: #545b62; /* Grigio più scuro all'hover */
+}
+
+/* Media Query per schermi piccoli (già presente, aggiungo solo adattamenti per i nuovi pulsanti) */
+@media (max-width: 600px) {
+    /* Adattamenti per i pulsanti rotondi nella chat */
+    .chat-controls .icon-button { /* Se vuoi che anche i pulsanti icona si rimpiccioliscano */
+        width: 40px; /* Pulsanti leggermente più piccoli */
+        height: 40px;
+    }
+    .chat-controls .icon-button img {
+        width: 20px; /* Icone più piccole */
+        height: 20px;
+    }
+}

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -42,7 +43,9 @@
             <ul id="latestEntriesList" style="list-style: none; padding: 0;">
                 </ul>
         </div>
-    </div> <div id="insertDataModal" class="modal">
+    </div> 
+    
+    <div id="insertDataModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Inserisci Dati</h2>
@@ -93,159 +96,164 @@
     <div id="newOrderModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-content">
-        <div class="modal-header">
-            <h2>Nuova Commessa</h2>
-            <div class="help-button-container">
-                <button class="help-button" data-legend="newOrderLegend">?</button>
-            </div>
-            <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/user.png" alt="Cliente">
-                    <h3>Cliente</h3>
+                <div class="modal-header">
+                    <h2>Nuova Commessa</h2>
+                    <div class="help-button-container">
+                        <button class="help-button" data-legend="newOrderLegend">?</button>
+                    </div>
+                    <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
                 </div>
-                <input type="text" id="newOrderCliente" placeholder="Nome del cliente">
-            </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/user.png" alt="Cliente">
+                            <h3>Cliente</h3>
+                        </div>
+                        <input type="text" id="newOrderCliente" placeholder="Nome del cliente">
+                    </div>
 
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/factory.png" alt="Impianto">
-                    <h3>Impianto</h3>
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/factory.png" alt="Impianto">
+                            <h3>Impianto</h3>
+                        </div>
+                        <input type="text" id="newOrderImpianto" placeholder="Luogo dell'impianto">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/model.png" alt="Modello">
+                            <h3>Modello</h3>
+                        </div>
+                        <select id="newOrderModello">
+                            <option value="" disabled selected>Seleziona un modello</option>
+                            </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/VO.png" alt="VO">
+                            <h3>VO</h3>
+                        </div>
+                        <input type="text" id="newOrderVO" placeholder="Valore VO">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/logo.png" alt="Commessa">
+                            <h3>Commessa</h3>
+                        </div>
+                        <input type="text" id="newOrderCommessa" placeholder="Numero commessa">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/calendar.png" alt="Data">
+                            <h3>Data</h3>
+                        </div>
+                        <input type="date" id="newOrderData">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/location.png" alt="Provincia">
+                            <h3>Provincia</h3>
+                        </div>
+                        <input type="text" id="newOrderProvincia" placeholder="Provincia">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/flag.png" alt="Paese">
+                            <h3>Paese</h3>
+                        </div>
+                        <input type="text" id="newOrderPaese" placeholder="Paese">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/year.png" alt="Anno">
+                            <h3>Anno</h3>
+                        </div>
+                        <input type="number" id="newOrderAnno" placeholder="Anno">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/serial.png" alt="Matricola">
+                            <h3>Matricola</h3>
+                        </div>
+                        <input type="text" id="newOrderMatricola" placeholder="Numero di matricola">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/tag.png" alt="Status">
+                            <h3>Status</h3>
+                        </div>
+                        <select id="newOrderStatus">
+                            <option value="" disabled selected>Seleziona uno status</option>
+                            </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/note.png" alt="Note">
+                            <h3>Note</h3>
+                        </div>
+                        <textarea id="newOrderNote" placeholder="Note aggiuntive"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/image.png" alt="Immagine">
+                            <h3>Immagine</h3>
+                        </div>
+                        <input type="file" id="newOrderImmagine" accept="image/*">
+                    </div>
+
                 </div>
-                <input type="text" id="newOrderImpianto" placeholder="Luogo dell'impianto">
+                <button class="save-button" id="saveNewOrderButton">Salva Nuova Commessa</button>
             </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/model.png" alt="Modello">
-                    <h3>Modello</h3>
-                </div>
-                <select id="newOrderModello">
-                    <option value="" disabled selected>Seleziona un modello</option>
-                    </select>
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/VO.png" alt="VO">
-                    <h3>VO</h3>
-                </div>
-                <input type="text" id="newOrderVO" placeholder="Valore VO">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/logo.png" alt="Commessa">
-                    <h3>Commessa</h3>
-                </div>
-                <input type="text" id="newOrderCommessa" placeholder="Numero commessa">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/calendar.png" alt="Data">
-                    <h3>Data</h3>
-                </div>
-                <input type="date" id="newOrderData">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/location.png" alt="Provincia">
-                    <h3>Provincia</h3>
-                </div>
-                <input type="text" id="newOrderProvincia" placeholder="Provincia">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/flag.png" alt="Paese">
-                    <h3>Paese</h3>
-                </div>
-                <input type="text" id="newOrderPaese" placeholder="Paese">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/year.png" alt="Anno">
-                    <h3>Anno</h3>
-                </div>
-                <input type="number" id="newOrderAnno" placeholder="Anno">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/serial.png" alt="Matricola">
-                    <h3>Matricola</h3>
-                </div>
-                <input type="text" id="newOrderMatricola" placeholder="Numero di matricola">
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/tag.png" alt="Status">
-                    <h3>Status</h3>
-                </div>
-                <select id="newOrderStatus">
-                    <option value="" disabled selected>Seleziona uno status</option>
-                    </select>
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/note.png" alt="Note">
-                    <h3>Note</h3>
-                </div>
-                <textarea id="newOrderNote" placeholder="Note aggiuntive"></textarea>
-            </div>
-
-            <div class="form-group">
-                <div class="input-label-icon">
-                    <img src="img/image.png" alt="Immagine">
-                    <h3>Immagine</h3>
-                </div>
-                <input type="file" id="newOrderImmagine" accept="image/*">
-            </div>
-
-        </div>
-        <button class="save-button" id="saveNewOrderButton">Salva Nuova Commessa</button>
-    </div>
         </div>
     </div>
 
     <div id="chatModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Chat AI</h2>
-            <div class="help-button-container">
-                <button class="help-button" data-legend="chatLegend">?</button>
-            </div>
-            <span class="close-button" onclick="closeChatModal()">&times;</span>
-        </div>
-        <div class="modal-body chat-modal-body"> 
-            <div class="chat-messages" id="chatMessages">
-                <div class="message user-message">
-                    <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chat AI</h2>
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="chatLegend">?</button>
                 </div>
-                <div class="message ai-message">
-                    <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
-                </div>
+                <span class="close-button" onclick="closeChatModal()">&times;</span>
             </div>
+            <div class="modal-body chat-modal-body"> 
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message user-message">
+                        <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
+                    </div>
+                    <div class="message ai-message">
+                        <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
+                    </div>
+                </div>
 
-            <div id="chatStatus" class="chat-status"></div> 
+                <div id="chatStatus" class="chat-status"></div> 
 
-            <div class="chat-input-area">
-                <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
-                <div class="chat-controls">
-                    <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
-                    <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
+                <div class="chat-input-area">
+                    <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
+                    <div class="chat-controls">
+                        <button id="updateAIDbBtn" title="Aggiorna Knowledge Base AI" class="icon-button">
+                            <img src="img/refresh.png" alt="Aggiorna AI DB"> 
+                        </button>
+                        <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
+                        <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
 
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
@@ -302,7 +310,7 @@
     </div>
 
     <footer class="release-info">
-        Versione 2.9 - Rilasciata il 10 Luglio 2025
+        Versione 2.9 - Rilasciata il 12 Luglio 2025
     </footer>
 
     <script src="js/config.js"></script>
