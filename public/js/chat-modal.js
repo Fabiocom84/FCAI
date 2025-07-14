@@ -7,10 +7,10 @@ const chatInput = document.getElementById('chatInput');
 const openChatModalBtn = document.getElementById('openChatModalBtn');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const modalOverlay = document.getElementById('modalOverlay');
-const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
+const modalOverlay = document.getElementById('modalOverlay'); // CORRETTO: ID unico per l'overlay
+const chatStatus = document.getElementById('chatStatus');
 
-// NUOVO: Elemento DOM per il pulsante di aggiornamento DB
+// Elemento DOM per il pulsante di aggiornamento DB
 const updateAIDbBtn = document.getElementById('updateAIDbBtn');
 
 // Setup del riconoscimento vocale
@@ -117,7 +117,7 @@ async function sendChatMessage(messageText) {
         }
 
         const aiResponseText = responseData.response; // Estrai il testo della risposta
-        const audioBase64 = responseData.audio;      // Estrai l'audio Base64
+        const audioBase64 = responseData.audio;       // Estrai l'audio Base64
 
         if (audioBase64) {
             // Riproduci e mostra il messaggio AI con audio
@@ -141,7 +141,7 @@ async function sendChatMessage(messageText) {
     }
 }
 
-// NUOVO: Funzione per aggiornare la Knowledge Base AI (UNIFICATA QUI)
+// Funzione per aggiornare la Knowledge Base AI (UNIFICATA QUI)
 async function updateAIDB() {
     // 1. Doppia conferma
     const confirmation = confirm("Sei sicuro di voler procedere con l'aggiornamento della knowledge base AI? Questa operazione potrebbe richiedere qualche minuto.");
@@ -171,30 +171,32 @@ async function updateAIDB() {
         formData.append('spreadsheet_id', spreadsheetId);
         formData.append('sheet_names', sheetNamesToLoad.join(',')); // Invia i nomi dei fogli come stringa separata da virgole
 
-        // Usa window.BACKEND_URL per l'endpoint di ingestion
-        const response = await fetch(`${window.BACKEND_URL}/ingestion-db-function`, {
+        // CORREZIONEEE: URL COMPLETO della Cloud Function per l'ingestion
+        const ingestionFunctionUrl = "https://europe-west1-segretario-ai-web-app.cloudfunctions.net/ingestion-db-function";
+
+        const response = await fetch(ingestionFunctionUrl, {
             method: 'POST',
             body: formData, // FormData viene inviato come multipart/form-data
         });
 
-        // Leggi la risposta, sia che sia JSON che testo per gli errori
+        // Migliorata gestione degli errori: leggi il body una sola volta e poi parsalo
+        let responseText = await response.text(); 
         let responseData;
+
         try {
-            responseData = await response.json();
-        } catch (jsonError) {
-            // Se la risposta non è JSON, prova a leggerla come testo per un migliore debugging
-            responseData = { message: await response.text() };
+            responseData = JSON.parse(responseText); // Tenta di parsare come JSON
+        } catch (e) {
+            responseData = { message: responseText }; // Se non è JSON, usa il testo grezzo
         }
 
         if (!response.ok) {
-            throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || 'Errore sconosciuto'}`);
+            // Se la risposta non è OK, usa il messaggio dall'oggetto parsato o il testo grezzo
+            throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || responseText || 'Errore sconosciuto'}`);
         }
 
         console.log('Risposta Cloud Function:', responseData);
 
         chatStatus.textContent = "Knowledge Base AI aggiornata con successo! ✅";
-        // Puoi aggiungere qui la logica per ricaricare un eventuale database locale se necessario
-        // Esempio: await reloadLocalKnowledgeBase(); 
         
         alert("Knowledge Base AI aggiornata e pronta all'uso! 🎉");
 
@@ -302,7 +304,7 @@ startChatRecordingBtn.addEventListener('click', () => {
     }
 });
 
-// NUOVO: Event listener per il pulsante di aggiornamento DB
+// Event listener per il pulsante di aggiornamento DB
 if (updateAIDbBtn) { // Controlla se l'elemento esiste prima di aggiungere l'event listener
     updateAIDbBtn.addEventListener('click', updateAIDB);
 }
@@ -310,7 +312,7 @@ if (updateAIDbBtn) { // Controlla se l'elemento esiste prima di aggiungere l'eve
 // Rende closeChatModal accessibile globalmente per onclick in HTML
 window.closeChatModal = closeChatModal;
 
-// Event Listener per l'apertura del modale (già presente, ma per completezza)
+// Event Listener per l'apertura del modale
 openChatModalBtn.addEventListener('click', (event) => {
     event.preventDefault();
     openChatModal();
