@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const cloudFunctionUrl = "https://europe-west1-segretario-ai-web-app.cloudfunctions.net/ingestion-db-function";
 
             // NOMI DEI FOGLI DA CARICARE (MODIFICA QUI!)
-            // Puoi aggiungere o rimuovere i nomi dei fogli che vuoi caricare.
             // Assicurati che questi nomi corrispondano esattamente ai nomi dei tuoi fogli su Google Sheets.
             const sheetNamesToLoad = [
                 'Registrazioni',
