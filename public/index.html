@@ -41,7 +41,7 @@
         <div class="latest-entries">
             <h2>Ultimi Inserimenti</h2>
             <ul id="latestEntriesList" style="list-style: none; padding: 0;">
-                </ul>
+            </ul>
         </div>
     </div>
     
@@ -90,8 +90,6 @@
             </div>
         </div>
     </div>
-
-    <div id="modalOverlay" class="modal-overlay"></div>
 
     <div id="newOrderModal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -325,12 +323,14 @@
         document.querySelector('.new-order-button').addEventListener('click', function(event) {
             event.preventDefault();
             document.getElementById('newOrderModal').style.display = 'block';
+            // Usa l'unico modalOverlay
             document.getElementById('modalOverlay').style.display = 'block';
         });
 
         // Funzione per chiudere il modale "Nuova Commessa"
         function closeNewOrderModal() {
             document.getElementById('newOrderModal').style.display = 'none';
+            // Usa l'unico modalOverlay
             document.getElementById('modalOverlay').style.display = 'none';
         }
 
