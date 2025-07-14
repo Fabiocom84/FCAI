@@ -7,7 +7,7 @@ const chatInput = document.getElementById('chatInput');
 const openChatModalBtn = document.getElementById('openChatModalBtn');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const modalOverlay = document.getElementById('modalOverlay');
+const modalOverlay = document.getElementById('modal('modalOverlay');
 const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
 
 // NUOVO: Elemento DOM per il pulsante di aggiornamento DB
@@ -37,6 +37,12 @@ async function closeChatModal() {
         isRecording = false;
         startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
         startChatRecordingBtn.classList.remove('recording-active');
+    }
+    // Assicurati che lo stato della chat sia pulito alla chiusura
+    if (chatStatus) {
+        chatStatus.textContent = "";
+        chatStatus.style.display = 'none';
+        chatStatus.style.color = '#333'; // Reset del colore
     }
 }
 
@@ -89,20 +95,21 @@ async function sendChatMessage(messageText) {
     addMessage('user', messageText); // Mostra subito il messaggio dell'utente
 
     chatStatus.textContent = "Il Segretario AI sta elaborando..."; // Feedback all'utente
+    chatStatus.style.display = 'block'; // Assicurati che sia visibile
     sendChatMessageBtn.disabled = true; // Disabilita il pulsante invia
     startChatRecordingBtn.disabled = true; // Disabilita il pulsante microfono
-    updateAIDbBtn.disabled = true; // NUOVO: Disabilita il pulsante di aggiornamento DB durante l'elaborazione della chat
+    updateAIDbBtn.disabled = true; // Disabilita il pulsante di aggiornamento DB durante l'elaborazione della chat
 
     const formData = new FormData();
     formData.append('text', messageText); // Invia il testo direttamente
 
     try {
+        // Usa window.BACKEND_URL per l'endpoint della chat
         const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
             body: formData,
         });
 
-        // Modifica qui: il backend ora restituisce JSON, non un blob audio
         const responseData = await response.json(); 
 
         if (!response.ok) {
@@ -110,7 +117,7 @@ async function sendChatMessage(messageText) {
         }
 
         const aiResponseText = responseData.response; // Estrai il testo della risposta
-        const audioBase64 = responseData.audio;     // Estrai l'audio Base64
+        const audioBase64 = responseData.audio;      // Estrai l'audio Base64
 
         if (audioBase64) {
             // Riproduci e mostra il messaggio AI con audio
@@ -125,15 +132,16 @@ async function sendChatMessage(messageText) {
         addMessage('ai', `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`);
     } finally {
         chatStatus.textContent = ""; // Rimuovi il feedback
+        chatStatus.style.display = 'none'; // Nascondi lo stato
         chatInput.value = ''; // Pulisci l'input
         sendChatMessageBtn.disabled = false; // Riabilita il pulsante invia
         startChatRecordingBtn.disabled = false; // Riabilita il pulsante microfono
-        updateAIDbBtn.disabled = false; // NUOVO: Riabilita il pulsante di aggiornamento DB
+        updateAIDbBtn.disabled = false; // Riabilita il pulsante di aggiornamento DB
         chatInput.focus();
     }
 }
 
-// NUOVO: Funzione per aggiornare la Knowledge Base AI
+// NUOVO: Funzione per aggiornare la Knowledge Base AI (UNIFICATA QUI)
 async function updateAIDB() {
     // 1. Doppia conferma
     const confirmation = confirm("Sei sicuro di voler procedere con l'aggiornamento della knowledge base AI? Questa operazione potrebbe richiedere qualche minuto.");
@@ -141,53 +149,70 @@ async function updateAIDB() {
         return; // L'utente ha annullato
     }
 
-    chatStatus.textContent = "Aggiornamento Knowledge Base in corso...";
+    chatStatus.textContent = "Aggiornamento Knowledge Base in corso... Potrebbe richiedere qualche minuto. ⏳";
+    chatStatus.style.display = 'block'; // Assicurati che sia visibile
+    chatStatus.style.color = '#333'; // Reset del colore
     updateAIDbBtn.disabled = true; // Disabilita il pulsante durante l'aggiornamento
     sendChatMessageBtn.disabled = true; // Disabilita anche gli altri pulsanti
     startChatRecordingBtn.disabled = true;
 
     try {
-        // Questi valori dovranno essere specifici per il tuo progetto e Google Sheet.
-        // Potresti doverli passare come variabili globali o da una configurazione frontend.
-        const spreadsheetId = "YOUR_SPREADSHEET_ID_HERE"; // SOSTITUISCI CON L'ID DEL TUO GOOGLE SHEET
-        const sheetName = "YOUR_SHEET_NAME_HERE";       // SOSTITUISCI CON IL NOME DEL FOGLIO
+        // ID del tuo Foglio Google (SOSTITUISCI CON IL TUO ID REALE!)
+        const spreadsheetId = "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8"; 
+        
+        // Nomi dei fogli da caricare (MODIFICA QUI E ASSICURATI SIANO CORRETTI!)
+        const sheetNamesToLoad = [
+            'Registrazioni',
+            'Chat_AI',
+            'Riferimento_Commessa'
+        ];
 
+        const formData = new FormData();
+        formData.append('spreadsheet_id', spreadsheetId);
+        formData.append('sheet_names', sheetNamesToLoad.join(',')); // Invia i nomi dei fogli come stringa separata da virgole
+
+        // Usa window.BACKEND_URL per l'endpoint di ingestion
         const response = await fetch(`${window.BACKEND_URL}/ingestion-db-function`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                spreadsheet_id: spreadsheetId,
-                sheet_name: sheetName
-            }),
+            body: formData, // FormData viene inviato come multipart/form-data
         });
 
-        const responseData = await response.json();
+        // Leggi la risposta, sia che sia JSON che testo per gli errori
+        let responseData;
+        try {
+            responseData = await response.json();
+        } catch (jsonError) {
+            // Se la risposta non è JSON, prova a leggerla come testo per un migliore debugging
+            responseData = { message: await response.text() };
+        }
 
         if (!response.ok) {
             throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || 'Errore sconosciuto'}`);
         }
 
-        chatStatus.textContent = "Knowledge Base aggiornata con successo! Ricaricamento del database locale...";
+        console.log('Risposta Cloud Function:', responseData);
 
-        // *** IMPORTANTE: QUI DEVI AGGIUNGERE LA LOGICA PER RICARICARE IL DATABASE LOCALE DEL FRONTEBD ***
-        // Se il tuo frontend carica una copia locale del DB (es. un client ChromaDB in-browser),
-        // devi chiamare qui la funzione che scarica la versione aggiornata da GCS e la ricarica.
-        // Esempio (potrebbe essere una funzione definita altrove nel tuo codice frontend):
-        // await reloadLocalKnowledgeBase(); // <--- DA IMPLEMENTARE NEL TUO PROGETTO
+        chatStatus.textContent = "Knowledge Base AI aggiornata con successo! ✅";
+        // Puoi aggiungere qui la logica per ricaricare un eventuale database locale se necessario
+        // Esempio: await reloadLocalKnowledgeBase(); 
         
-        chatStatus.textContent = "Knowledge Base AI aggiornata e pronta all'uso! 🎉";
-        alert("Knowledge Base AI aggiornata e pronta all'uso!");
+        alert("Knowledge Base AI aggiornata e pronta all'uso! 🎉");
 
     } catch (error) {
         console.error("Errore nell'aggiornamento della Knowledge Base AI:", error);
-        chatStatus.textContent = `Errore aggiornamento: ${error.message}.`;
+        chatStatus.textContent = `Errore aggiornamento: ${error.message}. Riprova. ❌`;
+        chatStatus.style.color = 'red'; // Rendi il messaggio di errore più visibile
         alert(`Errore nell'aggiornamento della Knowledge Base AI: ${error.message}`);
     } finally {
         updateAIDbBtn.disabled = false; // Riabilita il pulsante
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
+        // Resetta lo stato dopo un breve ritardo in caso di successo o errore
+        setTimeout(() => {
+            chatStatus.textContent = "";
+            chatStatus.style.display = 'none';
+            chatStatus.style.color = '#333';
+        }, 5000);
     }
 }
 
@@ -223,21 +248,29 @@ startChatRecordingBtn.addEventListener('click', () => {
             startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma Registrazione">'; // Cambia icona a stop
             startChatRecordingBtn.classList.add('recording-active');
             chatStatus.textContent = "Registrazione in corso...";
+            chatStatus.style.display = 'block';
+            chatStatus.style.color = '#333';
         };
 
         recognition.onresult = (event) => {
             currentTranscription = event.results[0][0].transcript;
             console.log('Trascrizione parziale/finale:', currentTranscription);
-            // Puoi aggiornare chatInput.value qui se interimResults è true per feedback in tempo reale
             chatInput.value = currentTranscription; 
         };
 
         recognition.onerror = (event) => {
             console.error('Errore di riconoscimento vocale per la chat:', event.error);
             chatStatus.textContent = `Errore registrazione: ${event.error}`;
+            chatStatus.style.color = 'red';
             isRecording = false;
             startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
             startChatRecordingBtn.classList.remove('recording-active');
+            // Ritarda la pulizia dello stato in caso di errore
+            setTimeout(() => {
+                chatStatus.textContent = "";
+                chatStatus.style.display = 'none';
+                chatStatus.style.color = '#333';
+            }, 5000);
         };
 
         recognition.onend = () => {
@@ -245,7 +278,6 @@ startChatRecordingBtn.addEventListener('click', () => {
             isRecording = false;
             startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
             startChatRecordingBtn.classList.remove('recording-active');
-            chatStatus.textContent = "Invio trascrizione...";
             
             // Se c'è una trascrizione finale da inviare
             if (currentTranscription.trim() !== '') {
@@ -254,6 +286,11 @@ startChatRecordingBtn.addEventListener('click', () => {
                 currentTranscription = ''; // Resetta per la prossima registrazione
             } else {
                 chatStatus.textContent = "Nessuna voce rilevata.";
+                chatStatus.style.color = '#333';
+                setTimeout(() => {
+                    chatStatus.textContent = "";
+                    chatStatus.style.display = 'none';
+                }, 3000); // Nascondi dopo 3 secondi se non c'è nulla
             }
         };
 
