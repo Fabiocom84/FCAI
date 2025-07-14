@@ -7,7 +7,7 @@ const chatInput = document.getElementById('chatInput');
 const openChatModalBtn = document.getElementById('openChatModalBtn');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const modalOverlay = document.getElementById('modal('modalOverlay');
+const modalOverlay = document.getElementById('modal('modalOverlay'));
 const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
 
 // NUOVO: Elemento DOM per il pulsante di aggiornamento DB
