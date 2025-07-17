@@ -1,300 +1,297 @@
 // js/chat-modal.js
 
-// Elementi DOM
-const chatModal = document.getElementById('chatModal');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const startChatRecordingBtn = document.getElementById('startChatRecording');
-const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const chatStatus = document.getElementById('chatStatus');
-const updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Pulsante di aggiornamento DB AI
+class ChatModal {
+    constructor(modalId, openButtonSelector) {
+        this.chatModal = document.getElementById(modalId);
+        this.openButton = document.querySelector(openButtonSelector); // Il pulsante che apre il modale
+        this.closeButton = this.chatModal ? this.chatModal.querySelector('.close-button') : null;
+        this.chatMessages = document.getElementById('chatMessages');
+        this.chatInput = document.getElementById('chatInput');
+        this.sendMessageBtn = document.getElementById('sendMessageBtn');
+        this.updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Pulsante per aggiornare Knowledge Base
+        this.stopProcessingBtn = document.getElementById('stopProcessingBtn'); // Pulsante per fermare il processo AI
 
-// Setup del riconoscimento vocale
-let recognition;
-let isRecording = false;
-let currentTranscription = ''; // Per la trascrizione continua
+        this.websocket = null; // WebSocket per la chat (risposte AI)
+        this.currentChatSessionId = null; // ID sessione chat per contesto
 
-// Funzione per aprire il modale della chat
-function openChatModal() {
-    chatModal.style.display = 'flex'; // Usiamo flex per centrare il contenuto del modale
-    window.showOverlay(); // Usa la funzione centralizzata del modal-manager
-    chatInput.focus();
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo ai messaggi esistenti
-}
-window.openChatModal = openChatModal; // Rendi openChatModal accessibile globalmente
-
-// Funzione per chiudere il modale della chat
-async function closeChatModal() {
-    chatModal.style.display = 'none';
-    window.hideOverlay(); // Usa la funzione centralizzata del modal-manager
-    
-    // Ferma la registrazione se attiva
-    if (isRecording && recognition) {
-        recognition.stop();
-        isRecording = false;
-        startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
-        startChatRecordingBtn.classList.remove('recording-active');
-    }
-    // Assicurati che lo stato della chat sia pulito alla chiusura
-    if (chatStatus) {
-        chatStatus.textContent = "";
-        chatStatus.style.display = 'none';
-        chatStatus.style.color = '#333'; // Reset del colore
-    }
-}
-// window.closeChatModal = closeChatModal; // Non più strettamente necessario se usiamo addEventListener
-
-// Funzione per aggiungere un messaggio alla chat UI
-function addMessage(sender, text, audioBase64 = null) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('chat-message', sender);
-    
-    if (text) {
-        const messageContentDiv = document.createElement('div');
-        messageContentDiv.classList.add('message-content');
-        messageContentDiv.textContent = text;
-        messageElement.appendChild(messageContentDiv);
+        // Binding dei metodi al contesto della classe
+        this.addEventListeners();
     }
 
-    if (audioBase64) {
-        const audio = new Audio();
-        audio.src = `data:audio/mpeg;base64,${audioBase64}`;
-        audio.controls = true;
-        audio.autoplay = true; 
-        
-        const audioContainer = document.createElement('div');
-        audioContainer.classList.add('audio-playback');
-        audioContainer.appendChild(audio);
-        messageElement.appendChild(audioContainer);
-
-        audio.onended = () => {
-            console.log("Riproduzione audio completata.");
-        };
-        audio.onerror = (e) => {
-            console.error("Errore durante la riproduzione audio:", e);
-        };
-    }
-
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo
-}
-
-// Funzione per inviare il messaggio alla rotta /api/chat del backend
-async function sendChatMessage(messageText) {
-    if (!messageText.trim()) {
-        console.log("Messaggio vuoto, non invio.");
-        return;
-    }
-
-    addMessage('user', messageText); // Mostra subito il messaggio dell'utente
-
-    chatStatus.textContent = "Il Segretario AI sta elaborando...";
-    chatStatus.style.display = 'block';
-    sendChatMessageBtn.disabled = true;
-    startChatRecordingBtn.disabled = true;
-    updateAIDbBtn.disabled = true;
-
-    const formData = new FormData();
-    formData.append('text', messageText);
-
-    try {
-        const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        const responseData = await response.json(); 
-
-        if (!response.ok) {
-            throw new Error(`Errore del server: ${response.status} - ${responseData.error || 'Errore sconosciuto'}`);
+    addEventListeners() {
+        if (this.openButton) {
+            this.openButton.addEventListener('click', this.open.bind(this));
         }
-
-        const aiResponseText = responseData.response;
-        const audioBase64 = responseData.audio;      
-
-        if (audioBase64) {
-            addMessage('ai', aiResponseText, audioBase64); 
-        } else {
-            addMessage('ai', aiResponseText + " (Audio non disponibile)");
+        if (this.closeButton) {
+            this.closeButton.addEventListener('click', this.close.bind(this));
         }
-
-    } catch (error) {
-        console.error("Errore nell'invio del messaggio alla chat AI:", error);
-        addMessage('ai', `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`);
-    } finally {
-        chatStatus.textContent = "";
-        chatStatus.style.display = 'none';
-        chatInput.value = '';
-        sendChatMessageBtn.disabled = false;
-        startChatRecordingBtn.disabled = false;
-        updateAIDbBtn.disabled = false;
-        chatInput.focus();
-    }
-}
-
-// Funzione per aggiornare la Knowledge Base AI
-async function updateAIDB() {
-    const confirmation = confirm("Sei sicuro di voler procedere con l'aggiornamento della knowledge base AI? Questa operazione potrebbe richiedere qualche minuto.");
-    if (!confirmation) {
-        return;
+        if (this.sendMessageBtn) {
+            this.sendMessageBtn.addEventListener('click', this.sendMessage.bind(this));
+        }
+        if (this.chatInput) {
+            this.chatInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter' && !event.shiftKey) { // Invia con Enter, nuova riga con Shift+Enter
+                    event.preventDefault();
+                    this.sendMessage();
+                }
+            });
+        }
+        if (this.updateAIDbBtn) {
+            this.updateAIDbBtn.addEventListener('click', this.updateAIDb.bind(this));
+        }
+        if (this.stopProcessingBtn) {
+            this.stopProcessingBtn.addEventListener('click', this.stopProcessing.bind(this));
+        }
     }
 
-    chatStatus.textContent = "Aggiornamento Knowledge Base in corso... Potrebbe richiedere qualche minuto. ⏳";
-    chatStatus.style.display = 'block';
-    chatStatus.style.color = '#333';
-    updateAIDbBtn.disabled = true;
-    sendChatMessageBtn.disabled = true;
-    startChatRecordingBtn.disabled = true;
+    open() {
+        if (this.chatModal) {
+            this.chatModal.style.display = 'block';
+            window.showOverlay(); // Funzione centralizzata per l'overlay
+            this.clearChat(); // Pulisci la chat all'apertura
+            this.initializeChatSession(); // Inizializza o recupera sessione
+            console.log('Modale Chat AI aperto.');
+        }
+    }
 
-    try {
-        const spreadsheetId = "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8"; 
-        const sheetNamesToLoad = [
-            'Registrazioni',
-            'Chat_AI',
-            'Riferimento_Commessa'
-        ];
+    close() {
+        if (this.chatModal) {
+            this.chatModal.style.display = 'none';
+            window.hideOverlay(); // Funzione centralizzata per l'overlay
+            this.disconnectWebSocket(); // Disconnetti WebSocket della chat alla chiusura
+            this.currentChatSessionId = null; // Resetta l'ID della sessione
+            console.log('Modale Chat AI chiuso.');
+        }
+    }
 
-        const formData = new FormData();
-        formData.append('spreadsheet_id', spreadsheetId);
-        formData.append('sheet_names', sheetNamesToLoad.join(','));
+    addMessage(message, sender = 'user') {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message', sender);
+        messageElement.textContent = message;
+        this.chatMessages.appendChild(messageElement);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scrolla in fondo
+    }
 
-        const ingestionFunctionUrl = "https://europe-west1-segretario-ai-web-app.cloudfunctions.net/ingestion-db-function";
+    clearChat() {
+        if (this.chatMessages) {
+            this.chatMessages.innerHTML = '';
+        }
+    }
 
-        const response = await fetch(ingestionFunctionUrl, {
-            method: 'POST',
-            body: formData,
-        });
-
-        let responseText = await response.text(); 
-        let responseData;
+    async initializeChatSession() {
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            this.addMessage('Errore: Autenticazione richiesta per la chat.', 'ai');
+            return;
+        }
 
         try {
-            responseData = JSON.parse(responseText);
-        } catch (e) {
-            responseData = { message: responseText };
+            const response = await fetch(`${window.BACKEND_URL}/api/chat/session`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Errore nell'inizializzazione della sessione chat: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            this.currentChatSessionId = data.session_id;
+            console.log('Sessione chat inizializzata:', this.currentChatSessionId);
+            this.addMessage('Chat AI: Ciao! Sono il tuo assistente. Come posso aiutarti oggi?', 'ai');
+            this.connectWebSocketForChat(); // Connetti il WebSocket per le risposte in tempo reale
+        } catch (error) {
+            console.error('Errore durante l\'inizializzazione della sessione chat:', error);
+            this.addMessage('Errore durante l\'inizializzazione della chat. Riprova più tardi.', 'error');
+        }
+    }
+
+    connectWebSocketForChat() {
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.websocket.close();
         }
 
-        if (!response.ok) {
-            throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || responseText || 'Errore sconosciuto'}`);
+        if (!this.currentChatSessionId) {
+            console.error('Impossibile connettersi al WebSocket: ID sessione chat non disponibile.');
+            return;
         }
 
-        console.log('Risposta Cloud Function:', responseData);
+        const websocketBaseUrl = window.BACKEND_URL.replace('https://', 'wss://');
+        const wsUrl = `${websocketBaseUrl}/ws/chat/${this.currentChatSessionId}`;
+        this.websocket = new WebSocket(wsUrl);
 
-        chatStatus.textContent = "Knowledge Base AI aggiornata con successo! ✅";
-        
-        alert("Knowledge Base AI aggiornata e pronta all'uso! 🎉");
-
-    } catch (error) {
-        console.error("Errore nell'aggiornamento della Knowledge Base AI:", error);
-        chatStatus.textContent = `Errore aggiornamento: ${error.message}. Riprova. ❌`;
-        chatStatus.style.color = 'red';
-        alert(`Errore nell'aggiornamento della Knowledge Base AI: ${error.message}`);
-    } finally {
-        updateAIDbBtn.disabled = false;
-        sendChatMessageBtn.disabled = false;
-        startChatRecordingBtn.disabled = false;
-        setTimeout(() => {
-            chatStatus.textContent = "";
-            chatStatus.style.display = 'none';
-            chatStatus.style.color = '#333';
-        }, 5000);
-    }
-}
-
-// --- Event Listeners ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Aggiungo event listener per il pulsante di chiusura del modale
-    const closeChatBtn = chatModal.querySelector('.close-button');
-    if (closeChatBtn) {
-        closeChatBtn.addEventListener('click', closeChatModal);
-    }
-});
-
-
-// Event listener per il pulsante "Invia" (testo digitato)
-sendChatMessageBtn.addEventListener('click', () => {
-    sendChatMessage(chatInput.value);
-});
-
-// Event listener per inviare con "Invio" nel campo di testo
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendChatMessage(chatInput.value);
-    }
-});
-
-// Event listener per il pulsante "Registra Vocale" (nuova logica per chat AI)
-startChatRecordingBtn.addEventListener('click', () => {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Spiacente, il riconoscimento vocale non è supportato dal tuo browser. Prova Chrome.");
-        return;
-    }
-
-    if (!isRecording) {
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'it-IT';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-            console.log('Registrazione vocale avviata per la chat...');
-            isRecording = true;
-            startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma Registrazione">';
-            startChatRecordingBtn.classList.add('recording-active');
-            chatStatus.textContent = "Registrazione in corso...";
-            chatStatus.style.display = 'block';
-            chatStatus.style.color = '#333';
+        this.websocket.onopen = () => {
+            console.log('WebSocket Chat connesso.');
         };
 
-        recognition.onresult = (event) => {
-            currentTranscription = event.results[0][0].transcript;
-            console.log('Trascrizione parziale/finale:', currentTranscription);
-            chatInput.value = currentTranscription; 
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Errore di riconoscimento vocale per la chat:', event.error);
-            chatStatus.textContent = `Errore registrazione: ${event.error}`;
-            chatStatus.style.color = 'red';
-            isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
-            startChatRecordingBtn.classList.remove('recording-active');
-            setTimeout(() => {
-                chatStatus.textContent = "";
-                chatStatus.style.display = 'none';
-                chatStatus.style.color = '#333';
-            }, 5000);
-        };
-
-        recognition.onend = () => {
-            console.log('Registrazione vocale terminata per la chat.');
-            isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
-            startChatRecordingBtn.classList.remove('recording-active');
-            
-            if (currentTranscription.trim() !== '') {
-                chatInput.value = currentTranscription;
-                sendChatMessage(currentTranscription);
-                currentTranscription = '';
-            } else {
-                chatStatus.textContent = "Nessuna voce rilevata.";
-                chatStatus.style.color = '#333';
-                setTimeout(() => {
-                    chatStatus.textContent = "";
-                    chatStatus.style.display = 'none';
-                    chatStatus.style.color = '#333';
-                }, 3000);
+        this.websocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'response') {
+                this.addMessage(data.message, 'ai');
+            } else if (data.type === 'error') {
+                this.addMessage(`Errore AI: ${data.message}`, 'error');
             }
         };
 
-        recognition.start();
-    } else {
-        recognition.stop();
-    }
-});
+        this.websocket.onclose = (event) => {
+            console.log('WebSocket Chat disconnesso:', event.code, event.reason);
+            this.addMessage('Chat disconnessa. Se hai bisogno, apri nuovamente il modale.', 'info');
+        };
 
-// Event listener per il pulsante di aggiornamento DB AI
-if (updateAIDbBtn) {
-    updateAIDbBtn.addEventListener('click', updateAIDB);
+        this.websocket.onerror = (error) => {
+            console.error('Errore WebSocket Chat:', error);
+            this.addMessage('Errore di connessione alla chat. Riprova.', 'error');
+        };
+    }
+
+    disconnectWebSocket() {
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.websocket.close();
+            this.websocket = null;
+            console.log('WebSocket Chat disconnesso forzatamente.');
+        }
+    }
+
+    async sendMessage() {
+        const message = this.chatInput.value.trim();
+        if (!message) return;
+
+        this.addMessage(message, 'user');
+        this.chatInput.value = ''; // Pulisci l'input
+
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            this.addMessage('Autenticazione richiesta per inviare messaggi.', 'ai');
+            return;
+        }
+        if (!this.currentChatSessionId) {
+            this.addMessage('Errore: Sessione chat non inizializzata. Prova a riaprire il modale.', 'ai');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/chat/message`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    session_id: this.currentChatSessionId,
+                    message: message
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Errore durante l\'invio del messaggio.');
+            }
+            // Le risposte AI arriveranno via WebSocket, quindi non gestiamo qui la risposta HTTP
+        } catch (error) {
+            console.error('Errore nell\'invio del messaggio:', error);
+            this.addMessage(`Errore: ${error.message}`, 'error');
+        }
+    }
+
+    // Funzione per aggiornare la Knowledge Base AI
+    async updateAIDb() {
+        console.log('Avvio aggiornamento Knowledge Base AI...');
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Autenticazione richiesta per aggiornare la Knowledge Base.');
+            return;
+        }
+
+        // Disabilita il pulsante e cambia l'icona
+        if (this.updateAIDbBtn) {
+            this.updateAIDbBtn.disabled = true;
+            this.updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Immagine di caricamento
+            this.updateAIDbBtn.title = 'Aggiornamento in corso...';
+        }
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/update-knowledge-base`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Errore nell\'avvio dell\'aggiornamento della Knowledge Base.');
+            }
+
+            const result = await response.json();
+            const processId = result.process_id;
+            console.log('Aggiornamento KB avviato. ID processo:', processId);
+            alert('Aggiornamento Knowledge Base AI avviato! Controlla i log per lo stato.');
+
+            // Apre il modale dei log e connette il WebSocket specifico per i log
+            if (window.openKnowledgeLogsModal && typeof window.connectWebSocketForLogs === 'function') {
+                window.openKnowledgeLogsModal();
+                window.connectWebSocketForLogs(processId); // Passa l'ID del processo ai log
+            } else {
+                console.warn('Funzioni per la gestione dei log della Knowledge Base non disponibili.');
+            }
+
+        } catch (error) {
+            console.error('Errore nell\'avviare l\'aggiornamento della Knowledge Base:', error);
+            alert('Errore nell\'avviare l\'aggiornamento della Knowledge Base: ' + error.message);
+        } finally {
+            // Non riabilitare il pulsante qui, perché la riabilitazione è gestita dal knowledge-logs-modal.js
+            // quando il processo di aggiornamento termina o fallisce.
+        }
+    }
+
+    async stopProcessing() {
+        console.log('Richiesta di interruzione processo AI...');
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Autenticazione richiesta per interrompere il processo.');
+            return;
+        }
+
+        // Recupera l'ID del processo corrente dalla chat o da un'altra fonte se necessario
+        // Per semplicità, potremmo usare un currentProcessId qui se la chat lo genera
+        // o fare in modo che il backend interrompa l'ultimo processo avviato dall'utente
+        const processIdToStop = this.currentChatSessionId; // O un processId specifico di update KB
+
+        if (!processIdToStop) {
+            alert('Nessun processo attivo da interrompere.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/stop-process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ process_id: processIdToStop })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Errore durante l\'invio del comando di interruzione.');
+            }
+
+            const result = await response.json();
+            alert(result.message || 'Comando di interruzione inviato con successo.');
+            console.log('Comando di interruzione processo AI inviato:', result);
+        } catch (error) {
+            console.error('Errore nell\'interruzione del processo AI:', error);
+            alert('Errore nell\'interruzione del processo AI: ' + error.message);
+        }
+    }
 }
+
+// Inizializza il modale Chat AI quando il DOM è pronto
+document.addEventListener('DOMContentLoaded', () => {
+    // Istanzia la classe e la rende disponibile globalmente per main.js
+    window.chatModalInstance = new ChatModal('chatModal', '#openChatModalBtn');
+});

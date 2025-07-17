@@ -1,7 +1,6 @@
 // js/main.js
 
 // Assumi che window.BACKEND_URL sia definito in config.js
-// Se config.js non lo rende globale, potresti doverlo importare o definire qui se è solo per questo file.
 // Per consistenza con i modali, useremo window.BACKEND_URL.
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.log('Token trovato. Caricamento dati iniziali.');
         // Chiamata per caricare gli ultimi inserimenti una volta autenticato
-        // Assicurati che fetchLatestEntries sia definito globalmente (es. in script.js)
         if (typeof fetchLatestEntries === 'function') {
             fetchLatestEntries();
         } else {
@@ -26,16 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Inizializzazione Event Listeners per l'apertura dei Modali ---
 
     // Event listener per aprire il modale "Nuova Commessa"
+    // Questo pulsante ora attiva il metodo 'open' dell'istanza della classe NewOrderModal
     const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
     if (openNewOrderModalBtn) {
         openNewOrderModalBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            // Chiama la funzione globale definita in new-order-modal.js
-            if (typeof openNewOrderModal === 'function') {
-                openNewOrderModal();
+            if (window.newOrderModalInstance && typeof window.newOrderModalInstance.open === 'function') {
+                window.newOrderModalInstance.open(event);
             } else {
-                console.error('La funzione openNewOrderModal non è definita.');
-                // Fallback (solo per debug, dovrebbe essere rimosso in produzione se la modularizzazione è completa)
+                console.error('L\'istanza newOrderModalInstance o la sua funzione open() non è definita. Assicurati che new-order-modal.js sia caricato e istanziato correttamente.');
+                // Fallback (da rimuovere in produzione)
                 document.getElementById('newOrderModal').style.display = 'block';
                 window.showOverlay();
             }
@@ -43,17 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener per aprire il modale "Inserisci Dati"
+    // Questo pulsante attiva il metodo 'open' dell'istanza della classe InsertDataModal
     const openInsertDataModalBtn = document.getElementById('openInsertDataModalBtn');
     if (openInsertDataModalBtn) {
         openInsertDataModalBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            // Chiama la funzione globale definita in insert-data-modal.js (se esposta)
-            // Se usi una classe, dovresti chiamare window.insertModalInstance.open()
             if (window.insertModalInstance && typeof window.insertModalInstance.open === 'function') {
                 window.insertModalInstance.open();
             } else {
-                console.error('L\'istanza insertModalInstance o la sua funzione open() non è definita.');
-                 // Fallback
+                console.error('L\'istanza insertModalInstance o la sua funzione open() non è definita. Assicurati che insert-data-modal.js sia caricato e istanziato correttamente.');
+                // Fallback (da rimuovere in produzione)
                 document.getElementById('insertDataModal').style.display = 'block';
                 window.showOverlay();
             }
@@ -61,16 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener per aprire il modale "Chat AI"
+    // Questo pulsante attiva il metodo 'open' dell'istanza della classe ChatModal
     const openChatModalBtn = document.getElementById('openChatModalBtn');
     if (openChatModalBtn) {
         openChatModalBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            // Chiama la funzione globale definita in chat-modal.js
-            if (typeof openChatModal === 'function') {
-                openChatModal();
+            if (window.chatModalInstance && typeof window.chatModalInstance.open === 'function') {
+                window.chatModalInstance.open();
             } else {
-                console.error('La funzione openChatModal non è definita.');
-                // Fallback
+                console.error('L\'istanza chatModalInstance o la sua funzione open() non è definita. Assicurati che chat-modal.js sia caricato e istanziato correttamente.');
+                // Fallback (da rimuovere in produzione)
                 document.getElementById('chatModal').style.display = 'block';
                 window.showOverlay();
             }
@@ -78,16 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener per aprire il modale "Knowledge Logs"
-    // Questo pulsante si trova solitamente nel chat-modal, ma se è anche qui, lo gestiamo.
-    const updateAIDbBtn = document.getElementById('updateAIDbBtn');
+    // Questo pulsante ora attiva il metodo 'open' dell'istanza della classe KnowledgeLogsModal
+    const updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Questo pulsante potrebbe essere nel chat-modal o nella pagina principale
     if (updateAIDbBtn) {
         updateAIDbBtn.addEventListener('click', function() {
-            // Chiama la funzione globale definita in knowledge-logs-modal.js
-            if (typeof openKnowledgeLogsModal === 'function') {
-                openKnowledgeLogsModal();
+            if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.open === 'function') {
+                window.knowledgeLogsModalInstance.open();
             } else {
-                console.error('La funzione openKnowledgeLogsModal non è definita.');
-                // Fallback
+                console.error('L\'istanza knowledgeLogsModalInstance o la sua funzione open() non è definita. Assicurati che knowledge-logs-modal.js sia caricato e istanziato correttamente.');
+                // Fallback (da rimuovere in produzione)
                 document.getElementById('knowledgeLogsModal').style.display = 'block';
                 window.showOverlay();
             }
@@ -106,24 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// --- Funzioni Globali (se definite altrove, rimuovere da qui) ---
-// Rimuovi tutte queste funzioni closeXModal() se sono già definite nei rispettivi file dei modali
-// e sono rese globali tramite window.closeXModal = closeXModal;
-// Dovrebbero essere gestite dai singoli file dei modali.
+// --- Funzioni Globali Necessarie ---
 
-/*
-// Esempio:
-// function closeNewOrderModal() {
-//     document.getElementById('newOrderModal').style.display = 'none';
-//     window.hideOverlay();
-// }
-// window.closeNewOrderModal = closeNewOrderModal;
-
-// ... e così via per closeInsertModal, closeChatModal, closeKnowledgeLogsModal
-*/
-
-// La funzione fetchLatestEntries dovrebbe essere definita in script.js e resa globale lì.
-// La mantengo qui solo come promemoria, ma idealmente la sua definizione non dovrebbe essere in main.js.
+/**
+ * Funzione per recuperare e visualizzare gli ultimi inserimenti dalla tabella principale.
+ * Questa funzione è resa globale per essere accessibile da altre parti dell'applicazione (es. dopo un salvataggio).
+ */
 async function fetchLatestEntries() {
     const latestEntriesList = document.getElementById('latestEntriesList');
     if (!latestEntriesList) {
@@ -135,11 +119,9 @@ async function fetchLatestEntries() {
         const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!token) {
             console.warn('Token di autenticazione non trovato per il recupero degli ultimi inserimenti.');
-            // Già reindirizzato all'inizio di main.js, ma una doppia verifica non fa male.
             return;
         }
 
-        // Usa window.BACKEND_URL per coerenza con gli altri file dei modali
         const response = await fetch(`${window.BACKEND_URL}/api/latest-entries`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -149,7 +131,7 @@ async function fetchLatestEntries() {
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
                 console.error('Autenticazione fallita o non autorizzato per gli ultimi inserimenti. Reindirizzamento al login.');
-                localStorage.removeItem('authToken'); // Pulisci token non validi
+                localStorage.removeItem('authToken');
                 sessionStorage.removeItem('authToken');
                 window.location.href = '/login.html';
             }
@@ -161,10 +143,7 @@ async function fetchLatestEntries() {
         if (data && Array.isArray(data)) {
             data.forEach(entry => {
                 const li = document.createElement('li');
-                // Assumi che 'entry' sia un oggetto e tu voglia visualizzare una proprietà, es. entry.name o entry.commessa
-                // Se 'entry' è già una stringa, allora li.textContent = entry; va bene.
-                // Altrimenti, adatta a come i dati JSON sono strutturati.
-                li.textContent = entry.commessa ? `Commessa: ${entry.commessa} - Cliente: ${entry.cliente}` : entry; 
+                li.textContent = entry.commessa ? `Commessa: ${entry.commessa} - Cliente: ${entry.cliente}` : entry;
                 latestEntriesList.appendChild(li);
             });
             console.log('Dati ultimi inserimenti ricevuti:', data);
@@ -177,5 +156,7 @@ async function fetchLatestEntries() {
     }
 }
 
+// Rendi fetchLatestEntries globale, dato che è usata anche da insert-data-modal.js
+window.fetchLatestEntries = fetchLatestEntries;
 
 console.log('Main script loaded.');

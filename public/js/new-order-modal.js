@@ -1,235 +1,196 @@
 // js/new-order-modal.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
-    const newOrderModal = document.getElementById('newOrderModal');
-    // Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
-    const closeNewOrderModalBtn = newOrderModal.querySelector('.close-button');
-    const saveNewOrderButton = document.getElementById('saveNewOrderButton');
+class NewOrderModal {
+    constructor(modalId, closeButtonSelector, openButtonSelector) {
+        this.newOrderModal = document.getElementById(modalId);
+        this.closeButton = this.newOrderModal ? this.newOrderModal.querySelector(closeButtonSelector) : null;
+        this.openButton = document.querySelector(openButtonSelector); // Se c'è un pulsante dedicato all'apertura del modale
+        
+        // Elementi del form
+        this.clienteInput = document.getElementById('newOrderCliente');
+        this.impiantoInput = document.getElementById('newOrderImpianto');
+        this.modelloSelect = document.getElementById('newOrderModello');
+        this.voInput = document.getElementById('newOrderVO');
+        this.commessaInput = document.getElementById('newOrderCommessa');
+        this.dataInput = document.getElementById('newOrderData');
+        this.provinciaInput = document.getElementById('newOrderProvincia');
+        this.paeseInput = document.getElementById('newOrderPaese');
+        this.annoInput = document.getElementById('newOrderAnno');
+        this.matricolaInput = document.getElementById('newOrderMatricola');
+        this.statusSelect = document.getElementById('newOrderStatus');
+        this.noteTextarea = document.getElementById('newOrderNote');
+        this.immagineInput = document.getElementById('newOrderImmagine');
+        this.saveNewOrderButton = document.getElementById('saveNewOrderButton');
 
-    // Elementi dei dropdown
-    const modelloSelect = document.getElementById('newOrderModello');
-    const statusSelect = document.getElementById('newOrderStatus');
-
-    // Elementi per l'animazione di caricamento
-    const loadingIndicator = document.createElement('div');
-    loadingIndicator.id = 'newOrderLoadingIndicator';
-    loadingIndicator.style.display = 'none'; // Inizialmente nascosto
-    loadingIndicator.style.position = 'absolute';
-    loadingIndicator.style.top = '50%';
-    loadingIndicator.style.left = '50%';
-    loadingIndicator.style.transform = 'translate(-50%, -50%)';
-    loadingIndicator.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-    loadingIndicator.style.padding = '20px';
-    loadingIndicator.style.borderRadius = '8px';
-    loadingIndicator.style.zIndex = '1000';
-    loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = `
-        <div class="spinner" style="
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #007bff;
-            animation: spin 1s ease infinite;
-            margin: 0 auto 10px;
-        "></div>
-        <p>Salvataggio in corso...</p>
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-    newOrderModal.appendChild(loadingIndicator); // Aggiungi l'indicatore al modale
-
-    // Funzione per mostrare l'indicatore di caricamento
-    function showLoading() {
-        loadingIndicator.style.display = 'block';
-        saveNewOrderButton.disabled = true; // Disabilita il pulsante durante il caricamento
-        saveNewOrderButton.style.opacity = '0.7';
-        saveNewOrderButton.style.cursor = 'not-allowed';
+        this.addEventListeners();
+        this.populateDropdowns(); // Popola i dropdown all'inizializzazione
     }
 
-    // Funzione per nascondere l'indicatore di caricamento
-    function hideLoading() {
-        loadingIndicator.style.display = 'none';
-        saveNewOrderButton.disabled = false; // Riabilita il pulsante
-        saveNewOrderButton.style.opacity = '1';
-        saveNewOrderButton.style.cursor = 'pointer';
+    addEventListeners() {
+        if (this.openButton) {
+            this.openButton.addEventListener('click', this.open.bind(this));
+        }
+        if (this.closeButton) {
+            this.closeButton.addEventListener('click', this.close.bind(this));
+        }
+        if (this.saveNewOrderButton) {
+            this.saveNewOrderButton.addEventListener('click', this.saveNewOrder.bind(this));
+        }
     }
 
-    // Funzione per aprire il modale
-    if (openNewOrderModalBtn) {
-        openNewOrderModalBtn.addEventListener('click', async (event) => {
-            event.preventDefault();
-            newOrderModal.style.display = 'block';
-            window.showOverlay(); // Usa la funzione centralizzata
+    open() {
+        if (this.newOrderModal) {
+            this.newOrderModal.style.display = 'block';
+            window.showOverlay(); // Funzione centralizzata per l'overlay
+            this.clearForm(); // Pulisci il form ogni volta che apri il modale
             console.log('Modale Nuova Commessa aperto.');
-            await fetchDynamicDropdownOptions();
-        });
+        }
     }
 
-    // Funzione per chiudere il modale e resettare il form
-    window.closeNewOrderModal = function() {
-        newOrderModal.style.display = 'none';
-        window.hideOverlay(); // Usa la funzione centralizzata
-        // Resetta i campi del form quando il modale viene chiuso
-        document.getElementById('newOrderCliente').value = '';
-        document.getElementById('newOrderImpianto').value = '';
-        if (modelloSelect) modelloSelect.selectedIndex = 0;
-        if (statusSelect) statusSelect.selectedIndex = 0;
-        document.getElementById('newOrderVO').value = '';
-        document.getElementById('newOrderCommessa').value = '';
-        document.getElementById('newOrderData').value = '';
-        document.getElementById('newOrderProvincia').value = '';
-        document.getElementById('newOrderPaese').value = '';
-        document.getElementById('newOrderAnno').value = '';
-        document.getElementById('newOrderMatricola').value = '';
-        document.getElementById('newOrderNote').value = '';
-        document.getElementById('newOrderImmagine').value = '';
-        hideLoading(); // Assicurati che l'indicatore sia nascosto alla chiusura
-        console.log('Modale Nuova Commessa chiuso e form resettato.');
-    };
-
-    // Event listener per il pulsante di chiusura (X)
-    if (closeNewOrderModalBtn) {
-        closeNewOrderModalBtn.addEventListener('click', () => {
-            closeNewOrderModal();
-        });
+    close() {
+        if (this.newOrderModal) {
+            this.newOrderModal.style.display = 'none';
+            window.hideOverlay(); // Funzione centralizzata per l'overlay
+            console.log('Modale Nuova Commessa chiuso.');
+        }
     }
 
-    // Rimosso: Il listener per l'overlay è gestito centralmente in modal-manager.js
-    // if (modalOverlay) {
-    //     modalOverlay.addEventListener('click', (event) => {
-    //         if (event.target === modalOverlay) {
-    //             closeNewOrderModal();
-    //         }
-    //     });
-    // }
-
-    // Gestione del salvataggio dei dati
-    if (saveNewOrderButton) {
-        saveNewOrderButton.addEventListener('click', async () => {
-            console.log('Pulsante "Salva Nuova Commessa" cliccato.');
-
-            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            if (!authToken) {
-                alert('Autenticazione richiesta. Effettua il login.');
-                window.location.href = '/login.html';
-                return;
-            }
-
-            const cliente = document.getElementById('newOrderCliente').value;
-            const impianto = document.getElementById('newOrderImpianto').value;
-            const modello = modelloSelect.value;
-            const vo = document.getElementById('newOrderVO').value;
-            const commessa = document.getElementById('newOrderCommessa').value;
-            const data = document.getElementById('newOrderData').value;
-            const provincia = document.getElementById('newOrderProvincia').value;
-            const paese = document.getElementById('newOrderPaese').value;
-            const anno = document.getElementById('newOrderAnno').value;
-            const matricola = document.getElementById('newOrderMatricola').value;
-            const status = statusSelect.value;
-            const note = document.getElementById('newOrderNote').value;
-            const immagineFile = document.getElementById('newOrderImmagine').files[0];
-
-            if (!cliente || !impianto || !modello || !commessa || !data || !status) {
-                alert('Per favore, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('cliente', cliente);
-            formData.append('impianto', impianto);
-            formData.append('modello', modello);
-            formData.append('vo', vo);
-            formData.append('commessa', commessa);
-            formData.append('data', data);
-            formData.append('provincia', provincia);
-            formData.append('paese', paese);
-            formData.append('anno', anno);
-            formData.append('matricola', matricola);
-            formData.append('status', status);
-            formData.append('note', note);
-            if (immagineFile) {
-                formData.append('immagine', immagineFile);
-            }
-
-            showLoading(); // Mostra l'indicatore di caricamento
-
-            try {
-                const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Errore durante il salvataggio della commessa.');
-                }
-
-                const result = await response.json();
-                console.log('Commessa salvata con successo:', result);
-                alert('Nuova commessa aggiunta con successo!');
-                closeNewOrderModal();
-
-            } catch (error) {
-                console.error('Errore nel salvataggio della nuova commessa:', error);
-                alert('Errore nel salvataggio della nuova commessa: ' + error.message);
-            } finally {
-                hideLoading(); // Nascondi l'indicatore di caricamento in ogni caso
-            }
-        });
+    clearForm() {
+        if (this.clienteInput) this.clienteInput.value = '';
+        if (this.impiantoInput) this.impiantoInput.value = '';
+        if (this.modelloSelect) this.modelloSelect.selectedIndex = 0; // Seleziona la prima opzione (disabilitata)
+        if (this.voInput) this.voInput.value = '';
+        if (this.commessaInput) this.commessaInput.value = '';
+        if (this.dataInput) this.dataInput.value = '';
+        if (this.provinciaInput) this.provinciaInput.value = '';
+        if (this.paeseInput) this.paeseInput.value = '';
+        if (this.annoInput) this.annoInput.value = '';
+        if (this.matricolaInput) this.matricolaInput.value = '';
+        if (this.statusSelect) this.statusSelect.selectedIndex = 0; // Seleziona la prima opzione (disabilitata)
+        if (this.noteTextarea) this.noteTextarea.value = '';
+        if (this.immagineInput) this.immagineInput.value = ''; // Resetta il campo file
     }
 
-    async function fetchDynamicDropdownOptions() {
+    async populateDropdowns() {
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            console.warn('Nessun token di autenticazione trovato per caricare i dropdown.');
+            console.error('Autenticazione richiesta per popolare i dropdown.');
             return;
         }
 
-        const backendUrl = window.BACKEND_URL;
+        // Popola Modello dropdown
+        if (this.modelloSelect) {
+            try {
+                const response = await fetch(`${window.BACKEND_URL}/api/models`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const models = await response.json();
+                this.modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    this.modelloSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Errore nel recupero dei modelli:', error);
+            }
+        }
 
-        try {
-            const modelloResponse = await fetch(`${backendUrl}/api/get-modelli`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!modelloResponse.ok) throw new Error('Errore nel recupero dei modelli.');
-            const modelli = await modelloResponse.json();
-            
-            modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
-            modelli.forEach(modello => {
-                const option = document.createElement('option');
-                option.value = modello;
-                option.textContent = modello;
-                modelloSelect.appendChild(option);
-            });
-            console.log('Dropdown Modelli popolato.');
-
-            const statusResponse = await fetch(`${backendUrl}/api/get-status`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
-            const statuses = await statusResponse.json();
-
-            statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
-            statuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                statusSelect.appendChild(option);
-            });
-            console.log('Dropdown Status popolato.');
-
-        } catch (error) {
-            console.error('Errore nel caricamento delle opzioni dropdown:', error);
-            alert('Errore nel caricamento delle opzioni per Modello e Status. Riprova più tardi.');
+        // Popola Status dropdown
+        if (this.statusSelect) {
+            try {
+                const response = await fetch(`${window.BACKEND_URL}/api/statuses`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const statuses = await response.json();
+                this.statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    this.statusSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Errore nel recupero degli status:', error);
+            }
         }
     }
+
+    async saveNewOrder() {
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Autenticazione richiesta per salvare una nuova commessa.');
+            return;
+        }
+
+        const newOrderData = {
+            cliente: this.clienteInput.value,
+            impianto: this.impiantoInput.value,
+            modello: this.modelloSelect.value,
+            vo: this.voInput.value,
+            commessa: this.commessaInput.value,
+            data: this.dataInput.value,
+            provincia: this.provinciaInput.value,
+            paese: this.paeseInput.value,
+            anno: parseInt(this.annoInput.value),
+            matricola: this.matricolaInput.value,
+            status: this.statusSelect.value,
+            note: this.noteTextarea.value
+        };
+
+        // Gestione dell'immagine (se presente)
+        const imageData = this.immagineInput.files[0];
+        const formData = new FormData();
+
+        for (const key in newOrderData) {
+            formData.append(key, newOrderData[key]);
+        }
+        if (imageData) {
+            formData.append('immagine', imageData);
+        }
+
+        this.saveNewOrderButton.disabled = true; // Disabilita il pulsante durante il salvataggio
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                    // Non impostare 'Content-Type' per FormData, il browser lo fa automaticamente
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            alert('Nuova commessa salvata con successo!');
+            console.log('Risposta salvataggio nuova commessa:', result);
+            this.clearForm(); // Pulisci il form dopo il successo
+            this.close(); // Chiudi il modale
+            
+            // Aggiorna la lista degli ultimi inserimenti sulla pagina principale
+            if (typeof window.fetchLatestEntries === 'function') {
+                window.fetchLatestEntries();
+            }
+
+        } catch (error) {
+            console.error('Errore durante il salvataggio della nuova commessa:', error);
+            alert('Errore durante il salvataggio della nuova commessa: ' + error.message);
+        } finally {
+            this.saveNewOrderButton.disabled = false; // Riabilita il pulsante
+        }
+    }
+}
+
+// Inizializza il modale Nuova Commessa quando il DOM è pronto
+document.addEventListener('DOMContentLoaded', () => {
+    // Istanzia la classe e la rende disponibile globalmente per main.js
+    window.newOrderModalInstance = new NewOrderModal('newOrderModal', '.close-button', '#openNewOrderModalBtn');
 });
