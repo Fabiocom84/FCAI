@@ -117,7 +117,7 @@ async function sendChatMessage(messageText) {
         }
 
         const aiResponseText = responseData.response; // Estrai il testo della risposta
-        const audioBase64 = responseData.audio;       // Estrai l'audio Base64
+        const audioBase64 = responseData.audio;        // Estrai l'audio Base64
 
         if (audioBase64) {
             // Riproduci e mostra il messaggio AI con audio

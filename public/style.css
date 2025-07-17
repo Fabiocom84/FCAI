@@ -302,6 +302,38 @@ h1 {
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
+/* Nuovo stile per il pulsante Aggiorna AI DB */
+#updateAIDbBtn {
+    background-color: #6c757d; /* Grigio scuro, come un'azione secondaria */
+    flex-basis: calc(50% - 7.5px); /* Mantieni la stessa larghezza degli altri pulsanti */
+    max-width: calc(50% - 7.5px);
+    margin-top: 0; /* Rimuovi margine superiore, gestito dal gap */
+}
+
+#updateAIDbBtn:hover {
+    background-color: #545b62; /* Grigio più scuro all'hover */
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+#updateAIDbBtn img {
+    max-width: 45px; /* Icone leggermente più grandi */
+    max-height: 45px;
+    margin-bottom: 8px; /* Spazio tra icona e testo */
+}
+
+#updateAIDbBtn span {
+    display: block; /* Assicura che il testo vada a capo sotto l'icona */
+    font-size: 1em; /* Dimensione del font per il testo del pulsante */
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap; /* Impedisce al testo di andare a capo */
+    overflow: hidden; /* Nasconde il testo che sfora */
+    text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
+    color: inherit; /* Assicura che erediti il colore bianco dal .button */
+}
+
+
 .latest-entries {
     margin-top: 0; /* Rimosso il margine superiore, useremo il gap del wrapper */
     padding: 20px; /* Padding aumentato */
@@ -852,6 +884,11 @@ h1 {
         margin-right: 0;
         margin-bottom: 0; /* Il gap gestisce lo spazio */
     }
+    /* Adattamenti specifici per il pulsante Aggiorna AI DB su mobile */
+    #updateAIDbBtn {
+        flex-basis: 100%; /* Occupa tutta la larghezza */
+        max-width: 100%;
+    }
     .modal {
         padding: 20px;
     }
@@ -895,57 +932,36 @@ h1 {
     }
 }
 
-/* Stile per pulsanti con solo icona (es. il nuovo pulsante "Aggiorna AI DB") */
-.icon-button {
-    background-color: #007bff; /* Un blu standard per i pulsanti informativi */
-    color: white;
-    border: none;
-    border-radius: 50%; /* Rendi il pulsante rotondo */
-    width: 45px; /* Dimensione fissa per rotondità */
-    height: 45px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impedisce al pulsante di ridursi */
-    padding: 0; /* Rimuovi padding predefinito */
+/* NUOVI STILI PER KNOWLEDGE LOGS MODAL */
+.knowledge-logs-modal-content {
+    /* Potrebbe ereditare molto da .modal-content, ma potresti voler tweaks specifici */
+    /* Ad esempio, se vuoi un'altezza fissa o una gestione dello scroll diversa */
 }
 
-.icon-button:hover {
-    background-color: #0056b3; /* Blu più scuro all'hover */
-    transform: translateY(-1px);
+.knowledge-logs-display {
+    background-color: #e9ecef; /* Sfondo leggermente grigio per i log */
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    max-height: 300px; /* Altezza massima per la finestra dei log */
+    overflow-y: auto; /* Abilita lo scroll verticale se i log sono molti */
+    font-family: 'monospace'; /* Font monospaced per i log è spesso preferibile */
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #343a40;
 }
 
-.icon-button img {
-    width: 24px; /* Dimensione dell'icona all'interno del pulsante */
-    height: 24px;
+#knowledgeLogsList {
+    list-style: none; /* Rimuovi i pallini della lista */
+    padding: 0;
+    margin: 0;
 }
 
-/* Stile specifico per il pulsante di aggiornamento AI DB, con margine per distanziare */
-#updateAIDbBtn {
-    background-color: #6c757d; /* Grigio scuro, come un'azione secondaria */
-    margin-right: 30px; /* Aggiungi un margine a destra per distanziarlo dagli altri */
+#knowledgeLogsList li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #ced4da; /* Separatore tra i log */
 }
 
-#updateAIDbBtn:hover {
-    background-color: #545b62; /* Grigio più scuro all'hover */
-}
-
-/* Media Query per schermi piccoli (già presente, aggiungo solo adattamenti per i nuovi pulsanti) */
-@media (max-width: 600px) {
-    /* Adattamenti per i pulsanti rotondi nella chat */
-    .chat-controls .icon-button { /* Se vuoi che anche i pulsanti icona si rimpiccioliscano */
-        width: 40px; /* Pulsanti leggermente più piccoli */
-        height: 40px;
-    }
-    .chat-controls .icon-button img {
-        width: 20px; /* Icone più piccole */
-        height: 20px;
-    }
-    #updateAIDbBtn {
-        margin-right: 0; /* Rimuovi il margine su schermi piccoli se va in colonna */
-        margin-bottom: 15px; /* Aggiungi un margine inferiore se va in colonna */
-    }
+#knowledgeLogsList li:last-child {
+    border-bottom: none; /* Nessun bordo sull'ultimo elemento */
 }
