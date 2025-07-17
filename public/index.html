@@ -8,10 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"> </head>
 
 <body>
     <div class="main-content-wrapper">
@@ -330,46 +328,13 @@
     </footer>
 
     <script src="js/config.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/modal-manager.js"></script> <script src="js/main.js"></script>
     <script src="js/insert-data-modal.js"></script>
-    <script src="js/legend.js"></script>
     <script src="js/chat-modal.js"></script>
     <script src="js/new-order-modal.js"></script>
     <script src="js/knowledge-logs-modal.js"></script>
-    <script src="js/script.js"></script> <script>
-        // Funzione per aprire il modale "Nuova Commessa"
-        document.querySelector('.new-order-button').addEventListener('click', function(event) {
-            event.preventDefault();
-            document.getElementById('newOrderModal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        });
+    <script src="js/legend.js"></script>
+    <script src="js/script.js"></script>
 
-        // Funzione per chiudere il modale "Nuova Commessa"
-        function closeNewOrderModal() {
-            document.getElementById('newOrderModal').style.display = 'none';
-            // L'overlay dovrebbe chiudersi solo se NESSUN altro modale è aperto.
-            // Questa logica sarà gestita in modo più robusto nei file JS dei modali.
-            // Per ora la lascio, ma la sovrascriveremo parzialmente.
-            document.getElementById('modalOverlay').style.display = 'none'; 
-        }
-
-        console.log('Controllo autenticazione in index.html...');
-
-        let authToken = localStorage.getItem('authToken');
-        let storageType = 'localStorage';
-
-        if (!authToken) {
-            console.log('Nessun token trovato in localStorage. Controllo sessionStorage.');
-            authToken = sessionStorage.getItem('authToken');
-            storageType = 'sessionStorage';
-        }
-
-        if (!authToken) {
-            console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
-            window.location.href = '/login.html'; // Percorso esplicito a login.html
-        } else {
-            console.log('Token trovato in', storageType + ':', authToken);
-        }
-    </script>
 </body>
 </html>

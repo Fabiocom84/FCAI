@@ -1,6 +1,6 @@
 const knowledgeLogsModal = document.getElementById('knowledgeLogsModal');
 const knowledgeLogsList = document.getElementById('knowledgeLogsList');
-const modalOverlay = document.getElementById('modalOverlay'); // Riferimento all'overlay comune
+// Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
 
 let websocket = null; // Variabile per la connessione WebSocket specifica per questo modale
 let currentProcessId = null; // Per tenere traccia dell'ID del processo di aggiornamento
@@ -10,16 +10,13 @@ const websocketBaseUrl = 'wss://segretario-ai-backend-service-980771764885.europ
 
 function openKnowledgeLogsModal() {
     knowledgeLogsModal.style.display = 'block';
-    modalOverlay.style.display = 'block';
+    window.showOverlay(); // Usa la funzione centralizzata
     clearLogs(); // Pulisci i log ogni volta che apri il modale
 }
 
 function closeKnowledgeLogsModal() {
     knowledgeLogsModal.style.display = 'none';
-    // Se nessun altro modale è aperto, nascondi l'overlay
-    if (loginModal.style.display === 'none' && chatModal.style.display === 'none') {
-        modalOverlay.style.display = 'none';
-    }
+    window.hideOverlay(); // Usa la funzione centralizzata (gestisce già se altri modali sono aperti)
     
     // Chiudi il WebSocket quando il modale dei log viene chiuso
     if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -120,3 +117,5 @@ function connectWebSocketForLogs(processId) {
 // Rendi le funzioni disponibili globalmente se necessarie (es. per onclick nell'HTML)
 window.openKnowledgeLogsModal = openKnowledgeLogsModal;
 window.closeKnowledgeLogsModal = closeKnowledgeLogsModal;
+// Potrebbe essere utile rendere accessibile globalmente anche connectWebSocketForLogs
+window.connectWebSocketForLogs = connectWebSocketForLogs; // Per la chat per avviare il processo

@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
     const newOrderModal = document.getElementById('newOrderModal');
-    const modalOverlay = document.getElementById('modalOverlay');
+    // Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
     const closeNewOrderModalBtn = newOrderModal.querySelector('.close-button');
     const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 
@@ -60,13 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
         saveNewOrderButton.style.cursor = 'pointer';
     }
 
-
     // Funzione per aprire il modale
     if (openNewOrderModalBtn) {
         openNewOrderModalBtn.addEventListener('click', async (event) => {
             event.preventDefault();
             newOrderModal.style.display = 'block';
-            modalOverlay.style.display = 'block';
+            window.showOverlay(); // Usa la funzione centralizzata
             console.log('Modale Nuova Commessa aperto.');
             await fetchDynamicDropdownOptions();
         });
@@ -75,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funzione per chiudere il modale e resettare il form
     window.closeNewOrderModal = function() {
         newOrderModal.style.display = 'none';
-        modalOverlay.style.display = 'none';
+        window.hideOverlay(); // Usa la funzione centralizzata
         // Resetta i campi del form quando il modale viene chiuso
         document.getElementById('newOrderCliente').value = '';
         document.getElementById('newOrderImpianto').value = '';
@@ -101,14 +100,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Chiudi il modale cliccando sull'overlay
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', (event) => {
-            if (event.target === modalOverlay) {
-                closeNewOrderModal();
-            }
-        });
-    }
+    // Rimosso: Il listener per l'overlay è gestito centralmente in modal-manager.js
+    // if (modalOverlay) {
+    //     modalOverlay.addEventListener('click', (event) => {
+    //         if (event.target === modalOverlay) {
+    //             closeNewOrderModal();
+    //         }
+    //     });
+    // }
 
     // Gestione del salvataggio dei dati
     if (saveNewOrderButton) {
@@ -137,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const immagineFile = document.getElementById('newOrderImmagine').files[0];
 
             if (!cliente || !impianto || !modello || !commessa || !data || !status) {
-                alert('Per favor, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
+                alert('Per favore, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
                 return;
             }
 

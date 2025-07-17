@@ -4,10 +4,10 @@
 const chatModal = document.getElementById('chatModal');
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
-const openChatModalBtn = document.getElementById('openChatModalBtn');
+// openChatModalBtn sarà gestito in main.js
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const modalOverlay = document.getElementById('modalOverlay'); // CORRETTO: ID unico per l'overlay
+// Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
 const chatStatus = document.getElementById('chatStatus');
 
 // Elemento DOM per il pulsante di aggiornamento DB
@@ -21,15 +21,17 @@ let currentTranscription = ''; // Per la trascrizione continua
 // Funzione per aprire il modale della chat
 function openChatModal() {
     chatModal.style.display = 'flex'; // Usiamo flex per centrare il contenuto del modale
-    modalOverlay.style.display = 'block';
+    window.showOverlay(); // Usa la funzione centralizzata
     chatInput.focus();
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo ai messaggi esistenti
 }
+// Rendi openChatModal accessibile globalmente se è chiamata da main.js o altri script
+window.openChatModal = openChatModal;
 
 // Funzione per chiudere il modale della chat
 async function closeChatModal() {
     chatModal.style.display = 'none';
-    modalOverlay.style.display = 'none';
+    window.hideOverlay(); // Usa la funzione centralizzata
     
     // Ferma la registrazione se attiva
     if (isRecording && recognition) {
@@ -45,6 +47,9 @@ async function closeChatModal() {
         chatStatus.style.color = '#333'; // Reset del colore
     }
 }
+// Rende closeChatModal accessibile globalmente per onclick in HTML
+window.closeChatModal = closeChatModal;
+
 
 // Funzione per aggiungere un messaggio alla chat UI
 function addMessage(sender, text, audioBase64 = null) { // Aggiungi audioBase64 come parametro opzionale
@@ -104,7 +109,7 @@ async function sendChatMessage(messageText) {
     formData.append('text', messageText); // Invia il testo direttamente
 
     try {
-        // Usa window.BACKEND_URL per l'endpoint della chat
+        // Usa window.BACKEND_URL per l'endpoint della chat (definito in config.js e reso globale)
         const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
             body: formData,
@@ -117,7 +122,7 @@ async function sendChatMessage(messageText) {
         }
 
         const aiResponseText = responseData.response; // Estrai il testo della risposta
-        const audioBase64 = responseData.audio;        // Estrai l'audio Base64
+        const audioBase64 = responseData.audio;      // Estrai l'audio Base64
 
         if (audioBase64) {
             // Riproduci e mostra il messaggio AI con audio
@@ -292,6 +297,7 @@ startChatRecordingBtn.addEventListener('click', () => {
                 setTimeout(() => {
                     chatStatus.textContent = "";
                     chatStatus.style.display = 'none';
+                    chatStatus.style.color = '#333';
                 }, 3000); // Nascondi dopo 3 secondi se non c'è nulla
             }
         };
@@ -309,19 +315,4 @@ if (updateAIDbBtn) { // Controlla se l'elemento esiste prima di aggiungere l'eve
     updateAIDbBtn.addEventListener('click', updateAIDB);
 }
 
-// Rende closeChatModal accessibile globalmente per onclick in HTML
-window.closeChatModal = closeChatModal;
-
-// Event Listener per l'apertura del modale
-openChatModalBtn.addEventListener('click', (event) => {
-    event.preventDefault();
-    openChatModal();
-});
-
-
-// Scorri in fondo ai messaggi all'avvio della pagina (se ce ne sono)
-document.addEventListener('DOMContentLoaded', () => {
-    if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-});
+// Rimosso: openChatModalBtn.addEventListener('click', (event) => {...}); // Gestito da main.js
