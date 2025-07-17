@@ -4,14 +4,10 @@
 const chatModal = document.getElementById('chatModal');
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
-// openChatModalBtn sarà gestito in main.js
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-// Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
 const chatStatus = document.getElementById('chatStatus');
-
-// Elemento DOM per il pulsante di aggiornamento DB
-const updateAIDbBtn = document.getElementById('updateAIDbBtn');
+const updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Pulsante di aggiornamento DB AI
 
 // Setup del riconoscimento vocale
 let recognition;
@@ -21,17 +17,16 @@ let currentTranscription = ''; // Per la trascrizione continua
 // Funzione per aprire il modale della chat
 function openChatModal() {
     chatModal.style.display = 'flex'; // Usiamo flex per centrare il contenuto del modale
-    window.showOverlay(); // Usa la funzione centralizzata
+    window.showOverlay(); // Usa la funzione centralizzata del modal-manager
     chatInput.focus();
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo ai messaggi esistenti
 }
-// Rendi openChatModal accessibile globalmente se è chiamata da main.js o altri script
-window.openChatModal = openChatModal;
+window.openChatModal = openChatModal; // Rendi openChatModal accessibile globalmente
 
 // Funzione per chiudere il modale della chat
 async function closeChatModal() {
     chatModal.style.display = 'none';
-    window.hideOverlay(); // Usa la funzione centralizzata
+    window.hideOverlay(); // Usa la funzione centralizzata del modal-manager
     
     // Ferma la registrazione se attiva
     if (isRecording && recognition) {
@@ -47,12 +42,10 @@ async function closeChatModal() {
         chatStatus.style.color = '#333'; // Reset del colore
     }
 }
-// Rende closeChatModal accessibile globalmente per onclick in HTML
-window.closeChatModal = closeChatModal;
-
+// window.closeChatModal = closeChatModal; // Non più strettamente necessario se usiamo addEventListener
 
 // Funzione per aggiungere un messaggio alla chat UI
-function addMessage(sender, text, audioBase64 = null) { // Aggiungi audioBase64 come parametro opzionale
+function addMessage(sender, text, audioBase64 = null) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', sender);
     
@@ -64,25 +57,21 @@ function addMessage(sender, text, audioBase64 = null) { // Aggiungi audioBase64 
     }
 
     if (audioBase64) {
-        // Se c'è audio, crea un elemento audio
         const audio = new Audio();
-        audio.src = `data:audio/mpeg;base64,${audioBase64}`; // mp3 è il formato più comune per Eleven Labs
-        audio.controls = true; // Mostra i controlli per debug/interazione
-        audio.autoplay = true; // Riproduci automaticamente
+        audio.src = `data:audio/mpeg;base64,${audioBase64}`;
+        audio.controls = true;
+        audio.autoplay = true; 
         
         const audioContainer = document.createElement('div');
         audioContainer.classList.add('audio-playback');
         audioContainer.appendChild(audio);
         messageElement.appendChild(audioContainer);
 
-        // Aggiungi un listener per sapere quando l'audio finisce (per futuri sviluppi)
         audio.onended = () => {
             console.log("Riproduzione audio completata.");
-            // Potresti voler riabilitare qualche UI qui
         };
         audio.onerror = (e) => {
             console.error("Errore durante la riproduzione audio:", e);
-            // Potresti aggiungere un messaggio di errore nell'UI
         };
     }
 
@@ -99,17 +88,16 @@ async function sendChatMessage(messageText) {
 
     addMessage('user', messageText); // Mostra subito il messaggio dell'utente
 
-    chatStatus.textContent = "Il Segretario AI sta elaborando..."; // Feedback all'utente
-    chatStatus.style.display = 'block'; // Assicurati che sia visibile
-    sendChatMessageBtn.disabled = true; // Disabilita il pulsante invia
-    startChatRecordingBtn.disabled = true; // Disabilita il pulsante microfono
-    updateAIDbBtn.disabled = true; // Disabilita il pulsante di aggiornamento DB durante l'elaborazione della chat
+    chatStatus.textContent = "Il Segretario AI sta elaborando...";
+    chatStatus.style.display = 'block';
+    sendChatMessageBtn.disabled = true;
+    startChatRecordingBtn.disabled = true;
+    updateAIDbBtn.disabled = true;
 
     const formData = new FormData();
-    formData.append('text', messageText); // Invia il testo direttamente
+    formData.append('text', messageText);
 
     try {
-        // Usa window.BACKEND_URL per l'endpoint della chat (definito in config.js e reso globale)
         const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
             body: formData,
@@ -121,51 +109,45 @@ async function sendChatMessage(messageText) {
             throw new Error(`Errore del server: ${response.status} - ${responseData.error || 'Errore sconosciuto'}`);
         }
 
-        const aiResponseText = responseData.response; // Estrai il testo della risposta
-        const audioBase64 = responseData.audio;      // Estrai l'audio Base64
+        const aiResponseText = responseData.response;
+        const audioBase64 = responseData.audio;      
 
         if (audioBase64) {
-            // Riproduci e mostra il messaggio AI con audio
             addMessage('ai', aiResponseText, audioBase64); 
         } else {
-            // Se non c'è audio, mostra solo il messaggio AI testuale
-            addMessage('ai', aiResponseText + " (Audio non disponibile)"); // Feedback per l'utente
+            addMessage('ai', aiResponseText + " (Audio non disponibile)");
         }
 
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
         addMessage('ai', `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`);
     } finally {
-        chatStatus.textContent = ""; // Rimuovi il feedback
-        chatStatus.style.display = 'none'; // Nascondi lo stato
-        chatInput.value = ''; // Pulisci l'input
-        sendChatMessageBtn.disabled = false; // Riabilita il pulsante invia
-        startChatRecordingBtn.disabled = false; // Riabilita il pulsante microfono
-        updateAIDbBtn.disabled = false; // Riabilita il pulsante di aggiornamento DB
+        chatStatus.textContent = "";
+        chatStatus.style.display = 'none';
+        chatInput.value = '';
+        sendChatMessageBtn.disabled = false;
+        startChatRecordingBtn.disabled = false;
+        updateAIDbBtn.disabled = false;
         chatInput.focus();
     }
 }
 
-// Funzione per aggiornare la Knowledge Base AI (UNIFICATA QUI)
+// Funzione per aggiornare la Knowledge Base AI
 async function updateAIDB() {
-    // 1. Doppia conferma
     const confirmation = confirm("Sei sicuro di voler procedere con l'aggiornamento della knowledge base AI? Questa operazione potrebbe richiedere qualche minuto.");
     if (!confirmation) {
-        return; // L'utente ha annullato
+        return;
     }
 
     chatStatus.textContent = "Aggiornamento Knowledge Base in corso... Potrebbe richiedere qualche minuto. ⏳";
-    chatStatus.style.display = 'block'; // Assicurati che sia visibile
-    chatStatus.style.color = '#333'; // Reset del colore
-    updateAIDbBtn.disabled = true; // Disabilita il pulsante durante l'aggiornamento
-    sendChatMessageBtn.disabled = true; // Disabilita anche gli altri pulsanti
+    chatStatus.style.display = 'block';
+    chatStatus.style.color = '#333';
+    updateAIDbBtn.disabled = true;
+    sendChatMessageBtn.disabled = true;
     startChatRecordingBtn.disabled = true;
 
     try {
-        // ID del tuo Foglio Google (SOSTITUISCI CON IL TUO ID REALE!)
         const spreadsheetId = "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8"; 
-        
-        // Nomi dei fogli da caricare (MODIFICA QUI E ASSICURATI SIANO CORRETTI!)
         const sheetNamesToLoad = [
             'Registrazioni',
             'Chat_AI',
@@ -174,28 +156,25 @@ async function updateAIDB() {
 
         const formData = new FormData();
         formData.append('spreadsheet_id', spreadsheetId);
-        formData.append('sheet_names', sheetNamesToLoad.join(',')); // Invia i nomi dei fogli come stringa separata da virgole
+        formData.append('sheet_names', sheetNamesToLoad.join(','));
 
-        // CORREZIONEEE: URL COMPLETO della Cloud Function per l'ingestion
         const ingestionFunctionUrl = "https://europe-west1-segretario-ai-web-app.cloudfunctions.net/ingestion-db-function";
 
         const response = await fetch(ingestionFunctionUrl, {
             method: 'POST',
-            body: formData, // FormData viene inviato come multipart/form-data
+            body: formData,
         });
 
-        // Migliorata gestione degli errori: leggi il body una sola volta e poi parsalo
         let responseText = await response.text(); 
         let responseData;
 
         try {
-            responseData = JSON.parse(responseText); // Tenta di parsare come JSON
+            responseData = JSON.parse(responseText);
         } catch (e) {
-            responseData = { message: responseText }; // Se non è JSON, usa il testo grezzo
+            responseData = { message: responseText };
         }
 
         if (!response.ok) {
-            // Se la risposta non è OK, usa il messaggio dall'oggetto parsato o il testo grezzo
             throw new Error(`Errore durante l'aggiornamento: ${response.status} - ${responseData.message || responseData.error || responseText || 'Errore sconosciuto'}`);
         }
 
@@ -208,13 +187,12 @@ async function updateAIDB() {
     } catch (error) {
         console.error("Errore nell'aggiornamento della Knowledge Base AI:", error);
         chatStatus.textContent = `Errore aggiornamento: ${error.message}. Riprova. ❌`;
-        chatStatus.style.color = 'red'; // Rendi il messaggio di errore più visibile
+        chatStatus.style.color = 'red';
         alert(`Errore nell'aggiornamento della Knowledge Base AI: ${error.message}`);
     } finally {
-        updateAIDbBtn.disabled = false; // Riabilita il pulsante
+        updateAIDbBtn.disabled = false;
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
-        // Resetta lo stato dopo un breve ritardo in caso di successo o errore
         setTimeout(() => {
             chatStatus.textContent = "";
             chatStatus.style.display = 'none';
@@ -223,6 +201,16 @@ async function updateAIDB() {
     }
 }
 
+// --- Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Aggiungo event listener per il pulsante di chiusura del modale
+    const closeChatBtn = chatModal.querySelector('.close-button');
+    if (closeChatBtn) {
+        closeChatBtn.addEventListener('click', closeChatModal);
+    }
+});
+
+
 // Event listener per il pulsante "Invia" (testo digitato)
 sendChatMessageBtn.addEventListener('click', () => {
     sendChatMessage(chatInput.value);
@@ -230,8 +218,8 @@ sendChatMessageBtn.addEventListener('click', () => {
 
 // Event listener per inviare con "Invio" nel campo di testo
 chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { // Aggiunto !e.shiftKey per permettere Shift+Enter per nuova riga
-        e.preventDefault(); // Previeni la nuova riga di default
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         sendChatMessage(chatInput.value);
     }
 });
@@ -244,15 +232,15 @@ startChatRecordingBtn.addEventListener('click', () => {
     }
 
     if (!isRecording) {
-        recognition = new webkitSpeechRecognition(); // Usiamo webkitSpeechRecognition
+        recognition = new webkitSpeechRecognition();
         recognition.lang = 'it-IT';
-        recognition.interimResults = false; // O true per risultati parziali in tempo reale
+        recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
         recognition.onstart = () => {
             console.log('Registrazione vocale avviata per la chat...');
             isRecording = true;
-            startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma Registrazione">'; // Cambia icona a stop
+            startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma Registrazione">';
             startChatRecordingBtn.classList.add('recording-active');
             chatStatus.textContent = "Registrazione in corso...";
             chatStatus.style.display = 'block';
@@ -272,7 +260,6 @@ startChatRecordingBtn.addEventListener('click', () => {
             isRecording = false;
             startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
             startChatRecordingBtn.classList.remove('recording-active');
-            // Ritarda la pulizia dello stato in caso di errore
             setTimeout(() => {
                 chatStatus.textContent = "";
                 chatStatus.style.display = 'none';
@@ -286,11 +273,10 @@ startChatRecordingBtn.addEventListener('click', () => {
             startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
             startChatRecordingBtn.classList.remove('recording-active');
             
-            // Se c'è una trascrizione finale da inviare
             if (currentTranscription.trim() !== '') {
-                chatInput.value = currentTranscription; // Assicurati che l'input abbia la trascrizione finale
-                sendChatMessage(currentTranscription); // Invia la trascrizione al backend
-                currentTranscription = ''; // Resetta per la prossima registrazione
+                chatInput.value = currentTranscription;
+                sendChatMessage(currentTranscription);
+                currentTranscription = '';
             } else {
                 chatStatus.textContent = "Nessuna voce rilevata.";
                 chatStatus.style.color = '#333';
@@ -298,21 +284,17 @@ startChatRecordingBtn.addEventListener('click', () => {
                     chatStatus.textContent = "";
                     chatStatus.style.display = 'none';
                     chatStatus.style.color = '#333';
-                }, 3000); // Nascondi dopo 3 secondi se non c'è nulla
+                }, 3000);
             }
         };
 
         recognition.start();
     } else {
-        // Ferma la registrazione
         recognition.stop();
-        // onend gestirà il resto
     }
 });
 
-// Event listener per il pulsante di aggiornamento DB
-if (updateAIDbBtn) { // Controlla se l'elemento esiste prima di aggiungere l'event listener
+// Event listener per il pulsante di aggiornamento DB AI
+if (updateAIDbBtn) {
     updateAIDbBtn.addEventListener('click', updateAIDB);
 }
-
-// Rimosso: openChatModalBtn.addEventListener('click', (event) => {...}); // Gestito da main.js

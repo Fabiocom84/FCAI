@@ -1,3 +1,5 @@
+// js/knowledge-logs-modal.js
+
 const knowledgeLogsModal = document.getElementById('knowledgeLogsModal');
 const knowledgeLogsList = document.getElementById('knowledgeLogsList');
 // Rimosso: const modalOverlay = document.getElementById('modalOverlay'); // Gestito da modal-manager.js
@@ -5,8 +7,8 @@ const knowledgeLogsList = document.getElementById('knowledgeLogsList');
 let websocket = null; // Variabile per la connessione WebSocket specifica per questo modale
 let currentProcessId = null; // Per tenere traccia dell'ID del processo di aggiornamento
 
-const backendBaseUrl = 'https://segretario-ai-backend-service-980771764885.europe-west1.run.app';
-const websocketBaseUrl = 'wss://segretario-ai-backend-service-980771764885.europe-west1.run.app';
+// Utilizza window.BACKEND_URL per coerenza se possibile
+const websocketBaseUrl = window.BACKEND_URL ? window.BACKEND_URL.replace('https://', 'wss://') : 'wss://segretario-ai-backend-service-980771764885.europe-west1.run.app';
 
 function openKnowledgeLogsModal() {
     knowledgeLogsModal.style.display = 'block';
@@ -64,7 +66,6 @@ function connectWebSocketForLogs(processId) {
 
     websocket.onopen = (event) => {
         addLogMessage('Connessione WebSocket stabilita. In attesa dei log...', 'success');
-        // Non disabilitiamo il pulsante qui, lo gestiamo prima di aprire il modale
     };
 
     websocket.onmessage = (event) => {
@@ -114,8 +115,15 @@ function connectWebSocketForLogs(processId) {
     };
 }
 
-// Rendi le funzioni disponibili globalmente se necessarie (es. per onclick nell'HTML)
+// Rendi le funzioni disponibili globalmente se necessarie (es. per essere chiamate da main.js)
 window.openKnowledgeLogsModal = openKnowledgeLogsModal;
 window.closeKnowledgeLogsModal = closeKnowledgeLogsModal;
-// Potrebbe essere utile rendere accessibile globalmente anche connectWebSocketForLogs
 window.connectWebSocketForLogs = connectWebSocketForLogs; // Per la chat per avviare il processo
+
+// Event listener per il pulsante di chiusura del modale
+document.addEventListener('DOMContentLoaded', () => {
+    const closeLogsBtn = knowledgeLogsModal.querySelector('.close-button');
+    if (closeLogsBtn) {
+        closeLogsBtn.addEventListener('click', closeKnowledgeLogsModal);
+    }
+});
