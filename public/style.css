@@ -10,6 +10,7 @@ body {
     align-items: center; /* Centra il contenuto orizzontalmente */
     position: relative; /* Necessario per il pseudo-elemento */
     background-color: #f0f2f5; /* Fallback color */
+    overflow-x: hidden; /* Evita scroll orizzontale non desiderato */
 }
 
 /* Pseudo-elemento per lo sfondo sfocato - applicato a tutto il body */
@@ -28,7 +29,7 @@ body::before {
     filter: blur(8px);
     -webkit-filter: blur(8px);
     transform: scale(1.05);
-    z-index: -2;
+    z-index: 1; /* Modificato: z-index basso ma positivo */
 }
 
 /* Overlay bianco semi-trasparente sopra l'immagine sfocata - applicato a tutto il body */
@@ -40,13 +41,13 @@ body::after {
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 255, 0.6);
-    z-index: -1;
+    z-index: 2; /* Modificato: z-index leggermente più alto del before */
 }
 
 /* Contenitore principale della pagina di login (non sfocato) - da login.html */
 .login-page-content {
     position: relative;
-    z-index: 1;
+    z-index: 10; /* Elevato per essere sopra gli sfondi del body */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -181,7 +182,7 @@ button[type="submit"]:hover {
 /* Contenitore principale della pagina di gestione (non sfocato) */
 .main-content-wrapper {
     position: relative; /* Per posizionare il contenuto sopra l'overlay */
-    z-index: 1; /* Assicura che sia sopra l'overlay */
+    z-index: 10; /* Assicura che sia sopra l'overlay del body */
     background-color: rgba(255, 255, 255, 0.95); /* Stesso effetto del login-container */
     padding: 40px;
     border-radius: 12px;
@@ -401,7 +402,7 @@ h1 {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 20;
+    z-index: 999; /* Modificato: Elevato per essere sopra ogni cosa eccetto i modali */
 }
 
 .modal {
@@ -414,7 +415,7 @@ h1 {
     padding: 25px; /* Aumentato padding */
     border-radius: 10px; /* Angoli più arrotondati */
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Ombra più pronunciata */
-    z-index: 30;
+    z-index: 1000; /* Modificato: Il più alto di tutti */
     width: 95%;
     max-width: 600px; /* Più largo per i modali */
     max-height: 90%;
@@ -669,7 +670,7 @@ h1 {
     border-radius: 8px;
     padding: 20px; /* Padding aumentato */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata */
-    z-index: 100; /* Assicura che sia sopra altri elementi e modali */
+    z-index: 100; /* Modificato: Assicura che sia sopra gli elementi principali ma sotto i modali */
     display: none;
     text-align: left;
     max-width: 350px; /* Larghezza massima per leggibilità */
@@ -712,10 +713,10 @@ h1 {
     line-height: 1.4;
 }
 
-/* Modifica per la legenda del modal */
-#insertDataLegend, #chatLegend, #newOrderLegend { /* Aggiunto #newOrderLegend */
-    z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
-}
+/* Rimosso z-index specifici per le legende dei modali, gestito dal .legend generale */
+/* #insertDataLegend, #chatLegend, #newOrderLegend {
+    z-index: 40;
+} */
 
 /* Release info */
 .release-info {
