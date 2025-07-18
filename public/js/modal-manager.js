@@ -8,7 +8,8 @@
     window.showOverlay = function() {
         openElementCount++;
         if (modalOverlay) {
-            modalOverlay.style.display = 'block';
+            modalOverlay.classList.add('is-open');
+            console.log(`Overlay mostrato. Elementi aperti: ${openElementCount}`);
         }
     };
 
@@ -20,48 +21,141 @@
 
         // Nascondi l'overlay solo se nessun modale o leggenda è più aperto
         if (openElementCount === 0 && modalOverlay) {
-            modalOverlay.style.display = 'none';
+            modalOverlay.classList.remove('is-open');
+            console.log(`Overlay nascosto. Elementi aperti: ${openElementCount}`);
         }
     };
 
+    // Funzione generica per aprire un modale (o una leggenda, dato che usano lo stesso overlay)
+    window.openGenericElement = function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.add('is-open');
+            window.showOverlay();
+            document.body.classList.add('modal-open'); // Disabilita scroll del body
+            console.log(`Elemento ${elementId} aperto.`);
+        } else {
+            console.error(`Errore: Elemento con ID ${elementId} non trovato.`);
+        }
+    };
+
+    // Funzione generica per chiudere un modale (o una leggenda)
+    window.closeGenericElement = function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.remove('is-open');
+            window.hideOverlay();
+            // Controlla se ci sono ancora modali/leggende aperti prima di rimuovere modal-open dal body
+            if (openElementCount === 0) {
+                document.body.classList.remove('modal-open');
+            }
+            console.log(`Elemento ${elementId} chiuso.`);
+        } else {
+            console.warn(`Tentativo di chiudere un elemento non esistente con ID ${elementId}.`);
+        }
+    };
+
+    // Funzione per chiudere TUTTI i modali e le leggende attualmente aperti
+    window.closeAllOpenElements = function() {
+        document.querySelectorAll('.modal.is-open, .legend.is-open').forEach(element => {
+            element.classList.remove('is-open');
+        });
+        openElementCount = 0; // Reset diretto del contatore
+        window.hideOverlay(); // Forza la chiusura dell'overlay
+        document.body.classList.remove('modal-open');
+        console.log('Tutti gli elementi (modali/leggende) e overlay chiusi.');
+    };
+
     // Listener per chiudere l'overlay al click diretto sull'overlay stesso.
-    // Questo chiuderà la leggenda attiva se non ci sono modali aperti.
     if (modalOverlay) {
         modalOverlay.addEventListener('click', (event) => {
             if (event.target === modalOverlay) {
-                // Se non ci sono modali aperti, ma ci sono leggende aperte,
-                // tenta di chiudere la leggenda attiva tramite il legendManager.
-                // La chiamata a hideOverlay() all'interno di legendManager si occuperà del contatore.
-                if (window.getOpenModalCount() === 0 && window.legendManager && window.legendManager.isLegendOpen()) {
-                    window.legendManager.hide(window.legendManager.activeLegendId);
-                }
-                // Se, dopo aver gestito le leggende, il conteggio è zero, hideOverlay lo nasconderà.
-                window.hideOverlay();
+                window.closeAllOpenElements();
             }
         });
     }
 
     // Aggiungi un metodo per ottenere lo stato degli elementi aperti (utile per il debug)
-    // Ho mantenuto `getOpenModalCount` e aggiunto `getOpenLegendCount` per chiarezza,
-    // ma la logica interna si basa su `openElementCount`.
-    // In un'implementazione più complessa, potresti voler mantenere contatori separati
-    // e gestirli in show/hide per un controllo più granulare.
-    // Per questa configurazione attuale, basta che questi riflettano lo stato globale dell'overlay.
-    window.getOpenModalCount = function() {
-        // Questa funzione ora serve a dare un'indicazione se ci sono modali aperti
-        // basandosi su una convenzione o su come i tuoi modali chiamano show/hide.
-        // Se tutti gli elementi chiamano show/hide, openElementCount è sufficiente.
-        // Se vuoi distinguere, avresti bisogno di un contatore separato per i modali e le leggende.
-        // Per semplicità e coerenza con la classe Legend, useremo openElementCount come indicatore principale.
-        // Tuttavia, per un'informazione specifica sui "modali" in contrasto con le "leggende",
-        // potresti voler passare un flag a show/hide.
-        // Per ora, torniamo al contatore unificato per l'overlay.
-        return openElementCount; // Questo riflette il numero totale di elementi che mantengono l'overlay attivo
+    window.getOpenElementCount = function() {
+        return openElementCount;
     };
 
-    // Puoi rimuovere window.getOpenLegendCount() da qui se usi un contatore unificato
-    // a meno che tu non abbia un bisogno specifico di sapere solo quante leggende sono aperte
-    // senza modificare show/hide per accettare un flag 'isLegend'.
+    // --- Inizializzazione degli Event Listener per i Pulsanti di Apertura Modali ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pulsante "Inserisci Dati"
+        const openInsertDataModalBtn = document.getElementById('openInsertDataModalBtn');
+        if (openInsertDataModalBtn) {
+            openInsertDataModalBtn.addEventListener('click', (event) => {
+                event.preventDefault(); // Impedisce il comportamento di default del link
+                window.openGenericElement('insertDataModal');
+            });
+        } else {
+            console.warn('Pulsante #openInsertDataModalBtn non trovato.');
+        }
 
-})(); // Funzione anonima auto-invocante per incapsulare le variabili
-console.log('Modal manager loaded.');
+        // Pulsante "Chat AI"
+        const openChatModalBtn = document.getElementById('openChatModalBtn');
+        if (openChatModalBtn) {
+            openChatModalBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                window.openGenericElement('chatModal');
+            });
+        } else {
+            console.warn('Pulsante #openChatModalBtn non trovato.');
+        }
+
+        // Pulsante "Nuova Commessa"
+        const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
+        if (openNewOrderModalBtn) {
+            openNewOrderModalBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                window.openGenericElement('newOrderModal');
+            });
+        } else {
+            console.warn('Pulsante #openNewOrderModalBtn non trovato.');
+        }
+
+        // Pulsante "Knowledge Logs" (updateAIDbBtn)
+        const updateAIDbBtn = document.getElementById('updateAIDbBtn');
+        if (updateAIDbBtn) {
+            updateAIDbBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                window.openGenericElement('knowledgeLogsModal');
+                
+                // Logica specifica per l'aggiornamento della KB (spostata qui da main.js)
+                updateAIDbBtn.disabled = true;
+                updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Immagine di caricamento
+                updateAIDbBtn.title = 'Aggiornamento in corso...';
+                
+                // Avvia il processo di aggiornamento nel backend
+                // Assicurati che initiateKnowledgeBaseUpdate sia globale (come lo è nel tuo main.js attuale)
+                if (typeof window.initiateKnowledgeBaseUpdate === 'function') {
+                    window.initiateKnowledgeBaseUpdate();
+                } else {
+                    console.error('La funzione window.initiateKnowledgeBaseUpdate non è disponibile. Assicurati che main.js la renda globale.');
+                    // Fallback in caso di errore: riabilita il pulsante
+                    updateAIDbBtn.disabled = false;
+                    updateAIDbBtn.querySelector('img').src = 'img/reload.png';
+                    updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
+                }
+            });
+        } else {
+            console.warn('Pulsante #updateAIDbBtn (per Knowledge Logs) non trovato.');
+        }
+
+        // Gestione dei pulsanti di chiusura (X) di tutti i modali
+        document.querySelectorAll('.modal .close-button, .legend .close-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const parentModal = button.closest('.modal');
+                const parentLegend = button.closest('.legend');
+                if (parentModal) {
+                    window.closeGenericElement(parentModal.id);
+                } else if (parentLegend) {
+                    window.closeGenericElement(parentLegend.id);
+                }
+            });
+        });
+    });
+
+})(); // Funzione anonima auto-invocante
+console.log('Modal manager loaded and listeners initialized.');

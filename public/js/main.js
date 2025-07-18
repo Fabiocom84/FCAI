@@ -3,8 +3,8 @@
 // Assumi che window.BACKEND_URL sia definito in config.js
 // Per consistenza con i modali, useremo window.BACKEND_URL.
 
-// Contatore per tenere traccia di quanti modali sono aperti e mostrare/nascondere l'overlay di conseguenza
-let openModalCount = 0;
+// Rimosso: Contatore per tenere traccia di quanti modali sono aperti e mostrare/nascondere l'overlay di conseguenza
+// let openModalCount = 0; // Rimuovi questa riga
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Main script: DOM completamente caricato.');
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.log('Token di autenticazione trovato. Caricamento dati iniziali e visualizzazione pagina.');
         
-        // 🚀 NUOVO: Mostra il contenuto principale della pagina
+        // Mostra il contenuto principale della pagina
         const mainContent = document.querySelector('.main-content-wrapper');
         if (mainContent) {
             mainContent.style.display = 'flex'; // O 'block', a seconda di come vuoi che si comporti
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Chiamata per caricare gli ultimi inserimenti una volta autenticato
+        // Questa funzione (fetchLatestEntries) rimane qui o in un file dedicato API
         if (typeof window.fetchLatestEntries === 'function') {
             window.fetchLatestEntries();
         } else {
@@ -38,33 +39,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Event listener per aprire il modale "Knowledge Logs"
-    const updateAIDbBtn = document.getElementById('updateAIDbBtn');    
+    // Rimosso: Event listener per aprire il modale "Knowledge Logs"
+    // Questo listener è stato spostato in modal-manager.js
+    /*
+    const updateAIDbBtn = document.getElementById('updateAIDbBtn');   
     if (updateAIDbBtn) {
         updateAIDbBtn.addEventListener('click', function() {
             if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.open === 'function') {
                 window.knowledgeLogsModalInstance.open();
-                // Abilita il pulsante di aggiornamento nel chat-modal quando il log è aperto
-                updateAIDbBtn.disabled = true;
-                updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Immagine di caricamento
-                updateAIDbBtn.title = 'Aggiornamento in corso...';
-                // Avvia il processo di aggiornamento nel backend
-                initiateKnowledgeBaseUpdate();
+                // ... logica per l'aggiornamento KB
             } else {
-                console.error('L\'istanza knowledgeLogsModalInstance o la sua funzione open() non è definita. Assicurati che knowledge-logs-modal.js sia caricato e istanziato correttamente.');
-                // Fallback minimo in caso di errore grave (da rimuovere in produzione)
-                const fallbackModal = document.getElementById('knowledgeLogsModal');
-                if (fallbackModal) {
-                    fallbackModal.style.display = 'block';
-                    window.showOverlay();
-                } else {
-                    alert('Errore grave: Impossibile aprire il modale dei log.');
-                }
+                console.error('L\'istanza knowledgeLogsModalInstance o la sua funzione open() non è definita...');
             }
         });
     } else {
         console.warn('Pulsante #updateAIDbBtn non trovato. Assicurati che l\'HTML sia corretto.');
     }
+    */
 
     // --- Logout Button Listener ---
     const logoutBtn = document.getElementById('logoutBtn');
@@ -80,34 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Funzioni Globali per Overlay ---
-// Queste funzioni sono centralizzate qui in main.js per gestire l'overlay in modo consistente
-// attraverso tutti i modali (chat, insert data, knowledge logs, new order, etc.).
-
-window.showOverlay = () => {
-    const overlay = document.getElementById('modalOverlay');
-    if (overlay) {
-        openModalCount++;
-        overlay.style.display = 'block';
-        console.log(`Overlay mostrato. Modali aperti: ${openModalCount}`);
-    } else {
-        console.warn('Elemento #modalOverlay non trovato.');
-    }
-};
-
-window.hideOverlay = () => {
-    const overlay = document.getElementById('modalOverlay');
-    if (overlay) {
-        openModalCount--;
-        if (openModalCount <= 0) { // Nascondi l'overlay solo se nessun altro modale è aperto
-            overlay.style.display = 'none';
-            openModalCount = 0; // Assicurati che non vada sotto zero
-        }
-        console.log(`Overlay nascosto. Modali aperti: ${openModalCount}`);
-    } else {
-        console.warn('Elemento #modalOverlay non trovato.');
-    }
-};
+// Rimosso: Funzioni Globali per Overlay (showOverlay, hideOverlay)
+// Queste funzioni sono ora gestite esclusivamente in modal-manager.js
+/*
+window.showOverlay = () => { ... };
+window.hideOverlay = () => { ... };
+*/
 
 // --- Funzioni Globali per Interazioni API ---
 
@@ -171,13 +140,13 @@ async function fetchLatestEntries() {
                 
                 // Aggiungi il riferimento solo se presente e diverso dalla trascrizione
                 const reference = entry.riferimento && entry.riferimento !== mainContent
-                                    ? ` (Rif: ${entry.riferimento})`
-                                    : '';
+                                        ? ` (Rif: ${entry.riferimento})`
+                                        : '';
                 
                 // Aggiungi un link all'URL se presente e valido
                 const urlLink = entry.url && entry.url.startsWith('http')
-                                    ? `<a href="${entry.url}" target="_blank" class="entry-url-link" title="Apri file/link associato">🔗</a>`
-                                    : '';
+                                        ? `<a href="${entry.url}" target="_blank" class="entry-url-link" title="Apri file/link associato">🔗</a>`
+                                        : '';
 
                 li.innerHTML = `<strong>${dateTime}:</strong> ${mainContent}${reference} ${urlLink}`;
                 latestEntriesList.appendChild(li);
@@ -221,7 +190,7 @@ async function initiateKnowledgeBaseUpdate() {
                 'Content-Type': 'application/json'
             },
             // Se non ci sono dati da inviare nel body, si può omettere o inviare un oggetto vuoto
-            body: JSON.stringify({}) 
+            body: JSON.stringify({})
         });
 
         const data = await response.json();
@@ -233,6 +202,9 @@ async function initiateKnowledgeBaseUpdate() {
         console.log('Aggiornamento Knowledge Base avviato:', data);
         if (data.process_id) {
             // Se esiste l'istanza del modale dei log, connetti il WebSocket
+            // NOTA: knowledgeLogsModalInstance dovrebbe essere gestita altrove, forse in knowledge-logs-modal.js
+            // Se knowledge-logs-modal.js espone una funzione globale o un'istanza, usa quella.
+            // Per ora, manterrò il tuo controllo originale.
             if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
                 window.knowledgeLogsModalInstance.connectWebSocketForLogs(data.process_id);
             } else {
