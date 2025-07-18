@@ -81,7 +81,8 @@ class NewOrderModal {
         // Popola Modello dropdown
         if (this.modelloSelect) {
             try {
-                const response = await fetch(`${window.BACKEND_URL}/api/models`, {
+                // MODIFICA QUI: Cambia da /api/models a /api/get-modelli
+                const response = await fetch(`${window.BACKEND_URL}/api/get-modelli`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -101,7 +102,8 @@ class NewOrderModal {
         // Popola Status dropdown
         if (this.statusSelect) {
             try {
-                const response = await fetch(`${window.BACKEND_URL}/api/statuses`, {
+                // MODIFICA QUI: Cambia da /api/statuses a /api/get-status
+                const response = await fetch(`${window.BACKEND_URL}/api/get-status`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -155,7 +157,7 @@ class NewOrderModal {
         this.saveNewOrderButton.disabled = true; // Disabilita il pulsante durante il salvataggio
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
+            const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, { // Ho corretto anche questo endpoint
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
