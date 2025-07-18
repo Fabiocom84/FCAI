@@ -50,7 +50,7 @@ class ChatModal {
 
     open() {
         if (this.chatModal) {
-            this.chatModal.style.display = 'block';
+            this.chatModal.style.display = 'flex'; // Usiamo flex per centrare il contenuto con i nuovi stili CSS
             window.showOverlay(); // Funzione centralizzata per l'overlay
             this.clearChat(); // Pulisci la chat all'apertura
             this.initializeChatSession(); // Inizializza o recupera sessione
@@ -77,9 +77,34 @@ class ChatModal {
         }
     }
 
+    /**
+     * Aggiunge un messaggio alla finestra della chat.
+     * @param {string} message Il testo del messaggio.
+     * @param {string} sender Il mittente del messaggio ('user', 'ai').
+     */
     addMessage(message, sender = 'user') {
         const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message', sender);
+        // Aggiungi la classe base 'message' e una classe specifica per il mittente
+        messageElement.classList.add('message', `${sender}-message`);
+
+        const contentElement = document.createElement('div');
+        contentElement.classList.add('message-content');
+        contentElement.textContent = message;
+
+        messageElement.appendChild(contentElement);
+        this.chatMessages.appendChild(messageElement);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scrolla in fondo
+    }
+
+    /**
+     * Aggiunge un messaggio di sistema (informazioni, errori, avvisi) alla chat.
+     * Questi messaggi sono stilizzati diversamente dai normali messaggi utente/AI.
+     * @param {string} message Il testo del messaggio di sistema.
+     * @param {string} type Il tipo di messaggio ('info', 'error', 'warning').
+     */
+    _addSystemMessage(message, type = 'info') {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('system-message', type); // Aggiungi classi CSS per stile
         messageElement.textContent = message;
         this.chatMessages.appendChild(messageElement);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scrolla in fondo
@@ -94,7 +119,7 @@ class ChatModal {
     async initializeChatSession() {
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            this.addMessage('Errore: Autenticazione richiesta per la chat.', 'ai');
+            this._addSystemMessage('Errore: Autenticazione richiesta per la chat.', 'error');
             return;
         }
 
@@ -108,27 +133,30 @@ class ChatModal {
             });
 
             if (!response.ok) {
-                throw new Error(`Errore nell'inizializzazione della sessione chat: ${response.statusText}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Errore nell'inizializzazione della sessione chat: ${response.statusText}`);
             }
 
             const data = await response.json();
             this.currentChatSessionId = data.session_id;
-            console.log('Sessione chat inizializzata:', this.currentChatSessionId);
-            this.addMessage('Chat AI: Ciao! Sono il tuo assistente. Come posso aiutarti oggi?', 'ai');
+            console.log('Sessione chat inizializzata con ID:', this.currentChatSessionId);
+            this.addMessage('Ciao! Sono il tuo assistente. Come posso aiutarti oggi?', 'ai');
             this.connectWebSocketForChat(); // Connetti il WebSocket per le risposte in tempo reale
         } catch (error) {
             console.error('Errore durante l\'inizializzazione della sessione chat:', error);
-            this.addMessage('Errore durante l\'inizializzazione della chat. Riprova più tardi.', 'error');
+            this._addSystemMessage(`Errore durante l'inizializzazione della chat: ${error.message}. Riprova più tardi.`, 'error');
         }
     }
 
     connectWebSocketForChat() {
+        // Chiudi il WebSocket esistente se aperto
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             this.websocket.close();
         }
 
         if (!this.currentChatSessionId) {
             console.error('Impossibile connettersi al WebSocket: ID sessione chat non disponibile.');
+            this._addSystemMessage('Errore di connessione: ID sessione chat mancante.', 'error');
             return;
         }
 
@@ -137,7 +165,8 @@ class ChatModal {
         this.websocket = new WebSocket(wsUrl);
 
         this.websocket.onopen = () => {
-            console.log('WebSocket Chat connesso.');
+            console.log('WebSocket Chat connesso per la sessione:', this.currentChatSessionId);
+            this._addSystemMessage('Connessione chat stabilita.', 'info');
         };
 
         this.websocket.onmessage = (event) => {
@@ -145,18 +174,20 @@ class ChatModal {
             if (data.type === 'response') {
                 this.addMessage(data.message, 'ai');
             } else if (data.type === 'error') {
-                this.addMessage(`Errore AI: ${data.message}`, 'error');
+                this._addSystemMessage(`Errore AI: ${data.message}`, 'error');
+            } else if (data.type === 'info') {
+                this._addSystemMessage(`Info AI: ${data.message}`, 'info');
             }
         };
 
         this.websocket.onclose = (event) => {
             console.log('WebSocket Chat disconnesso:', event.code, event.reason);
-            this.addMessage('Chat disconnessa. Se hai bisogno, apri nuovamente il modale.', 'info');
+            this._addSystemMessage('Chat disconnessa. Se hai bisogno, apri nuovamente il modale.', 'info');
         };
 
         this.websocket.onerror = (error) => {
             console.error('Errore WebSocket Chat:', error);
-            this.addMessage('Errore di connessione alla chat. Riprova.', 'error');
+            this._addSystemMessage('Errore di connessione alla chat. Riprova.', 'error');
         };
     }
 
@@ -177,15 +208,22 @@ class ChatModal {
 
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            this.addMessage('Autenticazione richiesta per inviare messaggi.', 'ai');
+            this._addSystemMessage('Autenticazione richiesta per inviare messaggi. Effettua il login.', 'error');
             return;
         }
         if (!this.currentChatSessionId) {
-            this.addMessage('Errore: Sessione chat non inizializzata. Prova a riaprire il modale.', 'ai');
+            this._addSystemMessage('Errore: Sessione chat non inizializzata. Prova a riaprire il modale.', 'error');
             return;
         }
 
         try {
+            // Aggiungi un messaggio di "digitazione" o "processo in corso"
+            const typingIndicator = document.createElement('div');
+            typingIndicator.classList.add('ai-message', 'typing-indicator');
+            typingIndicator.innerHTML = '<div class="message-content">Frank sta digitando...</div>';
+            this.chatMessages.appendChild(typingIndicator);
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+
             const response = await fetch(`${window.BACKEND_URL}/api/chat/message`, {
                 method: 'POST',
                 headers: {
@@ -198,6 +236,11 @@ class ChatModal {
                 })
             });
 
+            // Rimuovi l'indicatore di digitazione una volta che la risposta HTTP è arrivata
+            if (typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+            }
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Errore durante l\'invio del messaggio.');
@@ -205,7 +248,7 @@ class ChatModal {
             // Le risposte AI arriveranno via WebSocket, quindi non gestiamo qui la risposta HTTP
         } catch (error) {
             console.error('Errore nell\'invio del messaggio:', error);
-            this.addMessage(`Errore: ${error.message}`, 'error');
+            this._addSystemMessage(`Errore durante l'invio del messaggio: ${error.message}`, 'error');
         }
     }
 
@@ -241,7 +284,7 @@ class ChatModal {
             const result = await response.json();
             const processId = result.process_id;
             console.log('Aggiornamento KB avviato. ID processo:', processId);
-            alert('Aggiornamento Knowledge Base AI avviato! Controlla i log per lo stato.');
+            this._addSystemMessage(`Aggiornamento Knowledge Base AI avviato! ID processo: ${processId}. Controlla i log per lo stato.`, 'info');
 
             // Apre il modale dei log e connette il WebSocket specifico per i log
             if (window.openKnowledgeLogsModal && typeof window.connectWebSocketForLogs === 'function') {
@@ -249,11 +292,12 @@ class ChatModal {
                 window.connectWebSocketForLogs(processId); // Passa l'ID del processo ai log
             } else {
                 console.warn('Funzioni per la gestione dei log della Knowledge Base non disponibili.');
+                this._addSystemMessage('Impossibile aprire il modale dei log. Assicurati che knowledge-logs-modal.js sia caricato.', 'warning');
             }
 
         } catch (error) {
             console.error('Errore nell\'avviare l\'aggiornamento della Knowledge Base:', error);
-            alert('Errore nell\'avviare l\'aggiornamento della Knowledge Base: ' + error.message);
+            this._addSystemMessage(`Errore nell'avviare l'aggiornamento della Knowledge Base: ${error.message}`, 'error');
         } finally {
             // Non riabilitare il pulsante qui, perché la riabilitazione è gestita dal knowledge-logs-modal.js
             // quando il processo di aggiornamento termina o fallisce.
@@ -268,10 +312,18 @@ class ChatModal {
             return;
         }
 
-        const processIdToStop = this.currentChatSessionId; // O un processId specifico di update KB
+        // Si assume che l'ID del processo da interrompere sia l'ID della sessione chat
+        // O che ci sia un modo per ottenere l'ID del processo di aggiornamento KB se è quello l'intento.
+        // Per ora, useremo l'ID della sessione chat. Se il pulsante è nel modale KB, servirà un altro meccanismo.
+        const processIdToStop = this.currentChatSessionId; 
+
+        // Se l'intento è di fermare l'aggiornamento della KB, si dovrebbe passare l'ID del processo di aggiornamento KB
+        // che è stato ricevuto nel metodo `updateAIDb`. Questo richiederebbe di salvare quel `processId`
+        // in una variabile di istanza (`this.currentKBProcessId` ad esempio).
+        // Per semplicità, qui si assume che `stopProcessingBtn` sia per interrompere la chat attuale.
 
         if (!processIdToStop) {
-            alert('Nessun processo attivo da interrompere.');
+            this._addSystemMessage('Nessun processo attivo della chat da interrompere.', 'info');
             return;
         }
 
@@ -291,11 +343,11 @@ class ChatModal {
             }
 
             const result = await response.json();
-            alert(result.message || 'Comando di interruzione inviato con successo.');
+            this._addSystemMessage(result.message || 'Comando di interruzione inviato con successo.', 'info');
             console.log('Comando di interruzione processo AI inviato:', result);
         } catch (error) {
             console.error('Errore nell\'interruzione del processo AI:', error);
-            alert('Errore nell\'interruzione del processo AI: ' + error.message);
+            this._addSystemMessage(`Errore nell'interruzione del processo AI: ${error.message}`, 'error');
         }
     }
 }

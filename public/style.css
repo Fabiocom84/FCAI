@@ -4,11 +4,11 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    display: flex; /* Assicura che il contenuto possa essere centrato */
-    flex-direction: column; /* Centra gli elementi verticalmente */
-    justify-content: center; /* Centra il contenuto verticalmente */
-    align-items: center; /* Centra il contenuto orizzontalmente */
-    position: relative; /* Necessario per il pseudo-elemento */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
     background-color: #f0f2f5; /* Fallback color */
     overflow-x: hidden; /* Evita scroll orizzontale non desiderato */
 }
@@ -28,8 +28,8 @@ body::before {
     background-attachment: fixed;
     filter: blur(8px);
     -webkit-filter: blur(8px);
-    transform: scale(1.05);
-    z-index: 1; /* Modificato: z-index basso ma positivo */
+    transform: scale(1.05); /* Piccolo ingrandimento per evitare bordi sfocati */
+    z-index: 1; /* Sotto l'overlay */
 }
 
 /* Overlay bianco semi-trasparente sopra l'immagine sfocata - applicato a tutto il body */
@@ -41,10 +41,16 @@ body::after {
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 255, 0.6);
-    z-index: 2; /* Modificato: z-index leggermente più alto del before */
+    z-index: 2; /* Sopra l'immagine sfocata, sotto il contenuto principale */
 }
 
-/* Contenitore principale della pagina di login (non sfocato) - da login.html */
+/* Animazione fadeIn per elementi principali (login, main-content) */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Contenitore principale della pagina di login (non sfocato) */
 .login-page-content {
     position: relative;
     z-index: 10; /* Elevato per essere sopra gli sfondi del body */
@@ -57,7 +63,7 @@ body::after {
     box-sizing: border-box;
 }
 
-/* Stili per il contenitore del login - da login.html */
+/* Stili per il contenitore del login */
 .login-container {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 40px;
@@ -69,13 +75,7 @@ body::after {
     animation: fadeIn 0.8s ease-out;
 }
 
-/* Animazione fadeIn - da login.html */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Stili comuni per h2, form-group, label, input, checkbox, button - da login.html */
+/* Stili comuni per h2, form-group, label, input, checkbox, button */
 h2 {
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
@@ -100,7 +100,11 @@ label {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"], /* Aggiunto per future espansioni */
+.form-group textarea,
+.form-group input[type="file"],
+.form-group select {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #cccccc;
@@ -113,7 +117,11 @@ input[type="password"] {
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="email"]:focus,
+.form-group textarea:focus,
+.form-group input[type="file"]:focus,
+.form-group select:focus {
     border-color: #2A76B8;
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
@@ -177,223 +185,192 @@ button[type="submit"]:hover {
     font-weight: 500;
 }
 
-/* NUOVI STILI PER INDEX.HTML */
-
-/* Contenitore principale della pagina di gestione (non sfocato) */
+/*
+---
+## Stili per `index.html`
+*/
 .main-content-wrapper {
-    position: relative; /* Per posizionare il contenuto sopra l'overlay */
-    z-index: 10; /* Assicura che sia sopra l'overlay del body */
-    background-color: rgba(255, 255, 255, 0.95); /* Stesso effetto del login-container */
+    position: relative;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.95);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 600px; /* Larghezza massima adatta alla pagina principale */
+    max-width: 650px; /* Larghezza massima aumentata leggermente */
     text-align: center;
-    animation: fadeIn 0.8s ease-out; /* Stessa animazione del login */
-    display: flex; /* Flexbox per organizzare i contenuti verticalmente */
+    animation: fadeIn 0.8s ease-out;
+    display: flex;
     flex-direction: column;
-    gap: 25px; /* Spazio tra gli elementi principali (h1, button-container, latest-entries) */
-    box-sizing: border-box; /* Include padding nel calcolo della larghezza */
+    gap: 25px;
+    box-sizing: border-box;
+    margin: 20px; /* Aggiunto margine per schermi grandi */
 }
 
 h1 {
     font-family: 'Roboto', sans-serif;
-    font-weight: 700; /* Bold per il titolo principale */
-    font-size: 2.2em; /* Dimensione maggiore */
-    color: #2A76B8; /* Utilizza il blu del logo */
-    margin-bottom: 0; /* Rimosso il margine inferiore, useremo il gap del wrapper */
+    font-weight: 700;
+    font-size: 2.2em;
+    color: #2A76B8;
+    margin-bottom: 0;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 
 .help-button-container {
-    position: absolute; /* Posizionamento rispetto al .main-content-wrapper */
-    top: 20px; /* Spostato un po' più in basso */
-    right: 20px; /* Spostato un po' più a sinistra */
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 
 /* Stili generali per il contenitore dei pulsanti */
 .button-container {
     margin-bottom: 24px;
     display: flex;
-    flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
-    justify-content: flex-start; /* Allinea i pulsanti a sinistra */
-    gap: 15px; /* Spazio tra i pulsanti orizzontalmente e verticalmente */
-    width: 100%; /* Assicura che il container occupi tutta la larghezza disponibile */
-    max-width: 500px; /* Imposta una larghezza massima per il container */
-    margin-left: auto;
-    margin-right: auto;
+    flex-wrap: wrap;
+    justify-content: center; /* Centra i pulsanti */
+    gap: 15px;
+    width: 100%;
+    /* Rimosso max-width e auto margin qui per lasciare che i flex-basis gestiscano */
 }
 
 /* Stile base per tutti i pulsanti */
 .button {
     display: flex;
-    flex-direction: column; /* Impila icona e testo verticalmente */
-    align-items: center; /* Centra orizzontalmente icona e testo all'interno del pulsante */
-    justify-content: center; /* Centra il contenuto verticalmente */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 15px 10px;
     text-align: center;
     text-decoration: none;
-    color: white; /* Testo bianco per tutti i pulsanti */
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Angoli leggermente più arrotondati */
     box-sizing: border-box;
     flex-basis: calc(50% - 7.5px); /* Forza due pulsanti per riga (50% meno metà del gap) */
     max-width: calc(50% - 7.5px);
-    min-height: 100px; /* Altezza minima per i pulsanti */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transizioni per hover */
+    min-height: 110px; /* Altezza minima aumentata */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Ombra leggera di default */
 }
 
 /* Stile per le immagini all'interno dei pulsanti */
 .button img {
-    max-width: 45px; /* Icone leggermente più grandi */
-    max-height: 45px;
-    margin-bottom: 8px; /* Spazio tra icona e testo */
+    max-width: 50px; /* Icone più grandi */
+    max-height: 50px;
+    margin-bottom: 8px;
 }
 
 /* Stile per il testo all'interno dei pulsanti (il <span>) */
 .button span {
-    display: block; /* Assicura che il testo vada a capo sotto l'icona */
-    font-size: 1em; /* Dimensione del font per il testo del pulsante */
+    display: block;
+    font-size: 1.05em; /* Dimensione del font leggermente aumentata */
     font-weight: 500;
-    line-height: 1.2;
-    white-space: nowrap; /* Impedisce al testo di andare a capo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
-    color: inherit; /* Assicura che erediti il colore bianco dal .button */
+    line-height: 1.3;
+    white-space: normal; /* Permetti al testo di andare a capo */
+    word-wrap: break-word; /* Forza il testo a capo se troppo lungo */
+    color: inherit;
 }
 
 /* Colori specifici e hover per ogni pulsante */
-.insert-button {
-    background-color: #28a745; /* Verde */
-}
-.insert-button:hover {
-    background-color: #218838;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
+.insert-button { background-color: #28a745; } /* Verde */
+.insert-button:hover { background-color: #218838; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.chat-button {
-    background-color: #ffc107; /* Giallo scuro */
-    /* NON aggiungere 'color: #333;' qui, erediterà 'white' dal .button */
-}
-.chat-button:hover {
-    background-color: #e0a800;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
+.chat-button { background-color: #ffc107; color: #333; } /* Giallo scuro, testo scuro */
+.chat-button:hover { background-color: #e0a800; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Pulsante "Nuova Commessa" - Colore VIOLA */
-.new-order-button {
-    background-color: #6f42c1; /* Viola scuro */
-}
-.new-order-button:hover {
-    background-color: #5a3597; /* Viola più scuro al passaggio del mouse */
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
+.new-order-button { background-color: #6f42c1; } /* Viola scuro */
+.new-order-button:hover { background-color: #5a3597; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.search-button {
-    background-color: #dc3545; /* Rosso */
-}
-.search-button:hover {
-    background-color: #c82333;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
+.search-button { background-color: #dc3545; } /* Rosso */
+.search-button:hover { background-color: #c82333; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
 /* Nuovo stile per il pulsante Aggiorna AI DB */
 #updateAIDbBtn {
     background-color: #6c757d; /* Grigio scuro, come un'azione secondaria */
-    flex-basis: calc(50% - 7.5px); /* Mantieni la stessa larghezza degli altri pulsanti */
+    flex-basis: calc(50% - 7.5px);
     max-width: calc(50% - 7.5px);
-    margin-top: 0; /* Rimuovi margine superiore, gestito dal gap */
+    margin-top: 0;
 }
-
 #updateAIDbBtn:hover {
-    background-color: #545b62; /* Grigio più scuro all'hover */
+    background-color: #545b62;
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
-
-#updateAIDbBtn img {
-    max-width: 45px; /* Icone leggermente più grandi */
-    max-height: 45px;
-    margin-bottom: 8px; /* Spazio tra icona e testo */
-}
-
-#updateAIDbBtn span {
-    display: block; /* Assicura che il testo vada a capo sotto l'icona */
-    font-size: 1em; /* Dimensione del font per il testo del pulsante */
-    font-weight: 500;
-    line-height: 1.2;
-    white-space: nowrap; /* Impedisce al testo di andare a capo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
-    color: inherit; /* Assicura che erediti il colore bianco dal .button */
-}
+/* Replicazione stili img e span per #updateAIDbBtn per chiarezza */
+#updateAIDbBtn img { max-width: 50px; max-height: 50px; margin-bottom: 8px; }
+#updateAIDbBtn span { display: block; font-size: 1.05em; font-weight: 500; line-height: 1.3; white-space: normal; word-wrap: break-word; color: inherit; }
 
 
 .latest-entries {
-    margin-top: 0; /* Rimosso il margine superiore, useremo il gap del wrapper */
-    padding: 20px; /* Padding aumentato */
+    margin-top: 0;
+    padding: 25px; /* Padding aumentato */
     background-color: white;
-    border-radius: 8px; /* Angoli più arrotondati */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombra più morbida */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: left;
-    flex-grow: 1; /* Permette di riempire lo spazio rimanente */
+    width: 100%; /* Occupa tutta la larghezza disponibile nel wrapper */
+    box-sizing: border-box;
 }
 
 .latest-entries h2 {
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    font-size: 1.4em; /* Titolo più grande */
+    font-size: 1.5em; /* Titolo più grande */
     color: #333333;
     margin-top: 0;
-    margin-bottom: 15px; /* Margine inferiore aumentato */
-    padding-bottom: 8px;
-    border-bottom: 2px solid #eeeeee; /* Bordo più spesso */
+    margin-bottom: 18px; /* Margine inferiore aumentato */
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eeeeee;
+    text-align: center; /* Centrato */
 }
 
-.entry-item {
-    padding: 12px 0; /* Padding aumentato */
-    border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
-    font-size: 0.95em;
-    color: #444; /* Colore testo leggermente più scuro */
-    display: flex; /* Flexbox per organizzare data/ora/riferimento */
-    justify-content: space-between; /* Distribuisce gli elementi */
+#latestEntriesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#latestEntriesList li {
+    padding: 12px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-size: 0.98em; /* Leggermente più grande */
+    color: #444;
+    display: flex;
+    flex-wrap: wrap; /* Permette il wrap su schermi piccoli */
     align-items: center;
-    text-decoration: none;
+    justify-content: space-between;
+    gap: 8px; /* Spazio tra gli elementi interni */
 }
 
-.entry-item:last-child {
+#latestEntriesList li:last-child {
     border-bottom: none;
 }
 
-.entry-date-time {
-    font-weight: 400; /* Normale */
+#latestEntriesList li strong {
+    font-weight: 500;
     color: #777;
-    font-size: 0.85em; /* Più piccolo */
-    flex-shrink: 0; /* Non si restringe */
+    flex-shrink: 0; /* Impedisce alla data di restringersi */
+    font-size: 0.9em;
 }
 
-.entry-text {
-    flex-grow: 1; /* Il testo occupa lo spazio rimanente */
-    margin: 0 10px; /* Margine tra data e riferimento */
-    white-space: nowrap; /* Evita il wrap del testo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
+#latestEntriesList li .entry-url-link {
+    color: #2A76B8;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 5px; /* Spazio dal testo */
+    font-size: 1.1em;
+    flex-shrink: 0;
 }
 
-.entry-riferimento {
-    font-weight: 500; /* Medium */
-    color: #2A76B8; /* Blu del logo per il riferimento */
-    flex-shrink: 0; /* Non si restringe */
+#latestEntriesList li .entry-url-link:hover {
+    text-decoration: underline;
 }
 
-
-/* Stili per il Modal */
+/*
+---
+## Stili per Modali (Generale)
+*/
 .modal-overlay {
     display: none;
     position: fixed;
@@ -401,8 +378,8 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999; /* Modificato: Elevato per essere sopra ogni cosa eccetto i modali */
+    background-color: rgba(0, 0, 0, 0.6); /* Sfondo più scuro per modali */
+    z-index: 999; /* Sopra tutto tranne i modali stessi */
 }
 
 .modal {
@@ -412,16 +389,17 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding: 25px; /* Aumentato padding */
-    border-radius: 10px; /* Angoli più arrotondati */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Ombra più pronunciata */
-    z-index: 1000; /* Modificato: Il più alto di tutti */
+    padding: 30px; /* Aumentato padding */
+    border-radius: 12px; /* Angoli più arrotondati */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Ombra più pronunciata */
+    z-index: 1000; /* Il più alto di tutti */
     width: 95%;
-    max-width: 600px; /* Più largo per i modali */
+    max-width: 650px; /* Più largo per i modali */
     max-height: 90%;
     overflow-y: auto;
-    animation: fadeInModal 0.3s ease-out; /* Nuova animazione per i modali */
-    flex-direction: column; /* Imposta il modal come colonna flex per il contenuto */
+    animation: fadeInModal 0.3s ease-out;
+    display: flex; /* Flexbox per il contenuto interno */
+    flex-direction: column;
 }
 
 @keyframes fadeInModal {
@@ -432,64 +410,55 @@ h1 {
 .modal-content {
     display: flex;
     flex-direction: column;
-    height: 100%; /* Il contenuto del modal occupa l'altezza disponibile */
+    flex-grow: 1; /* Permette al contenuto di riempire lo spazio */
 }
 
 .modal-header {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px; /* Aumentato il margine */
+    margin-bottom: 25px; /* Aumentato il margine */
     position: relative;
-    flex-shrink: 0; /* Impedisce all'header di restringersi */
+    flex-shrink: 0;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1.6em; /* Titolo più grande */
+    font-size: 1.8em; /* Titolo più grande */
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1.5px;
+    flex-grow: 1; /* Permette al titolo di occupare lo spazio */
 }
 
-/* Stili per i titoli dei modal per coerenza colore */
-#insertDataModal .modal-header h2 {
-    color: #28a745;
-}
-
-#chatModal .modal-header h2 {
-    color: #ffc107;
-}
-
-#newOrderModal .modal-header h2 {
-    color: #6f42c1; /* Colore viola per l'header del modal, come il pulsante */
-}
-
-/* Assumendo che ci sia un #searchModal nel tuo HTML */
-#searchModal .modal-header h2 {
-    color: #dc3545;
-}
+/* Colori specifici per i titoli dei modali */
+#insertDataModal .modal-header h2 { color: #28a745; }
+#chatModal .modal-header h2 { color: #ffc107; }
+#newOrderModal .modal-header h2 { color: #6f42c1; }
+#searchModal .modal-header h2 { color: #dc3545; }
+#knowledgeLogsModal .modal-header h2 { color: #6c757d; } /* Grigio per Knowledge Logs */
 
 .close-button {
     position: absolute;
-    top: -10px; /* Spostato leggermente fuori dal bordo superiore */
-    right: -10px; /* Spostato leggermente fuori dal bordo destro */
-    font-size: 2.5em; /* Più grande */
+    top: -15px; /* Spostato leggermente fuori dal bordo superiore */
+    right: -15px; /* Spostato leggermente fuori dal bordo destro */
+    font-size: 2.8em; /* Più grande */
     color: #888;
-    background-color: white; /* Sfondo bianco per il pulsante */
+    background-color: white;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 45px; /* Dimensione aumentata */
+    height: 45px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25); /* Ombra più pronunciata */
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
 }
 
 .close-button:hover {
     color: #555;
-    transform: rotate(90deg); /* Rotazione all'hover */
+    transform: rotate(90deg);
     background-color: #f0f0f0;
 }
 
@@ -497,133 +466,102 @@ h1 {
     margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spazio aumentato tra i form-group */
-    padding: 0; /* Rimosso padding, gestito da form-group */
+    gap: 18px; /* Spazio aumentato tra i form-group */
+    padding: 0;
+    flex-grow: 1; /* Permette al body di occupare lo spazio rimanente */
 }
 
 .modal-body .form-group {
-    background-color: #f8f9fa; /* Sfondo per raggruppare visivamente */
-    padding: 15px;
-    border-radius: 8px;
+    background-color: #f8f9fa;
+    padding: 18px; /* Padding aumentato */
+    border-radius: 10px; /* Angoli più arrotondati */
     border: 1px solid #e9ecef;
 }
 
 .input-label-icon {
     display: flex;
     align-items: center;
-    gap: 10px; /* Spazio tra icona e testo */
-    margin-bottom: 10px; /* Margine sotto l'etichetta */
+    gap: 12px; /* Spazio aumentato tra icona e testo */
+    margin-bottom: 12px; /* Margine sotto l'etichetta */
 }
 
 .input-label-icon img {
-    max-width: 24px; /* Icona più grande */
-    max-height: 24px;
+    max-width: 28px; /* Icona più grande */
+    max-height: 28px;
 }
 
 .input-label-icon h3 {
-    font-size: 1.1em; /* Testo dell'etichetta più grande */
-    color: #333; /* Colore più scuro */
+    font-size: 1.2em; /* Testo dell'etichetta più grande */
+    color: #333;
     font-weight: 500;
-}
-
-.form-group textarea,
-.form-group input[type="file"],
-.form-group select,
-.form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
-    width: 100%;
-    padding: 10px 12px; /* Padding uniforme */
-    border: 1px solid #cccccc;
-    border-radius: 6px; /* Angoli arrotondati */
-    box-sizing: border-box;
-    font-size: 1em;
-    font-family: 'Roboto', sans-serif; /* Usa Roboto */
-    color: #333333;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 0; /* Rimuovi margini predefiniti dell'h3 */
 }
 
 .form-group textarea {
-    min-height: 80px; /* Altezza minima adeguata */
-    resize: vertical; /* Permetti ridimensionamento verticale */
-}
-
-.form-group textarea:focus,
-.form-group input[type="file"]:focus,
-.form-group select:focus,
-.form-group input[type="text"]:focus {
-    border-color: #2A76B8;
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
-    outline: none;
+    min-height: 90px; /* Altezza minima adeguata */
+    resize: vertical;
 }
 
 .voice-controls {
     display: flex;
     justify-content: center;
-    gap: 15px; /* Spazio aumentato */
-    margin-top: 10px;
+    gap: 18px; /* Spazio aumentato */
+    margin-top: 15px;
 }
 
 .voice-controls button {
-    padding: 10px 15px; /* Padding aumentato */
+    padding: 12px 18px; /* Padding aumentato */
     border: 1px solid #ccc;
-    border-radius: 6px; /* Angoli arrotondati */
+    border-radius: 8px; /* Angoli arrotondati */
     cursor: pointer;
-    font-size: 1em; /* Testo più grande */
+    font-size: 1.05em; /* Testo più grande */
     font-family: 'Roboto', sans-serif;
     background-color: white;
     color: #333;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 8px; /* Spazio tra icona e testo */
+    gap: 10px; /* Spazio tra icona e testo */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Ombra leggera */
 }
 
 .voice-controls button img {
-    max-width: 20px; /* Icone più grandi */
-    max-height: 20px;
+    max-width: 22px; /* Icone più grandi */
+    max-height: 22px;
 }
 
 .voice-controls button:hover {
     background-color: #eee;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-#startButton {
-    background-color: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-#startButton:hover {
-    background-color: #c3e6cb;
-}
+#startButton { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+#startButton:hover { background-color: #c3e6cb; }
 
-#stopButton {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-#stopButton:hover {
-    background-color: #f5c6cb;
-}
+#stopButton { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+#stopButton:hover { background-color: #f5c6cb; }
 
 #recordingStatus {
-    font-size: 0.9em; /* Testo più grande */
-    color: #666; /* Colore più leggibile */
-    margin-top: 8px;
-    margin-bottom: 12px;
+    font-size: 1em; /* Testo più grande */
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 15px;
     text-align: center;
+    font-weight: 500;
 }
 
 .save-button {
-    margin-top: 20px; /* Margine più grande */
-    padding: 15px 20px; /* Padding aumentato */
+    margin-top: 25px; /* Margine più grande */
+    padding: 16px 22px; /* Padding aumentato */
     border: none;
-    border-radius: 8px; /* Angoli più arrotondati */
+    border-radius: 8px;
     background-color: #28a745;
     color: white;
-    font-size: 1.1em; /* Testo più grande */
+    font-size: 1.2em; /* Testo più grande */
     font-weight: 500;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
     display: block;
     width: 100%;
@@ -639,8 +577,9 @@ h1 {
 /* Stili per il pulsante aiuto nel modal */
 .modal-header .help-button-container {
     position: absolute;
-    top: 10px; /* Leggermente più in basso */
-    right: 45px; /* Spazio per il pulsante di chiusura */
+    top: 12px; /* Leggermente più in basso */
+    right: 50px; /* Spazio per il pulsante di chiusura */
+    z-index: 1001; /* Assicura che sia sopra il titolo del modal ma sotto il close-button */
 }
 
 .modal-header .help-button {
@@ -648,38 +587,47 @@ h1 {
     color: white;
     border: none;
     border-radius: 50%;
-    width: 35px; /* Leggermente più grande */
-    height: 35px;
-    font-size: 1.1em;
+    width: 40px; /* Leggermente più grande */
+    height: 40px;
+    font-size: 1.2em;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     padding: 0;
     line-height: 1;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.modal-header .help-button:hover {
+    background-color: #5a6268;
+    transform: scale(1.05);
 }
 
-/* Legenda */
+/*
+---
+## Stili per Leggende
+*/
 .legend {
-    position: absolute;
-    top: 70px; /* Posiziona più in basso per non sovrapporsi all'header */
-    right: 20px; /* Spostato un po' più a sinistra */
+    position: absolute; /* Posizionamento rispetto al genitore posizionato (e.g. .main-content-wrapper o .modal) */
+    top: 75px; /* Posiziona più in basso per non sovrapporsi all'header */
+    right: 25px; /* Spostato un po' più a sinistra */
     background-color: white;
-    border: 1px solid #e0e0e0; /* Bordo più sottile e chiaro */
-    border-radius: 8px;
-    padding: 20px; /* Padding aumentato */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata */
-    z-index: 100; /* Modificato: Assicura che sia sopra gli elementi principali ma sotto i modali */
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18); /* Ombra più pronunciata */
+    z-index: 998; /* Sotto l'overlay dei modali (999) ma sopra il contenuto principale (10) */
     display: none;
     text-align: left;
-    max-width: 350px; /* Larghezza massima per leggibilità */
+    max-width: 380px; /* Larghezza massima per leggibilità */
+    box-sizing: border-box;
 }
 
 .legend h3 {
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    font-size: 1.3em;
+    font-size: 1.4em;
     color: #333333;
     margin-bottom: 15px;
     border-bottom: 1px solid #eeeeee;
@@ -688,37 +636,40 @@ h1 {
 
 .legend-item {
     display: flex;
-    align-items: flex-start; /* Allinea in alto */
-    margin-bottom: 15px; /* Spazio tra gli item */
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0; /* Rimuovi margine sull'ultimo item */
 }
 
 .legend-icon {
-    width: 35px; /* Icona più grande */
-    height: 35px;
-    margin-right: 15px; /* Spazio maggiore */
+    width: 40px; /* Icona più grande */
+    height: 40px;
+    margin-right: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-shrink: 0; /* Evita che l'icona si restringa */
+    flex-shrink: 0;
 }
 
 .legend-icon img {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Assicura che l'immagine si adatti senza distorsioni */
 }
 
 .legend-text {
-    font-size: 0.95em; /* Testo più grande */
+    font-size: 1em; /* Testo più grande */
     color: #555;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
-/* Rimosso z-index specifici per le legende dei modali, gestito dal .legend generale */
-/* #insertDataLegend, #chatLegend, #newOrderLegend {
-    z-index: 40;
-} */
-
-/* Release info */
+/*
+---
+## Release Info
+*/
 .release-info {
     position: fixed;
     bottom: 0;
@@ -730,65 +681,67 @@ h1 {
     padding: 12px 0;
     font-size: 0.8em;
     border-top: 1px solid #e9ecef;
-    z-index: 5; /* Assicurati che sia sotto i modali e le legende, ma sopra lo sfondo */
+    z-index: 5; /* Sotto modali e leggende, ma sopra lo sfondo */
 }
 
-/* NUOVI STILI PER CHAT MODAL */
-
+/*
+---
+## Stili per Chat Modal
+*/
 .chat-modal-body {
-    flex-grow: 1; /* Permette al body di occupare lo spazio rimanente */
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Spinge l'input in basso */
+    justify-content: space-between;
     gap: 15px;
-    padding-bottom: 0; /* Rimuovi padding inferiore se l'input area ha padding proprio */
+    padding-bottom: 0;
 }
 
 .chat-messages {
-    flex-grow: 1; /* Le conversazioni occupano lo spazio rimanente */
-    overflow-y: auto; /* Scorrevole se ci sono troppi messaggi */
-    padding-right: 10px; /* Spazio per la scrollbar */
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Spazio tra i messaggi */
-    margin-bottom: 15px; /* Spazio prima dell'area di input */
+    gap: 12px; /* Spazio tra i messaggi */
+    margin-bottom: 15px;
+    scroll-behavior: smooth; /* Scorrimento fluido */
 }
 
 /* Stili generali per ogni singolo messaggio */
 .message {
     display: flex;
-    max-width: 80%; /* Messaggi non troppo larghi */
-    align-items: flex-end; /* Allinea il content alla fine del contenitore */
+    max-width: 85%; /* Messaggi leggermente più larghi */
+    align-items: flex-end;
 }
 
 .message-content {
-    padding: 10px 15px;
-    border-radius: 18px; /* Bordi arrotondati come le bolle di chat */
-    line-height: 1.4;
-    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 12px 18px; /* Padding aumentato */
+    border-radius: 20px; /* Bordi più arrotondati */
+    line-height: 1.5;
+    word-wrap: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    font-size: 1.05em; /* Testo leggermente più grande */
 }
 
 /* Stili per i messaggi dell'utente */
 .user-message {
-    align-self: flex-end; /* Allinea a destra */
+    align-self: flex-end;
 }
-
 .user-message .message-content {
     background-color: #DCF8C6; /* Verde chiaro */
     color: #333;
-    border-bottom-right-radius: 4px; /* Angolo piatto a destra */
+    border-bottom-right-radius: 6px; /* Angolo piatto a destra */
 }
 
 /* Stili per i messaggi dell'AI (Frank) */
 .ai-message {
-    align-self: flex-start; /* Allinea a sinistra */
+    align-self: flex-start;
 }
-
 .ai-message .message-content {
-    background-color: #F1F0F0; /* Grigio chiaro */
+    background-color: #E6E6E6; /* Grigio chiaro leggermente più scuro */
     color: #333;
-    border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
+    border-bottom-left-radius: 6px; /* Angolo piatto a sinistra */
 }
 
 /* Aggiungi il nome dell'AI */
@@ -796,173 +749,484 @@ h1 {
     content: 'Frank: ';
     font-weight: bold;
     color: #555;
-    margin-right: 5px;
-    font-size: 0.9em;
-    align-self: flex-start; /* Allinea con l'inizio del messaggio */
-    margin-top: 2px; /* Allineamento fine con il testo */
+    margin-right: 8px; /* Spazio aumentato */
+    font-size: 0.95em;
+    align-self: flex-start;
+    margin-top: 4px; /* Allineamento fine con il testo */
 }
 
 .chat-input-area {
     display: flex;
-    flex-direction: column; /* Input text sopra i pulsanti */
+    flex-direction: column;
     width: 100%;
-    padding: 10px 0 0; /* Padding superiore per separare dalla chat */
-    border-top: 1px solid #eee; /* Linea sottile sopra l'area di input */
+    padding: 15px 0 0; /* Padding superiore per separare dalla chat */
+    border-top: 1px solid #eee;
     box-sizing: border-box;
 }
 
 #chatInput {
-    width: 100%; /* Copre l'intera larghezza */
-    min-height: 40px; /* Altezza minima */
-    max-height: 150px; /* Altezza massima per evitare che sia troppo grande */
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 20px; /* Bordi arrotondati per un look moderno */
+    width: 100%;
+    min-height: 45px; /* Altezza minima aumentata */
+    max-height: 180px; /* Altezza massima per evitare che sia troppo grande */
+    padding: 12px 18px; /* Padding aumentato */
+    border: 1px solid #bbb; /* Bordo leggermente più scuro */
+    border-radius: 25px; /* Bordi più arrotondati per un look moderno */
     box-sizing: border-box;
-    font-size: 1em;
-    resize: none; /* Disabilita il ridimensionamento manuale */
-    overflow-y: auto; /* Scorri se il testo è troppo lungo */
-    margin-bottom: 10px; /* Spazio tra input e pulsanti */
+    font-size: 1.05em;
+    resize: none;
+    overflow-y: auto;
+    margin-bottom: 12px; /* Spazio tra input e pulsanti */
+}
+#chatInput:focus {
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
 }
 
 .chat-controls {
     display: flex;
-    justify-content: flex-end; /* Allinea i pulsanti a destra */
-    gap: 10px; /* Spazio tra i pulsanti */
+    justify-content: flex-end;
+    gap: 12px; /* Spazio tra i pulsanti */
     width: 100%;
 }
 
 .chat-controls button {
-    background-color: #2A76B8; /* Blu del tema principale */
+    background-color: #2A76B8;
     color: white;
     border: none;
-    border-radius: 50%; /* Pulsanti rotondi */
-    width: 45px; /* Dimensione fissa per rotondità */
-    height: 45px;
+    border-radius: 50%;
+    width: 50px; /* Dimensione fissa per rotondità aumentata */
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impedisce ai pulsanti di ridursi */
-    padding: 0; /* Rimuovi padding predefinito */
+    flex-shrink: 0;
+    padding: 0;
 }
 
 .chat-controls button:hover {
     background-color: #1a5c96;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .chat-controls button img {
-    width: 24px; /* Icone più piccole per i pulsanti rotondi */
-    height: 24px;
+    width: 26px; /* Icone più grandi per i pulsanti rotondi */
+    height: 26px;
 }
 
 .chat-voice-button.recording-active {
-    background-color: #dc3545; /* Rosso quando in registrazione */
+    background-color: #dc3545;
 }
 .chat-voice-button.recording-active:hover {
     background-color: #c82333;
 }
 
-
-@media (max-width: 600px) {
-    .main-content-wrapper {
-        padding: 25px; /* Meno padding su mobile */
-        margin: 10px; /* Margine per non toccare i bordi */
-    }
-    h1 {
-        font-size: 1.8em;
-    }
-    .button-container {
-        flex-direction: column; /* I pulsanti vanno in colonna su schermi piccoli */
-        gap: 10px; /* Riduci il gap su mobile */
-    }
-    .button {
-        width: 100%; /* I pulsanti occupano tutta la larghezza su mobile */
-        max-width: 100%; /* Annulla max-width per 2x2 */
-        margin-right: 0;
-        margin-bottom: 0; /* Il gap gestisce lo spazio */
-    }
-    /* Adattamenti specifici per il pulsante Aggiorna AI DB su mobile */
-    #updateAIDbBtn {
-        flex-basis: 100%; /* Occupa tutta la larghezza */
-        max-width: 100%;
-    }
-    .modal {
-        padding: 20px;
-    }
-    .close-button {
-        top: -5px;
-        right: -5px;
-        width: 35px;
-        height: 35px;
-        font-size: 2em;
-    }
-    .modal-header .help-button-container {
-        right: 35px;
-    }
-    .legend {
-        top: 10px;
-        right: 10px;
-        max-width: calc(100% - 40px);
-        padding: 15px;
-    }
-    .release-info {
-        font-size: 0.7em;
-    }
-
-    /* Adattamenti per la chat modal su schermi piccoli */
-    .message {
-        max-width: 90%; /* Aumenta larghezza messaggi su mobile */
-    }
-    .chat-input-area {
-        padding: 5px 0 0;
-    }
-    #chatInput {
-        margin-bottom: 8px;
-    }
-    .chat-controls button {
-        width: 40px; /* Pulsanti leggermente più piccoli */
-        height: 40px;
-    }
-    .chat-controls button img {
-        width: 20px; /* Icone più piccole */
-        height: 20px;
-    }
-}
-
-/* NUOVI STILI PER KNOWLEDGE LOGS MODAL */
-.knowledge-logs-modal-content {
-    /* Potrebbe ereditare molto da .modal-content, ma potresti voler tweaks specifici */
-    /* Ad esempio, se vuoi un'altezza fissa o una gestione dello scroll diversa */
-}
-
-.knowledge-logs-display {
-    background-color: #e9ecef; /* Sfondo leggermente grigio per i log */
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    padding: 15px;
-    max-height: 300px; /* Altezza massima per la finestra dei log */
-    overflow-y: auto; /* Abilita lo scroll verticale se i log sono molti */
-    font-family: 'monospace'; /* Font monospaced per i log è spesso preferibile */
+.typing-indicator {
+    opacity: 0.7;
+    animation: pulse 1.5s infinite ease-in-out;
+    text-align: left; /* Allinea a sinistra come i messaggi AI */
     font-size: 0.9em;
-    line-height: 1.5;
+    font-style: italic;
+    color: #555;
+    margin-left: 10px; /* Indentazione per allineamento */
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+/* Stili per i messaggi di sistema nella chat */
+.system-message {
+    text-align: center;
+    margin: 10px auto; /* Centra il messaggio */
+    padding: 8px 15px;
+    border-radius: 15px; /* Bordi più arrotondati */
+    font-size: 0.9em;
+    font-style: italic;
+    color: #555;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    max-width: 70%; /* Limita larghezza per leggibilità */
+}
+.system-message.info { background-color: #e0f7fa; border-color: #b2ebf2; color: #00796b; }
+.system-message.error { background-color: #ffebee; border-color: #ffcdd2; color: #c62828; }
+.system-message.warning { background-color: #fff8e1; border-color: #ffecb3; color: #ffa000; }
+
+/*
+---
+## Stili per Knowledge Logs Modal
+*/
+.knowledge-logs-display {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    max-height: 350px; /* Altezza massima aumentata per la finestra dei log */
+    overflow-y: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', Courier, monospace; /* Font monospaced per i log */
+    font-size: 0.88em; /* Leggermente più grande */
+    line-height: 1.6; /* Interlinea per leggibilità */
     color: #343a40;
 }
 
 #knowledgeLogsList {
-    list-style: none; /* Rimuovi i pallini della lista */
+    list-style: none;
     padding: 0;
     margin: 0;
 }
 
 #knowledgeLogsList li {
-    padding: 5px 0;
-    border-bottom: 1px dotted #ced4da; /* Separatore tra i log */
+    padding: 6px 0; /* Padding aumentato */
+    border-bottom: 1px dotted #ced4da;
 }
 
 #knowledgeLogsList li:last-child {
-    border-bottom: none; /* Nessun bordo sull'ultimo elemento */
+    border-bottom: none;
+}
+
+.log-info { color: #333; }
+.log-success { color: #28a745; font-weight: bold; }
+.log-error { color: #dc3545; font-weight: bold; }
+.log-warning { color: #ffc107; font-weight: bold; } /* Rendi bold anche il warning */
+
+
+/*
+---
+## Media Queries per Responsiveness
+*/
+@media (max-width: 768px) { /* breakpoint per tablet e mobile */
+    .main-content-wrapper {
+        padding: 25px;
+        margin: 15px; /* Margine per non toccare i bordi */
+        max-width: 90%; /* Aumenta la larghezza su tablet */
+    }
+    h1 {
+        font-size: 2em;
+    }
+    .button {
+        flex-basis: calc(50% - 7.5px); /* Mantieni 2x2 su tablet */
+        max-width: calc(50% - 7.5px);
+        min-height: 90px;
+    }
+    .button span {
+        font-size: 0.95em;
+    }
+    .button img {
+        max-width: 40px;
+        max-height: 40px;
+    }
+    #updateAIDbBtn {
+        flex-basis: calc(50% - 7.5px);
+        max-width: calc(50% - 7.5px);
+    }
+
+    .modal {
+        padding: 20px;
+        max-width: 90%; /* Adatta modali a schermi più piccoli */
+    }
+    .close-button {
+        top: -10px;
+        right: -10px;
+        width: 40px;
+        height: 40px;
+        font-size: 2.3em;
+    }
+    .modal-header .help-button-container {
+        right: 40px;
+    }
+    .modal-header .help-button {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1em;
+    }
+    .legend {
+        top: 60px;
+        right: 15px;
+        max-width: calc(100% - 30px);
+        padding: 15px;
+    }
+    .legend h3 {
+        font-size: 1.2em;
+    }
+    .legend-icon {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+    }
+    .legend-text {
+        font-size: 0.9em;
+    }
+    .release-info {
+        font-size: 0.75em;
+        padding: 10px 0;
+    }
+
+    /* Adattamenti per la chat modal su schermi più piccoli */
+    .chat-messages {
+        padding-right: 5px;
+        gap: 8px;
+    }
+    .message {
+        max-width: 90%;
+    }
+    .message-content {
+        padding: 10px 15px;
+        font-size: 1em;
+    }
+    .ai-message::before {
+        font-size: 0.85em;
+        margin-right: 5px;
+    }
+    .chat-input-area {
+        padding: 10px 0 0;
+    }
+    #chatInput {
+        min-height: 35px;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+    }
+    .chat-controls button {
+        width: 45px;
+        height: 45px;
+    }
+    .chat-controls button img {
+        width: 22px;
+        height: 22px;
+    }
+}
+
+@media (max-width: 500px) { /* Breakpoint specifico per smartphone */
+    body {
+        justify-content: flex-start; /* Non più centrato verticalmente su mobile */
+        padding-top: 20px; /* Aggiungi un po' di spazio in alto */
+    }
+
+    .login-page-content,
+    .main-content-wrapper {
+        padding: 15px;
+        margin: 10px auto; /* Centra con margine automatico */
+        max-width: 100%; /* Occupa quasi tutta la larghezza */
+        border-radius: 8px; /* Angoli meno pronunciati su mobile */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        gap: 15px;
+    }
+    h1 {
+        font-size: 1.6em;
+        letter-spacing: 1px;
+    }
+    .login-container {
+        padding: 30px 20px; /* Meno padding */
+    }
+    h2 {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+    }
+    label {
+        font-size: 0.9em;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    .form-group textarea,
+    .form-group input[type="file"],
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 0.95em;
+    }
+    button[type="submit"] {
+        padding: 12px 15px;
+        font-size: 1em;
+        margin-top: 15px;
+    }
+
+    .button-container {
+        flex-direction: column; /* I pulsanti vanno in colonna su schermi molto piccoli */
+        gap: 10px;
+    }
+    .button, #updateAIDbBtn {
+        width: 100%;
+        max-width: 100%;
+        min-height: 80px; /* Altezza minima ridotta */
+        padding: 12px 8px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .button img, #updateAIDbBtn img {
+        max-width: 35px;
+        max-height: 35px;
+        margin-bottom: 5px;
+    }
+    .button span, #updateAIDbBtn span {
+        font-size: 0.9em;
+    }
+    
+    .latest-entries {
+        padding: 15px;
+    }
+    .latest-entries h2 {
+        font-size: 1.3em;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+    }
+    #latestEntriesList li {
+        font-size: 0.9em;
+        padding: 10px 0;
+        flex-direction: column; /* Stack data/ora e testo */
+        align-items: flex-start;
+        gap: 4px;
+    }
+    #latestEntriesList li strong {
+        font-size: 0.8em;
+    }
+    #latestEntriesList li .entry-url-link {
+        align-self: flex-end; /* Sposta il link a destra */
+        margin-left: 0;
+        margin-top: -15px; /* Sposta più in alto per non sovrapporsi */
+    }
+
+    .modal {
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .close-button {
+        top: -8px;
+        right: -8px;
+        width: 35px;
+        height: 35px;
+        font-size: 2em;
+    }
+    .modal-header h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+    .modal-header .help-button-container {
+        right: 35px;
+        top: 8px;
+    }
+    .modal-header .help-button {
+        width: 30px;
+        height: 30px;
+        font-size: 1em;
+    }
+    .modal-body .form-group {
+        padding: 12px;
+        border-radius: 6px;
+    }
+    .input-label-icon {
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .input-label-icon img {
+        max-width: 20px;
+        max-height: 20px;
+    }
+    .input-label-icon h3 {
+        font-size: 1em;
+    }
+    .voice-controls {
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .voice-controls button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        gap: 6px;
+    }
+    .voice-controls button img {
+        max-width: 18px;
+        max-height: 18px;
+    }
+    #recordingStatus {
+        font-size: 0.85em;
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    .save-button {
+        margin-top: 15px;
+        padding: 12px 15px;
+        font-size: 1em;
+        border-radius: 6px;
+    }
+
+    .legend {
+        top: 10px;
+        right: 10px;
+        max-width: calc(100% - 20px);
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    .legend h3 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+    .legend-item {
+        margin-bottom: 10px;
+    }
+    .legend-icon {
+        width: 25px;
+        height: 25px;
+        margin-right: 10px;
+    }
+    .legend-text {
+        font-size: 0.85em;
+    }
+    .release-info {
+        font-size: 0.7em;
+        padding: 8px 0;
+    }
+
+    /* Adattamenti per la chat modal su smartphone */
+    .chat-messages {
+        padding-right: 0; /* Rimuovi padding laterale per sfruttare al massimo lo spazio */
+        gap: 6px;
+    }
+    .message {
+        max-width: 95%; /* Quasi tutta la larghezza */
+    }
+    .message-content {
+        padding: 8px 12px;
+        font-size: 0.95em;
+    }
+    .ai-message::before {
+        font-size: 0.8em;
+    }
+    .chat-input-area {
+        padding: 8px 0 0;
+    }
+    #chatInput {
+        min-height: 30px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        font-size: 0.95em;
+    }
+    .chat-controls button {
+        width: 40px;
+        height: 40px;
+    }
+    .chat-controls button img {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Knowledge Logs su mobile */
+    .knowledge-logs-display {
+        padding: 10px;
+        max-height: 250px; /* Altezza leggermente ridotta */
+        font-size: 0.8em;
+    }
+    #knowledgeLogsList li {
+        padding: 4px 0;
+    }
+    .system-message {
+        max-width: 90%;
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
 }
