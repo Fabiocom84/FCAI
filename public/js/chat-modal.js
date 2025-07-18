@@ -25,6 +25,10 @@ class ChatModal {
         if (this.closeButton) {
             this.closeButton.addEventListener('click', this.close.bind(this));
         }
+        // Aggiungi l'event listener per il click fuori dal modale
+        if (this.chatModal) {
+            this.chatModal.addEventListener('click', this.handleOutsideClick.bind(this));
+        }
         if (this.sendMessageBtn) {
             this.sendMessageBtn.addEventListener('click', this.sendMessage.bind(this));
         }
@@ -61,6 +65,15 @@ class ChatModal {
             this.disconnectWebSocket(); // Disconnetti WebSocket della chat alla chiusura
             this.currentChatSessionId = null; // Resetta l'ID della sessione
             console.log('Modale Chat AI chiuso.');
+        }
+    }
+
+    // Nuovo metodo per gestire il click esterno
+    handleOutsideClick(event) {
+        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay)
+        // e non un elemento figlio del modale, allora chiudi
+        if (event.target === this.chatModal) {
+            this.close();
         }
     }
 
@@ -255,9 +268,6 @@ class ChatModal {
             return;
         }
 
-        // Recupera l'ID del processo corrente dalla chat o da un'altra fonte se necessario
-        // Per semplicità, potremmo usare un currentProcessId qui se la chat lo genera
-        // o fare in modo che il backend interrompa l'ultimo processo avviato dall'utente
         const processIdToStop = this.currentChatSessionId; // O un processId specifico di update KB
 
         if (!processIdToStop) {

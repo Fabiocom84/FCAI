@@ -22,37 +22,41 @@ class InsertDataModal {
         this.isTranscribing = false;
         this.riferimentoDropdown = this.modal.querySelector('#riferimentoDropdown');
 
-        // Rimosso: event listener per openButton se gestito da main.js
-        // if (this.openButton) {
-        //     this.openButton.addEventListener('click', this.open.bind(this));
-        // }
-
-        if (this.closeButton) {
-            this.closeButton.addEventListener('click', this.close.bind(this));
-        }
-        // Rimosso: event listener sull'overlay, gestito centralmente
-        // if (this.overlay) {
-        //     this.overlay.addEventListener('click', this.close.bind(this));
-        // }
-
-        if (this.saveButton && !this.saveButton.hasEventListener) {
-            console.log("Aggiungo event listener al saveButton.");
-            this.saveButton.addEventListener('click', this.saveData.bind(this));
-            this.saveButton.hasEventListener = true;
-        }
-
-        // Re-inizializzazioni ridondanti rimosse qui, le hai già definite sopra
-        // this.fileUploadInput = this.modal ? this.modal.querySelector('#fileUpload') : null;
-        // ... (ecc.)
+        // Tutti gli event listener centralizzati in un unico metodo
+        this.addEventListeners();
 
         this.setupFileUploadHandler();
         this.setupVoiceRecordingHandlers();
         this.loadEtichette();
     }
 
+    addEventListeners() {
+        // Event listener per aprire il modale (se non gestito esternamente)
+        if (this.openButton) {
+            this.openButton.addEventListener('click', this.open.bind(this));
+        }
+
+        // Event listener per chiudere il modale tramite il pulsante "X"
+        if (this.closeButton) {
+            this.closeButton.addEventListener('click', this.close.bind(this));
+        }
+
+        // *** NUOVO: Event listener per chiudere il modale cliccando fuori ***
+        if (this.modal) {
+            this.modal.addEventListener('click', this.handleOutsideClick.bind(this));
+        }
+
+        // Event listener per il pulsante Salva
+        if (this.saveButton && !this.saveButton.hasEventListener) {
+            console.log("Aggiungo event listener al saveButton.");
+            this.saveButton.addEventListener('click', this.saveData.bind(this));
+            this.saveButton.hasEventListener = true; // Flag per prevenire l'aggiunta multipla
+        }
+    }
+
     open() {
         console.log("InsertDataModal aperto");
-        if (this.modal) { // Non controlliamo più this.overlay direttamente
+        if (this.modal) {
             // Resetta i valori dei campi qui
             if (this.fileUploadInput) {
                 this.fileUploadInput.value = '';
@@ -83,10 +87,19 @@ class InsertDataModal {
 
     close() {
         console.log("Funzione close() chiamata.");
-        if (this.modal) { // Non controlliamo più this.overlay direttamente
+        if (this.modal) {
             this.modal.style.display = "none";
             window.hideOverlay(); // Usa la funzione centralizzata
             this.resetRecordingState(); // Resetta lo stato di registrazione alla chiusura
+        }
+    }
+
+    // *** NUOVO: Metodo per gestire il click esterno ***
+    handleOutsideClick(event) {
+        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay che il modale occupa)
+        // e non un elemento figlio del modale, allora chiudi
+        if (event.target === this.modal) {
+            this.close();
         }
     }
 
@@ -144,30 +157,30 @@ class InsertDataModal {
                 method: 'POST',
                 body: formData,
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Risposta dal backend (upload):', data);
-                if (data.message === 'Dati salvati con successo.') {
-                    // Chiamiamo fetchLatestEntries() da main.js, se esiste e se è reso globale
-                    if (typeof fetchLatestEntries === 'function') { // Controlla se la funzione è globale
-                        fetchLatestEntries(); // Aggiorna gli ultimi inserimenti
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Risposta dal backend (upload):', data);
+                    if (data.message === 'Dati salvati con successo.') {
+                        // Chiamiamo fetchLatestEntries() da main.js, se esiste e se è reso globale
+                        if (typeof fetchLatestEntries === 'function') { // Controlla se la funzione è globale
+                            fetchLatestEntries(); // Aggiorna gli ultimi inserimenti
+                        } else {
+                            console.warn("Funzione fetchLatestEntries non trovata. Gli ultimi inserimenti potrebbero non essere aggiornati.");
+                        }
+                        this.close();
                     } else {
-                        console.warn("Funzione fetchLatestEntries non trovata. Gli ultimi inserimenti potrebbero non essere aggiornati.");
+                        alert('Errore nel salvataggio: ' + data.error);
                     }
-                    this.close();
-                } else {
-                    alert('Errore nel salvataggio: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Errore durante la comunicazione con il backend (upload):', error);
-                alert('Impossibile salvare i dati.');
-            })
-            .finally(() => {
-                this.isSaving = false;
-                this.saveButton.disabled = false;
-                this.saveButton.textContent = 'Salva Dati';
-            });
+                })
+                .catch(error => {
+                    console.error('Errore durante la comunicazione con il backend (upload):', error);
+                    alert('Impossibile salvare i dati.');
+                })
+                .finally(() => {
+                    this.isSaving = false;
+                    this.saveButton.disabled = false;
+                    this.saveButton.textContent = 'Salva Dati';
+                });
         } else {
             alert("Nessun testo, file o riferimento da salvare.");
         }
@@ -184,27 +197,27 @@ class InsertDataModal {
         fetch(`${backendUrl}/api/get-etichette`, {
             method: 'GET',
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(etichette => {
-            while (this.riferimentoDropdown.options.length > 1) {
-                this.riferimentoDropdown.remove(1);
-            }
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(etichette => {
+                while (this.riferimentoDropdown.options.length > 1) {
+                    this.riferimentoDropdown.remove(1);
+                }
 
-            etichette.forEach(etichetta => {
-                const option = document.createElement('option');
-                option.value = etichetta;
-                option.textContent = etichetta;
-                this.riferimentoDropdown.appendChild(option);
+                etichette.forEach(etichetta => {
+                    const option = document.createElement('option');
+                    option.value = etichetta;
+                    option.textContent = etichetta;
+                    this.riferimentoDropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Errore nel caricamento delle etichette:", error);
             });
-        })
-        .catch(error => {
-            console.error("Errore nel caricamento delle etichette:", error);
-        });
     }
 
     setupFileUploadHandler() {
@@ -282,24 +295,24 @@ class InsertDataModal {
             method: 'POST',
             body: formData,
         })
-        .then(response => response.json())
-        .then(data => {
-            this.isTranscribing = false;
-            if (data.transcription) {
-                this.voiceTranscription.value = data.transcription;
-                this.recordingStatus.textContent = "Trascrizione completata.";
-            } else if (data.error) {
-                console.error("Errore nella trascrizione:", data.error);
-                this.recordingStatus.textContent = "Errore nella trascrizione.";
-            } else {
-                this.recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
-            }
-        })
-        .catch(error => {
-            this.isTranscribing = false;
-            console.error("Errore nell'invio dell'audio per la trascrizione:", error);
-            this.recordingStatus.textContent = "Errore di comunicazione con il server di trascrizione.";
-        });
+            .then(response => response.json())
+            .then(data => {
+                this.isTranscribing = false;
+                if (data.transcription) {
+                    this.voiceTranscription.value = data.transcription;
+                    this.recordingStatus.textContent = "Trascrizione completata.";
+                } else if (data.error) {
+                    console.error("Errore nella trascrizione:", data.error);
+                    this.recordingStatus.textContent = "Errore nella trascrizione.";
+                } else {
+                    this.recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
+                }
+            })
+            .catch(error => {
+                this.isTranscribing = false;
+                console.error("Errore nell'invio dell'audio per la trascrizione:", error);
+                this.recordingStatus.textContent = "Errore di comunicazione con il server di trascrizione.";
+            });
     }
 }
 

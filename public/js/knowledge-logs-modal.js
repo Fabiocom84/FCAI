@@ -16,6 +16,10 @@ class KnowledgeLogsModal {
         if (this.closeButton) {
             this.closeButton.addEventListener('click', this.close.bind(this));
         }
+        // *** NUOVO: Event listener per chiudere il modale cliccando fuori ***
+        if (this.knowledgeLogsModal) {
+            this.knowledgeLogsModal.addEventListener('click', this.handleOutsideClick.bind(this));
+        }
     }
 
     open() {
@@ -39,11 +43,20 @@ class KnowledgeLogsModal {
             const updateAIDbBtn = document.getElementById('updateAIDbBtn');
             if (updateAIDbBtn) {
                 updateAIDbBtn.disabled = false;
-                updateAIDbBtn.querySelector('img').src = 'img/reload.png';
+                updateAIDbBtn.querySelector('img').src = 'img/reload.png'; // Assicurati che 'reload.png' sia il nome corretto
                 updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
             }
             this.currentProcessId = null; // Resetta il process ID
             console.log('Modale Knowledge Logs chiuso.');
+        }
+    }
+
+    // *** NUOVO: Metodo per gestire il click esterno ***
+    handleOutsideClick(event) {
+        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay)
+        // e non un elemento figlio del modale, allora chiudi
+        if (event.target === this.knowledgeLogsModal) {
+            this.close();
         }
     }
 

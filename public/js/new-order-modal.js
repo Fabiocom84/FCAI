@@ -33,6 +33,10 @@ class NewOrderModal {
         if (this.closeButton) {
             this.closeButton.addEventListener('click', this.close.bind(this));
         }
+        // *** NUOVO: Event listener per chiudere il modale cliccando fuori ***
+        if (this.newOrderModal) {
+            this.newOrderModal.addEventListener('click', this.handleOutsideClick.bind(this));
+        }
         if (this.saveNewOrderButton) {
             this.saveNewOrderButton.addEventListener('click', this.saveNewOrder.bind(this));
         }
@@ -52,6 +56,15 @@ class NewOrderModal {
             this.newOrderModal.style.display = 'none';
             window.hideOverlay(); // Funzione centralizzata per l'overlay
             console.log('Modale Nuova Commessa chiuso.');
+        }
+    }
+
+    // *** NUOVO: Metodo per gestire il click esterno ***
+    handleOutsideClick(event) {
+        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay)
+        // e non un elemento figlio del modale, allora chiudi
+        if (event.target === this.newOrderModal) {
+            this.close();
         }
     }
 
@@ -81,7 +94,6 @@ class NewOrderModal {
         // Popola Modello dropdown
         if (this.modelloSelect) {
             try {
-                // MODIFICA QUI: Cambia da /api/models a /api/get-modelli
                 const response = await fetch(`${window.BACKEND_URL}/api/get-modelli`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -102,7 +114,6 @@ class NewOrderModal {
         // Popola Status dropdown
         if (this.statusSelect) {
             try {
-                // MODIFICA QUI: Cambia da /api/statuses a /api/get-status
                 const response = await fetch(`${window.BACKEND_URL}/api/get-status`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -157,11 +168,10 @@ class NewOrderModal {
         this.saveNewOrderButton.disabled = true; // Disabilita il pulsante durante il salvataggio
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, { // Ho corretto anche questo endpoint
+            const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
-                    // Non impostare 'Content-Type' per FormData, il browser lo fa automaticamente
                 },
                 body: formData
             });
