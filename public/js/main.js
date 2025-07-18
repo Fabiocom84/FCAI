@@ -14,11 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!authToken) {
         console.log('Nessun token di autenticazione trovato. Reindirizzamento a login.html');
-        window.location.href = '/login.html'; // Percorso esplicito a login.html
+        window.location.href = '/login.html';
     } else {
-        console.log('Token di autenticazione trovato. Caricamento dati iniziali.');
+        console.log('Token di autenticazione trovato. Caricamento dati iniziali e visualizzazione pagina.');
+        
+        // 🚀 NUOVO: Mostra il contenuto principale della pagina
+        const mainContent = document.querySelector('.main-content-wrapper');
+        if (mainContent) {
+            mainContent.style.display = 'flex'; // O 'block', a seconda di come vuoi che si comporti
+            mainContent.style.visibility = 'visible';
+            mainContent.style.opacity = '1';
+            mainContent.classList.remove('hidden', 'd-none'); // Rimuovi classi che potrebbero nasconderlo
+            console.log('main-content-wrapper reso visibile.');
+        } else {
+            console.error('Elemento .main-content-wrapper non trovato.');
+        }
+
         // Chiamata per caricare gli ultimi inserimenti una volta autenticato
-        // La funzione fetchLatestEntries è resa globale più in basso nel file
         if (typeof window.fetchLatestEntries === 'function') {
             window.fetchLatestEntries();
         } else {
