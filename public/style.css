@@ -185,8 +185,8 @@ button[type="submit"]:hover {
     font-weight: 500;
 }
 
-/*
 ---
+
 ## Stili per `index.html`
 */
 .main-content-wrapper {
@@ -367,12 +367,12 @@ h1 {
     text-decoration: underline;
 }
 
-/*
 ---
+
 ## Stili per Modali (Generale)
 */
 .modal-overlay {
-    display: none;
+    **display: none;** /* Modificato: L'overlay è nascosto di default */
     position: fixed;
     top: 0;
     left: 0;
@@ -382,8 +382,13 @@ h1 {
     z-index: 999; /* Sopra tutto tranne i modali stessi */
 }
 
+/* Nuova regola per mostrare l'overlay */
+.modal-overlay.is-open {
+    **display: block;**
+}
+
 .modal {
-    display: none;
+    **display: none;** /* Modificato: Il modale è nascosto di default */
     position: fixed;
     top: 50%;
     left: 50%;
@@ -398,9 +403,15 @@ h1 {
     max-height: 90%;
     overflow-y: auto;
     animation: fadeInModal 0.3s ease-out;
-    display: flex; /* Flexbox per il contenuto interno */
-    flex-direction: column;
+    /* RIMOSSO: "display: flex;" da qui. Ora è gestito dalla classe .is-open */
+    flex-direction: column; /* Mantenuto per la direzione del contenuto interno */
 }
+
+/* Nuova regola per mostrare il modale quando .is-open è applicata */
+.modal.is-open {
+    **display: flex;** /* Modificato: Mostra il modale e usa flexbox per il layout interno */
+}
+
 
 @keyframes fadeInModal {
     from { opacity: 0; transform: translate(-50%, -60%); }
@@ -604,8 +615,8 @@ h1 {
     transform: scale(1.05);
 }
 
-/*
 ---
+
 ## Stili per Leggende
 */
 .legend {
@@ -657,7 +668,7 @@ h1 {
 .legend-icon img {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain; /* Assicura che l'immagine si adatti senza distorsioni */
+    object-fit: contain; /* Assicura che l'immagine si adatta senza distorsioni */
 }
 
 .legend-text {
@@ -666,8 +677,8 @@ h1 {
     line-height: 1.5;
 }
 
-/*
 ---
+
 ## Release Info
 */
 .release-info {
@@ -684,8 +695,8 @@ h1 {
     z-index: 5; /* Sotto modali e leggende, ma sopra lo sfondo */
 }
 
-/*
 ---
+
 ## Stili per Chat Modal
 */
 .chat-modal-body {
@@ -856,8 +867,8 @@ h1 {
 .system-message.error { background-color: #ffebee; border-color: #ffcdd2; color: #c62828; }
 .system-message.warning { background-color: #fff8e1; border-color: #ffecb3; color: #ffa000; }
 
-/*
 ---
+
 ## Stili per Knowledge Logs Modal
 */
 .knowledge-logs-display {
@@ -894,8 +905,8 @@ h1 {
 .log-warning { color: #ffc107; font-weight: bold; } /* Rendi bold anche il warning */
 
 
-/*
 ---
+
 ## Media Queries per Responsiveness
 */
 @media (max-width: 768px) { /* breakpoint per tablet e mobile */
@@ -990,8 +1001,8 @@ h1 {
         margin-bottom: 10px;
     }
     .chat-controls button {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
     }
     .chat-controls button img {
         width: 22px;
@@ -1199,12 +1210,6 @@ h1 {
     }
     .chat-input-area {
         padding: 8px 0 0;
-    }
-    #chatInput {
-        min-height: 30px;
-        padding: 8px 12px;
-        margin-bottom: 8px;
-        font-size: 0.95em;
     }
     .chat-controls button {
         width: 40px;
