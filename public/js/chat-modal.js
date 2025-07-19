@@ -23,11 +23,19 @@ class ChatModal {
             this.openButton.addEventListener('click', this.open.bind(this));
         }
         if (this.closeButton) {
-            this.closeButton.addEventListener('click', this.close.bind(this));
+            // Modificato per chiamare un wrapper asincrono che gestisce il salvataggio
+            this.closeButton.addEventListener('click', async () => {
+                await this.close();
+            });
         }
         // Aggiungi l'event listener per il click fuori dal modale
         if (this.chatModal) {
-            this.chatModal.addEventListener('click', this.handleOutsideClick.bind(this));
+            // Modificato per chiamare un wrapper asincrono che gestisce il salvataggio
+            this.chatModal.addEventListener('click', async (event) => {
+                if (event.target === this.chatModal) {
+                    await this.close();
+                }
+            });
         }
         if (this.sendMessageBtn) {
             this.sendMessageBtn.addEventListener('click', this.sendMessage.bind(this));
@@ -58,8 +66,12 @@ class ChatModal {
         }
     }
 
-    close() {
+    async close() {
         if (this.chatModal) {
+            const transcription = this.getChatTranscription();
+            if (transcription) { // Salva solo se c'è qualcosa da salvare
+                await this.saveChatToGoogleSheet(transcription);
+            }
             this.chatModal.style.display = 'none';
             window.hideOverlay(); // Funzione centralizzata per l'overlay
             this.disconnectWebSocket(); // Disconnetti WebSocket della chat alla chiusura
@@ -68,12 +80,65 @@ class ChatModal {
         }
     }
 
-    // Nuovo metodo per gestire il click esterno
-    handleOutsideClick(event) {
-        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay)
-        // e non un elemento figlio del modale, allora chiudi
-        if (event.target === this.chatModal) {
-            this.close();
+    /**
+     * Estrae l'intera trascrizione della conversazione dalla chat.
+     * @returns {string} La trascrizione formattata della chat.
+     */
+    getChatTranscription() {
+        let transcription = '';
+        const messages = this.chatMessages.querySelectorAll('.message');
+        messages.forEach(message => {
+            // Evita di includere messaggi di sistema o indicatori di digitazione nella trascrizione principale
+            if (message.classList.contains('system-message') || message.classList.contains('typing-indicator')) {
+                return;
+            }
+
+            const sender = message.classList.contains('user-message') ? 'Utente' : 'Frank';
+            const content = message.querySelector('.message-content').innerText;
+            transcription += `${sender}: ${content}\n`;
+        });
+        return transcription.trim(); // Rimuovi eventuali spazi bianchi all'inizio/fine
+    }
+
+    /**
+     * Invia la trascrizione della chat al backend per essere salvata sul Google Sheet.
+     * @param {string} transcription Il testo della conversazione da salvare.
+     */
+    async saveChatToGoogleSheet(transcription) {
+        if (!transcription) {
+            console.warn("Nessuna trascrizione da salvare.");
+            return;
+        }
+
+        try {
+            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (!authToken) {
+                console.error('Token di autenticazione non trovato. Impossibile salvare la chat.');
+                // Non mostrare alert qui, per non bloccare la chiusura del modal.
+                this._addSystemMessage('Impossibile salvare la chat: autenticazione necessaria.', 'error');
+                return;
+            }
+
+            console.log('Tentativo di salvare la chat sul Google Sheet...');
+            const response = await fetch(`${window.BACKEND_URL}/save-chat`, { // Assicurati che l'endpoint sia corretto
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ chatTranscription: transcription })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Errore HTTP: ${response.status}`);
+            }
+
+            console.log('Chat salvata con successo sul Google Sheet.');
+            this._addSystemMessage('Chat salvata sul Google Sheet.', 'info');
+        } catch (error) {
+            console.error('Errore durante il salvataggio della chat:', error);
+            this._addSystemMessage(`Errore nel salvataggio della chat: ${error.message}`, 'error');
         }
     }
 
@@ -179,6 +244,12 @@ class ChatModal {
 
         this.websocket.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            // Rimuovi l'indicatore di digitazione quando ricevi un messaggio
+            const typingIndicator = this.chatMessages.querySelector('.typing-indicator');
+            if (typingIndicator && typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+            }
+
             if (data.type === 'response') {
                 this.addMessage(data.message, 'ai');
                 // Se la risposta include audio, riproduci
@@ -196,11 +267,21 @@ class ChatModal {
         this.websocket.onclose = (event) => {
             console.log('WebSocket Chat disconnesso:', event.code, event.reason);
             this._addSystemMessage('Chat disconnessa. Se hai bisogno, apri nuovamente il modale.', 'info');
+            // Assicurati che l'indicatore di digitazione venga rimosso anche alla disconnessione
+            const typingIndicator = this.chatMessages.querySelector('.typing-indicator');
+            if (typingIndicator && typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+            }
         };
 
         this.websocket.onerror = (error) => {
             console.error('Errore WebSocket Chat:', error);
             this._addSystemMessage('Errore di connessione alla chat. Riprova.', 'error');
+            // Assicurati che l'indicatore di digitazione venga rimosso anche in caso di errore
+            const typingIndicator = this.chatMessages.querySelector('.typing-indicator');
+            if (typingIndicator && typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+            }
         };
     }
 
@@ -247,25 +328,20 @@ class ChatModal {
                 console.log('Messaggio inviato via WebSocket:', messagePayload);
             } else {
                 this._addSystemMessage('Errore: Connessione WebSocket non attiva. Riprova ad aprire la chat.', 'error');
-            }
-
-            // L'indicatore di digitazione verrà rimosso quando arriva la risposta via WebSocket
-            // o se c'è un errore nella trasmissione WebSocket.
-            // Per ora, lo rimuoviamo dopo un breve timeout se non gestito dal WS onmessage
-            // (potrebbe essere necessario un meccanismo più robusto per la rimozione).
-            // Rimuovi l'indicatore di digitazione dopo un breve ritardo per UX,
-            // o quando ricevi la risposta AI via WebSocket.
-            // Per il momento, lo rimuoviamo qui per evitare che rimanga bloccato.
-            setTimeout(() => {
+                // Rimuovi l'indicatore di digitazione se il WebSocket non è attivo
                 if (typingIndicator.parentNode) {
                     typingIndicator.parentNode.removeChild(typingIndicator);
                 }
-            }, 2000); // Rimuovi dopo 2 secondi se non arriva una risposta rapida
-            
+            }
+
+            // L'indicatore di digitazione verrà rimosso quando arriva la risposta via WebSocket
+            // Se non dovesse arrivare una risposta, un meccanismo di timeout o di stato del WS dovrebbe rimuoverlo.
+            // Il setTimeout qui è stato rimosso, poiché la rimozione è ora gestita nell'onmessage e onerror del WS.
         } catch (error) {
             console.error('Errore nell\'invio del messaggio:', error);
             this._addSystemMessage(`Errore durante l'invio del messaggio: ${error.message}`, 'error');
             // Rimuovi l'indicatore di digitazione in caso di errore
+            const typingIndicator = this.chatMessages.querySelector('.typing-indicator');
             if (typingIndicator.parentNode) {
                 typingIndicator.parentNode.removeChild(typingIndicator);
             }
@@ -277,7 +353,6 @@ class ChatModal {
         console.log('Avvio aggiornamento Knowledge Base AI...');
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            // Sostituito alert con _addSystemMessage
             this._addSystemMessage('Autenticazione richiesta per aggiornare la Knowledge Base.', 'error');
             return;
         }
@@ -300,10 +375,9 @@ class ChatModal {
                 // Invia i parametri necessari per la Cloud Function tramite il backend
                 body: JSON.stringify({
                     // Questi valori devono corrispondere a quelli che la tua Cloud Function si aspetta
-                    // Puoi renderli configurabili o fissi a seconda delle tue esigenze
                     spreadsheet_id: "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8", // ID del tuo Google Sheet
                     // AGGIORNATO: Nomi dei fogli corretti per la Knowledge Base
-                    sheet_names: "Registrazioni,Chat_AI,Riferimento_Commessa" 
+                    sheet_names: "Registrazioni,Chat_AI,Riferimento_Commessa"
                 })
             });
 
@@ -339,7 +413,6 @@ class ChatModal {
         console.log('Richiesta di interruzione processo AI...');
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            // Sostituito alert con _addSystemMessage
             this._addSystemMessage('Autenticazione richiesta per interrompere il processo.', 'error');
             return;
         }
