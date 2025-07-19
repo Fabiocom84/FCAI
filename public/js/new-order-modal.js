@@ -25,90 +25,104 @@ class NewOrderModal {
         this.isSaving = false; // Flag per prevenire doppi invii
 
         this.addEventListeners();
-        this.populateDropdowns(); // Popola i dropdown all'inizializzazione
     }
 
     addEventListeners() {
         if (this.openButton) {
-            this.openButton.addEventListener('click', this.open.bind(this));
+            this.openButton.addEventListener('click', () => this.open());
         }
         if (this.closeButton) {
-            this.closeButton.addEventListener('click', this.close.bind(this));
+            this.closeButton.addEventListener('click', () => this.close());
         }
-        // Event listener per chiudere il modale cliccando fuori
         if (this.newOrderModal) {
-            this.newOrderModal.addEventListener('click', this.handleOutsideClick.bind(this));
+            // Chiudi il modale cliccando fuori dal contenuto
+            this.newOrderModal.addEventListener('click', (event) => {
+                if (event.target === this.newOrderModal) {
+                    this.close();
+                }
+            });
         }
         if (this.saveNewOrderButton) {
-            this.saveNewOrderButton.addEventListener('click', this.saveNewOrder.bind(this));
+            this.saveNewOrderButton.addEventListener('click', (event) => this.saveNewOrder(event));
+        }
+
+        // Aggiungi listener per la preview dell'immagine
+        if (this.immagineInput) {
+            this.immagineInput.addEventListener('change', this.previewImage.bind(this));
         }
     }
 
     open() {
-        if (this.newOrderModal) {
-            this.newOrderModal.style.display = 'block';
-            window.showOverlay(); // Funzione centralizzata per l'overlay
-            this.clearForm(); // Pulisci il form ogni volta che apri il modale
-            this.resetSaveButton(); // Assicurati che il pulsante sia resettato
-            console.log('Modale Nuova Commessa aperto.');
-        }
+        this.newOrderModal.style.display = 'block';
+        this.resetForm(); // Resetta il form ogni volta che si apre
+        this.populateDropdowns(); // Popola i dropdown all'apertura
     }
 
     close() {
-        if (this.newOrderModal) {
-            this.newOrderModal.style.display = 'none';
-            window.hideOverlay(); // Funzione centralizzata per l'overlay
-            this.clearForm(); // Pulisci il form alla chiusura
-            this.resetSaveButton(); // Resetta lo stato del pulsante
-            console.log('Modale Nuova Commessa chiuso.');
-        }
+        this.newOrderModal.style.display = 'none';
     }
 
-    // Metodo per gestire il click esterno
-    handleOutsideClick(event) {
-        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay che il modale occupa)
-        // e non un elemento figlio del modale, allora chiudi
-        if (event.target === this.newOrderModal) {
-            this.close();
+    resetForm() {
+        this.clienteInput.value = '';
+        this.impiantoInput.value = '';
+        this.modelloSelect.value = ''; // Reset della selezione
+        this.voInput.value = '';
+        this.commessaInput.value = '';
+        this.dataInput.value = '';
+        this.provinciaInput.value = '';
+        this.paeseInput.value = '';
+        this.annoInput.value = '';
+        this.matricolaInput.value = '';
+        this.statusSelect.value = ''; // Reset della selezione
+        this.noteTextarea.value = '';
+        this.immagineInput.value = ''; // Resetta anche il campo file
+        
+        const imagePreview = document.getElementById('newOrderImmaginePreview');
+        if (imagePreview) {
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
         }
-    }
 
-    clearForm() {
-        if (this.clienteInput) this.clienteInput.value = '';
-        if (this.impiantoInput) this.impiantoInput.value = '';
-        if (this.modelloSelect) this.modelloSelect.selectedIndex = 0;
-        if (this.voInput) this.voInput.value = '';
-        if (this.commessaInput) this.commessaInput.value = '';
-        if (this.dataInput) {
-            // Imposta la data corrente come valore predefinito
-            const today = new Date();
-            this.dataInput.value = today.toISOString().split('T')[0];
-        }
-        if (this.provinciaInput) this.provinciaInput.value = '';
-        if (this.paeseInput) this.paeseInput.value = '';
-        if (this.annoInput) this.annoInput.value = new Date().getFullYear(); // Imposta l'anno corrente
-        if (this.matricolaInput) this.matricolaInput.value = '';
-        if (this.statusSelect) this.statusSelect.selectedIndex = 0;
-        if (this.noteTextarea) this.noteTextarea.value = '';
-        if (this.immagineInput) this.immagineInput.value = ''; // Resetta il campo file
+        this.resetSaveButton();
     }
 
     resetSaveButton() {
-        if (this.saveNewOrderButton) {
-            this.saveNewOrderButton.disabled = false;
-            this.saveNewOrderButton.textContent = 'Salva Nuova Commessa';
-            this.isSaving = false;
+        this.isSaving = false;
+        this.saveNewOrderButton.textContent = 'Salva Commessa';
+        this.saveNewOrderButton.disabled = false;
+        this.saveNewOrderButton.classList.remove('saving');
+    }
+
+    setSavingState() {
+        this.isSaving = true;
+        this.saveNewOrderButton.textContent = 'Salvataggio in corso...';
+        this.saveNewOrderButton.disabled = true;
+        this.saveNewOrderButton.classList.add('saving');
+    }
+
+    previewImage() {
+        const file = this.immagineInput.files[0];
+        const imagePreview = document.getElementById('newOrderImmaginePreview');
+
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
         }
     }
 
     async populateDropdowns() {
-        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            console.warn('Autenticazione richiesta per popolare i dropdown. Skipping.');
-            return;
-        }
-        if (!window.BACKEND_URL) {
-            console.error("URL del backend non definito per popolare i dropdown.");
+            console.error('Authentication token not found.');
+            alert('Autenticazione richiesta. Effettua il login.');
+            window.location.href = 'login.html'; // Reindirizza al login
             return;
         }
 
@@ -119,7 +133,9 @@ class NewOrderModal {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const models = await response.json();
+                const data = await response.json();
+                const models = data.models; // Assumi che la risposta contenga un campo 'models'
+                
                 this.modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
                 models.forEach(model => {
                     const option = document.createElement('option');
@@ -133,14 +149,17 @@ class NewOrderModal {
             }
         }
 
-        // Popola Status dropdown
+        // Popola Status dropdown (MODIFICA QUI LA URL)
         if (this.statusSelect) {
             try {
-                const response = await fetch(`${window.BACKEND_URL}/api/get-statuses`, {
+                // *** MODIFICA QUI: Da /api/get-statuses a /api/get-all-statuses ***
+                const response = await fetch(`${window.BACKEND_URL}/api/get-all-statuses`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (!response.ok) throw new Error(`HTTP error! statuses: ${response.status}`);
-                const statuses = await response.json();
+                const data = await response.json();
+                const statuses = data.statuses; // Assumi che la risposta contenga un campo 'statuses'
+                
                 this.statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
                 statuses.forEach(status => {
                     const option = document.createElement('option');
@@ -153,84 +172,100 @@ class NewOrderModal {
                 alert('Impossibile caricare gli status. Controlla la console per dettagli.');
             }
         }
-    }
-
-    validateForm(data) {
-        // Esempio di validazione minima per alcuni campi obbligatori
-        const requiredFields = ['cliente', 'impianto', 'modello', 'commessa', 'data', 'provincia', 'paese', 'anno', 'matricola', 'status'];
-        for (const field of requiredFields) {
-            if (!data[field] || String(data[field]).trim() === '' || data[field] === 'Seleziona un modello' || data[field] === 'Seleziona uno status') {
-                alert(`Il campo '${field}' è obbligatorio.`);
-                return false;
+        
+        // Popola Etichette dropdown (NUOVO)
+        if (this.etichetteSelect) { // Assicurati di avere un elemento con id 'newOrderEtichette' nel tuo HTML
+            try {
+                const response = await fetch(`${window.BACKEND_URL}/api/get-etichette`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const etichette = data.etichette; // Assumi che la risposta contenga un campo 'etichette'
+                
+                this.etichetteSelect.innerHTML = '<option value="" disabled selected>Seleziona un\'etichetta</option>';
+                etichette.forEach(etichetta => {
+                    const option = document.createElement('option');
+                    option.value = etichetta;
+                    option.textContent = etichetta;
+                    this.etichetteSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Errore nel recupero delle etichette:', error);
+                alert('Impossibile caricare le etichette. Controlla la console per dettagli.');
             }
         }
-        if (isNaN(data.anno) || data.anno < 1900 || data.anno > new Date().getFullYear() + 5) { // Esempio di validazione per anno
-            alert('L\'anno deve essere un numero valido.');
-            return false;
-        }
-        // Puoi aggiungere qui altre logiche di validazione (es. formati email, numeri, lunghezze min/max)
-        return true;
     }
 
-    async saveNewOrder() {
-        if (this.isSaving) {
-            console.log("Salvataggio già in corso, ignorando click.");
-            return;
-        }
 
-        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    async saveNewOrder(event) {
+        event.preventDefault(); // Impedisci l'invio predefinito del form
+
+        if (this.isSaving) return;
+        this.setSavingState();
+
+        const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            alert('Autenticazione richiesta per salvare una nuova commessa. Effettua il login.');
-            return;
-        }
-        if (!window.BACKEND_URL) {
-            alert('Errore: URL del backend non configurato. Impossibile salvare la commessa.');
-            console.error("URL del backend non definito.");
+            alert('Autenticazione richiesta. Effettua il login.');
+            this.resetSaveButton();
+            window.location.href = 'login.html'; // Reindirizza al login
             return;
         }
 
-        const newOrderData = {
-            cliente: this.clienteInput.value,
-            impianto: this.impiantoInput.value,
-            modello: this.modelloSelect.value,
-            vo: this.voInput.value,
-            commessa: this.commessaInput.value,
-            data: this.dataInput.value,
-            provincia: this.provinciaInput.value,
-            paese: this.paeseInput.value,
-            anno: parseInt(this.annoInput.value), // Assicurati che sia un numero
-            matricola: this.matricolaInput.value,
-            status: this.statusSelect.value,
-            note: this.noteTextarea.value
-        };
+        // Recupera i valori dai campi
+        const cliente = this.clienteInput.value;
+        const impianto = this.impiantoInput.value;
+        const modello = this.modelloSelect.value;
+        const vo = this.voInput.value;
+        const commessa = this.commessaInput.value;
+        const data = this.dataInput.value; // La data è già nel formato YYYY-MM-DD
+        const provincia = this.provinciaInput.value;
+        const paese = this.paeseInput.value;
+        const anno = this.annoInput.value;
+        const matricola = this.matricolaInput.value;
+        const status = this.statusSelect.value;
+        const note = this.noteTextarea.value;
 
-        if (!this.validateForm(newOrderData)) {
-            return; // Ferma il salvataggio se la validazione fallisce
+        // Validazione semplice
+        if (!cliente || !impianto || !modello || !vo || !commessa || !data || !provincia || !paese || !anno || !matricola || !status) {
+            alert('Per favore, compila tutti i campi obbligatori.');
+            this.resetSaveButton();
+            return;
         }
 
-        // Gestione dell'immagine (se presente)
-        const imageData = this.immagineInput.files[0];
-        const formData = new FormData();
-
-        for (const key in newOrderData) {
-            formData.append(key, newOrderData[key]);
+        let immagineBase64 = null;
+        const file = this.immagineInput.files[0];
+        if (file) {
+            // Converti l'immagine in Base64
+            immagineBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Prendi solo la parte Base64
+                reader.readAsDataURL(file);
+            });
         }
-        if (imageData) {
-            formData.append('immagine', imageData);
-        }
-
-        this.isSaving = true;
-        this.saveNewOrderButton.disabled = true;
-        this.saveNewOrderButton.textContent = 'Salvataggio in corso...';
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
+            const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
-                    // 'Content-Type': 'multipart/form-data' NON IMPOSTARE, FormData lo gestisce automaticamente
                 },
-                body: formData
+                body: JSON.stringify({
+                    cliente,
+                    impianto,
+                    modello,
+                    vo,
+                    commessa,
+                    data,
+                    provincia,
+                    paese,
+                    anno,
+                    matricola,
+                    status,
+                    note,
+                    immagine: immagineBase64
+                })
             });
 
             if (!response.ok) {
