@@ -136,10 +136,10 @@ class NewOrderModal {
         // Popola Status dropdown
         if (this.statusSelect) {
             try {
-                const response = await fetch(`${window.BACKEND_URL}/api/get-status`, {
+                const response = await fetch(`${window.BACKEND_URL}/api/get-statuses`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP error! statuses: ${response.status}`);
                 const statuses = await response.json();
                 this.statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
                 statuses.forEach(status => {
