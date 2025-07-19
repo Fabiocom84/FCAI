@@ -3,9 +3,6 @@
 // Assumi che window.BACKEND_URL sia definito in config.js
 // Per consistenza con i modali, useremo window.BACKEND_URL.
 
-// Rimosso: Contatore per tenere traccia di quanti modali sono aperti e mostrare/nascondere l'overlay di conseguenza
-// let openModalCount = 0; // Rimuovi questa riga
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Main script: DOM completamente caricato.');
     console.log('Controllo autenticazione in main.js...');
@@ -39,24 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Rimosso: Event listener per aprire il modale "Knowledge Logs"
-    // Questo listener è stato spostato in modal-manager.js
-    /*
-    const updateAIDbBtn = document.getElementById('updateAIDbBtn');   
-    if (updateAIDbBtn) {
-        updateAIDbBtn.addEventListener('click', function() {
-            if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.open === 'function') {
-                window.knowledgeLogsModalInstance.open();
-                // ... logica per l'aggiornamento KB
-            } else {
-                console.error('L\'istanza knowledgeLogsModalInstance o la sua funzione open() non è definita...');
-            }
-        });
-    } else {
-        console.warn('Pulsante #updateAIDbBtn non trovato. Assicurati che l\'HTML sia corretto.');
-    }
-    */
-
     // --- Logout Button Listener ---
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -70,13 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Pulsante #logoutBtn non trovato. Assicurati che l\'HTML sia corretto.');
     }
 });
-
-// Rimosso: Funzioni Globali per Overlay (showOverlay, hideOverlay)
-// Queste funzioni sono ora gestite esclusivamente in modal-manager.js
-/*
-window.showOverlay = () => { ... };
-window.hideOverlay = () => { ... };
-*/
 
 // --- Funzioni Globali per Interazioni API ---
 
@@ -183,14 +155,18 @@ async function initiateKnowledgeBaseUpdate() {
         }
 
         console.log('Invio richiesta di aggiornamento Knowledge Base...');
-        const response = await fetch(`${window.BACKEND_URL}/api/update-knowledge-base`, {
+        // CORREZIONE: Aggiornato l'endpoint a /api/trigger-knowledge-update
+        // e aggiunto il body con spreadsheet_id e sheet_names
+        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            // Se non ci sono dati da inviare nel body, si può omettere o inviare un oggetto vuoto
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                spreadsheet_id: "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8", // ID del tuo Google Sheet
+                sheet_names: "Registrazioni,Chat_AI,Riferimento_Commessa" // Nomi dei fogli per la Knowledge Base
+            })
         });
 
         const data = await response.json();
@@ -221,7 +197,8 @@ async function initiateKnowledgeBaseUpdate() {
         const updateAIDbBtn = document.getElementById('updateAIDbBtn');
         if (updateAIDbBtn) {
             updateAIDbBtn.disabled = false;
-            updateAIDbBtn.querySelector('img').src = 'img/reload.png';
+            // Assicurati che 'img/reload.png' esista o usa un'alternativa CSS
+            updateAIDbBtn.querySelector('img').src = 'img/reload.png'; 
             updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
         }
     }
