@@ -15,13 +15,10 @@
 <body>
     <div class="main-content-wrapper">
         <div class="header-controls">
-            <button id="logoutBtn" class="button-icon logout-button" title="Effettua il Logout">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </button>
-            <div class="help-button-container">
-                <button class="help-button" data-legend="mainPageLegend">?</button>
-            </div>
+            <a href="#" class="button-icon logout-button" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            <button class="help-button" data-legend="mainPageLegend">?</button>
         </div>
 
         <h1>SEGRETARIO AI</h1>
@@ -42,10 +39,6 @@
             <a href="https://docs.google.com/spreadsheets/d/1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8/edit?usp=drive_link" class="button search-button" target="_blank" rel="noopener noreferrer">
                 <img src="img/search.png" alt="Apri Google Sheets">
                 <span>Apri Fogli Google</span>
-            </a>
-            <a href="#" class="button update-kb-button" id="updateAIDbBtnMain">
-                <img src="img/switch.png" alt="Aggiorna Knowledge Base AI">
-                <span>Aggiorna AI DB</span>
             </a>
         </div>
 
@@ -249,6 +242,9 @@
                 <div class="chat-input-area">
                     <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
                     <div class="chat-controls">
+                        <button id="updateAIDbBtn" title="Aggiorna Knowledge Base AI" class="icon-button">
+                            <img src="img/reload.png" alt="Aggiorna AI DB">
+                        </button>
                         <button id="startChatRecordingBtn" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
                         <button id="sendMessageBtn" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
                     </div>
@@ -292,10 +288,6 @@
         <div class="legend-item">
             <div class="legend-icon search-button"><img src="img/search.png" alt="Ricerca"></div>
             <div class="legend-text">Visualizza e cerca tra gli inserimenti effettuati nel database.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon update-kb-button"><img src="img/switch.png" alt="Aggiorna Knowledge Base AI"></div>
-            <div class="legend-text">Aggiorna la Knowledge Base AI con i dati più recenti dal database.</div>
         </div>
     </div>
 
