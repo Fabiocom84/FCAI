@@ -124,7 +124,7 @@ class ChatModal {
         }
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/chat/session`, {
+            const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
