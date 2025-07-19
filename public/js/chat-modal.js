@@ -181,6 +181,11 @@ class ChatModal {
             const data = JSON.parse(event.data);
             if (data.type === 'response') {
                 this.addMessage(data.message, 'ai');
+                // Se la risposta include audio, riproduci
+                if (data.audio) {
+                    const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+                    audio.play().catch(e => console.error("Errore riproduzione audio:", e));
+                }
             } else if (data.type === 'error') {
                 this._addSystemMessage(`Errore AI: ${data.message}`, 'error');
             } else if (data.type === 'info') {
@@ -232,32 +237,38 @@ class ChatModal {
             this.chatMessages.appendChild(typingIndicator);
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
-            // L'endpoint è /api/chat
-            const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({
+            // Invia il messaggio tramite WebSocket invece di HTTP POST
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                const messagePayload = {
                     session_id: this.currentChatSessionId,
                     message: message
-                })
-            });
-
-            // Rimuovi l'indicatore di digitazione una volta che la risposta HTTP è arrivata
-            if (typingIndicator.parentNode) {
-                typingIndicator.parentNode.removeChild(typingIndicator);
+                };
+                this.websocket.send(JSON.stringify(messagePayload));
+                console.log('Messaggio inviato via WebSocket:', messagePayload);
+            } else {
+                this._addSystemMessage('Errore: Connessione WebSocket non attiva. Riprova ad aprire la chat.', 'error');
             }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore durante l\'invio del messaggio.');
-            }
-            // Le risposte AI arriveranno via WebSocket, quindi non gestiamo qui la risposta HTTP
+            // L'indicatore di digitazione verrà rimosso quando arriva la risposta via WebSocket
+            // o se c'è un errore nella trasmissione WebSocket.
+            // Per ora, lo rimuoviamo dopo un breve timeout se non gestito dal WS onmessage
+            // (potrebbe essere necessario un meccanismo più robusto per la rimozione).
+            // Rimuovi l'indicatore di digitazione dopo un breve ritardo per UX,
+            // o quando ricevi la risposta AI via WebSocket.
+            // Per il momento, lo rimuoviamo qui per evitare che rimanga bloccato.
+            setTimeout(() => {
+                if (typingIndicator.parentNode) {
+                    typingIndicator.parentNode.removeChild(typingIndicator);
+                }
+            }, 2000); // Rimuovi dopo 2 secondi se non arriva una risposta rapida
+            
         } catch (error) {
             console.error('Errore nell\'invio del messaggio:', error);
             this._addSystemMessage(`Errore durante l'invio del messaggio: ${error.message}`, 'error');
+            // Rimuovi l'indicatore di digitazione in caso di errore
+            if (typingIndicator.parentNode) {
+                typingIndicator.parentNode.removeChild(typingIndicator);
+            }
         }
     }
 
@@ -266,7 +277,8 @@ class ChatModal {
         console.log('Avvio aggiornamento Knowledge Base AI...');
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            alert('Autenticazione richiesta per aggiornare la Knowledge Base.');
+            // Sostituito alert con _addSystemMessage
+            this._addSystemMessage('Autenticazione richiesta per aggiornare la Knowledge Base.', 'error');
             return;
         }
 
@@ -278,16 +290,25 @@ class ChatModal {
         }
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/update-knowledge-base`, {
+            // URL CORRETTO per l'endpoint di trigger della Knowledge Base
+            const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json' // Il backend si aspetta JSON
+                },
+                // Invia i parametri necessari per la Cloud Function tramite il backend
+                body: JSON.stringify({
+                    // Questi valori devono corrispondere a quelli che la tua Cloud Function si aspetta
+                    // Puoi renderli configurabili o fissi a seconda delle tue esigenze
+                    spreadsheet_id: "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8", // ID del tuo Google Sheet
+                    sheet_names: "KnowledgeBase" // Nome del foglio/i da cui estrarre i dati
+                })
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore nell\'avvio dell\'aggiornamento della Knowledge Base.');
+                throw new Error(errorData.message || `Errore nell'avvio dell'aggiornamento della Knowledge Base: ${response.statusText}`);
             }
 
             const result = await response.json();
@@ -317,19 +338,12 @@ class ChatModal {
         console.log('Richiesta di interruzione processo AI...');
         const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (!authToken) {
-            alert('Autenticazione richiesta per interrompere il processo.');
+            // Sostituito alert con _addSystemMessage
+            this._addSystemMessage('Autenticazione richiesta per interrompere il processo.', 'error');
             return;
         }
 
-        // Si assume che l'ID del processo da interrompere sia l'ID della sessione chat
-        // O che ci sia un modo per ottenere l'ID del processo di aggiornamento KB se è quello l'intento.
-        // Per ora, useremo l'ID della sessione chat. Se il pulsante è nel modale KB, servirà un altro meccanismo.
-        const processIdToStop = this.currentChatSessionId;
-
-        // Se l'intento è di fermare l'aggiornamento della KB, si dovrebbe passare l'ID del processo di aggiornamento KB
-        // che è stato ricevuto nel metodo `updateAIDb`. Questo richiederebbe di salvare quel `processId`
-        // in una variabile di istanza (`this.currentKBProcessId` ad esempio).
-        // Per semplicità, qui si assume che `stopProcessingBtn` sia per interrompere la chat attuale.
+        const processIdToStop = this.currentChatSessionId; // Assumiamo che si voglia fermare la sessione chat corrente
 
         if (!processIdToStop) {
             this._addSystemMessage('Nessun processo attivo della chat da interrompere.', 'info');
