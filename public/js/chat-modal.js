@@ -285,7 +285,7 @@ class ChatModal {
         // Disabilita il pulsante e cambia l'icona
         if (this.updateAIDbBtn) {
             this.updateAIDbBtn.disabled = true;
-            this.updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Immagine di caricamento
+            this.updateAIDbBtn.querySelector('img').src = 'img/loading.png'; // Immagine di caricamento
             this.updateAIDbBtn.title = 'Aggiornamento in corso...';
         }
 
