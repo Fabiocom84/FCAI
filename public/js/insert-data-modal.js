@@ -16,292 +16,274 @@ class InsertDataModal {
         this.recordingStatus = this.modal ? this.modal.querySelector('#recordingStatus') : null;
         this.voiceTranscription = this.modal ? this.modal.querySelector('#voiceTranscription') : null;
         this.riferimentoDropdown = this.modal ? this.modal.querySelector('#riferimentoDropdown') : null; // Aggiunto check null
+        this.etichetteSelect = this.modal ? this.modal.querySelector('#etichetteDropdown') : null; // Aggiunto per le etichette
 
         this.mediaRecorder = null;
         this.audioChunks = [];
-        this.isRecording = false;
-        this.isSaving = false;
         this.isTranscribing = false;
 
         this.addEventListeners();
-        this.setupFileUploadHandler();
-        this.setupVoiceRecordingHandlers();
-        this.loadEtichette();
     }
 
     addEventListeners() {
         if (this.openButton) {
-            this.openButton.addEventListener('click', this.open.bind(this));
+            this.openButton.addEventListener('click', () => this.open());
         }
-
         if (this.closeButton) {
-            this.closeButton.addEventListener('click', this.close.bind(this));
+            this.closeButton.addEventListener('click', () => this.close());
         }
-
-        // Event listener per chiudere il modale cliccando fuori
-        if (this.modal) {
-            this.modal.addEventListener('click', this.handleOutsideClick.bind(this));
+        if (this.saveButton) {
+            this.saveButton.addEventListener('click', (event) => this.saveData(event));
         }
-
-        // Event listener per il pulsante Salva
-        if (this.saveButton) { // Non serve hasEventListener, basta aggiungerlo nel costruttore
-            this.saveButton.addEventListener('click', this.saveData.bind(this));
+        if (this.helpButtonModal) {
+            this.helpButtonModal.addEventListener('click', (event) => {
+                event.stopPropagation(); // Evita che l'evento si propaghi al modale e lo chiuda
+                alert('Help feature coming soon for Insert Data Modal!');
+            });
+        }
+        if (this.fileUploadInput) {
+            this.fileUploadInput.addEventListener('change', (event) => this.handleFileUpload(event));
+        }
+        if (this.startButton) {
+            this.startButton.addEventListener('click', () => this.startRecording());
+        }
+        if (this.stopButton) {
+            this.stopButton.addEventListener('click', () => this.stopRecording());
         }
     }
 
     open() {
-        console.log("InsertDataModal aperto.");
-        if (this.modal) {
-            // Resetta i valori dei campi
-            if (this.fileUploadInput) this.fileUploadInput.value = '';
-            if (this.fileNameDisplay) this.fileNameDisplay.textContent = '';
-            if (this.voiceTranscription) this.voiceTranscription.value = '';
-            if (this.recordingStatus) this.recordingStatus.textContent = 'Premi "Avvia Registrazione" per iniziare.';
-            if (this.startButton) this.startButton.disabled = false;
-            if (this.stopButton) this.stopButton.disabled = true;
-            if (this.riferimentoDropdown) this.riferimentoDropdown.selectedIndex = 0; // Seleziona la prima opzione
-            
-            // Assicurati che il pulsante di salvataggio sia abilitato e con il testo corretto all'apertura
-            if (this.saveButton) {
-                this.saveButton.disabled = false;
-                this.saveButton.textContent = 'Salva Dati';
-                this.isSaving = false; // Reset dello stato di salvataggio
-            }
-
-            this.modal.style.display = "block";
-            window.showOverlay(); // Usa la funzione centralizzata
-            this.resetRecordingState(); // Resetta anche lo stato di registrazione
-        }
+        this.modal.style.display = 'block';
+        window.showOverlay(); // Mostra l'overlay tramite la funzione globale
+        this.loadRiferimenti(); // Carica i riferimenti quando il modale si apre
+        this.loadEtichette(); // Carica le etichette all'apertura del modale
     }
 
     close() {
-        console.log("Funzione close() chiamata.");
-        if (this.modal) {
-            this.modal.style.display = "none";
-            window.hideOverlay(); // Usa la funzione centralizzata
-            this.resetRecordingState(); // Resetta lo stato di registrazione alla chiusura
-        }
+        this.modal.style.display = 'none';
+        window.hideOverlay(); // Nasconde l'overlay tramite la funzione globale
+        this.resetForm(); // Resetta il form alla chiusura
+        this.stopRecording(); // Assicurati di fermare la registrazione se aperta
     }
 
-    // Metodo per gestire il click esterno
-    handleOutsideClick(event) {
-        // Se l'elemento cliccato è il modale stesso (ovvero lo sfondo overlay)
-        // e non un elemento figlio del modale, allora chiudi
-        if (event.target === this.modal) {
-            this.close();
-        }
+    resetForm() {
+        this.voiceTranscription.value = '';
+        this.riferimentoDropdown.value = '';
+        this.etichetteSelect.value = ''; // Resetta la selezione delle etichette
+        this.fileNameDisplay.textContent = 'Nessun file selezionato';
+        this.fileUploadInput.value = ''; // Resetta l'input file
+        this.recordingStatus.textContent = 'Pronto per registrare';
     }
 
-    resetRecordingState() {
-        if (this.mediaRecorder) {
-            this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-            this.mediaRecorder = null;
-        }
-        this.audioChunks = [];
-        this.isRecording = false;
-        this.isTranscribing = false;
-        if (this.startButton) {
-            this.startButton.disabled = false;
-            this.startButton.textContent = 'Avvia Registrazione';
-        }
-        if (this.stopButton) {
-            this.stopButton.disabled = true;
-            this.stopButton.textContent = 'Ferma Registrazione';
-        }
-        if (this.recordingStatus) {
-            this.recordingStatus.textContent = 'Premi "Avvia Registrazione" per iniziare.';
-        }
-    }
-
-    async saveData() {
-        console.log("Funzione saveData() chiamata.");
-        if (this.isSaving) {
-            console.log("Salvataggio già in corso, ignorando il clic.");
-            return;
-        }
-
-        const textContent = this.voiceTranscription ? this.voiceTranscription.value.trim() : '';
-        const file = this.fileUploadInput && this.fileUploadInput.files.length > 0 ? this.fileUploadInput.files[0] : null;
-        const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : '';
-
-        console.log("File caricato:", file ? file.name : "Nessun file");
-        console.log("Valore Riferimento:", riferimento);
-        console.log("Contenuto Testo (unified):", textContent);
-
-        if (!textContent && !file && !riferimento) { // Controlla se tutti i campi sono vuoti
-            alert("Nessun testo, file o riferimento da salvare. Impossibile procedere.");
-            return;
-        }
-
-        if (!window.BACKEND_URL) {
-            console.error("URL del backend non definito.");
-            alert("Errore: URL del backend non configurato.");
-            return;
-        }
-
-        this.isSaving = true;
-        this.saveButton.disabled = true;
-        this.saveButton.textContent = 'Salvataggio in corso...';
-        console.log("Inizio salvataggio...");
-
-        const formData = new FormData();
-        formData.append('textContent', textContent);
-        formData.append('riferimento', riferimento);
-
+    handleFileUpload(event) {
+        const file = event.target.files[0];
         if (file) {
-            formData.append('file', file);
+            this.fileNameDisplay.textContent = file.name;
+            // Qui potresti leggere il contenuto del file se necessario subito
+            // Ad esempio, se è un file di testo e vuoi visualizzarne il contenuto.
+        } else {
+            this.fileNameDisplay.textContent = 'Nessun file selezionato';
+        }
+    }
+
+    async saveData(event) {
+        event.preventDefault(); // Impedisce l'invio del form tradizionale
+    
+        const transcription = this.voiceTranscription.value;
+        const riferimento = this.riferimentoDropdown.value;
+        const etichetta = this.etichetteSelect.value; // Ottieni il valore dell'etichetta selezionata
+    
+        let fileContent = null;
+        let fileName = null;
+    
+        if (this.fileUploadInput.files.length > 0) {
+            const file = this.fileUploadInput.files[0];
+            fileName = file.name;
+            try {
+                // Legge il contenuto del file come Data URL (Base64)
+                fileContent = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+                // Estrai solo la parte Base64 (dopo la virgola, es: "data:text/plain;base64,SGVsbG8gV29ybGQ=")
+                fileContent = fileContent.split(',')[1];
+            } catch (error) {
+                console.error("Errore durante la lettura del file:", error);
+                alert("Impossibile leggere il file selezionato.");
+                return;
+            }
+        }
+    
+        if (!transcription && !fileContent) {
+            alert("Per favore, inserisci una trascrizione vocale o carica un file.");
+            return;
+        }
+    
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Autenticazione richiesta. Effettua il login.');
+            window.location.href = 'login.html'; // Reindirizza al login
+            return;
+        }
+    
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}` 
+                },
+                body: JSON.stringify({
+                    transcription: transcription,
+                    riferimento: riferimento,
+                    etichetta: etichetta, // Invia anche l'etichetta
+                    fileContent: fileContent,
+                    fileName: fileName
+                })
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
+            }
+    
+            const result = await response.json();
+            alert('Dati salvati con successo: ' + result.message);
+            this.close(); // Chiudi il modale
+            
+            // Aggiorna la lista degli ultimi inserimenti sulla pagina principale
+            if (typeof window.fetchLatestEntries === 'function') {
+                window.fetchLatestEntries();
+            }
+    
+        } catch (error) {
+            console.error('Errore durante il salvataggio dei dati:', error);
+            alert('Errore: ' + error.message);
+        }
+    }
+    
+
+    async loadRiferimenti() {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('Authentication token not found.');
+            // Gestisci il reindirizzamento o l'errore come necessario
+            return;
         }
 
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/upload-and-save`, {
-                method: 'POST',
-                body: formData,
+            const response = await fetch(`${window.BACKEND_URL}/api/get-riferimenti`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
             });
-
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.error || 'Errore sconosciuto nel salvataggio.');
+                throw new Error(`Errore nella richiesta dei riferimenti: ${response.status} `);
             }
+            const data = await response.json();
+            const riferimenti = data.riferimenti; // Assumi che la risposta contenga un campo 'riferimenti'
 
-            console.log('Risposta dal backend (upload):', data);
-            alert(data.message); // Mostra il messaggio di successo dal backend
-
-            // Chiamiamo fetchLatestEntries() da main.js, se esiste e se è reso globale
-            if (typeof fetchLatestEntries === 'function') {
-                fetchLatestEntries(); // Aggiorna gli ultimi inserimenti
-            } else {
-                console.warn("Funzione fetchLatestEntries non trovata. Gli ultimi inserimenti potrebbero non essere aggiornati.");
-            }
-            this.close();
-
+            this.riferimentoDropdown.innerHTML = '<option value="" disabled selected>Seleziona un riferimento</option>';
+            riferimenti.forEach(ref => {
+                const option = document.createElement('option');
+                option.value = ref;
+                option.textContent = ref;
+                this.riferimentoDropdown.appendChild(option);
+            });
         } catch (error) {
-            console.error('Errore durante la comunicazione con il backend (upload):', error);
-            alert(`Impossibile salvare i dati: ${error.message}`);
-        } finally {
-            this.isSaving = false;
-            this.saveButton.disabled = false;
-            this.saveButton.textContent = 'Salva Dati';
+            console.error('Errore nel caricamento dei riferimenti:', error);
+            // alert('Impossibile caricare i riferimenti. Controlla la console per dettagli.');
         }
     }
 
     async loadEtichette() {
-        if (!this.riferimentoDropdown) {
-            console.error("L'elemento con ID 'riferimentoDropdown' non è stato trovato nel DOM.");
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('Authentication token not found for etichette.');
+            alert('Autenticazione richiesta per le etichette. Effettua il login.');
+            window.location.href = 'login.html'; // Reindirizza al login
             return;
         }
-        if (!window.BACKEND_URL) {
-            console.error("URL del backend non definito per il caricamento etichette.");
-            return;
-        }
-
+        
         try {
             const response = await fetch(`${window.BACKEND_URL}/api/get-etichette`, {
                 method: 'GET',
-            });
-
-            if (!response.ok) {
-                throw new Error(`Errore nella richiesta delle etichette: ${response.status} ${response.statusText}`);
-            }
-
-            const etichette = await response.json();
-
-            // Rimuovi tutte le opzioni tranne la prima (quella di placeholder)
-            while (this.riferimentoDropdown.options.length > 1) {
-                this.riferimentoDropdown.remove(1);
-            }
-
-            etichette.forEach(etichetta => {
-                const option = document.createElement('option');
-                option.value = etichetta;
-                option.textContent = etichetta;
-                this.riferimentoDropdown.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Errore nel caricamento delle etichette:", error);
-            alert("Errore nel caricamento delle etichette.");
-        }
-    }
-
-    setupFileUploadHandler() {
-        if (this.fileUploadInput && this.fileNameDisplay) {
-            this.fileUploadInput.addEventListener('change', () => {
-                if (this.fileUploadInput.files && this.fileUploadInput.files.length > 0) {
-                    this.fileNameDisplay.textContent = "File selezionato: " + this.fileUploadInput.files[0].name;
-                } else {
-                    this.fileNameDisplay.textContent = "";
+                headers: {
+                    'Authorization': `Bearer ${authToken}` // ✨ AGGIUNTA DELL'HEADER DI AUTORIZZAZIONE ✨
                 }
             });
+            if (!response.ok) {
+                throw new Error(`Errore nella richiesta delle etichette: ${response.status} `);
+            }
+            const data = await response.json();
+            const etichette = data.etichette; // Assumi che la risposta contenga un campo 'etichette'
+
+            if (this.etichetteSelect) {
+                this.etichetteSelect.innerHTML = '<option value="" disabled selected>Seleziona un\'etichetta</option>';
+                etichette.forEach(etichetta => {
+                    const option = document.createElement('option');
+                    option.value = etichetta;
+                    option.textContent = etichetta;
+                    this.etichetteSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Errore nel caricamento delle etichette:', error);
+            // alert('Impossibile caricare le etichette. Controlla la console per dettagli.');
         }
     }
 
-    setupVoiceRecordingHandlers() {
-        if (this.startButton && this.stopButton && this.recordingStatus) {
-            this.startButton.addEventListener('click', this.startRecording.bind(this));
-            this.stopButton.addEventListener('click', this.stopRecording.bind(this));
-        }
-    }
 
+    // Funzioni per la registrazione audio (startRecording, stopRecording, onStop, transcribeAudio)
     async startRecording() {
-        if (!window.BACKEND_URL) {
-            this.recordingStatus.textContent = "Errore: URL del backend non configurato per la trascrizione.";
-            console.error("URL del backend non definito per la trascrizione.");
-            return;
-        }
+        if (this.isTranscribing) return; // Non avviare una nuova registrazione se una trascrizione è già in corso
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             this.mediaRecorder = new MediaRecorder(stream);
             this.audioChunks = [];
-            this.isRecording = true;
-
-            this.startButton.disabled = true;
-            this.startButton.textContent = 'Registrazione in corso...';
-            this.stopButton.disabled = false;
-            this.recordingStatus.textContent = "Registrazione in corso...";
 
             this.mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    this.audioChunks.push(event.data);
-                }
+                this.audioChunks.push(event.data);
             };
 
             this.mediaRecorder.onstop = () => {
-                this.isRecording = false;
-                this.startButton.textContent = 'Avvia Registrazione'; // Resetta il testo qui
-                this.stopButton.disabled = true;
-                this.recordingStatus.textContent = "Registrazione terminata. Invio per trascrizione...";
-                this.sendAudioForTranscription(new Blob(this.audioChunks, { type: 'audio/webm;codecs=opus' }));
-                stream.getTracks().forEach(track => track.stop()); // Ferma la traccia del microfono
+                this.onStop();
             };
 
             this.mediaRecorder.start();
+            this.recordingStatus.textContent = "Registrazione in corso...";
+            this.startButton.disabled = true;
+            this.stopButton.disabled = false;
         } catch (error) {
-            console.error("Errore nell'acquisizione audio:", error);
-            this.recordingStatus.textContent = `Errore nell'acquisizione audio: ${error.message}.`;
-            if (this.startButton) {
-                this.startButton.disabled = false;
-                this.startButton.textContent = 'Avvia Registrazione';
-            }
-            if (this.stopButton) this.stopButton.disabled = true;
+            console.error("Errore nell'accesso al microfono:", error);
+            this.recordingStatus.textContent = "Errore: Microfono non accessibile.";
         }
     }
 
     stopRecording() {
-        if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
-        } else {
-            console.warn("Nessuna registrazione attiva da fermare.");
+            this.recordingStatus.textContent = "Elaborazione trascrizione...";
+            this.startButton.disabled = false;
+            this.stopButton.disabled = true;
         }
     }
 
-    async sendAudioForTranscription(audioBlob) {
+    onStop() {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        // Resetta i chunk per la prossima registrazione
+        this.audioChunks = []; 
+        this.transcribeAudio(audioBlob);
+    }
+
+    async transcribeAudio(audioBlob) {
         this.isTranscribing = true;
         this.recordingStatus.textContent = "Trascrizione in corso...";
-        
-        if (!window.BACKEND_URL) {
-            this.recordingStatus.textContent = "Errore: URL del backend non configurato per la trascrizione.";
-            console.error("URL del backend non definito per la trascrizione.");
+
+        if (!audioBlob) {
+            console.error("Nessun audio da trascrivere.");
+            this.recordingStatus.textContent = "Nessun audio da trascrivere.";
             this.isTranscribing = false;
             return;
         }
@@ -339,6 +321,6 @@ class InsertDataModal {
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.insertModalInstance) {
         // Passa 'modalOverlay' come ID, ma la classe non lo userà direttamente, è un residuo per consistenza
-        window.insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '.insert-button');
+        window.insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '#openInsertDataModalBtn');
     }
 });
