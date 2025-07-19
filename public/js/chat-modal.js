@@ -124,18 +124,17 @@ class ChatModal {
         }
 
         try {
-            // **CORREZIONE 1: L'endpoint è /api/chat, non /api/chat/session**
+            // L'endpoint è /api/chat
             const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 },
-                // **Aggiungi un body alla richiesta, anche se è per "iniziare" la sessione**
-                // Il backend si aspetta un messaggio. Puoi inviare un messaggio di benvenuto.
+                // Assicurati che il body contenga un campo 'message' per evitare il 400 Bad Request
                 body: JSON.stringify({
-                    session_id: null, // O un valore predefinito se non c'è ancora un ID
-                    message: "Inizia la conversazione" // Messaggio iniziale per l'AI
+                    session_id: null, // Il backend può ignorare o generare questo se è la prima chiamata
+                    message: "Inizia la conversazione." // Un messaggio iniziale per l'AI
                 })
             });
 
@@ -145,7 +144,7 @@ class ChatModal {
             }
 
             const data = await response.json();
-            // **Importante**: Assicurati che il tuo backend Flask restituisca `session_id`
+            // Importante: Assicurati che il tuo backend Flask restituisca `session_id`
             // altrimenti il WebSocket non si connetterà.
             this.currentChatSessionId = data.session_id;
             console.log('Sessione chat inizializzata con ID:', this.currentChatSessionId);
@@ -233,7 +232,7 @@ class ChatModal {
             this.chatMessages.appendChild(typingIndicator);
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
-            // **CORREZIONE 2: L'endpoint è /api/chat, non /api/chat/message**
+            // L'endpoint è /api/chat
             const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
