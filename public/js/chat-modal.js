@@ -124,12 +124,19 @@ class ChatModal {
         }
 
         try {
+            // **CORREZIONE 1: L'endpoint è /api/chat, non /api/chat/session**
             const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
-                }
+                },
+                // **Aggiungi un body alla richiesta, anche se è per "iniziare" la sessione**
+                // Il backend si aspetta un messaggio. Puoi inviare un messaggio di benvenuto.
+                body: JSON.stringify({
+                    session_id: null, // O un valore predefinito se non c'è ancora un ID
+                    message: "Inizia la conversazione" // Messaggio iniziale per l'AI
+                })
             });
 
             if (!response.ok) {
@@ -138,6 +145,8 @@ class ChatModal {
             }
 
             const data = await response.json();
+            // **Importante**: Assicurati che il tuo backend Flask restituisca `session_id`
+            // altrimenti il WebSocket non si connetterà.
             this.currentChatSessionId = data.session_id;
             console.log('Sessione chat inizializzata con ID:', this.currentChatSessionId);
             this.addMessage('Ciao! Sono il tuo assistente. Come posso aiutarti oggi?', 'ai');
@@ -224,7 +233,8 @@ class ChatModal {
             this.chatMessages.appendChild(typingIndicator);
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
-            const response = await fetch(`${window.BACKEND_URL}/api/chat/message`, {
+            // **CORREZIONE 2: L'endpoint è /api/chat, non /api/chat/message**
+            const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -315,7 +325,7 @@ class ChatModal {
         // Si assume che l'ID del processo da interrompere sia l'ID della sessione chat
         // O che ci sia un modo per ottenere l'ID del processo di aggiornamento KB se è quello l'intento.
         // Per ora, useremo l'ID della sessione chat. Se il pulsante è nel modale KB, servirà un altro meccanismo.
-        const processIdToStop = this.currentChatSessionId; 
+        const processIdToStop = this.currentChatSessionId;
 
         // Se l'intento è di fermare l'aggiornamento della KB, si dovrebbe passare l'ID del processo di aggiornamento KB
         // che è stato ricevuto nel metodo `updateAIDb`. Questo richiederebbe di salvare quel `processId`
