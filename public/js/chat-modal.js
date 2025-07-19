@@ -302,7 +302,8 @@ class ChatModal {
                     // Questi valori devono corrispondere a quelli che la tua Cloud Function si aspetta
                     // Puoi renderli configurabili o fissi a seconda delle tue esigenze
                     spreadsheet_id: "1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8", // ID del tuo Google Sheet
-                    sheet_names: "KnowledgeBase" // Nome del foglio/i da cui estrarre i dati
+                    // AGGIORNATO: Nomi dei fogli corretti per la Knowledge Base
+                    sheet_names: "Registrazioni,Chat_AI,Riferimento_Commessa" 
                 })
             });
 
