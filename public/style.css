@@ -818,28 +818,29 @@ h1 {
 /* Stili per i messaggi dell'AI (Frank) */
 #chatMessages .ai-message {
     align-self: flex-start; /* Allinea a sinistra */
-    position: relative; /* Base per posizionare il pseudo-elemento */
-    /* Rimuovi padding-left: 50px; da qui, lo metteremo sulla bolla interna */
+    position: relative; /* CRUCIALE: Base per posizionare il pseudo-elemento */
+    /* ASSICURATI che NON ci siano proprietà 'padding-left' o 'margin-left' qui */
 }
 
 #chatMessages .ai-message::before {
-    content: "Frank:";
-    position: absolute;
+    content: "Frank:"; /* Il testo del nome */
+    position: absolute; /* CRUCIALE: Rende il pseudo-elemento posizionabile */
     left: 0; /* Posizionalo all'inizio del contenitore del messaggio */
-    top: -1.2em; /* Spostalo leggermente sopra la bolla. Regola questo valore se serve. */
+    top: -1.5em; /* Regola questo valore: Spostalo più in alto sopra la bolla. Puoi provare -1.2em, -1.5em, -1.8em. */
     font-weight: bold;
     color: #555; /* Colore del nome Frank */
     font-size: 0.9em;
-    white-space: nowrap;
-    /* padding-right: 5px; - non più necessario qui */
+    white-space: nowrap; /* Evita che il nome vada a capo */
+    /* ASSICURATI che NON ci sia 'padding-right' qui */
 }
 
 #chatMessages .ai-message .message-content {
-    background-color: #DDEEFF; /* Azzurro chiaro per contrasto */
+    /* Questo è il CSS per la bolla stessa */
+    background-color: #B0DFFC; /* Il nuovo colore più scuro per la bolla AI */
     color: #333;
     border-bottom-left-radius: 4px;
-    margin-left: 50px; /* AGGIUNGI QUESTO: Sposta la bolla a destra del nome "Frank:" */
-    /* padding-left: 10px; Rimuovi o imposta a un valore standard, il margin-left gestisce lo spazio */
+    margin-left: 50px; /* CRUCIALE: Sposta la bolla a destra per fare spazio al nome */
+    /* ASSICURATI che NON ci sia 'padding-left' qui, per evitare conflitti con margin-left */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
