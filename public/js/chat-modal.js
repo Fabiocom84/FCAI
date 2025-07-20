@@ -242,7 +242,7 @@ class ChatModal {
             if (response.ok) {
                 const data = await response.json();
                 this.updateAIDbBtn.disabled = !data.knowledge_update_button_enabled;
-                this.updateAIDbBtn.querySelector('img').src = data.knowledge_update_button_enabled ? 'img/reload.png' : 'img/loading.gif';
+                this.updateAIDbBtn.querySelector('img').src = data.knowledge_update_button_enabled ? 'img/reload.png' : 'img/loading.png';
                 this.updateAIDbBtn.title = data.knowledge_update_button_enabled ? 'Aggiorna Knowledge Base AI' : 'Aggiornamento in corso...';
             } else {
                 console.error('Errore nel recupero dello stato del pulsante:', response.status);
@@ -265,12 +265,12 @@ class ChatModal {
         // Se hai un modo per far scegliere all'utente lo spreadsheet_id e i sheet_names,
         // dovrai recuperarli qui.
         const spreadsheetId = window.GOOGLE_SHEET_ID || 'YOUR_GOOGLE_SHEET_ID_HERE'; // Usa il tuo ID reale
-        const sheetNames = 'KnowledgeBase,Riferimento_Commessa,Servizio,Registrazioni,Chat_AI'; // Adatta ai tuoi fogli
+        const sheetNames = 'Registrazioni,Chat_AI,Riferimento_Commessa'; // Adatta ai tuoi fogli
 
         try {
             this._addSystemMessage('Avvio aggiornamento Knowledge Base...', 'info');
             this.updateAIDbBtn.disabled = true; // Disabilita il pulsante
-            this.updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Immagine di caricamento
+            this.updateAIDbBtn.querySelector('img').src = 'img/loading.png'; // Immagine di caricamento
             this.updateAIDbBtn.title = 'Aggiornamento in corso...';
 
             const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
