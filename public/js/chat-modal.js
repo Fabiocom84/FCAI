@@ -91,16 +91,16 @@ class ChatModal {
         messageContent.innerHTML = message;
     } else if (sender === 'user') {
         messageWrapper.classList.add('user-message');
-        messageContent.innerHTML = message;
+        // Aggiungi "Fabio:" direttamente qui per i messaggi utente
+        messageContent.innerHTML = `<strong>Fabio:</strong> ${message}`;
     } else {
-        // Questo blocco è per i messaggi che non sono né 'ai' né 'user',
-        // come i messaggi di sistema.
+        // Messaggi di sistema, se non hanno un nome specifico
         messageContent.innerHTML = message;
     }
 
-    messageWrapper.appendChild(messageContent); // Aggiungi il contenuto della bolla al wrapper
-    this.chatMessages.appendChild(messageWrapper); // Aggiungi il wrapper del messaggio al contenitore della chat
-    this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scorri in basso
+    messageWrapper.appendChild(messageContent);
+    this.chatMessages.appendChild(messageWrapper);
+    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 }
 
     _addSystemMessage(message, type = 'info') {

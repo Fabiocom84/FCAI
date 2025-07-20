@@ -816,14 +816,33 @@ h1 {
 }
 
 /* Stili per i messaggi dell'AI (Frank) */
-#chatMessages .ai-message { /* Modificato: Aggiunto #chatMessages */
+#chatMessages .ai-message {
     align-self: flex-start; /* Allinea a sinistra */
+    /* Aggiungi queste proprietà per posizionare il pseudo-elemento */
+    position: relative;
+    padding-left: 50px; /* Spazio per il nome */
 }
 
-#chatMessages .ai-message .message-content { /* Modificato: Aggiunto #chatMessages */
-    background-color: #F1F0F0; /* Grigio chiaro */
+#chatMessages .ai-message::before {
+    content: "Frank:"; /* Il testo del nome */
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: bold;
+    color: #555; /* Colore del nome Frank */
+    font-size: 0.9em;
+    white-space: nowrap; /* Evita che il nome vada a capo */
+    padding-right: 5px;
+}
+
+/* Potresti voler regolare il padding del message-content per i messaggi AI,
+   se il nome Frank si sovrappone o vuoi che inizi dopo.
+   Queste sono solo ipotesi, potresti doverle aggiustare a seconda del risultato. */
+#chatMessages .ai-message .message-content {
+    background-color: #E6EEF4; /* Grigio chiaro */
     color: #333;
     border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
+    /* padding-left: 10px; */ /* Potrebbe essere utile se il nome è molto vicino */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
