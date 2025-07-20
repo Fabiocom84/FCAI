@@ -138,7 +138,7 @@ async function initiateKnowledgeBaseUpdate() {
     if (updateAIDbBtn) {
         updateAIDbBtn.disabled = true; // Disabilita il pulsante
         // Cambia l'icona o il testo per indicare il caricamento
-        updateAIDbBtn.querySelector('img').src = 'img/loading.gif'; // Assicurati di avere una GIF di caricamento
+        updateAIDbBtn.querySelector('img').src = 'img/loading.png'; // Assicurati di avere una GIF di caricamento
         updateAIDbBtn.title = 'Aggiornamento in corso...';
     }
 
