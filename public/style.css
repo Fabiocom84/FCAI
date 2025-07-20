@@ -836,11 +836,16 @@ h1 {
 }
 
 #chatMessages .ai-message .message-content {
-    background-color: #D0E0F0; /* Sostituisci con il colore desiderato per la bolla AI (es. #CFEEFF, #E0E0E0) */
-    color: #333;
+    background-color: #D0E0F0; /* Colore più contrastato per la bolla AI (es. #CFEEFF, #E0E0E0) */
+    color: #333; /* Colore del testo nella bolla */
     border-bottom-left-radius: 4px;
     padding: 10px 15px;
-    /* Assicurati che NON ci siano margin-left o padding-left qui che spingerebbero la bolla */
+    max-width: 100%; /* Assicurati che non ecceda il suo contenitore */
+    box-sizing: border-box; /* Include padding e border nella larghezza/altezza */
+
+    /* **CONTROLLA QUESTI**: devono essere 0 o non presenti se li avevi per errore */
+    margin-left: 0 !important; /* Forza 0 per evitare spostamenti */
+    padding-left: 15px !important; /* Forza il padding normale, non troppo alto */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
