@@ -827,15 +827,15 @@ h1 {
 }
 
 #chatMessages .ai-message::before {
-    content: "Frank:";
-    /* Rimuovi completamente qualsiasi 'position: absolute', 'left', 'top' da qui */
+    content: "Frank:" !important; /* ADD !important HERE */
     font-weight: bold;
     color: #555;
     font-size: 0.9em;
     white-space: nowrap;
-    margin-right: 5px; /* Spazio tra il nome e la bolla */
-    padding-top: 10px; /* Allinea verticalmente con il testo nella bolla, puoi regolare */
-    flex-shrink: 0; /* Impedisce al nome di restringersi */
+    margin-right: 5px;
+    padding-top: 10px;
+    flex-shrink: 0;
+    /* Ensure no 'position: absolute', 'left', 'top' here */
 }
 
 #chatMessages .ai-message .message-content {
