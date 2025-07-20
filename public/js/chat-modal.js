@@ -104,12 +104,23 @@ class ChatModal {
 }
 
     _addSystemMessage(message, type = 'info') {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message', 'system', type); // Queste sono le classi attuali
-        messageElement.textContent = message; // Usiamo textContent per i messaggi di sistema, come prima
-        this.chatMessages.appendChild(messageElement);
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    const messageWrapper = document.createElement('div');
+    const messageContent = document.createElement('div'); // Crea l'elemento content
+
+    messageWrapper.classList.add('message', 'system-message'); // Aggiungi anche 'system-message' qui
+    messageContent.classList.add('message-content'); // Aggiungi la classe message-content
+    messageContent.textContent = message; // Inserisci il testo nel messageContent
+
+    if (type === 'error') {
+        messageWrapper.classList.add('error'); // Applica la classe al wrapper se vuoi stili diversi
+    } else if (type === 'info') {
+        messageWrapper.classList.add('info'); // Applica la classe al wrapper
     }
+
+    messageWrapper.appendChild(messageContent); // Appendi messageContent a messageWrapper
+    this.chatMessages.appendChild(messageWrapper);
+    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+}
 
     async initChatSession() {
         const authToken = localStorage.getItem('authToken');
