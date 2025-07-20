@@ -88,9 +88,9 @@ class ChatModal {
 
     if (sender === 'ai') {
         messageWrapper.classList.add('ai-message');
+        messageContent.innerHTML = message; // <-- AGGIUNGI QUESTA RIGA!
     } else if (sender === 'user') {
         messageWrapper.classList.add('user-message');
-        // Aggiungi "Fabio:" direttamente qui per i messaggi utente
         messageContent.innerHTML = `<strong>Fabio:</strong> ${message}`;
     } else {
         // Messaggi di sistema, se non hanno un nome specifico
