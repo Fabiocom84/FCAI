@@ -815,37 +815,32 @@ h1 {
     border-bottom-right-radius: 4px; /* Angolo piatto a destra */
 }
 
-/* Stili per i messaggi dell'AI (Frank) */
+//* Stili per i messaggi dell'AI (Frank) */
 #chatMessages .ai-message {
-    align-self: flex-start; /* Allinea l'intero blocco del messaggio AI a sinistra */
-    position: relative; /* Base per posizionare il pseudo-elemento 'Frank:' */
-    
-    /* MODIFICA CRUCIALE: Aggiungi queste righe per attivare Flexbox per AI message */
-    display: flex;         /* Rendi il contenitore del messaggio AI un flex container */
-    flex-direction: row;   /* Allinea i suoi figli (Frank: e la bolla) in riga */
-    align-items: flex-start; /* Allinea gli elementi all'inizio (alto) */
+    align-self: flex-start;
+    display: flex;         /* ESSENZIALE: Permette di posizionare ::before e message-content affiancati */
+    flex-direction: row;   /* ESSENZIALE: li mette in riga */
+    align-items: flex-start; /* Allinea gli elementi all'inizio della riga (alto) */
 }
 
 #chatMessages .ai-message::before {
-    content: "Frank:" !important; /* ADD !important HERE */
+    content: "Frank:" !important; /* Questo ora dovrebbe essere applicato senza problemi */
     font-weight: bold;
     color: #555;
     font-size: 0.9em;
     white-space: nowrap;
     margin-right: 5px;
-    padding-top: 10px;
+    padding-top: 10px; /* Regola questo valore per allineare verticalmente con il testo della bolla */
     flex-shrink: 0;
-    /* Ensure no 'position: absolute', 'left', 'top' here */
+    /* Assicurati che NON ci siano position: absolute, left, top, right, bottom */
 }
 
 #chatMessages .ai-message .message-content {
-    /* NUOVO COLORE PER LA BOLLA AI (più contrasto) */
-    background-color: #A3DAFF; /* O un colore come #E0E0E0 per un grigio più scuro */
+    background-color: #D0E0F0; /* Sostituisci con il colore desiderato per la bolla AI (es. #CFEEFF, #E0E0E0) */
     color: #333;
     border-bottom-left-radius: 4px;
-    /* Rimuovi completamente qualsiasi 'margin-left' o 'padding-left' da qui,
-       il flexbox del genitore lo gestirà */
-    padding: 10px 15px; /* Assicurati che il padding interno della bolla sia questo */
+    padding: 10px 15px;
+    /* Assicurati che NON ci siano margin-left o padding-left qui che spingerebbero la bolla */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */

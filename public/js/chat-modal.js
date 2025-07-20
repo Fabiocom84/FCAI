@@ -88,7 +88,6 @@ class ChatModal {
 
     if (sender === 'ai') {
         messageWrapper.classList.add('ai-message');
-        messageContent.innerHTML = message;
     } else if (sender === 'user') {
         messageWrapper.classList.add('user-message');
         // Aggiungi "Fabio:" direttamente qui per i messaggi utente
@@ -139,7 +138,7 @@ class ChatModal {
             const data = await response.json();
             if (response.ok) {
                 this.currentChatSessionId = data.session_id;
-                this._addSystemMessage('Sessione chat avviata. Sono Frank, il tuo assistente AI. Come posso aiutarti oggi?', 'info');
+                this._addMessage('ai', 'Sono Frank, il tuo assistente AI. Come posso aiutarti oggi?');
                 this.connectWebSocketForChat(this.currentChatSessionId);
             } else {
                 this._addSystemMessage(`Errore avvio sessione: ${data.message}`, 'error');
