@@ -809,10 +809,10 @@ h1 {
     align-self: flex-end; /* Allinea a destra */
 }
 
-#chatMessages .user-message .message-content { /* Modificato: Aggiunto #chatMessages */
-    background-color: #DCF8C6; /* Verde chiaro */
-    color: #333;
-    border-bottom-right-radius: 4px; /* Angolo piatto a destra */
+#chatMessages .user-message .message-content strong {
+    font-weight: bold;
+    font-size: 1em; /* AGGIUNGI QUESTA REGOLA (o assicurati che sia 1em se già esisteva) */
+    color: #333; /* Mantieni il colore desiderato */
 }
 
 //* Stili per i messaggi dell'AI (Frank) */
@@ -827,7 +827,7 @@ h1 {
     content: "Frank:" !important; /* Questo ora dovrebbe essere applicato senza problemi */
     font-weight: bold;
     color: #555;
-    font-size: 0.9em;
+    font-size: 1em;
     white-space: nowrap;
     margin-right: 5px;
     padding-top: 10px; /* Regola questo valore per allineare verticalmente con il testo della bolla */
