@@ -79,20 +79,40 @@ class ChatModal {
         }
     }
 
-    _addMessage(sender, message, type = 'text') {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message', sender);
-        messageElement.innerHTML = message; // Usa innerHTML per permettere grassetti/corsivi se desiderato
-        this.chatMessages.appendChild(messageElement);
+    _addMessage(sender, message) { // Rimosso 'type' in quanto non sembra essere usato in modo distinto per i messaggi utente/ai
+        const messageWrapper = document.createElement('div'); // Questo sarà il div con .message e .user-message/.ai-message
+        const messageContent = document.createElement('div'); // Questo sarà il div con .message-content
+
+        messageWrapper.classList.add('message'); // Classe base per il wrapper del messaggio
+        messageContent.classList.add('message-content'); // Classe per il contenuto della bolla
+
+        if (sender === 'ai') {
+            messageWrapper.classList.add('ai-message');
+            // Il nome "Frank:" è aggiunto dal CSS tramite ::before
+            messageContent.innerHTML = message; 
+        } else if (sender === 'user') {
+            messageWrapper.classList.add('user-message');
+            // Il nome "Fabio:" è aggiunto qui nel JS per i messaggi dell'utente
+            messageContent.innerHTML = `<strong>Fabio:</strong> ${message}`;
+        } else {
+            // Fallback per altri tipi di messaggi non utente/ai (es. messaggi di sistema)
+            // Puoi gestire questo caso diversamente se vuoi che anche i messaggi di sistema siano bolle
+            messageContent.innerHTML = message; 
+        }
+
+        messageWrapper.appendChild(messageContent); // Aggiungi il contenuto della bolla al wrapper
+        this.chatMessages.appendChild(messageWrapper); // Aggiungi il wrapper del messaggio al contenitore della chat
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scorri in basso
     }
 
+    // Nota: la funzione _addSystemMessage rimane separata e gestirà i suoi stili con le classi 'chat-message', 'system', 'type'.
+    // Se desideri che anche i messaggi di sistema adottino il nuovo stile "a bolla", dovrai adattare anche quella funzione.
     _addSystemMessage(message, type = 'info') {
         const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message', 'system', type);
-        messageElement.textContent = message;
+        messageElement.classList.add('chat-message', 'system', type); // Queste sono le classi attuali
+        messageElement.textContent = message; // Usiamo textContent per i messaggi di sistema, come prima
         this.chatMessages.appendChild(messageElement);
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight; // Scorri in basso
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
     async initChatSession() {
