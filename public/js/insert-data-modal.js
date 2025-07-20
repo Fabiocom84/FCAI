@@ -75,39 +75,51 @@ class InsertDataModal {
     }
 
     resetForm() {
-        this.voiceTranscription.value = '';
-        // Aggiungi controlli null prima di accedere a .value per prevenire errori
+        // Aggiungi controlli null prima di accedere a .value/textContent
+        if (this.voiceTranscription) {
+            this.voiceTranscription.value = '';
+        }
         if (this.riferimentoDropdown) {
             this.riferimentoDropdown.value = '';
         }
         if (this.etichetteSelect) {
             this.etichetteSelect.value = '';
         }
-        this.fileNameDisplay.textContent = 'Nessun file selezionato';
-        this.fileUploadInput.value = ''; // Resetta l'input file
-        this.recordingStatus.textContent = 'Pronto per registrare';
+        if (this.fileNameDisplay) {
+            this.fileNameDisplay.textContent = 'Nessun file selezionato';
+        }
+        if (this.fileUploadInput) {
+            this.fileUploadInput.value = '';
+        }
+        if (this.recordingStatus) {
+            this.recordingStatus.textContent = 'Pronto per registrare';
+        }
     }
 
     handleFileUpload(event) {
         const file = event.target.files[0];
         if (file) {
-            this.fileNameDisplay.textContent = file.name;
+            if (this.fileNameDisplay) { // Controllo null
+                this.fileNameDisplay.textContent = file.name;
+            }
         } else {
-            this.fileNameDisplay.textContent = 'Nessun file selezionato';
+            if (this.fileNameDisplay) { // Controllo null
+                this.fileNameDisplay.textContent = 'Nessun file selezionato';
+            }
         }
     }
 
     async saveData(event) {
         event.preventDefault(); // Impedisce l'invio del form tradizionale
     
-        const transcription = this.voiceTranscription.value;
-        const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : ''; // Aggiunto controllo null
-        const etichetta = this.etichetteSelect ? this.etichetteSelect.value : ''; // Aggiunto controllo null
+        const transcription = this.voiceTranscription ? this.voiceTranscription.value : '';
+        const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : '';
+        const etichetta = this.etichetteSelect ? this.etichetteSelect.value : '';
     
         let fileContent = null;
         let fileName = null;
     
-        if (this.fileUploadInput.files.length > 0) {
+        if (this.fileUploadInput && this.fileUploadInput.files.length > 0) {
             const file = this.fileUploadInput.files[0];
             fileName = file.name;
             try {
@@ -235,21 +247,35 @@ class InsertDataModal {
             };
 
             this.mediaRecorder.start();
-            this.recordingStatus.textContent = "Registrazione in corso...";
-            this.startButton.disabled = true;
-            this.stopButton.disabled = false;
+            if (this.recordingStatus) { // Controllo null
+                this.recordingStatus.textContent = "Registrazione in corso...";
+            }
+            if (this.startButton) { // Controllo null
+                this.startButton.disabled = true;
+            }
+            if (this.stopButton) { // Controllo null
+                this.stopButton.disabled = false;
+            }
         } catch (error) {
             console.error("Errore nell'accesso al microfono:", error);
-            this.recordingStatus.textContent = "Errore: Microfono non accessibile.";
+            if (this.recordingStatus) { // Controllo null
+                this.recordingStatus.textContent = "Errore: Microfono non accessibile.";
+            }
         }
     }
 
     stopRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
-            this.recordingStatus.textContent = "Elaborazione trascrizione...";
-            this.startButton.disabled = false;
-            this.stopButton.disabled = true;
+            if (this.recordingStatus) { // Controllo null
+                this.recordingStatus.textContent = "Elaborazione trascrizione...";
+            }
+            if (this.startButton) { // Controllo null
+                this.startButton.disabled = false;
+            }
+            if (this.stopButton) { // Controllo null
+                this.stopButton.disabled = true;
+            }
         }
     }
 
@@ -262,11 +288,15 @@ class InsertDataModal {
 
     async transcribeAudio(audioBlob) {
         this.isTranscribing = true;
-        this.recordingStatus.textContent = "Trascrizione in corso...";
+        if (this.recordingStatus) { // Controllo null
+            this.recordingStatus.textContent = "Trascrizione in corso...";
+        }
 
         if (!audioBlob) {
             console.error("Nessun audio da trascrivere.");
-            this.recordingStatus.textContent = "Nessun audio da trascrivere.";
+            if (this.recordingStatus) { // Controllo null
+                this.recordingStatus.textContent = "Nessun audio da trascrivere.";
+            }
             this.isTranscribing = false;
             return;
         }
@@ -287,14 +317,22 @@ class InsertDataModal {
             }
 
             if (data.transcription) {
-                this.voiceTranscription.value = data.transcription;
-                this.recordingStatus.textContent = "Trascrizione completata.";
+                if (this.voiceTranscription) { // Controllo null
+                    this.voiceTranscription.value = data.transcription;
+                }
+                if (this.recordingStatus) { // Controllo null
+                    this.recordingStatus.textContent = "Trascrizione completata.";
+                }
             } else {
-                this.recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
+                if (this.recordingStatus) { // Controllo null
+                    this.recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
+                }
             }
         } catch (error) {
             console.error("Errore nell'invio dell'audio per la trascrizione:", error);
-            this.recordingStatus.textContent = `Errore di trascrizione: ${error.message}.`;
+            if (this.recordingStatus) { // Controllo null
+                this.recordingStatus.textContent = `Errore di trascrizione: ${error.message}.`;
+            }
         } finally {
             this.isTranscribing = false;
         }
