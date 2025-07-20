@@ -787,67 +787,43 @@ h1 {
     margin-bottom: 15px; /* Spazio prima dell'area di input */
 }
 
-/* Stili generali per ogni singolo messaggio */
-.message {
+/* Stili generali per ogni singolo messaggio all'interno del modale chat */
+/* Assicurati che questo sia un flex container se vuoi che il nome sia a lato della bolla */
+#chatMessages .message { /* Modificato: Aggiunto #chatMessages */
     display: flex;
     max-width: 80%; /* Messaggi non troppo larghi */
     align-items: flex-end; /* Allinea il content alla fine del contenitore */
 }
 
-.message-content {
+/* Stili per il contenuto della bolla (la bolla stessa) */
+#chatMessages .message-content { /* Modificato: Aggiunto #chatMessages */
     padding: 10px 15px;
-    border-radius: 18px; /* Bordi arrotondati come le bolle di chat */
+    border-radius: 18px; /* Bordi arrotondati come le bolle di chat - Questo verrà sovrascritto */
     line-height: 1.4;
     word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Stili per i messaggi dell'utente */
-.user-message {
+#chatMessages .user-message { /* Modificato: Aggiunto #chatMessages */
     align-self: flex-end; /* Allinea a destra */
-    flex-direction: row-reverse; /* Inverte l'ordine per mettere il nome a destra */
 }
 
-.user-message .message-content {
+#chatMessages .user-message .message-content { /* Modificato: Aggiunto #chatMessages */
     background-color: #DCF8C6; /* Verde chiaro */
     color: #333;
     border-bottom-right-radius: 4px; /* Angolo piatto a destra */
-    margin-left: 10px; /* Spazio tra nome e bolla */
-}
-
-/* Aggiungi il nome dell'utente con ::before */
-.user-message::before {
-    content: 'Fabio: ';
-    font-weight: bold;
-    color: #555;
-    margin-left: 5px; /* Spazio a sinistra del nome */
-    font-size: 0.9em;
-    align-self: flex-start;
-    margin-top: 2px;
 }
 
 /* Stili per i messaggi dell'AI (Frank) */
-.ai-message {
+#chatMessages .ai-message { /* Modificato: Aggiunto #chatMessages */
     align-self: flex-start; /* Allinea a sinistra */
-    flex-direction: row; /* Nome a sinistra, bolla a destra */
 }
 
-.ai-message .message-content {
+#chatMessages .ai-message .message-content { /* Modificato: Aggiunto #chatMessages */
     background-color: #F1F0F0; /* Grigio chiaro */
     color: #333;
     border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
-    margin-right: 10px; /* Spazio tra nome e bolla */
-}
-
-/* Aggiungi il nome dell'AI */
-.ai-message::before {
-    content: 'Frank: ';
-    font-weight: bold;
-    color: #555;
-    margin-right: 5px;
-    font-size: 0.9em;
-    align-self: flex-start;
-    margin-top: 2px;
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
