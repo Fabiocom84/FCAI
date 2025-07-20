@@ -264,7 +264,7 @@ class ChatModal {
         // e i nomi dei fogli. Per questo esempio, li hardcodiamo o li prendiamo da input.
         // Se hai un modo per far scegliere all'utente lo spreadsheet_id e i sheet_names,
         // dovrai recuperarli qui.
-        const spreadsheetId = window.GOOGLE_SHEET_ID || 'YOUR_GOOGLE_SHEET_ID_HERE'; // Usa il tuo ID reale
+        const spreadsheetId = window.GOOGLE_SHEET_ID || '1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8'; // Usa il tuo ID reale
         const sheetNames = 'Registrazioni,Chat_AI,Riferimento_Commessa'; // Adatta ai tuoi fogli
 
         try {
