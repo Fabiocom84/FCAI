@@ -817,30 +817,35 @@ h1 {
 
 /* Stili per i messaggi dell'AI (Frank) */
 #chatMessages .ai-message {
-    align-self: flex-start; /* Allinea a sinistra */
-    position: relative; /* CRUCIALE: Base per posizionare il pseudo-elemento */
-    /* ASSICURATI che NON ci siano proprietà 'padding-left' o 'margin-left' qui */
+    align-self: flex-start; /* Allinea l'intero blocco del messaggio AI a sinistra */
+    position: relative; /* Base per posizionare il pseudo-elemento 'Frank:' */
+    
+    /* MODIFICA CRUCIALE: Aggiungi queste righe per attivare Flexbox per AI message */
+    display: flex;         /* Rendi il contenitore del messaggio AI un flex container */
+    flex-direction: row;   /* Allinea i suoi figli (Frank: e la bolla) in riga */
+    align-items: flex-start; /* Allinea gli elementi all'inizio (alto) */
 }
 
 #chatMessages .ai-message::before {
-    content: "Frank:"; /* Il testo del nome */
-    position: absolute; /* CRUCIALE: Rende il pseudo-elemento posizionabile */
-    left: 0; /* Posizionalo all'inizio del contenitore del messaggio */
-    top: -1.5em; /* Regola questo valore: Spostalo più in alto sopra la bolla. Puoi provare -1.2em, -1.5em, -1.8em. */
+    content: "Frank:";
+    /* Rimuovi completamente qualsiasi 'position: absolute', 'left', 'top' da qui */
     font-weight: bold;
-    color: #555; /* Colore del nome Frank */
+    color: #555;
     font-size: 0.9em;
-    white-space: nowrap; /* Evita che il nome vada a capo */
-    /* ASSICURATI che NON ci sia 'padding-right' qui */
+    white-space: nowrap;
+    margin-right: 5px; /* Spazio tra il nome e la bolla */
+    padding-top: 10px; /* Allinea verticalmente con il testo nella bolla, puoi regolare */
+    flex-shrink: 0; /* Impedisce al nome di restringersi */
 }
 
 #chatMessages .ai-message .message-content {
-    /* Questo è il CSS per la bolla stessa */
-    background-color: #B0DFFC; /* Il nuovo colore più scuro per la bolla AI */
+    /* NUOVO COLORE PER LA BOLLA AI (più contrasto) */
+    background-color: #A3DAFF; /* O un colore come #E0E0E0 per un grigio più scuro */
     color: #333;
     border-bottom-left-radius: 4px;
-    margin-left: 50px; /* CRUCIALE: Sposta la bolla a destra per fare spazio al nome */
-    /* ASSICURATI che NON ci sia 'padding-left' qui, per evitare conflitti con margin-left */
+    /* Rimuovi completamente qualsiasi 'margin-left' o 'padding-left' da qui,
+       il flexbox del genitore lo gestirà */
+    padding: 10px 15px; /* Assicurati che il padding interno della bolla sia questo */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
