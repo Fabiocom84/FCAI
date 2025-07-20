@@ -79,26 +79,27 @@ class ChatModal {
         }
     }
 
-    _addMessage(sender, message) { // Rimosso 'type' in quanto non sembra essere usato in modo distinto per i messaggi utente/ai
-        const messageWrapper = document.createElement('div'); // Questo sarà il div con .message e .user-message/.ai-message
-        const messageContent = document.createElement('div'); // Questo sarà il div con .message-content
+    _addMessage(sender, message) {
+    const messageWrapper = document.createElement('div');
+    const messageContent = document.createElement('div');
 
-        messageWrapper.classList.add('message'); // Classe base per il wrapper del messaggio
-        messageContent.classList.add('message-content'); // Classe per il contenuto della bolla
+    messageWrapper.classList.add('message');
+    messageContent.classList.add('message-content');
 
-        if (sender === 'ai') {
-            messageWrapper.classList.add('ai-message');
-            // Il nome "Frank:" è aggiunto dal CSS tramite ::before
-            messageContent.innerHTML = message; 
-        } else if (sender === 'user') {
-            messageWrapper.classList.add('user-message');
-            // Il nome "Fabio:" è aggiunto qui nel JS per i messaggi dell'utente
-            messageContent.innerHTML = `<strong>Fabio:</strong> ${message}`;
-        } else {
-            // Fallback per altri tipi di messaggi non utente/ai (es. messaggi di sistema)
-            // Puoi gestire questo caso diversamente se vuoi che anche i messaggi di sistema siano bolle
-            messageContent.innerHTML = message; 
-        }
+    if (sender === 'ai') {
+        messageWrapper.classList.add('ai-message');
+        messageContent.innerHTML = message;
+    } else if (sender === 'user') {
+        messageWrapper.classList.add('user-message');
+        messageContent.innerHTML = message; // Rimosso "Fabio:" da qui
+    } else {
+        messageContent.innerHTML = message;
+    }
+
+    messageWrapper.appendChild(messageContent);
+    this.chatMessages.appendChild(messageWrapper);
+    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+}
 
         messageWrapper.appendChild(messageContent); // Aggiungi il contenuto della bolla al wrapper
         this.chatMessages.appendChild(messageWrapper); // Aggiungi il wrapper del messaggio al contenitore della chat
