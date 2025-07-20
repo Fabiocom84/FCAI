@@ -386,60 +386,40 @@ h1 {
     margin: 0; /* Assicurati che non ci siano margini predefiniti */
 }
 
-.entry-item {
-    padding: 12px 0; /* Padding aumentato */
-    border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
+/* --- MODIFICHE QUI PER GLI ULTIMI INSERIMENTI --- */
+/* Nuovi stili per ogni elemento della lista (li) - Corrisponde a .latest-entry-item in main.js */
+.latest-entry-item { /* Rinominato da .entry-item per coerenza con main.js */
+    padding: 12px 0;
+    border-bottom: 1px dashed #e0e0e0;
     font-size: 0.95em;
-    color: #444; /* Colore testo leggermente più scuro */
-    display: flex; /* Flexbox per organizzare data/ora/riferimento */
-    justify-content: space-between; /* Distribuisce gli elementi */
-    align-items: center;
+    color: #444;
     text-decoration: none;
-    transition: background-color 0.2s ease; /* Aggiungi transizione per hover */
-    cursor: pointer; /* Indica che è cliccabile se lo sarà */
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    word-wrap: break-word; /* Permette il wrap del testo lungo */
+    white-space: normal; /* Assicura che il testo vada a capo */
+    text-align: left; /* Allinea il testo a sinistra */
 }
 
-.entry-item:hover {
-    background-color: #f9f9f9; /* Leggero sfondo all'hover */
+.latest-entry-item:hover {
+    background-color: #f9f9f9;
 }
 
-.entry-item:last-child {
+.latest-entry-item:last-child {
     border-bottom: none;
 }
 
-.entry-date-time {
-    font-weight: 400; /* Normale */
-    color: #777;
-    font-size: 0.85em; /* Più piccolo */
-    flex-shrink: 0; /* Non si restringe */
-    min-width: 90px; /* Assicura spazio minimo per data/ora */
-    text-align: left; /* Allinea a sinistra la data */
-}
+/* Rimosse le classi .entry-date-time, .entry-text, .entry-riferimento
+   e i relativi stili poiché il contenuto è ora una singola stringa. */
 
-.entry-text {
-    flex-grow: 1; /* Il testo occupa lo spazio rimanente */
-    margin: 0 10px; /* Margine tra data e riferimento */
-    white-space: nowrap; /* Evita il wrap del testo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
-    text-align: center; /* Centra il testo principale */
-}
-
-.entry-riferimento {
-    font-weight: 500; /* Medium */
-    color: #2A76B8; /* Blu del logo per il riferimento */
-    flex-shrink: 0; /* Non si restringe */
-    min-width: 80px; /* Assicura spazio minimo per il riferimento */
-    text-align: right; /* Allinea a destra il riferimento */
-}
-
-/* Stili per il caso in cui la lista sia vuota */
-.latest-entries p.no-entries-message {
+/* Stili per il caso in cui la lista sia vuota (li con classe .no-entries) */
+.latest-entries .no-entries { /* Aggiornato il selettore */
     text-align: center;
     color: #888;
     font-style: italic;
     padding: 20px;
 }
+/* --- FINE MODIFICHE ULTIMI INSERIMENTI --- */
 
 
 /* Stili per il Modal */
@@ -995,27 +975,12 @@ h1 {
         margin-bottom: 10px;
     }
 
-    .entry-item {
-        flex-direction: column; /* Impila gli elementi verticalmente su schermi piccoli */
-        align-items: flex-start; /* Allinea a sinistra */
+    /* --- MODIFICHE QUI PER MOBILE --- */
+    .latest-entry-item { /* Aggiornato il selettore */
         padding: 10px 0;
+        /* Le proprietà flexbox, white-space e text-align sono ora nel default .latest-entry-item
+           e non necessitano di override specifico per mobile, purché il testo si adatti. */
     }
 
-    .entry-date-time,
-    .entry-riferimento {
-        font-size: 0.8em; /* Riduci font size */
-        margin: 5px 0 0; /* Margine per separare gli elementi impilati */
-        text-align: left; /* Assicura allineamento a sinistra */
-        min-width: unset; /* Rimuovi min-width */
-    }
-
-    .entry-text {
-        font-size: 0.9em;
-        margin: 5px 0; /* Margine per separare il testo */
-        white-space: normal; /* Permetti il wrap del testo su mobile */
-        overflow: visible; /* Rimuovi overflow e ellipsis */
-        text-overflow: unset;
-        width: 100%; /* Occupa tutta la larghezza disponibile */
-        text-align: left; /* Allinea a sinistra */
-    }
-}
+    /* Rimosse le classi mobile per .entry-date-time, .entry-riferimento, .entry-text */
+    /* --- FINE MODIFICHE MOBILE --- */

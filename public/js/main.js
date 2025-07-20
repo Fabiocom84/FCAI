@@ -48,86 +48,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Funzione per recuperare e visualizzare gli ultimi inserimenti
+// Funzione per recuperare gli ultimi inserimenti dal backend
 async function fetchLatestEntries() {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        console.warn('Authentication token not found. Cannot fetch latest entries.');
-        return;
-    }
-
-    const latestEntriesList = document.getElementById('latestEntriesList');
-    // Pulisci la lista esistente prima di caricare nuovi dati o mostrare il messaggio
-    if (latestEntriesList) {
-        latestEntriesList.innerHTML = ''; 
-    } else {
-        console.error("Elemento 'latestEntriesList' non trovato nel DOM.");
-        return;
-    }
-
     try {
-        // Ho corretto l'endpoint da /api/latest-entries a /api/latest_entries
-        // per essere consistente con la definizione in app.py
-        const response = await fetch(`${window.BACKEND_URL}/api/latest_entries`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+        // Sostituisci con il tuo endpoint reale sul backend di Google Cloud Run
+        // Assicurati che il tuo backend restituisca un array di oggetti JSON
+        // Esempio: [{ type: 'file', fileName: 'documento.pdf', timestamp: '2025-07-19 10:30', /* altri campi */ }, ...]
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const response = await fetch(`${window.BACKEND_URL}/api/latest-entries`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
         });
-
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`HTTP error! status: ${response.status}: ${errorData.message}`);
+            // Gestione di risposte HTTP non riuscite
+            const errorText = await response.text(); // Legge il corpo della risposta per dettagli sull'errore
+            throw new Error(`HTTP error! Status: ${response.status}. Details: ${errorText}`);
         }
-
         const data = await response.json();
-        console.log("Dati ricevuti per latest_entries:", data); 
-        
-        // Correzione: il backend restituisce 'entries', non 'latest_entries'
-        const entries = data.entries; 
-        console.log("Array 'entries' estratto:", entries); 
-
-        if (entries && entries.length > 0) {
-            entries.forEach(entry => {
-                console.log("Aggiungendo voce:", entry); 
-                const listItem = document.createElement('li');
-                listItem.classList.add('entry-item');
-
-                const dateTimeSpan = document.createElement('span');
-                dateTimeSpan.classList.add('entry-date-time');
-                dateTimeSpan.textContent = entry.dateTime; // Usa la chiave 'dateTime'
-
-                const textSpan = document.createElement('span');
-                textSpan.classList.add('entry-text');
-                textSpan.textContent = entry.text; // Usa la chiave 'text'
-
-                const riferimentoSpan = document.createElement('span');
-                riferimentoSpan.classList.add('entry-riferimento');
-                riferimentoSpan.textContent = entry.riferimento; // Usa la chiave 'riferimento'
-
-                listItem.appendChild(dateTimeSpan);
-                listItem.appendChild(textSpan);
-                listItem.appendChild(riferimentoSpan);
-                latestEntriesList.appendChild(listItem);
-            });
-        } else {
-            // Implementazione esatta del messaggio "nessun inserimento" come richiesto
-            const noEntriesMessage = document.createElement('p');
-            noEntriesMessage.classList.add('no-entries-message');
-            noEntriesMessage.textContent = 'Nessun inserimento recente disponibile.';
-            latestEntriesList.appendChild(noEntriesMessage); // Aggiunto direttamente alla UL
-            console.log("Nessun inserimento recente disponibile.");
-        }
-
+        // Assumiamo che la risposta contenga un campo 'latest_entries' che è un array di stringhe
+        return data.latest_entries || [];
     } catch (error) {
-        console.error('Errore nel recupero degli ultimi inserimenti:', error);
-        if (latestEntriesList) {
-            // Mostra un messaggio di errore in caso di fallimento della fetch
-            latestEntriesList.innerHTML = ''; // Assicurati che sia vuota
-            const errorMessage = document.createElement('p');
-            errorMessage.classList.add('error-message'); // Aggiungi una classe per stilizzare l'errore
-            errorMessage.textContent = 'Errore nel caricamento dei dati: impossibile recuperare gli inserimenti.';
-            latestEntriesList.appendChild(errorMessage);
-        }
+        console.error("Errore durante il recupero degli ultimi inserimenti:", error);
+        // Puoi mostrare un messaggio all'utente qui se vuoi
+        const latestEntriesList = document.getElementById('latestEntriesList');
+        latestEntriesList.innerHTML = '<li class="no-entries error">Errore nel caricamento degli inserimenti recenti. Riprova più tardi.</li>';
+        return []; // Restituisce un array vuoto in caso di errore
     }
 }
+
+// Funzione per visualizzare gli ultimi inserimenti nella pagina
+function displayLatestEntries(entries) {
+    const latestEntriesList = document.getElementById('latestEntriesList');
+    latestEntriesList.innerHTML = ''; // Pulisce la lista esistente prima di aggiungere i nuovi elementi
+
+    if (entries.length === 0) {
+        latestEntriesList.innerHTML = '<li class="no-entries">Nessun inserimento recente trovato.</li>';
+        return;
+    }
+
+    // Itera sulle stringhe e aggiungile direttamente alla lista
+    entries.forEach(entryString => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('latest-entry-item'); // Aggiungi una classe per styling via CSS
+        
+        // Il contenuto è la stringa formattata ricevuta dal backend
+        listItem.textContent = entryString; 
+        latestEntriesList.appendChild(listItem);
+    });
+}
+
+
+// Aggiungi queste chiamate all'interno del tuo evento DOMContentLoaded esistente in main.js
+// o creane uno se non esiste già.
+document.addEventListener('DOMContentLoaded', async () => {
+    // ... il tuo codice esistente di main.js ...
+
+    // Carica gli ultimi inserimenti all'avvio della pagina
+    const latestEntries = await fetchLatestEntries();
+    displayLatestEntries(latestEntries);
+
+    // Potresti anche voler richiamare fetchLatestEntries e displayLatestEntries
+    // dopo che un nuovo dato è stato salvato (ad esempio, dopo che l'utente clicca "Salva Dati"
+    // nel modal "Inserisci Dati" o "Salva Nuova Commessa" nel modal "Nuova Commessa").
+    // Ad esempio, nel file insert-data-modal.js o new-order-modal.js,
+    // dopo una risposta di successo dal backend, potresti aggiungere:
+    // await fetchAndDisplayLatestEntries(); // Dovresti incapsulare le due chiamate in una singola funzione per riusabilità.
+});
+
+// Funzione helper per riusabilità (opzionale, ma consigliato)
+async function fetchAndDisplayLatestEntries() {
+    const entries = await fetchLatestEntries();
+    displayLatestEntries(entries);
+}
+
+// Esporta (se necessario per altri moduli) o rendi disponibile globalmente
+// window.fetchAndDisplayLatestEntries = fetchAndDisplayLatestEntries; // Se devi chiamarla da altri script
 
 // Funzione per avviare l'aggiornamento della Knowledge Base AI
 async function initiateKnowledgeBaseUpdate() {
