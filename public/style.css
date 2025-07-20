@@ -809,10 +809,15 @@ h1 {
     align-self: flex-end; /* Allinea a destra */
 }
 
-#chatMessages .user-message .message-content strong {
-    font-weight: bold;
-    font-size: 1em; /* AGGIUNGI QUESTA REGOLA (o assicurati che sia 1em se già esisteva) */
-    color: #333; /* Mantieni il colore desiderato */
+#chatMessages .user-message .message-content {
+    padding: 10px 15px;
+    border-radius: 18px; /* Bordi arrotondati come le bolle di chat - Questo verrà sovrascritto */
+    font-size: 1em;
+    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    /* AGGIUNGI ORA QUESTA RIGA: */
+    background-color: #DCF8C6; /* Verde chiaro, forzato */
+    color: #333; /* Assicurati che il colore del testo sia definito se lo era prima */
 }
 
 //* Stili per i messaggi dell'AI (Frank) */
