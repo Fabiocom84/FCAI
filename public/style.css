@@ -835,7 +835,7 @@ h1 {
 }
 
 #chatMessages .ai-message .message-content {
-    background-color: #E6EEF4; /* Azzurro chiaro per contrasto */
+    background-color: #DDEEFF; /* Azzurro chiaro per contrasto */
     color: #333;
     border-bottom-left-radius: 4px;
     margin-left: 50px; /* AGGIUNGI QUESTO: Sposta la bolla a destra del nome "Frank:" */
