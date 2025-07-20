@@ -379,6 +379,13 @@ h1 {
     border-bottom: 2px solid #eeeeee; /* Bordo più spesso */
 }
 
+/* Container per la lista vera e propria */
+#latestEntriesList {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Assicurati che non ci siano margini predefiniti */
+}
+
 .entry-item {
     padding: 12px 0; /* Padding aumentato */
     border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
@@ -388,6 +395,12 @@ h1 {
     justify-content: space-between; /* Distribuisce gli elementi */
     align-items: center;
     text-decoration: none;
+    transition: background-color 0.2s ease; /* Aggiungi transizione per hover */
+    cursor: pointer; /* Indica che è cliccabile se lo sarà */
+}
+
+.entry-item:hover {
+    background-color: #f9f9f9; /* Leggero sfondo all'hover */
 }
 
 .entry-item:last-child {
@@ -399,6 +412,8 @@ h1 {
     color: #777;
     font-size: 0.85em; /* Più piccolo */
     flex-shrink: 0; /* Non si restringe */
+    min-width: 90px; /* Assicura spazio minimo per data/ora */
+    text-align: left; /* Allinea a sinistra la data */
 }
 
 .entry-text {
@@ -407,12 +422,23 @@ h1 {
     white-space: nowrap; /* Evita il wrap del testo */
     overflow: hidden; /* Nasconde il testo che sfora */
     text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
+    text-align: center; /* Centra il testo principale */
 }
 
 .entry-riferimento {
     font-weight: 500; /* Medium */
     color: #2A76B8; /* Blu del logo per il riferimento */
     flex-shrink: 0; /* Non si restringe */
+    min-width: 80px; /* Assicura spazio minimo per il riferimento */
+    text-align: right; /* Allinea a destra il riferimento */
+}
+
+/* Stili per il caso in cui la lista sia vuota */
+.latest-entries p.no-entries-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
 }
 
 
@@ -552,7 +578,9 @@ h1 {
 .form-group textarea,
 .form-group input[type="file"],
 .form-group select,
-.form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
+.form-group input[type="text"], /* Aggiunto input[type="text"] per il modale Nuova Commessa */
+.form-group input[type="date"],
+.form-group input[type="number"] {
     width: 100%;
     padding: 10px 12px; /* Padding uniforme */
     border: 1px solid #cccccc;
@@ -572,7 +600,9 @@ h1 {
 .form-group textarea:focus,
 .form-group input[type="file"]:focus,
 .form-group select:focus,
-.form-group input[type="text"]:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="number"]:focus {
     border-color: #2A76B8;
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
@@ -954,5 +984,38 @@ h1 {
     .chat-controls button img {
         width: 20px; /* Icone più piccole */
         height: 20px;
+    }
+
+    .latest-entries {
+        padding: 15px; /* Riduci padding su mobile */
+    }
+
+    .latest-entries h2 {
+        font-size: 1.2em; /* Riduci dimensione titolo su mobile */
+        margin-bottom: 10px;
+    }
+
+    .entry-item {
+        flex-direction: column; /* Impila gli elementi verticalmente su schermi piccoli */
+        align-items: flex-start; /* Allinea a sinistra */
+        padding: 10px 0;
+    }
+
+    .entry-date-time,
+    .entry-riferimento {
+        font-size: 0.8em; /* Riduci font size */
+        margin: 5px 0 0; /* Margine per separare gli elementi impilati */
+        text-align: left; /* Assicura allineamento a sinistra */
+        min-width: unset; /* Rimuovi min-width */
+    }
+
+    .entry-text {
+        font-size: 0.9em;
+        margin: 5px 0; /* Margine per separare il testo */
+        white-space: normal; /* Permetti il wrap del testo su mobile */
+        overflow: visible; /* Rimuovi overflow e ellipsis */
+        text-overflow: unset;
+        width: 100%; /* Occupa tutta la larghezza disponibile */
+        text-align: left; /* Allinea a sinistra */
     }
 }

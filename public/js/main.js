@@ -56,8 +56,19 @@ async function fetchLatestEntries() {
         return;
     }
 
+    const latestEntriesList = document.getElementById('latestEntriesList');
+    // Pulisci la lista esistente prima di caricare nuovi dati o mostrare il messaggio
+    if (latestEntriesList) {
+        latestEntriesList.innerHTML = ''; 
+    } else {
+        console.error("Elemento 'latestEntriesList' non trovato nel DOM.");
+        return;
+    }
+
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/latest-entries`, {
+        // Ho corretto l'endpoint da /api/latest-entries a /api/latest_entries
+        // per essere consistente con la definizione in app.py
+        const response = await fetch(`${window.BACKEND_URL}/api/latest_entries`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -67,34 +78,53 @@ async function fetchLatestEntries() {
         }
 
         const data = await response.json();
-        console.log("Dati ricevuti per latest_entries:", data); // PRIMO CHECK: l'oggetto data è qui?
-        const latestEntries = data.latest_entries;
-        console.log("Array latest_entries estratto:", latestEntries); // SECONDO CHECK: l'array è estratto correttamente?
+        console.log("Dati ricevuti per latest_entries:", data); 
+        
+        // Correzione: il backend restituisce 'entries', non 'latest_entries'
+        const entries = data.entries; 
+        console.log("Array 'entries' estratto:", entries); 
 
-        const latestEntriesList = document.getElementById('latestEntriesList');
-        if (latestEntriesList) {
-            latestEntriesList.innerHTML = ''; // Pulisce la lista esistente
-            
-            if (latestEntries && latestEntries.length > 0) {
-                latestEntries.forEach(entry => {
-                    console.log("Aggiungendo voce:", entry); // TERZO CHECK: ogni singola voce viene processata?
-                    const li = document.createElement('li');
-                    li.textContent = entry; // Assegna la stringa al contenuto del <li>
-                    latestEntriesList.appendChild(li);
-                });
-            } else {
-                latestEntriesList.innerHTML = '<li>Nessun dato da visualizzare nella lista degli ultimi inserimenti.</li>';
-                console.log("Nessun dato da visualizzare nella lista degli ultimi inserimenti.");
-            }
+        if (entries && entries.length > 0) {
+            entries.forEach(entry => {
+                console.log("Aggiungendo voce:", entry); 
+                const listItem = document.createElement('li');
+                listItem.classList.add('entry-item');
+
+                const dateTimeSpan = document.createElement('span');
+                dateTimeSpan.classList.add('entry-date-time');
+                dateTimeSpan.textContent = entry.dateTime; // Usa la chiave 'dateTime'
+
+                const textSpan = document.createElement('span');
+                textSpan.classList.add('entry-text');
+                textSpan.textContent = entry.text; // Usa la chiave 'text'
+
+                const riferimentoSpan = document.createElement('span');
+                riferimentoSpan.classList.add('entry-riferimento');
+                riferimentoSpan.textContent = entry.riferimento; // Usa la chiave 'riferimento'
+
+                listItem.appendChild(dateTimeSpan);
+                listItem.appendChild(textSpan);
+                listItem.appendChild(riferimentoSpan);
+                latestEntriesList.appendChild(listItem);
+            });
         } else {
-            console.error("Elemento 'latestEntriesList' non trovato nel DOM.");
+            // Implementazione esatta del messaggio "nessun inserimento" come richiesto
+            const noEntriesMessage = document.createElement('p');
+            noEntriesMessage.classList.add('no-entries-message');
+            noEntriesMessage.textContent = 'Nessun inserimento recente disponibile.';
+            latestEntriesList.appendChild(noEntriesMessage); // Aggiunto direttamente alla UL
+            console.log("Nessun inserimento recente disponibile.");
         }
 
     } catch (error) {
         console.error('Errore nel recupero degli ultimi inserimenti:', error);
-        const latestEntriesList = document.getElementById('latestEntriesList');
         if (latestEntriesList) {
-            latestEntriesList.innerHTML = '<li>Errore nel caricamento dei dati.</li>';
+            // Mostra un messaggio di errore in caso di fallimento della fetch
+            latestEntriesList.innerHTML = ''; // Assicurati che sia vuota
+            const errorMessage = document.createElement('p');
+            errorMessage.classList.add('error-message'); // Aggiungi una classe per stilizzare l'errore
+            errorMessage.textContent = 'Errore nel caricamento dei dati: impossibile recuperare gli inserimenti.';
+            latestEntriesList.appendChild(errorMessage);
         }
     }
 }
