@@ -77,7 +77,6 @@ async function fetchLatestEntries() {
     }
 }
 
-// Funzione per visualizzare gli ultimi inserimenti nella pagina
 function displayLatestEntries(entries) {
     const latestEntriesList = document.getElementById('latestEntriesList');
     latestEntriesList.innerHTML = ''; // Pulisce la lista esistente prima di aggiungere i nuovi elementi
@@ -92,8 +91,8 @@ function displayLatestEntries(entries) {
         const listItem = document.createElement('li');
         listItem.classList.add('latest-entry-item'); // Aggiungi una classe per styling via CSS
         
-        // Il contenuto è la stringa formattata ricevuta dal backend
-        listItem.textContent = entryString; 
+        // **MODIFICA QUESTA RIGA:** Usa innerHTML per interpretare i tag HTML
+        listItem.innerHTML = entryString; // <--- CAMBIA QUI!
         latestEntriesList.appendChild(listItem);
     });
 }
