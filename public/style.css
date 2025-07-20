@@ -818,31 +818,28 @@ h1 {
 /* Stili per i messaggi dell'AI (Frank) */
 #chatMessages .ai-message {
     align-self: flex-start; /* Allinea a sinistra */
-    /* Aggiungi queste proprietà per posizionare il pseudo-elemento */
-    position: relative;
-    padding-left: 50px; /* Spazio per il nome */
+    position: relative; /* Base per posizionare il pseudo-elemento */
+    /* Rimuovi padding-left: 50px; da qui, lo metteremo sulla bolla interna */
 }
 
 #chatMessages .ai-message::before {
-    content: "Frank:"; /* Il testo del nome */
+    content: "Frank:";
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 0; /* Posizionalo all'inizio del contenitore del messaggio */
+    top: -1.2em; /* Spostalo leggermente sopra la bolla. Regola questo valore se serve. */
     font-weight: bold;
     color: #555; /* Colore del nome Frank */
     font-size: 0.9em;
-    white-space: nowrap; /* Evita che il nome vada a capo */
-    padding-right: 5px;
+    white-space: nowrap;
+    /* padding-right: 5px; - non più necessario qui */
 }
 
-/* Potresti voler regolare il padding del message-content per i messaggi AI,
-   se il nome Frank si sovrappone o vuoi che inizi dopo.
-   Queste sono solo ipotesi, potresti doverle aggiustare a seconda del risultato. */
 #chatMessages .ai-message .message-content {
-    background-color: #E6EEF4; /* Grigio chiaro */
+    background-color: #E6EEF4; /* Azzurro chiaro per contrasto */
     color: #333;
-    border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
-    /* padding-left: 10px; */ /* Potrebbe essere utile se il nome è molto vicino */
+    border-bottom-left-radius: 4px;
+    margin-left: 50px; /* AGGIUNGI QUESTO: Sposta la bolla a destra del nome "Frank:" */
+    /* padding-left: 10px; Rimuovi o imposta a un valore standard, il margin-left gestisce lo spazio */
 }
 
 /* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
