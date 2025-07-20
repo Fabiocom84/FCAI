@@ -143,7 +143,7 @@ async function initiateKnowledgeBaseUpdate() {
     }
 
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/update-knowledge-base`, {
+        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, { // <<< CAMBIA QUI!
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
