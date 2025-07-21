@@ -127,7 +127,6 @@ async function fetchAndDisplayLatestEntries() {
 // Funzione per avviare l'aggiornamento della Knowledge Base AI
 async function initiateKnowledgeBaseUpdate() {
     console.log("Avvio aggiornamento Knowledge Base AI...");
-    const updateAIDbBtn = document.getElementById('updateAIDbBtn');
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         alert('Autenticazione richiesta per aggiornare la Knowledge Base. Effettua il login.');
