@@ -354,6 +354,44 @@ class ChatModal {
             this._addSystemMessage(`Errore nell'interruzione del processo AI: ${error.message}`, 'error');
         }
     }
+    async synthesizeAndPlaySpeech(text) {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.warn('Autenticazione necessaria per la sintesi vocale.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/synthesize-speech`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ text: text, voice: 'onyx' }) // Puoi scegliere la voce qui
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore sconosciuto nella sintesi vocale.');
+            }
+
+            // La risposta è un file audio, quindi la leggiamo come ArrayBuffer
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            const audio = new Audio(audioUrl);
+            audio.play().catch(e => console.error("Errore nella riproduzione audio:", e));
+
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl); // Rilascia l'URL dell'oggetto dopo la riproduzione
+            };
+
+        } catch (error) {
+            console.error("Errore durante la sintesi vocale e riproduzione:", error);
+            // Non mostrare alert all'utente per errori di sintesi vocale in background
+        }
+    }
 }
 
 // Inizializza il modale Chat AI quando il DOM è pronto
