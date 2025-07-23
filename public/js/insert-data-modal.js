@@ -304,10 +304,23 @@ class InsertDataModal {
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
 
+        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!authToken) {
+            if (this.recordingStatus) {
+                this.recordingStatus.textContent = "Errore: Autenticazione richiesta.";
+            }
+            console.error("Token di autenticazione mancante per la trascrizione.");
+            this.isTranscribing = false;
+            return;
+        }
+
         try {
             const response = await fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
                 method: 'POST',
                 body: formData,
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
             });
 
             const data = await response.json();
