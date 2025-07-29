@@ -76,68 +76,62 @@ class KnowledgeLogsModal {
     }
 
     connectWebSocketForLogs(processId) {
-        // Chiudi qualsiasi connessione precedente se presente
-        this.disconnectWebSocket();
-
-        if (!processId) {
-            this.addLogMessage('Errore: ID del processo di aggiornamento non fornito per i log.', 'error');
-            return;
+        if (this.websocket) {
+            this.websocket.close();
+            this.websocket = null; // <-- ASSICURATI DI AVERE QUESTA RIGA
         }
-        if (!window.BACKEND_URL) {
-            this.addLogMessage('Errore: URL del backend non definito. Impossibile connettersi ai log.', 'error');
-            return;
+        this.currentProcessId = processId; // Memorizza l'ID del processo
+
+        this.clearLogs(); // Pulisci i log precedenti
+
+        // --- INIZIO MODIFICA QUI ---
+        if (this.currentProcessId) { // <-- CONTROLLO AGGIUNTO
+            this.addLogMessage(`Connessione stabilita per il processo di aggiornamento ID: ${this.currentProcessId}`, 'info');
+        } else {
+            this.addLogMessage('Connessione stabilita al servizio di monitoraggio log. In attesa dell\'ID del processo...', 'info');
+            console.warn("processId non fornito a connectWebSocketForLogs. Il modale potrebbe visualizzare tutti i log o potrebbe non filtrare correttamente.");
         }
+        // --- FINE MODIFICA QUI ---
 
-        this.currentProcessId = processId; // Salva l'ID del processo corrente
+        const wsProtocol = window.BACKEND_URL.startsWith('https') ? 'wss' : 'ws';
+        this.websocket = new WebSocket(`${wsProtocol}://${window.BACKEND_URL.split('//')[1]}/ws/knowledge-update-status`);
 
-        const websocketBaseUrl = window.BACKEND_URL.replace('https://', 'wss://');
-        const wsUrl = `${websocketBaseUrl}/ws/knowledge-update-logs?process_id=${processId}`;
-        this.websocket = new WebSocket(wsUrl);
-
-        this.addLogMessage('Tentativo di connessione WebSocket per i log in corso...', 'info');
-
-        this.websocket.onopen = (event) => {
-            this.addLogMessage('Connessione WebSocket stabilita. In attesa dei log di aggiornamento...', 'success');
+        this.websocket.onopen = () => {
+            console.log('WebSocket Log connesso.');
+            this.addLogMessage('Connesso con successo al servizio di monitoraggio log.', 'success');
         };
 
         this.websocket.onmessage = (event) => {
             try {
                 const logData = JSON.parse(event.data);
-                // Assicurati che il backend invii un campo 'type' o deduci il tipo dal messaggio
-                const type = logData.type || (logData.message.toLowerCase().includes('errore') ? 'error' : 'info');
-                this.addLogMessage(`[${logData.timestamp}] ${logData.message}`, type);
-            } catch (e) {
-                console.error("Errore nel parsing del messaggio WebSocket per log:", e, event.data);
-                this.addLogMessage(`[ERRORE] Formato log non valido ricevuto: ${event.data}`, 'error');
+                // Filtra i log per ID del processo corrente
+                if (logData.process_id && logData.process_id === this.currentProcessId) {
+                    this.addLogMessage(`${logData.timestamp} [${logData.level ? logData.level.toUpperCase() : 'INFO'}] ${logData.message}`, logData.level);
+                }
+                // --- INIZIO MODIFICA QUI (NUOVA CONDIZIONE) ---
+                else if (logData.process_id && !this.currentProcessId) {
+                    // Se arriva un log con process_id ma il nostro currentProcessId non è ancora impostato
+                    console.warn(`Ricevuto log con process_id ${logData.process_id} prima che l'ID del processo corrente fosse impostato. Potrebbe non essere visualizzato o visualizzare log non pertinenti.`);
+                    // Puoi decidere se mostrare questi log comunque (scommentando la riga sotto)
+                    // this.addLogMessage(`${logData.timestamp} [${logData.level ? logData.level.toUpperCase() : 'INFO'}] ${logData.message}`, logData.level);
+                }
+                // --- FINE MODIFICA QUI ---
+                // Ignora i log con process_id diverso o senza process_id se currentProcessId è impostato.
+            } catch (error) {
+                console.error("Errore nella parsificazione del messaggio log dal WebSocket:", error, event.data);
+                this.addLogMessage('Errore nella ricezione di un messaggio log. Controlla la console del browser.', 'error');
             }
         };
 
         this.websocket.onclose = (event) => {
-            let reason;
-            let logType = 'info';
-            if (event.code === 1000) {
-                reason = "Connessione chiusa normalmente (completata o interrotta).";
-                logType = 'success';
-            } else if (event.code === 1001) {
-                reason = "L'endpoint sta andando via.";
-            } else if (event.code === 1006) {
-                reason = "Connessione interrotta inaspettatamente (es. server offline).";
-                logType = 'error';
-            } else {
-                reason = `Codice: ${event.code} (${event.reason || 'Nessuna ragione fornita'})`;
-                logType = 'warning';
-            }
-            this.addLogMessage(`WebSocket Log disconnesso: ${reason}`, logType);
-            
-            // Riabilita il pulsante di aggiornamento nella chat
+            console.log('WebSocket Log disconnesso:', event.code, event.reason);
+            this.addLogMessage(`Disconnesso dal servizio di monitoraggio log. Codice: ${event.code}. Ragione: ${event.reason || 'Nessuna.'}`, 'info');
             this.resetUpdateButtonState();
-            this.currentProcessId = null; // Resetta il process ID
         };
 
         this.websocket.onerror = (error) => {
-            console.error("Errore WebSocket per log:", error);
-            this.addLogMessage('Errore nella connessione WebSocket per i log. Si prega di riprovare.', 'error');
-            // Riabilita il pulsante di aggiornamento nella chat
+            console.error('Errore WebSocket Log:', error);
+            this.addLogMessage('Errore di connessione al servizio di monitoraggio log. Controlla la console.', 'error');
             this.resetUpdateButtonState();
         };
     }

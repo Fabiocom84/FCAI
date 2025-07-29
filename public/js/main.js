@@ -152,13 +152,29 @@ async function initiateKnowledgeBaseUpdate() {
             body: JSON.stringify({}) // Il corpo può essere vuoto o contenere parametri futuri
         });
 
+        const data = await response.json();
+
+        console.log("Dati di risposta completi dall'API backend:", data);
+        console.log("Process ID ricevuto dall'API backend:", data.process_id);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        }
+      
+        const processId = data.process_id; // Ottieni l'ID del processo dal backend
+
+        if (!processId) {
+            console.error("ERRORE CRITICO: process_id è null o undefined dalla risposta backend. Impossibile avviare il monitoraggio log.");
+            alert("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server. Si prega di riprovare o contattare il supporto tecnico.");
+            // Riabilita il pulsante e ferma l'esecuzione se l'ID manca
+            if (updateAIDbBtn) {
+                updateAIDbBtn.disabled = false;
+                updateAIDbBtn.querySelector('img').src = 'img/reload.png';
+                updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
+            }
+            return; // Esci dalla funzione
         }
 
-        const data = await response.json();
-        const processId = data.process_id; // Ottieni l'ID del processo dal backend
         console.log(`Aggiornamento avviato con Process ID: ${processId}`);
         alert('Aggiornamento Knowledge Base avviato con successo! Controlla i log per lo stato.');
         
