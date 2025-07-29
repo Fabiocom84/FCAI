@@ -41,9 +41,6 @@ class ChatModal {
                 }
             });
         }
-        if (this.updateAIDbBtn) {
-            this.updateAIDbBtn.addEventListener('click', this.updateAIDatabase.bind(this));
-        }
         if (this.stopProcessingBtn) {
             this.stopProcessingBtn.addEventListener('click', this.stopAIProcess.bind(this));
         }
