@@ -151,7 +151,6 @@ async function initiateKnowledgeBaseUpdate() {
             body: JSON.stringify({})
         });
 
-        // Controlla la risposta HTTP prima di tentare di leggere il JSON
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -161,10 +160,8 @@ async function initiateKnowledgeBaseUpdate() {
 
         console.log("Dati di risposta completi dall'API backend:", data);
 
-        // La correzione è qui: cerca il process_id all'interno di function_response
         const processId = data.function_response?.process_id;
 
-        // Verifica esplicitamente che il processId esista e sia una stringa non vuota
         if (!processId || typeof processId !== 'string') {
             console.error("ERRORE CRITICO: 'process_id' è null, undefined o non è una stringa dalla risposta backend.");
             alert("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server. Si prega di riprovare o contattare il supporto tecnico.");
@@ -180,18 +177,21 @@ async function initiateKnowledgeBaseUpdate() {
         console.log(`Aggiornamento avviato con Process ID: ${processId}`);
         alert('Aggiornamento Knowledge Base avviato con successo! Controlla i log per lo stato.');
         
+        // Aggiungi un controllo per assicurarti che la funzione esista prima di chiamarla
         if (window.openKnowledgeLogsModal && typeof window.openKnowledgeLogsModal === 'function') {
             window.openKnowledgeLogsModal();
+            // A questo punto, il modale è aperto. Controlliamo se knowledgeLogsModalInstance è disponibile.
+            if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
+                window.knowledgeLogsModalInstance.connectWebSocketForLogs(processId);
+            } else {
+                console.error('Impossibile connettere il WebSocket per i log. knowledgeLogsModalInstance o la sua funzione connectWebSocketForLogs non definita.');
+                alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
+            }
         } else {
             console.error('Impossibile aprire il modale dei log. openKnowledgeLogsModal non definita.');
-        }
-
-        if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
-            window.knowledgeLogsModalInstance.connectWebSocketForLogs(processId);
-        } else {
-            console.error('Impossibile connettere il WebSocket per i log. knowledgeLogsModalInstance o la sua funzione connectWebSocketForLogs non definita.');
             alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
         }
+
     } catch (error) {
         console.error("Errore nell'avvio dell'aggiornamento della Knowledge Base:", error);
         alert(`Errore nell'avvio dell'aggiornamento della Knowledge Base: ${error.message}`);
