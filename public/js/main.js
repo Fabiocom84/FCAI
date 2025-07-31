@@ -160,7 +160,9 @@ async function initiateKnowledgeBaseUpdate() {
         const data = await response.json();
 
         console.log("Dati di risposta completi dall'API backend:", data);
-        const processId = data.process_id;
+
+        // La correzione è qui: cerca il process_id all'interno di function_response
+        const processId = data.function_response?.process_id;
 
         // Verifica esplicitamente che il processId esista e sia una stringa non vuota
         if (!processId || typeof processId !== 'string') {
@@ -185,7 +187,7 @@ async function initiateKnowledgeBaseUpdate() {
         }
 
         if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
-            window.knowledgeLogsModalInstance.connectWebSocketForLogs(data.process_id);
+            window.knowledgeLogsModalInstance.connectWebSocketForLogs(processId);
         } else {
             console.error('Impossibile connettere il WebSocket per i log. knowledgeLogsModalInstance o la sua funzione connectWebSocketForLogs non definita.');
             alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
