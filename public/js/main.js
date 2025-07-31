@@ -136,56 +136,54 @@ async function initiateKnowledgeBaseUpdate() {
 
     const updateAIDbBtn = document.getElementById('updateAIDbBtn');
     if (updateAIDbBtn) {
-        updateAIDbBtn.disabled = true; // Disabilita il pulsante
-        // Cambia l'icona o il testo per indicare il caricamento
-        updateAIDbBtn.querySelector('img').src = 'img/loading.png'; // Assicurati di avere una GIF di caricamento
+        updateAIDbBtn.disabled = true;
+        updateAIDbBtn.querySelector('img').src = 'img/loading.png';
         updateAIDbBtn.title = 'Aggiornamento in corso...';
     }
 
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, { // <<< CAMBIA QUI!
+        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({}) // Il corpo può essere vuoto o contenere parametri futuri
+            body: JSON.stringify({})
         });
 
+        // Controlla la risposta HTTP prima di tentare di leggere il JSON
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+      
         const data = await response.json();
 
         console.log("Dati di risposta completi dall'API backend:", data);
-        console.log("Process ID ricevuto dall'API backend:", data.process_id);
+        const processId = data.process_id;
 
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
-        }
-      
-        const processId = data.process_id; // Ottieni l'ID del processo dal backend
-
-        if (!processId) {
-            console.error("ERRORE CRITICO: process_id è null o undefined dalla risposta backend. Impossibile avviare il monitoraggio log.");
+        // Verifica esplicitamente che il processId esista e sia una stringa non vuota
+        if (!processId || typeof processId !== 'string') {
+            console.error("ERRORE CRITICO: 'process_id' è null, undefined o non è una stringa dalla risposta backend.");
             alert("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server. Si prega di riprovare o contattare il supporto tecnico.");
-            // Riabilita il pulsante e ferma l'esecuzione se l'ID manca
+            
             if (updateAIDbBtn) {
                 updateAIDbBtn.disabled = false;
                 updateAIDbBtn.querySelector('img').src = 'img/reload.png';
                 updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
             }
-            return; // Esci dalla funzione
+            return;
         }
 
         console.log(`Aggiornamento avviato con Process ID: ${processId}`);
         alert('Aggiornamento Knowledge Base avviato con successo! Controlla i log per lo stato.');
         
-        // 1. Apri il modale dei log
         if (window.openKnowledgeLogsModal && typeof window.openKnowledgeLogsModal === 'function') {
             window.openKnowledgeLogsModal();
         } else {
             console.error('Impossibile aprire il modale dei log. openKnowledgeLogsModal non definita.');
         }
 
-        // Collega il WebSocket per ricevere i log dell'aggiornamento
         if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
             window.knowledgeLogsModalInstance.connectWebSocketForLogs(data.process_id);
         } else {
@@ -195,11 +193,10 @@ async function initiateKnowledgeBaseUpdate() {
     } catch (error) {
         console.error("Errore nell'avvio dell'aggiornamento della Knowledge Base:", error);
         alert(`Errore nell'avvio dell'aggiornamento della Knowledge Base: ${error.message}`);
-        // Riabilita il pulsante in caso di errore nell'avvio
+
         const updateAIDbBtn = document.getElementById('updateAIDbBtn');
         if (updateAIDbBtn) {
             updateAIDbBtn.disabled = false;
-            // Assicurati che 'img/reload.png' esista o usa un'alternativa CSS
             updateAIDbBtn.querySelector('img').src = 'img/reload.png'; 
             updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
         }
