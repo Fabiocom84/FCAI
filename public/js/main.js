@@ -103,6 +103,7 @@ async function initiateKnowledgeBaseUpdate() {
 
     const updateAIDbBtn = document.getElementById('updateAIDbBtn');
     if (updateAIDbBtn) {
+        // Disabilita il pulsante non appena la funzione viene avviata
         updateAIDbBtn.disabled = true;
         updateAIDbBtn.querySelector('img').src = 'img/loading.png';
         updateAIDbBtn.title = 'Aggiornamento in corso...';
@@ -133,6 +134,7 @@ async function initiateKnowledgeBaseUpdate() {
             console.error("ERRORE CRITICO: 'process_id' è null, undefined o non è una stringa dalla risposta backend.");
             alert("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server. Si prega di riprovare o contattare il supporto tecnico.");
             
+            // Riabilita il pulsante anche in caso di errore di process_id
             if (updateAIDbBtn) {
                 updateAIDbBtn.disabled = false;
                 updateAIDbBtn.querySelector('img').src = 'img/reload.png';
@@ -143,7 +145,11 @@ async function initiateKnowledgeBaseUpdate() {
 
         console.log(`Aggiornamento avviato con Process ID: ${processId}`);
         alert('Aggiornamento Knowledge Base avviato con successo! Controlla i log per lo stato.');
+
+        // Aggiungi un piccolo ritardo per dare tempo al backend di inizializzare il WebSocket
+        await new Promise(resolve => setTimeout(resolve, 500));
         
+        // Controlla l'esistenza delle funzioni del modale prima di chiamarle
         if (window.openKnowledgeLogsModal && typeof window.openKnowledgeLogsModal === 'function') {
             window.openKnowledgeLogsModal();
             if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
@@ -161,6 +167,7 @@ async function initiateKnowledgeBaseUpdate() {
         console.error("Errore nell'avvio dell'aggiornamento della Knowledge Base:", error);
         alert(`Errore nell'avvio dell'aggiornamento della Knowledge Base: ${error.message}`);
 
+        // Riabilita il pulsante in caso di errore
         if (updateAIDbBtn) {
             updateAIDbBtn.disabled = false;
             updateAIDbBtn.querySelector('img').src = 'img/reload.png';
