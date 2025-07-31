@@ -1,5 +1,7 @@
 // js/main.js
 
+let isUpdating = false; // Aggiungi questa variabile di stato all'inizio del tuo file
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Main script: DOM completamente caricato.');
     console.log('Controllo autenticazione in main.js...');
@@ -93,6 +95,12 @@ window.initiateKnowledgeBaseUpdate = initiateKnowledgeBaseUpdate;
 
 // Il codice di initiateKnowledgeBaseUpdate che avevi già è corretto e non ho dovuto modificarlo
 async function initiateKnowledgeBaseUpdate() {
+    if (isUpdating) {
+        console.log("Aggiornamento già in corso. Ignorando la richiesta.");
+        return;
+    }
+    
+    isUpdating = true; // Imposta lo stato su true all'inizio
     console.log("Avvio aggiornamento Knowledge Base AI...");
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
