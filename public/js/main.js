@@ -126,6 +126,13 @@ async function fetchAndDisplayLatestEntries() {
 
 // Funzione per avviare l'aggiornamento della Knowledge Base AI
 async function initiateKnowledgeBaseUpdate() {
+    const updateAIDbBtn = document.getElementById('updateAIDbBtn');
+    if (updateAIDbBtn) {
+        // Disabilita il pulsante non appena la funzione viene avviata
+        updateAIDbBtn.disabled = true;
+        updateAIDbBtn.querySelector('img').src = 'img/loading.png'; 
+        updateAIDbBtn.title = 'Aggiornamento in corso...';
+    }
     console.log("Avvio aggiornamento Knowledge Base AI...");
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
