@@ -25,8 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Elemento .main-content-wrapper non trovato.');
         }
 
-        // Chiamata per caricare gli ultimi inserimenti una volta autenticato
-        fetchLatestEntries();
+        const latestEntries = await fetchLatestEntries();
+
+        displayLatestEntries(latestEntries);
     }
 
     const logoutBtn = document.getElementById('logoutBtn');
