@@ -2,7 +2,7 @@
 
 let isUpdating = false; // Aggiungi questa variabile di stato all'inizio del tuo file
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('Main script: DOM completamente caricato.');
     console.log('Controllo autenticazione in main.js...');
 
