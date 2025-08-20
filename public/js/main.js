@@ -95,7 +95,7 @@ window.initiateKnowledgeBaseUpdate = initiateKnowledgeBaseUpdate;
 
 
 // Il codice di initiateKnowledgeBaseUpdate che avevi già è corretto e non ho dovuto modificarlo
-window.initiateKnowledgeBaseUpdate = async function() {
+async function initiateKnowledgeBaseUpdate() {
     console.log('Funzione initiateKnowledgeBaseUpdate avviata.');
     const updateAIDbBtn = document.getElementById('updateAIDbBtn');
     
@@ -113,6 +113,7 @@ window.initiateKnowledgeBaseUpdate = async function() {
     const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (!authToken) {
         console.error('Nessun token di autenticazione disponibile. Reindirizzamento.');
+        // Utilizza un modale personalizzato al posto di alert()
         alert('Sessione scaduta. Effettua nuovamente il login.');
         window.location.href = '/login.html';
         // Riabilita il pulsante in caso di errore
