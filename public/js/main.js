@@ -95,91 +95,100 @@ window.initiateKnowledgeBaseUpdate = initiateKnowledgeBaseUpdate;
 
 
 // Il codice di initiateKnowledgeBaseUpdate che avevi già è corretto e non ho dovuto modificarlo
-async function initiateKnowledgeBaseUpdate() {
-    if (isUpdating) {
-        console.log("Aggiornamento già in corso. Ignorando la richiesta.");
-        return;
-    }
+window.initiateKnowledgeBaseUpdate = async function() {
+    console.log('Funzione initiateKnowledgeBaseUpdate avviata.');
+    const updateAIDbBtn = document.getElementById('updateAIDbBtn');
     
-    isUpdating = true; // Imposta lo stato su true all'inizio
-    console.log("Avvio aggiornamento Knowledge Base AI...");
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        alert('Autenticazione richiesta per aggiornare la Knowledge Base. Effettua il login.');
-        window.location.href = 'login.html';
-        return;
+    // Disabilita il pulsante per prevenire clic multipli
+    if (updateAIDbBtn) {
+        updateAIDbBtn.disabled = true;
+        updateAIDbBtn.title = 'Aggiornamento in corso...';
+        const img = updateAIDbBtn.querySelector('img');
+        if (img) {
+            img.src = 'img/loading.gif';
+            img.classList.add('loading');
+        }
     }
 
-    const updateAIDbBtn = document.getElementById('updateAIDbBtn');
-    if (updateAIDbBtn) {
-        // Disabilita il pulsante non appena la funzione viene avviata
-        updateAIDbBtn.disabled = true;
-        updateAIDbBtn.querySelector('img').src = 'img/loading.png';
-        updateAIDbBtn.title = 'Aggiornamento in corso...';
+    const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (!authToken) {
+        console.error('Nessun token di autenticazione disponibile. Reindirizzamento.');
+        alert('Sessione scaduta. Effettua nuovamente il login.');
+        window.location.href = '/login.html';
+        // Riabilita il pulsante in caso di errore
+        if (updateAIDbBtn) {
+            updateAIDbBtn.disabled = false;
+            const img = updateAIDbBtn.querySelector('img');
+            if (img) {
+                img.src = 'img/reload.png';
+                img.classList.remove('loading');
+            }
+            updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
+        }
+        return;
     }
 
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
+        const response = await fetch('/api/trigger-knowledge-update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({})
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-      
         const data = await response.json();
 
-        console.log("Dati di risposta completi dall'API backend:", data);
+        // Controllo se il process_id è presente nella risposta
+        if (data && data.process_id) {
+            const processId = data.process_id;
+            console.log('Aggiornamento avviato con successo. ID Processo:', processId);
 
-        const processId = data.function_response?.process_id;
-
-        if (!processId || typeof processId !== 'string') {
-            console.error("ERRORE CRITICO: 'process_id' è null, undefined o non è una stringa dalla risposta backend.");
-            alert("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server. Si prega di riprovare o contattare il supporto tecnico.");
-            
-            // Riabilita il pulsante anche in caso di errore di process_id
-            if (updateAIDbBtn) {
-                updateAIDbBtn.disabled = false;
-                updateAIDbBtn.querySelector('img').src = 'img/reload.png';
-                updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
-            }
-            return;
-        }
-
-        console.log(`Aggiornamento avviato con Process ID: ${processId}`);
-        alert('Aggiornamento Knowledge Base avviato con successo! Controlla i log per lo stato.');
-
-        // Aggiungi un piccolo ritardo per dare tempo al backend di inizializzare il WebSocket
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Controlla l'esistenza delle funzioni del modale prima di chiamarle
-        if (window.openKnowledgeLogsModal && typeof window.openKnowledgeLogsModal === 'function') {
-            window.openKnowledgeLogsModal();
-            if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
-                window.knowledgeLogsModalInstance.connectWebSocketForLogs(processId);
+            // Controlla l'esistenza delle funzioni del modale prima di chiamarle
+            if (window.openKnowledgeLogsModal && typeof window.openKnowledgeLogsModal === 'function') {
+                window.openKnowledgeLogsModal();
+                if (window.knowledgeLogsModalInstance && typeof window.knowledgeLogsModalInstance.connectWebSocketForLogs === 'function') {
+                    window.knowledgeLogsModalInstance.connectWebSocketForLogs(processId);
+                } else {
+                    console.error('Impossibile connettere il WebSocket per i log. knowledgeLogsModalInstance o la sua funzione connectWebSocketForLogs non definita.');
+                    // Utilizza un modale personalizzato al posto di alert()
+                    alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
+                }
             } else {
-                console.error('Impossibile connettere il WebSocket per i log. knowledgeLogsModalInstance o la sua funzione connectWebSocketForLogs non definita.');
+                console.error('Impossibile aprire il modale dei log. openKnowledgeLogsModal non definita.');
+                // Utilizza un modale personalizzato al posto di alert()
                 alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
             }
         } else {
-            console.error('Impossibile aprire il modale dei log. openKnowledgeLogsModal non definita.');
-            alert('Aggiornamento avviato, ma i log non possono essere visualizzati. Controlla la console.');
+            console.error("Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server.");
+            // Utilizza un modale personalizzato al posto di alert()
+            alert(data.message || "Errore interno: l'ID del processo di aggiornamento non è stato fornito dal server.");
+            
+            // Riabilita il pulsante in caso di errore
+            if (updateAIDbBtn) {
+                updateAIDbBtn.disabled = false;
+                const img = updateAIDbBtn.querySelector('img');
+                if (img) {
+                    img.src = 'img/reload.png';
+                    img.classList.remove('loading');
+                }
+                updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
+            }
         }
 
     } catch (error) {
         console.error("Errore nell'avvio dell'aggiornamento della Knowledge Base:", error);
+        // Utilizza un modale personalizzato al posto di alert()
         alert(`Errore nell'avvio dell'aggiornamento della Knowledge Base: ${error.message}`);
 
         // Riabilita il pulsante in caso di errore
         if (updateAIDbBtn) {
             updateAIDbBtn.disabled = false;
-            updateAIDbBtn.querySelector('img').src = 'img/reload.png';
+            const img = updateAIDbBtn.querySelector('img');
+            if (img) {
+                img.src = 'img/reload.png';
+                img.classList.remove('loading');
+            }
             updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
         }
     }
