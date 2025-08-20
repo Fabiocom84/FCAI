@@ -196,6 +196,53 @@ button[type="submit"]:hover {
     box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 }
 
+/* Stili per il contenitore dei controlli dell'header (logout e help) */
+.header-controls {
+    position: absolute;
+    top: 20px;
+    left: 20px; /* Posiziona a sinistra per il pulsante di logout */
+    width: calc(100% - 40px); /* Larghezza per contenere entrambi i pulsanti e mantenere il padding del wrapper */
+    display: flex;
+    justify-content: space-between; /* Sposta il pulsante di logout a sinistra e il pulsante di aiuto a destra */
+    align-items: center;
+    z-index: 10; /* Assicura che sia sopra altri elementi del wrapper */
+}
+
+/* Stile base per i pulsanti icona (come logout) */
+.button-icon {
+    background-color: #6c757d; /* Grigio neutro */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spazio tra icona e testo */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.button-icon:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.button-icon i {
+    font-size: 1.2em; /* Dimensione dell'icona Font Awesome */
+}
+
+/* Stili specifici per il pulsante di logout */
+.logout-button {
+    background-color: #dc3545; /* Rosso per logout */
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+
 h1 {
     font-family: 'Roboto', sans-serif;
     font-weight: 700; /* Bold per il titolo principale */
@@ -204,12 +251,11 @@ h1 {
     margin-bottom: 0; /* Rimosso il margine inferiore, useremo il gap del wrapper */
     text-transform: uppercase;
     letter-spacing: 2px;
+    margin-top: 50px; /* Sposta il titolo più in basso per fare spazio all'header-controls */
 }
 
 .help-button-container {
-    position: absolute; /* Posizionamento rispetto al .main-content-wrapper */
-    top: 20px; /* Spostato un po' più in basso */
-    right: 20px; /* Spostato un po' più a sinistra */
+    position: static; /* Rimuove il posizionamento assoluto per farlo fluire nel flexbox */
 }
 
 /* Stili generali per il contenitore dei pulsanti */
@@ -302,6 +348,16 @@ h1 {
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
+/* Stili per il nuovo pulsante Aggiorna AI DB */
+.update-kb-button {
+    background-color: #007bff; /* Blu, come il colore primario spesso usato */
+}
+.update-kb-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
 .latest-entries {
     margin-top: 0; /* Rimosso il margine superiore, useremo il gap del wrapper */
     padding: 20px; /* Padding aumentato */
@@ -323,41 +379,47 @@ h1 {
     border-bottom: 2px solid #eeeeee; /* Bordo più spesso */
 }
 
-.entry-item {
-    padding: 12px 0; /* Padding aumentato */
-    border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
-    font-size: 0.95em;
-    color: #444; /* Colore testo leggermente più scuro */
-    display: flex; /* Flexbox per organizzare data/ora/riferimento */
-    justify-content: space-between; /* Distribuisce gli elementi */
-    align-items: center;
-    text-decoration: none;
+/* Container per la lista vera e propria */
+#latestEntriesList {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Assicurati che non ci siano margini predefiniti */
 }
 
-.entry-item:last-child {
+/* --- MODIFICHE QUI PER GLI ULTIMI INSERIMENTI --- */
+/* Nuovi stili per ogni elemento della lista (li) - Corrisponde a .latest-entry-item in main.js */
+.latest-entry-item { /* Rinominato da .entry-item per coerenza con main.js */
+    padding: 12px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-size: 0.95em;
+    color: #444;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    word-wrap: break-word; /* Permette il wrap del testo lungo */
+    white-space: normal; /* Assicura che il testo vada a capo */
+    text-align: left; /* Allinea il testo a sinistra */
+}
+
+.latest-entry-item:hover {
+    background-color: #f9f9f9;
+}
+
+.latest-entry-item:last-child {
     border-bottom: none;
 }
 
-.entry-date-time {
-    font-weight: 400; /* Normale */
-    color: #777;
-    font-size: 0.85em; /* Più piccolo */
-    flex-shrink: 0; /* Non si restringe */
-}
+/* Rimosse le classi .entry-date-time, .entry-text, .entry-riferimento
+   e i relativi stili poiché il contenuto è ora una singola stringa. */
 
-.entry-text {
-    flex-grow: 1; /* Il testo occupa lo spazio rimanente */
-    margin: 0 10px; /* Margine tra data e riferimento */
-    white-space: nowrap; /* Evita il wrap del testo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
+/* Stili per il caso in cui la lista sia vuota (li con classe .no-entries) */
+.latest-entries .no-entries { /* Aggiornato il selettore */
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
 }
-
-.entry-riferimento {
-    font-weight: 500; /* Medium */
-    color: #2A76B8; /* Blu del logo per il riferimento */
-    flex-shrink: 0; /* Non si restringe */
-}
+/* --- FINE MODIFICHE ULTIMI INSERIMENTI --- */
 
 
 /* Stili per il Modal */
@@ -496,7 +558,9 @@ h1 {
 .form-group textarea,
 .form-group input[type="file"],
 .form-group select,
-.form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
+.form-group input[type="text"], /* Aggiunto input[type="text"] per il modale Nuova Commessa */
+.form-group input[type="date"],
+.form-group input[type="number"] {
     width: 100%;
     padding: 10px 12px; /* Padding uniforme */
     border: 1px solid #cccccc;
@@ -516,7 +580,9 @@ h1 {
 .form-group textarea:focus,
 .form-group input[type="file"]:focus,
 .form-group select:focus,
-.form-group input[type="text"]:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="number"]:focus {
     border-color: #2A76B8;
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
@@ -711,7 +777,7 @@ h1 {
     padding-bottom: 0; /* Rimuovi padding inferiore se l'input area ha padding proprio */
 }
 
-.chat-messages {
+#chatMessages {
     flex-grow: 1; /* Le conversazioni occupano lo spazio rimanente */
     overflow-y: auto; /* Scorrevole se ci sono troppi messaggi */
     padding-right: 10px; /* Spazio per la scrollbar */
@@ -721,52 +787,77 @@ h1 {
     margin-bottom: 15px; /* Spazio prima dell'area di input */
 }
 
-/* Stili generali per ogni singolo messaggio */
-.message {
+/* Stili generali per ogni singolo messaggio all'interno del modale chat */
+/* Assicurati che questo sia un flex container se vuoi che il nome sia a lato della bolla */
+#chatMessages .message { /* Modificato: Aggiunto #chatMessages */
     display: flex;
     max-width: 80%; /* Messaggi non troppo larghi */
     align-items: flex-end; /* Allinea il content alla fine del contenitore */
 }
 
-.message-content {
+/* Stili per il contenuto della bolla (la bolla stessa) */
+#chatMessages .message-content { /* Modificato: Aggiunto #chatMessages */
     padding: 10px 15px;
-    border-radius: 18px; /* Bordi arrotondati come le bolle di chat */
+    border-radius: 18px; /* Bordi arrotondati come le bolle di chat - Questo verrà sovrascritto */
     line-height: 1.4;
     word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Stili per i messaggi dell'utente */
-.user-message {
+#chatMessages .user-message { /* Modificato: Aggiunto #chatMessages */
     align-self: flex-end; /* Allinea a destra */
 }
 
-.user-message .message-content {
-    background-color: #DCF8C6; /* Verde chiaro */
-    color: #333;
-    border-bottom-right-radius: 4px; /* Angolo piatto a destra */
+#chatMessages .user-message .message-content {
+    padding: 10px 15px;
+    border-radius: 18px; /* Bordi arrotondati come le bolle di chat - Questo verrà sovrascritto */
+    font-size: 1em;
+    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    /* AGGIUNGI ORA QUESTA RIGA: */
+    background-color: #DCF8C6; /* Verde chiaro, forzato */
+    color: #333; /* Assicurati che il colore del testo sia definito se lo era prima */
 }
 
-/* Stili per i messaggi dell'AI (Frank) */
-.ai-message {
-    align-self: flex-start; /* Allinea a sinistra */
+//* Stili per i messaggi dell'AI (Frank) */
+#chatMessages .ai-message {
+    align-self: flex-start;
+    display: flex;         /* ESSENZIALE: Permette di posizionare ::before e message-content affiancati */
+    flex-direction: row;   /* ESSENZIALE: li mette in riga */
+    align-items: flex-start; /* Allinea gli elementi all'inizio della riga (alto) */
 }
 
-.ai-message .message-content {
-    background-color: #F1F0F0; /* Grigio chiaro */
-    color: #333;
-    border-bottom-left-radius: 4px; /* Angolo piatto a sinistra */
-}
-
-/* Aggiungi il nome dell'AI */
-.ai-message::before {
-    content: 'Frank: ';
+#chatMessages .ai-message::before {
+    content: "Frank:" !important; /* Questo ora dovrebbe essere applicato senza problemi */
     font-weight: bold;
     color: #555;
+    font-size: 1em;
+    white-space: nowrap;
     margin-right: 5px;
-    font-size: 0.9em;
-    align-self: flex-start; /* Allinea con l'inizio del messaggio */
-    margin-top: 2px; /* Allineamento fine con il testo */
+    padding-top: 10px; /* Regola questo valore per allineare verticalmente con il testo della bolla */
+    flex-shrink: 0;
+    /* Assicurati che NON ci siano position: absolute, left, top, right, bottom */
+}
+
+#chatMessages .ai-message .message-content {
+    background-color: #D0E0F0; /* Colore più contrastato per la bolla AI (es. #CFEEFF, #E0E0E0) */
+    color: #333; /* Colore del testo nella bolla */
+    border-bottom-left-radius: 4px;
+    padding: 10px 15px;
+    max-width: 100%; /* Assicurati che non ecceda il suo contenitore */
+    box-sizing: border-box; /* Include padding e border nella larghezza/altezza */
+
+    /* **CONTROLLA QUESTI**: devono essere 0 o non presenti se li avevi per errore */
+    margin-left: 0 !important; /* Forza 0 per evitare spostamenti */
+    padding-left: 15px !important; /* Forza il padding normale, non troppo alto */
+}
+
+/* Assicurati che il wrapper del messaggio sia un flex container per ::before e .message-content */
+.message {
+    display: flex;
+    max-width: 80%;
+    align-items: flex-end;
 }
 
 .chat-input-area {
@@ -841,6 +932,12 @@ h1 {
     }
     h1 {
         font-size: 1.8em;
+        margin-top: 40px; /* Ridotto il margine superiore su mobile */
+    }
+    .header-controls {
+        top: 10px;
+        left: 10px;
+        width: calc(100% - 20px);
     }
     .button-container {
         flex-direction: column; /* I pulsanti vanno in colonna su schermi piccoli */
@@ -893,4 +990,22 @@ h1 {
         width: 20px; /* Icone più piccole */
         height: 20px;
     }
-}
+
+    .latest-entries {
+        padding: 15px; /* Riduci padding su mobile */
+    }
+
+    .latest-entries h2 {
+        font-size: 1.2em; /* Riduci dimensione titolo su mobile */
+        margin-bottom: 10px;
+    }
+
+    /* --- MODIFICHE QUI PER MOBILE --- */
+    .latest-entry-item { /* Aggiornato il selettore */
+        padding: 10px 0;
+        /* Le proprietà flexbox, white-space e text-align sono ora nel default .latest-entry-item
+           e non necessitano di override specifico per mobile, purché il testo si adatti. */
+    }
+
+    /* Rimosse le classi mobile per .entry-date-time, .entry-riferimento, .entry-text */
+    /* --- FINE MODIFICHE MOBILE --- */
