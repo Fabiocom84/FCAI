@@ -1,196 +1,220 @@
 // js/chat-modal.js
 
-class ChatModal {
-    constructor(modalId, openButtonSelector) {
-        this.chatModal = document.getElementById(modalId);
-        this.openButton = document.querySelector(openButtonSelector); // Il pulsante che apre il modale
-        this.closeButton = this.chatModal ? this.chatModal.querySelector('.close-button') : null;
-        this.chatMessages = document.getElementById('chatMessages');
-        this.chatInput = document.getElementById('chatInput');
-        this.sendMessageBtn = document.getElementById('sendMessageBtn');
-        this.updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Pulsante per aggiornare Knowledge Base
-        this.stopProcessingBtn = document.getElementById('stopProcessingBtn'); // Pulsante per fermare il processo AI
-        
-        // Non usiamo più i WebSocket per la chat
-        // this.websocket = null; 
-        this.currentChatSessionId = null; // ID sessione chat per contesto
+// Elementi DOM
+const chatModal = document.getElementById('chatModal');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const openChatModalBtn = document.getElementById('openChatModalBtn');
+const startChatRecordingBtn = document.getElementById('startChatRecording');
+const sendChatMessageBtn = document.getElementById('sendChatMessage');
+const modalOverlay = document.getElementById('modalOverlay');
+const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
 
-        // Binding dei metodi al contesto della classe
-        this.addEventListeners();
-    }
+// Setup del riconoscimento vocale
+let recognition;
+let isRecording = false;
+let currentTranscription = ''; // Per la trascrizione continua
 
-    addEventListeners() {
-        if (this.openButton) {
-            this.openButton.addEventListener('click', this.open.bind(this));
-        }
-        if (this.closeButton) {
-            // Modificato per chiamare un wrapper asincrono che gestisce il salvataggio
-            this.closeButton.addEventListener('click', async () => {
-                await this.close();
-            });
-        }
-        // Aggiungi l'event listener per il click sul pulsante "Aggiorna Knowledge Base"
-        if (this.updateAIDbBtn) {
-            this.updateAIDbBtn.addEventListener('click', () => this.updateAIDatabase());
-        }
-        if (this.sendMessageBtn) {
-            this.sendMessageBtn.addEventListener('click', () => this.sendMessage());
-        }
-        if (this.stopProcessingBtn) {
-            this.stopProcessingBtn.addEventListener('click', () => this.stopAIProcess());
-        }
-        if (this.chatInput) {
-            this.chatInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
-        }
-    }
+// Funzione per aprire il modale della chat
+function openChatModal() {
+    chatModal.style.display = 'flex'; // Usiamo flex per centrare il contenuto del modale
+    modalOverlay.style.display = 'block';
+    chatInput.focus();
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo ai messaggi esistenti
+}
 
-    // Metodo per aprire il modale
-    open() {
-        this.chatModal.style.display = 'flex';
-        // Inizializza l'interfaccia utente del modale quando viene aperto
-        this.resetChatUI();
-    }
-
-    // Metodo per chiudere il modale
-    async close() {
-        // Chiudi il modale
-        this.chatModal.style.display = 'none';
-        // Salva la trascrizione della chat al momento della chiusura
-        await this.saveChatTranscription();
-    }
-
-    // Aggiungi un messaggio alla chatbox
-    addMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('chat-message', `${sender}-message`);
-        messageDiv.innerHTML = `<p>${text}</p>`;
-        this.chatMessages.appendChild(messageDiv);
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-    }
-
-    // Reimposta l'interfaccia utente della chat
-    resetChatUI() {
-        this.chatMessages.innerHTML = '';
-        this.chatInput.value = '';
-    }
-
-    async sendMessage() {
-        const userMessage = this.chatInput.value.trim();
-        if (userMessage === '') return;
-
-        this.addMessage(userMessage, 'user');
-        this.chatInput.value = '';
-        
-        try {
-            const authToken = window.authManagerInstance.getToken(); // Ottieni il token
-            const response = await fetch('http://127.0.0.1:8080/ask', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ query: userMessage })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                this.addMessage(data.response, 'ai');
-            } else {
-                this.addMessage(`Errore: ${data.error || 'Risposta non valida dal server'}`, 'ai');
-            }
-        } catch (error) {
-            console.error("Errore durante la comunicazione con l'API:", error);
-            this.addMessage("Si è verificato un errore di rete. Riprova più tardi.", 'ai');
-        }
-    }
-
-    async saveChatTranscription() {
-        const chatTranscription = this.chatMessages.innerText;
-        if (!chatTranscription) return;
-
-        try {
-            const authToken = window.authManagerInstance.getToken(); // Ottieni il token
-            const response = await fetch('http://127.0.0.1:8080/api/save-chat-transcription', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ chatTranscription: chatTranscription })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log("Trascrizione chat salvata con successo:", data.message);
-            } else {
-                console.error("Errore nel salvataggio della chat:", data.message);
-            }
-        } catch (error) {
-            console.error("Errore di rete durante il salvataggio della chat:", error);
-        }
-    }
-
-    async updateAIDatabase() {
-        const authToken = window.authManagerInstance.getToken(); // Ottieni il token
-        
-        // Disabilita il pulsante per evitare clic multipli
-        this.updateAIDbBtn.disabled = true;
-        this.updateAIDbBtn.textContent = 'Aggiornamento in corso...';
-
-        // Mostra un messaggio all'utente per comunicare l'avvio del processo
-        this.addMessage('Avvio aggiornamento Knowledge Base...', 'ai');
-
-        try {
-            const response = await fetch('http://127.0.0.1:8080/api/trigger-knowledge-update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
-            
-            // Tentiamo di leggere la risposta come JSON solo se lo status è OK
-            if (response.ok) {
-                const data = await response.json();
-                this.addMessage(`Aggiornamento avviato. ID Processo: ${data.process_id}.`, 'ai');
-            } else {
-                // Se lo status non è OK, leggiamo la risposta come testo per capire l'errore
-                const errorText = await response.text();
-                this.addMessage(`Errore di aggiornamento: Risposta del server non valida. Status: ${response.status}.`, 'ai');
-                console.error(`Errore di aggiornamento: ${errorText}`);
-            }
-        } catch (error) {
-            this.addMessage('Errore di rete: Impossibile avviare l\'aggiornamento.', 'ai');
-            console.error("Errore di rete durante l'aggiornamento della Knowledge Base:", error);
-        } finally {
-            // Abilita il pulsante dopo la richiesta
-            this.updateAIDbBtn.disabled = false;
-            this.updateAIDbBtn.textContent = 'Aggiorna Knowledge Base';
-        }
-    }
-
-    // Metodo mock per fermare il processo AI (non usato attualmente)
-    stopAIProcess() {
-        console.log("Processo AI interrotto.");
-        this.addMessage("Processo AI interrotto.", 'ai');
-        // Logica per fermare il processo, se implementata nel backend
-    }
-
-    // Metodo mock per la sintesi vocale (non usato attualmente)
-    async synthesizeAndPlaySpeech(text) {
-        console.log("Sintesi vocale del testo:", text);
+// Funzione per chiudere il modale della chat
+async function closeChatModal() {
+    chatModal.style.display = 'none';
+    modalOverlay.style.display = 'none';
+    
+    // Ferma la registrazione se attiva
+    if (isRecording && recognition) {
+        recognition.stop();
+        isRecording = false;
+        startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
+        startChatRecordingBtn.classList.remove('recording-active');
     }
 }
 
-// Inizializza il modale Chat AI quando il DOM è pronto
+// Funzione per aggiungere un messaggio alla chat UI
+function addMessage(sender, text, audioBase64 = null) { // Aggiungi audioBase64 come parametro opzionale
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('chat-message', sender);
+    
+    if (text) {
+        const messageContentDiv = document.createElement('div');
+        messageContentDiv.classList.add('message-content');
+        messageContentDiv.textContent = text;
+        messageElement.appendChild(messageContentDiv);
+    }
+
+    if (audioBase64) {
+        // Se c'è audio, crea un elemento audio
+        const audio = new Audio();
+        audio.src = `data:audio/mpeg;base64,${audioBase64}`; // mp3 è il formato più comune per Eleven Labs
+        audio.controls = true; // Mostra i controlli per debug/interazione
+        audio.autoplay = true; // Riproduci automaticamente
+        
+        const audioContainer = document.createElement('div');
+        audioContainer.classList.add('audio-playback');
+        audioContainer.appendChild(audio);
+        messageElement.appendChild(audioContainer);
+
+        // Aggiungi un listener per sapere quando l'audio finisce (per futuri sviluppi)
+        audio.onended = () => {
+            console.log("Riproduzione audio completata.");
+            // Potresti voler riabilitare qualche UI qui
+        };
+        audio.onerror = (e) => {
+            console.error("Errore durante la riproduzione audio:", e);
+            // Potresti aggiungere un messaggio di errore nell'UI
+        };
+    }
+
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scorri in fondo
+}
+
+// Funzione per inviare il messaggio alla rotta /api/chat del backend
+async function sendChatMessage(messageText) {
+    if (!messageText.trim()) {
+        console.log("Messaggio vuoto, non invio.");
+        return;
+    }
+
+    addMessage('user', messageText); // Mostra subito il messaggio dell'utente
+
+    chatStatus.textContent = "Il Segretario AI sta elaborando..."; // Feedback all'utente
+    sendChatMessageBtn.disabled = true; // Disabilita il pulsante invia
+    startChatRecordingBtn.disabled = true; // Disabilita il pulsante microfono
+
+    const formData = new FormData();
+    formData.append('text', messageText); // Invia il testo direttamente
+
+    try {
+        const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        // Modifica qui: il backend ora restituisce JSON, non un blob audio
+        const responseData = await response.json(); 
+
+        if (!response.ok) {
+            throw new Error(`Errore del server: ${response.status} - ${responseData.error || 'Errore sconosciuto'}`);
+        }
+
+        const aiResponseText = responseData.response; // Estrai il testo della risposta
+        const audioBase64 = responseData.audio;     // Estrai l'audio Base64
+
+        if (audioBase64) {
+            // Riproduci e mostra il messaggio AI con audio
+            addMessage('ai', aiResponseText, audioBase64); 
+        } else {
+            // Se non c'è audio, mostra solo il messaggio AI testuale
+            addMessage('ai', aiResponseText + " (Audio non disponibile)"); // Feedback per l'utente
+        }
+
+    } catch (error) {
+        console.error("Errore nell'invio del messaggio alla chat AI:", error);
+        addMessage('ai', `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`);
+    } finally {
+        chatStatus.textContent = ""; // Rimuovi il feedback
+        chatInput.value = ''; // Pulisci l'input
+        sendChatMessageBtn.disabled = false; // Riabilita il pulsante invia
+        startChatRecordingBtn.disabled = false; // Riabilita il pulsante microfono
+        chatInput.focus();
+    }
+}
+
+// Event listener per il pulsante "Invia" (testo digitato)
+sendChatMessageBtn.addEventListener('click', () => {
+    sendChatMessage(chatInput.value);
+});
+
+// Event listener per inviare con "Invio" nel campo di testo
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { // Aggiunto !e.shiftKey per permettere Shift+Enter per nuova riga
+        e.preventDefault(); // Previeni la nuova riga di default
+        sendChatMessage(chatInput.value);
+    }
+});
+
+// Event listener per il pulsante "Registra Vocale" (nuova logica per chat AI)
+startChatRecordingBtn.addEventListener('click', () => {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Spiacente, il riconoscimento vocale non è supportato dal tuo browser. Prova Chrome.");
+        return;
+    }
+
+    if (!isRecording) {
+        recognition = new webkitSpeechRecognition(); // Usiamo webkitSpeechRecognition
+        recognition.lang = 'it-IT';
+        recognition.interimResults = false; // O true per risultati parziali in tempo reale
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            console.log('Registrazione vocale avviata per la chat...');
+            isRecording = true;
+            startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma Registrazione">'; // Cambia icona a stop
+            startChatRecordingBtn.classList.add('recording-active');
+            chatStatus.textContent = "Registrazione in corso...";
+        };
+
+        recognition.onresult = (event) => {
+            currentTranscription = event.results[0][0].transcript;
+            console.log('Trascrizione parziale/finale:', currentTranscription);
+            // Puoi aggiornare chatInput.value qui se interimResults è true per feedback in tempo reale
+            chatInput.value = currentTranscription; 
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Errore di riconoscimento vocale per la chat:', event.error);
+            chatStatus.textContent = `Errore registrazione: ${event.error}`;
+            isRecording = false;
+            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
+            startChatRecordingBtn.classList.remove('recording-active');
+        };
+
+        recognition.onend = () => {
+            console.log('Registrazione vocale terminata per la chat.');
+            isRecording = false;
+            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra Vocale">';
+            startChatRecordingBtn.classList.remove('recording-active');
+            chatStatus.textContent = "Invio trascrizione...";
+            
+            // Se c'è una trascrizione finale da inviare
+            if (currentTranscription.trim() !== '') {
+                chatInput.value = currentTranscription; // Assicurati che l'input abbia la trascrizione finale
+                sendChatMessage(currentTranscription); // Invia la trascrizione al backend
+                currentTranscription = ''; // Resetta per la prossima registrazione
+            } else {
+                chatStatus.textContent = "Nessuna voce rilevata.";
+            }
+        };
+
+        recognition.start();
+    } else {
+        // Ferma la registrazione
+        recognition.stop();
+        // onend gestirà il resto
+    }
+});
+
+// Rende closeChatModal accessibile globalmente per onclick in HTML
+window.closeChatModal = closeChatModal;
+
+// Event Listener per l'apertura del modale (già presente, ma per completezza)
+openChatModalBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    openChatModal();
+});
+
+
+// Scorri in fondo ai messaggi all'avvio della pagina (se ce ne sono)
 document.addEventListener('DOMContentLoaded', () => {
-    // Istanzia la classe e la rende disponibile globalmente per main.js
-    window.chatModalInstance = new ChatModal('chatModal', '#openChatModalBtn');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 });
