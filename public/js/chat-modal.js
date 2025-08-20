@@ -3,17 +3,19 @@
 class ChatModal {
     constructor(modalId, openButtonSelector) {
         this.chatModal = document.getElementById(modalId);
-        this.openButton = document.querySelector(openButtonSelector);
+        this.openButton = document.querySelector(openButtonSelector); // Il pulsante che apre il modale
         this.closeButton = this.chatModal ? this.chatModal.querySelector('.close-button') : null;
         this.chatMessages = document.getElementById('chatMessages');
         this.chatInput = document.getElementById('chatInput');
         this.sendMessageBtn = document.getElementById('sendMessageBtn');
-        this.updateAIDbBtn = document.getElementById('updateAIDbBtn');
-        this.stopProcessingBtn = document.getElementById('stopProcessingBtn');
+        this.updateAIDbBtn = document.getElementById('updateAIDbBtn'); // Pulsante per aggiornare Knowledge Base
+        this.stopProcessingBtn = document.getElementById('stopProcessingBtn'); // Pulsante per fermare il processo AI
+        
+        // Non usiamo più i WebSocket per la chat
+        // this.websocket = null; 
+        this.currentChatSessionId = null; // ID sessione chat per contesto
 
-        this.websocket = null;
-        this.currentChatSessionId = null;
-
+        // Binding dei metodi al contesto della classe
         this.addEventListeners();
     }
 
@@ -22,108 +24,131 @@ class ChatModal {
             this.openButton.addEventListener('click', this.open.bind(this));
         }
         if (this.closeButton) {
+            // Modificato per chiamare un wrapper asincrono che gestisce il salvataggio
             this.closeButton.addEventListener('click', async () => {
                 await this.close();
             });
         }
+        // Aggiungi l'event listener per il click sul pulsante "Aggiorna Knowledge Base"
+        if (this.updateAIDbBtn) {
+            this.updateAIDbBtn.addEventListener('click', () => this.updateAIDatabase());
+        }
         if (this.sendMessageBtn) {
-            this.sendMessageBtn.addEventListener('click', this.sendMessage.bind(this));
+            this.sendMessageBtn.addEventListener('click', () => this.sendMessage());
+        }
+        if (this.stopProcessingBtn) {
+            this.stopProcessingBtn.addEventListener('click', () => this.stopAIProcess());
         }
         if (this.chatInput) {
-            this.chatInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
+            this.chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
                     this.sendMessage();
                 }
             });
         }
-        if (this.stopProcessingBtn) {
-            this.stopProcessingBtn.addEventListener('click', this.stopAIProcess.bind(this));
-        }
-        // Aggiunto il listener per il pulsante di aggiornamento
-        if (this.updateAIDbBtn) {
-            this.updateAIDbBtn.addEventListener('click', this.updateAIDatabase.bind(this));
-        }
     }
 
+    // Metodo per aprire il modale
     open() {
-        if (this.chatModal) {
-            this.chatModal.style.display = 'block';
-            window.showOverlay();
-            this.chatMessages.innerHTML = '';
-
-            this.initChatSession();
-
-            this.getUpdateButtonStatus();
-
-            console.log('Modale Chat AI aperto.');
-        }
+        this.chatModal.style.display = 'flex';
+        // Inizializza l'interfaccia utente del modale quando viene aperto
+        this.resetChatUI();
     }
 
+    // Metodo per chiudere il modale
     async close() {
-        if (this.chatModal) {
-            const chatTranscription = this.chatMessages.innerText.trim();
-            if (chatTranscription) {
-                await this.saveChatTranscription(chatTranscription);
-            }
-            this.chatModal.style.display = 'none';
-            window.hideOverlay();
-            this.disconnectWebSocket();
-            console.log('Modale Chat AI chiuso.');
-        }
+        // Chiudi il modale
+        this.chatModal.style.display = 'none';
+        // Salva la trascrizione della chat al momento della chiusura
+        await this.saveChatTranscription();
     }
 
-    _addMessage(sender, message) {
-        const messageWrapper = document.createElement('div');
-        const messageContent = document.createElement('div');
-
-        messageWrapper.classList.add('message');
-        messageContent.classList.add('message-content');
-
-        if (sender === 'ai') {
-            messageWrapper.classList.add('ai-message');
-            messageContent.innerHTML = message;
-        } else if (sender === 'user') {
-            messageWrapper.classList.add('user-message');
-            messageContent.innerHTML = `<strong>Fabio:</strong> ${message}`;
-        } else {
-            messageContent.innerHTML = message;
-        }
-
-        messageWrapper.appendChild(messageContent);
-        this.chatMessages.appendChild(messageWrapper);
+    // Aggiungi un messaggio alla chatbox
+    addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message', `${sender}-message`);
+        messageDiv.innerHTML = `<p>${text}</p>`;
+        this.chatMessages.appendChild(messageDiv);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    _addSystemMessage(message, type = 'info') {
-        const messageWrapper = document.createElement('div');
-        const messageContent = document.createElement('div');
-
-        messageWrapper.classList.add('message', 'system-message');
-        messageContent.classList.add('message-content');
-        messageContent.textContent = message;
-
-        if (type === 'error') {
-            messageWrapper.classList.add('error');
-        } else if (type === 'info') {
-            messageWrapper.classList.add('info');
-        } else if (type === 'success') {
-            messageWrapper.classList.add('success');
-        }
-
-        messageWrapper.appendChild(messageContent);
-        this.chatMessages.appendChild(messageWrapper);
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    // Reimposta l'interfaccia utente della chat
+    resetChatUI() {
+        this.chatMessages.innerHTML = '';
+        this.chatInput.value = '';
     }
 
-    async initChatSession() {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            this._addSystemMessage('Autenticazione necessaria per la chat.', 'error');
-            return;
-        }
+    async sendMessage() {
+        const userMessage = this.chatInput.value.trim();
+        if (userMessage === '') return;
+
+        this.addMessage(userMessage, 'user');
+        this.chatInput.value = '';
+        
         try {
-            const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
+            const authToken = window.authManagerInstance.getToken(); // Ottieni il token
+            const response = await fetch('http://127.0.0.1:8080/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ query: userMessage })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.addMessage(data.response, 'ai');
+            } else {
+                this.addMessage(`Errore: ${data.error || 'Risposta non valida dal server'}`, 'ai');
+            }
+        } catch (error) {
+            console.error("Errore durante la comunicazione con l'API:", error);
+            this.addMessage("Si è verificato un errore di rete. Riprova più tardi.", 'ai');
+        }
+    }
+
+    async saveChatTranscription() {
+        const chatTranscription = this.chatMessages.innerText;
+        if (!chatTranscription) return;
+
+        try {
+            const authToken = window.authManagerInstance.getToken(); // Ottieni il token
+            const response = await fetch('http://127.0.0.1:8080/api/save-chat-transcription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ chatTranscription: chatTranscription })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("Trascrizione chat salvata con successo:", data.message);
+            } else {
+                console.error("Errore nel salvataggio della chat:", data.message);
+            }
+        } catch (error) {
+            console.error("Errore di rete durante il salvataggio della chat:", error);
+        }
+    }
+
+    async updateAIDatabase() {
+        const authToken = window.authManagerInstance.getToken(); // Ottieni il token
+        
+        // Disabilita il pulsante per evitare clic multipli
+        this.updateAIDbBtn.disabled = true;
+        this.updateAIDbBtn.textContent = 'Aggiornamento in corso...';
+
+        // Mostra un messaggio all'utente per comunicare l'avvio del processo
+        this.addMessage('Avvio aggiornamento Knowledge Base...', 'ai');
+
+        try {
+            const response = await fetch('http://127.0.0.1:8080/api/trigger-knowledge-update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,94 +156,38 @@ class ChatModal {
                 }
             });
             const data = await response.json();
+
             if (response.ok) {
-                this.currentChatSessionId = data.session_id;
-                this._addMessage('ai', 'Sono Frank, il tuo assistente AI. Come posso aiutarti oggi?');
-                // La connessione WebSocket per la chat non è stata rimossa,
-                // poiché è essenziale per le risposte AI in streaming.
-                // Viene rimossa solo la logica dei log di aggiornamento.
-                this.connectWebSocketForChat(this.currentChatSessionId);
+                this.addMessage(`Aggiornamento avviato. ID Processo: ${data.process_id}.`, 'ai');
             } else {
-                this._addSystemMessage(`Errore avvio sessione: ${data.message}`, 'error');
-            }
-        } catch (error) {
-            console.error('Errore avvio sessione chat:', error);
-            this._addSystemMessage(`Errore di rete: ${error.message}`, 'error');
-        }
-    }
-
-    async sendMessage() {
-        // Logica per inviare i messaggi della chat
-    }
-
-    async saveChatTranscription(transcription) {
-        // Logica per salvare la trascrizione della chat
-    }
-
-    async getUpdateButtonStatus() {
-        // Logica per recuperare lo stato del pulsante
-    }
-
-    async updateAIDatabase() {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            this._addSystemMessage('Autenticazione necessaria per aggiornare la Knowledge Base.', 'error');
-            return;
-        }
-
-        const spreadsheetId = window.GOOGLE_SHEET_ID || '1XQJ0Py2aACDtcOnc7Mi2orqaKWbNpZbpp9lAnIm1kv8';
-        const sheetNames = 'Registrazioni,Chat_AI,Riferimento_Commessa';
-
-        try {
-            this._addSystemMessage('Avvio aggiornamento Knowledge Base...', 'info');
-            this.updateAIDbBtn.disabled = true;
-            this.updateAIDbBtn.querySelector('img').src = 'img/loading.png';
-            this.updateAIDbBtn.title = 'Aggiornamento in corso...';
-
-            const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({
-                    spreadsheet_id: spreadsheetId,
-                    sheet_names: sheetNames
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore sconosciuto nell\'aggiornamento della Knowledge Base.');
+                this.addMessage(`Errore di aggiornamento: ${data.message}`, 'ai');
             }
 
-            const result = await response.json();
-            const processId = result.process_id;
-
-            // Logica semplificata: notifica l'utente senza WebSocket
-            this._addSystemMessage(`Aggiornamento avviato. ID Processo: ${processId}.`, 'success');
-            console.log(`Knowledge Base update triggered. Process ID: ${processId}`);
-
         } catch (error) {
-            console.error('Errore durante l\'aggiornamento della Knowledge Base:', error);
-            this._addSystemMessage(`Errore aggiornamento Knowledge Base: ${error.message}`, 'error');
+            this.addMessage('Errore di rete: Impossibile avviare l\'aggiornamento.', 'ai');
+            console.error("Errore di rete durante l'aggiornamento della Knowledge Base:", error);
         } finally {
-            // Riabilita il pulsante a prescindere dall'esito
+            // Abilita il pulsante dopo la richiesta
             this.updateAIDbBtn.disabled = false;
-            this.updateAIDbBtn.querySelector('img').src = 'img/reload.png';
-            this.updateAIDbBtn.title = 'Aggiorna Knowledge Base AI';
+            this.updateAIDbBtn.textContent = 'Aggiorna Knowledge Base';
         }
     }
 
-    async stopAIProcess() {
-        // Logica per fermare il processo AI
+    // Metodo mock per fermare il processo AI (non usato attualmente)
+    stopAIProcess() {
+        console.log("Processo AI interrotto.");
+        this.addMessage("Processo AI interrotto.", 'ai');
+        // Logica per fermare il processo, se implementata nel backend
     }
-    
+
+    // Metodo mock per la sintesi vocale (non usato attualmente)
     async synthesizeAndPlaySpeech(text) {
-        // Logica per la sintesi vocale
+        console.log("Sintesi vocale del testo:", text);
     }
 }
 
+// Inizializza il modale Chat AI quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', () => {
+    // Istanzia la classe e la rende disponibile globalmente per main.js
     window.chatModalInstance = new ChatModal('chatModal', '#openChatModalBtn');
 });
