@@ -155,14 +155,17 @@ class ChatModal {
                     'Authorization': `Bearer ${authToken}`
                 }
             });
-            const data = await response.json();
-
+            
+            // Tentiamo di leggere la risposta come JSON solo se lo status è OK
             if (response.ok) {
+                const data = await response.json();
                 this.addMessage(`Aggiornamento avviato. ID Processo: ${data.process_id}.`, 'ai');
             } else {
-                this.addMessage(`Errore di aggiornamento: ${data.message}`, 'ai');
+                // Se lo status non è OK, leggiamo la risposta come testo per capire l'errore
+                const errorText = await response.text();
+                this.addMessage(`Errore di aggiornamento: Risposta del server non valida. Status: ${response.status}.`, 'ai');
+                console.error(`Errore di aggiornamento: ${errorText}`);
             }
-
         } catch (error) {
             this.addMessage('Errore di rete: Impossibile avviare l\'aggiornamento.', 'ai');
             console.error("Errore di rete durante l'aggiornamento della Knowledge Base:", error);
