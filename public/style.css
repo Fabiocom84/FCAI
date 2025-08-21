@@ -427,17 +427,11 @@ h1 {
 
 /* Stile per il pulsante di addestramento */
 .training-button {
-    /* Il pulsante di addestramento occupa l'intera riga */
-    flex: 1 1 100%; 
-    height: 60px; /* L'altezza è la metà dell'altezza standard (120px) */
-    max-width: 100%;
-    
-    /* Stili visivi e di layout */
     background-color: #8c96a3;
     color: white;
     font-weight: 500;
     font-size: 1.1em;
-    padding: 6px 10px; /* Padding ridotto per un'altezza minore */
+    padding: 6px 10px;
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
@@ -446,16 +440,14 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    height: 60px; /* L'altezza è la metà dell'altezza standard (120px) */
+    width: calc(285px * 2 + 15px); /* Larghezza di due pulsanti + spazio */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
+    margin-bottom: 15px; /* Spazio sotto il pulsante */
 }
 
-.training-button:hover {
-    background-color: #7a8491;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-
+/* Stile per l'icona nel pulsante di addestramento */
 .training-button img {
     max-width: 24px;
     max-height: 24px;
