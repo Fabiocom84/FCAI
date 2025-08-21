@@ -447,6 +447,12 @@ h1 {
     margin-bottom: 15px; /* Spazio sotto il pulsante */
 }
 
+.training-button:hover {
+    background-color: #7a8491;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 /* Stile per l'icona nel pulsante di addestramento */
 .training-button img {
     max-width: 24px;
