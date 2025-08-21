@@ -425,6 +425,47 @@ h1 {
     flex-shrink: 0; /* Non si restringe */
 }
 
+/* Stile per il contenitore del pulsante a larghezza intera */
+.wide-button-container {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Stile per il pulsante di addestramento */
+.training-button {
+    background-color: #8c96a3; /* Un grigio neutro */
+    color: white;
+    font-weight: 500;
+    font-size: 1.1em;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    flex-direction: row; /* Layout orizzontale */
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 38px; /* Altezza simile al pulsante di logout */
+}
+
+/* Stile per l'icona nel pulsante di addestramento */
+.training-button img {
+    max-width: 24px;
+    max-height: 24px;
+    filter: invert(1); /* Rende l'icona bianca */
+    margin-bottom: 0;
+}
+
+/* Effetto al passaggio del mouse per il pulsante di addestramento */
+.training-button:hover {
+    background-color: #7a8491;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
 
 /* Stili per il Modal */
 .modal-overlay {
