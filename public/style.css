@@ -280,7 +280,7 @@ h1 {
 
 /* Stili generali per il contenitore dei pulsanti */
 .button-container {
-    margin-bottom: 12px;
+    margin-bottom: 5px;
     display: flex;
     flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
     justify-content: center; /* Centra i pulsanti nella riga */
