@@ -19,9 +19,28 @@ document.addEventListener('DOMContentLoaded', function() {
     window.searchModalInstance = searchModalInstance;
     window.settingsModalInstance = settingsModalInstance;
 
+    // Aggiungi un event listener per il pulsante di logout
+    const logoutButton = document.getElementById('logoutBtn');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Impedisce il comportamento predefinito del link
+            logoutUser();
+        });
+    }
+
     // Chiama la funzione per caricare gli ultimi inserimenti all'avvio della pagina
     loadLatestEntries();
 });
+
+// Nuova funzione per gestire il logout dell'utente
+function logoutUser() {
+    // Rimuovi il token da localStorage
+    localStorage.removeItem('authToken');
+    // Rimuovi il token da sessionStorage (per sicurezza)
+    sessionStorage.removeItem('authToken');
+    // Reindirizza l'utente alla pagina di login
+    window.location.href = '/login.html';
+}
 
 function closeInsertModal() {
     if (insertModalInstance) {
