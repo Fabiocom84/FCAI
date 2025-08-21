@@ -208,34 +208,48 @@ button[type="submit"]:hover {
     width: auto;
 }
 
-/* Stile per il pulsante di logout compatto */
+.help-button-container {
+    /* Rimuove lo stile di posizionamento assoluto che era in conflitto */
+    position: static;
+}
+
+/* Stili specifici per il pulsante di logout compatto e orizzontale */
 .logout-button {
+    /* Sovrascrive lo stile base .button */
+    display: flex;
+    flex-direction: row; /* Allinea gli elementi in orizzontale */
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Spazio tra icona e testo */
+
+    /* Stili di dimensione e colore */
     background-color: #dc6868; /* Rosso smorto */
     color: white;
     padding: 8px 12px; /* Padding ridotto per un pulsante più piccolo */
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex; /* Utilizza Flexbox per allineare gli elementi */
-    align-items: center;
-    gap: 6px; /* Spazio ridotto tra l'icona e il testo */
-    height: 38px; /* Altezza fissa per coerenza con il pulsante di aiuto */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    height: 38px; /* Altezza fissa per coerenza con il pulsante di aiuto */
+    box-sizing: border-box;
 }
 
 .logout-button img {
-    max-width: 20px; /* Dimensione ridotta per l'icona */
+    /* Riduce le dimensioni dell'icona */
+    max-width: 20px;
     max-height: 20px;
     margin-bottom: 0; /* Rimuovi il margine inferiore */
 }
 
-/* Stile per il testo del pulsante */
 .logout-button span {
-    font-size: 0.9em; /* Dimensione del font più piccola */
+    /* Stile per il testo del pulsante */
+    font-size: 0.9em;
     font-weight: 500;
     line-height: 1;
-    color: white;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white; /* Assicura che il testo sia bianco */
 }
 
 /* Effetto al passaggio del mouse */
