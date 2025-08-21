@@ -55,15 +55,15 @@ class InsertDataModal {
 
     async open() {
         this.modal.style.display = 'block';
-        window.showOverlay(); // Mostra l'overlay tramite la funzione globale
+        // Visualizza direttamente l'overlay, senza chiamare una funzione globale
+        document.getElementById('modalOverlay').style.display = 'block';
 
-        // Carica le etichette per entrambi i dropdown se necessario
+        // Carica le etichette per entrambi i dropdown
         if (this.etichetteSelect) {
-            await this.loadEtichette(this.etichetteSelect, 'etichetta'); // Passa l'elemento e il tipo per logs
+            await this.loadEtichette(this.etichetteSelect, 'etichetta');
         }
         if (this.riferimentoDropdown) {
-            // Se il dropdown "riferimento" deve mostrare le stesse etichette, passagli l'elemento
-            await this.loadEtichette(this.riferimentoDropdown, 'riferimento'); // Passa l'elemento e il tipo per logs
+            await this.loadEtichette(this.riferimentoDropdown, 'riferimento');
         }
     }
 
