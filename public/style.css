@@ -196,10 +196,10 @@ button[type="submit"]:hover {
     box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 }
 
-/* Stile per il contenitore in alto a sinistra e a destra */
+/* Stile per il contenitore in alto a sinistra e a destra (Desktop) */
 .top-controls-wrapper {
     position: absolute;
-    top: 20px;
+    top: 20px; /* Posizionamento dall'alto */
     left: 20px;
     right: 20px;
     display: flex;
@@ -941,6 +941,7 @@ h1 {
         margin: 10px; /* Margine per non toccare i bordi */
     }
     h1 {
+        margin-top: 50px;
         font-size: 1.8em;
     }
     .button-container {
