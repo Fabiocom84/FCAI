@@ -81,10 +81,9 @@ function loadLatestEntries() {
 }
 
 function updateLatestEntries(data) {
-    // Accedi all'array `latest_entries` all'interno dell'oggetto
     const entries = data.latest_entries; 
-
     const latestEntriesList = document.querySelector('.latest-entries ul');
+
     if (latestEntriesList) {
         latestEntriesList.innerHTML = '';
 
@@ -95,10 +94,8 @@ function updateLatestEntries(data) {
                 listItem.style.padding = '10px';
                 listItem.style.borderBottom = '1px solid #eee';
 
-                const dateTimeSpan = document.createElement('span');
-                dateTimeSpan.textContent = entry;
-                dateTimeSpan.style.fontWeight = 'bold';
-                listItem.appendChild(dateTimeSpan);
+                // Usa innerHTML per interpretare i tag HTML
+                listItem.innerHTML = entry; 
 
                 latestEntriesList.appendChild(listItem);
             });
