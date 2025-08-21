@@ -208,39 +208,35 @@ button[type="submit"]:hover {
     width: auto;
 }
 
-.help-button-container {
-    /* Rimuove lo stile di posizionamento assoluto che era in conflitto */
-    position: static;
-}
-
-/* Nuovo stile per il pulsante di logout orizzontale */
+/* Stile per il pulsante di logout orizzontale */
 .logout-button-horizontal {
-    background-color: #dc6868;
+    /* Nuovo colore rosso più tenue */
+    background-color: #ef9a9a; 
     color: white;
-    padding: 8px 12px;
+    padding: 6px 10px; /* Padding ridotto */
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex; /* Utilizza Flexbox per allineare gli elementi */
-    flex-direction: row; /* Allinea gli elementi in orizzontale */
+    display: flex; 
+    flex-direction: row; 
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    height: 38px;
+    gap: 5px; /* Spazio leggermente ridotto tra icona e testo */
+    height: 30px; /* Altezza ridotta per un look più compatto */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
 }
 
 .logout-button-horizontal img {
-    /* Riduce le dimensioni dell'icona */
-    max-width: 20px;
-    max-height: 20px;
+    /* Dimensioni dell'icona ridotte */
+    max-width: 18px;
+    max-height: 18px;
     margin-bottom: 0;
 }
 
 .logout-button-horizontal span {
     /* Stile per il testo del pulsante */
-    font-size: 0.9em;
+    font-size: 0.8em; /* Dimensione del font più piccola */
     font-weight: 500;
     line-height: 1;
     white-space: nowrap;
@@ -249,11 +245,27 @@ button[type="submit"]:hover {
     color: white;
 }
 
-/* Effetto al passaggio del mouse */
+/* Effetto al passaggio del mouse con un colore più scuro ma sempre tenue */
 .logout-button-horizontal:hover {
-    background-color: #c85353;
+    background-color: #e57373;
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Mantiene l'allineamento dei pulsanti in alto */
+.top-controls-wrapper {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: auto;
+}
+
+.help-button-container {
+    position: static;
 }
 
 h1 {
