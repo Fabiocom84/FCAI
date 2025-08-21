@@ -92,43 +92,10 @@ function updateLatestEntries(data) {
                 listItem.style.padding = '10px';
                 listItem.style.borderBottom = '1px solid #eee';
 
-                // Prima riga: data/ora - riferimento
-                const row1 = document.createElement('div');
-                row1.style.display = 'flex';
-                row1.style.alignItems = 'center';
-                row1.style.marginBottom = '5px';
-
                 const dateTimeSpan = document.createElement('span');
-                dateTimeSpan.textContent = entry['data/ora'] || 'N/A';
+                dateTimeSpan.textContent = entry;
                 dateTimeSpan.style.fontWeight = 'bold';
-                row1.appendChild(dateTimeSpan);
-
-                if (entry.riferimento) {
-                    const riferimentoSpan = document.createElement('span');
-                    riferimentoSpan.textContent = ` - Riferimento: ${entry.riferimento}`;
-                    riferimentoSpan.style.marginLeft = '10px';
-                    row1.appendChild(riferimentoSpan);
-                }
-
-                listItem.appendChild(row1);
-
-                // Seconda riga: trascrizione (troncata)
-                const row2 = document.createElement('div');
-                row2.style.marginBottom = '5px';
-                const transcriptionSpan = document.createElement('span');
-                transcriptionSpan.textContent = entry.trascrizione ? entry.trascrizione.substring(0, 50) + '...' : 'N/A';
-                row2.appendChild(transcriptionSpan);
-                listItem.appendChild(row2);
-
-                // Terza riga: url (come link)
-                if (entry.url) {
-                    const viewLink = document.createElement('a');
-                    viewLink.href = entry.url;
-                    viewLink.textContent = 'Visualizza File';
-                    viewLink.target = '_blank';
-                    viewLink.classList.add('view-file-link');
-                    listItem.appendChild(viewLink);
-                }
+                listItem.appendChild(dateTimeSpan);
 
                 latestEntriesList.appendChild(listItem);
             });
