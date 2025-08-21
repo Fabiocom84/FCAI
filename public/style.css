@@ -429,7 +429,7 @@ h1 {
 .training-button {
     /* Il pulsante di addestramento occupa l'intera riga */
     flex: 1 1 100%; 
-    height: 60px; /* Altezza la metà degli altri pulsanti */
+    height: 30px; /* Altezza la metà degli altri pulsanti */
     max-width: 100%;
     
     /* Stili visivi e di layout */
