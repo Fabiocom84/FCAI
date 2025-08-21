@@ -208,34 +208,32 @@ button[type="submit"]:hover {
     width: auto;
 }
 
-/* Modifica del posizionamento del contenitore del pulsante di aiuto */
-.help-button-container {
-    position: static;
-}
-
-/* Stile per il pulsante di logout */
+/* Nuovo stile per il pulsante di logout piccolo */
 .logout-button {
-    background-color: #dc6868; /* Rosso smorto */
+    /* Il colore rosso smorto con gli stili di transizione */
+    background-color: #dc6868; 
     color: white;
-    padding: 10px 15px; /* Padding per pulsante rettangolare */
-    border-radius: 5px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Spazio tra icona e testo */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    padding: 0; /* Rimuove il padding precedente */
 }
 
-/* Aggiungi il testo "Logout" al pulsante */
-.logout-button span {
-    color: white;
-    font-weight: 500;
-}
-
-/* Stile per l'immagine all'interno del pulsante di logout */
+/* Stile per l'icona nel pulsante rotondo */
 .logout-button img {
     max-width: 24px;
     max-height: 24px;
+}
+
+/* Stile per la scritta "Logout" nel pulsante */
+.logout-button span {
+    display: none; /* Nasconde il testo per renderlo solo un'icona */
 }
 
 /* Effetto al passaggio del mouse */
@@ -253,12 +251,6 @@ h1 {
     margin-bottom: 0; /* Rimosso il margine inferiore, useremo il gap del wrapper */
     text-transform: uppercase;
     letter-spacing: 2px;
-}
-
-.help-button-container {
-    position: absolute; /* Posizionamento rispetto al .main-content-wrapper */
-    top: 20px; /* Spostato un po' più in basso */
-    right: 20px; /* Spostato un po' più a sinistra */
 }
 
 /* Stili generali per il contenitore dei pulsanti */
