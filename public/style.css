@@ -280,7 +280,7 @@ h1 {
 
 /* Stili generali per il contenitore dei pulsanti */
 .button-container {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     display: flex;
     flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
     justify-content: center; /* Centra i pulsanti nella riga */
@@ -952,6 +952,13 @@ h1 {
         max-width: 100%; /* Annulla max-width per 2x2 */
         margin-right: 0;
         margin-bottom: 0; /* Il gap gestisce lo spazio */
+    }
+    /* Aggiungi questa nuova regola */
+    .training-button {
+        width: 100%; /* Occupa l'intera larghezza su mobile */
+        height: auto; /* L'altezza si adatta al contenuto */
+        padding: 15px; /* Un padding più generoso per mobile */
+        max-width: 100%;
     }
     .modal {
         padding: 20px;
