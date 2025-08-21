@@ -81,12 +81,15 @@ function loadLatestEntries() {
 }
 
 function updateLatestEntries(data) {
+    // Accedi all'array `latest_entries` all'interno dell'oggetto
+    const entries = data.latest_entries; 
+
     const latestEntriesList = document.querySelector('.latest-entries ul');
     if (latestEntriesList) {
         latestEntriesList.innerHTML = '';
 
-        if (data && data.length > 0) {
-            data.forEach(entry => {
+        if (entries && entries.length > 0) {
+            entries.forEach(entry => {
                 const listItem = document.createElement('li');
                 listItem.style.marginBottom = '15px';
                 listItem.style.padding = '10px';
