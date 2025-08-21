@@ -425,16 +425,14 @@ h1 {
     flex-shrink: 0; /* Non si restringe */
 }
 
-/* Stile per il nuovo contenitore del pulsante di addestramento */
-.training-button-container {
-    width: 100%;
-    max-width: 600px; /* Limita la larghezza per coerenza con gli altri pulsanti */
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-/* Stile per il pulsante stesso */
+/* Stile per il pulsante di addestramento */
 .training-button {
+    /* Il pulsante di addestramento occupa l'intera riga */
+    flex: 1 1 100%; 
+    height: 60px; /* Altezza la metà degli altri pulsanti */
+    max-width: 100%;
+    
+    /* Stili visivi e di layout */
     background-color: #8c96a3;
     color: white;
     font-weight: 500;
@@ -448,25 +446,21 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    height: 60px; /* Altezza la metà degli altri pulsanti */
-    width: 100%; /* Occupa tutta la larghezza del suo contenitore */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
 }
 
-/* Stile per l'icona nel pulsante di addestramento */
+.training-button:hover {
+    background-color: #7a8491;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 .training-button img {
     max-width: 24px;
     max-height: 24px;
     filter: invert(1);
     margin-bottom: 0;
-}
-
-/* Effetto al passaggio del mouse per il pulsante di addestramento */
-.training-button:hover {
-    background-color: #7a8491;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Stili per il Modal */
