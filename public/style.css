@@ -208,32 +208,34 @@ button[type="submit"]:hover {
     width: auto;
 }
 
-/* Nuovo stile per il pulsante di logout piccolo */
+/* Stile per il pulsante di logout compatto */
 .logout-button {
-    /* Il colore rosso smorto con gli stili di transizione */
-    background-color: #dc6868; 
+    background-color: #dc6868; /* Rosso smorto */
     color: white;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 8px 12px; /* Padding ridotto per un pulsante più piccolo */
+    border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex; /* Utilizza Flexbox per allineare gli elementi */
+    align-items: center;
+    gap: 6px; /* Spazio ridotto tra l'icona e il testo */
+    height: 38px; /* Altezza fissa per coerenza con il pulsante di aiuto */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    padding: 0; /* Rimuove il padding precedente */
 }
 
-/* Stile per l'icona nel pulsante rotondo */
 .logout-button img {
-    max-width: 24px;
-    max-height: 24px;
+    max-width: 20px; /* Dimensione ridotta per l'icona */
+    max-height: 20px;
+    margin-bottom: 0; /* Rimuovi il margine inferiore */
 }
 
-/* Stile per la scritta "Logout" nel pulsante */
+/* Stile per il testo del pulsante */
 .logout-button span {
-    display: none; /* Nasconde il testo per renderlo solo un'icona */
+    font-size: 0.9em; /* Dimensione del font più piccola */
+    font-weight: 500;
+    line-height: 1;
+    color: white;
+    white-space: nowrap;
 }
 
 /* Effetto al passaggio del mouse */
