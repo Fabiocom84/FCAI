@@ -66,7 +66,8 @@ class InsertDataModal {
 
     close() {
         this.modal.style.display = 'none';
-        window.hideOverlay(); // Nasconde l'overlay tramite la funzione globale
+        // Nascondi direttamente l'overlay, senza chiamare una funzione
+        document.getElementById('modalOverlay').style.display = 'none'; 
         this.resetForm(); // Resetta il form alla chiusura
         this.stopRecording(); // Assicurati di fermare la registrazione se aperta
     }
