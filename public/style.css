@@ -196,6 +196,55 @@ button[type="submit"]:hover {
     box-sizing: border-box; /* Include padding nel calcolo della larghezza */
 }
 
+/* Stile per il contenitore in alto a sinistra e a destra */
+.top-controls-wrapper {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: auto;
+}
+
+/* Modifica del posizionamento del contenitore del pulsante di aiuto */
+.help-button-container {
+    position: static;
+}
+
+/* Stile per il pulsante di logout */
+.logout-button {
+    background-color: #dc6868; /* Rosso smorto */
+    color: white;
+    padding: 10px 15px; /* Padding per pulsante rettangolare */
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spazio tra icona e testo */
+}
+
+/* Aggiungi il testo "Logout" al pulsante */
+.logout-button span {
+    color: white;
+    font-weight: 500;
+}
+
+/* Stile per l'immagine all'interno del pulsante di logout */
+.logout-button img {
+    max-width: 24px;
+    max-height: 24px;
+}
+
+/* Effetto al passaggio del mouse */
+.logout-button:hover {
+    background-color: #c85353;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 h1 {
     font-family: 'Roboto', sans-serif;
     font-weight: 700; /* Bold per il titolo principale */
