@@ -552,15 +552,16 @@ h1 {
     position: absolute;
     top: -10px; /* Spostato leggermente fuori dal bordo superiore */
     right: -10px; /* Spostato leggermente fuori dal bordo destro */
-    font-size: 2.5em; /* Più grande */
-    color: #888;
-    background-color: white; /* Sfondo bianco per il pulsante */
+    font-size: 1.5em; /* Più grande */
+    background-color: #6c757d; /* Lo stesso colore del pulsante di aiuto */
+    color: white; /* Per mantenere il simbolo 'X' visibile */
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
@@ -568,7 +569,7 @@ h1 {
 .close-button:hover {
     color: #555;
     transform: rotate(90deg); /* Rotazione all'hover */
-    background-color: #f0f0f0;
+    background-color: #5a6268;
 }
 
 .modal-body {
