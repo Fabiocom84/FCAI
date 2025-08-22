@@ -36,12 +36,6 @@ class InsertDataModal {
         if (this.saveButton) {
             this.saveButton.addEventListener('click', (event) => this.saveData(event));
         }
-        if (this.helpButtonModal) {
-            this.helpButtonModal.addEventListener('click', (event) => {
-                event.stopPropagation(); // Evita che l'evento si propaghi al modale e lo chiuda
-                alert('Help feature coming soon for Insert Data Modal!');
-            });
-        }
         if (this.fileUploadInput) {
             this.fileUploadInput.addEventListener('change', (event) => this.handleFileUpload(event));
         }
