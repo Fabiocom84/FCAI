@@ -230,8 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modelliData = await modelliResponse.json();
         const modelli = modelliData.models || [];
 
-        console.log('Dati Modelli ricevuti:', modelli);
-
         // Assicurati che l'elemento esista prima di manipolarlo
         if (modelloSelect) {
             // Svuota il dropdown e aggiungi l'opzione di default
@@ -260,8 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const statusData = await statusResponse.json();
         const statuses = statusData.statuses || [];
-        
-        console.log('Dati Status ricevuti:', statuses);
 
         if (statusSelect) {
             statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
