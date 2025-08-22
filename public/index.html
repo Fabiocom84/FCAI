@@ -101,8 +101,7 @@
     <div id="modalOverlay" class="modal-overlay"></div>
 
     <div id="newOrderModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-content">
+    <div class="modal-content">
         <div class="modal-header">
             <h2>Nuova Commessa</h2>
             <div class="help-button-container">
@@ -111,6 +110,10 @@
             <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
         </div>
         <div class="modal-body">
+            <div id="newOrderLoadingStatus" style="display: none; text-align: center; margin-bottom: 20px;">
+                <p>Caricamento dati in corso...</p>
+            </div>
+
             <div class="form-group">
                 <div class="input-label-icon">
                     <img src="img/user.png" alt="Cliente">
@@ -134,7 +137,7 @@
                 </div>
                 <select id="newOrderModello">
                     <option value="" disabled selected>Seleziona un modello</option>
-                    </select>
+                </select>
             </div>
 
             <div class="form-group">
@@ -200,7 +203,7 @@
                 </div>
                 <select id="newOrderStatus">
                     <option value="" disabled selected>Seleziona uno status</option>
-                    </select>
+                </select>
             </div>
 
             <div class="form-group">
@@ -222,7 +225,6 @@
         </div>
         <button class="save-button" id="saveNewOrderButton">Salva Nuova Commessa</button>
     </div>
-        </div>
     </div>
 
     <div id="chatModal" class="modal" style="display: none;">

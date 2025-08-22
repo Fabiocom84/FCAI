@@ -206,9 +206,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Aggiungi queste funzioni nel tuo file new-order-modal.js
+    function showLoadingMessage() {
+        const loadingStatusElement = document.getElementById('newOrderLoadingStatus');
+        if (loadingStatusElement) {
+            loadingStatusElement.style.display = 'block';
+        }
+    }
+
+    function hideLoadingMessage() {
+        const loadingStatusElement = document.getElementById('newOrderLoadingStatus');
+        if (loadingStatusElement) {
+            loadingStatusElement.style.display = 'none';
+        }
+    }
+
     async function fetchDynamicDropdownOptions() {
     console.log('Avvio del caricamento delle opzioni per i dropdown...');
-    showLoadingIndicator();
+    // Mostra il nuovo messaggio di caricamento specifico
+    showLoadingMessage();
 
     try {
         const authToken = localStorage.getItem('authToken');
@@ -276,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error('Errore nel caricamento delle opzioni dropdown:', error);
     } finally {
-        hideLoadingIndicator();
+        hideLoadingMessage();
     }
 }
 });
