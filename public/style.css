@@ -85,7 +85,7 @@ h2 {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
@@ -981,7 +981,7 @@ h1 {
         max-width: 100%;
     }
     .modal {
-        padding: 20px;
+        padding: 15px;
     }
     .close-button {
         top: -5px;
