@@ -591,7 +591,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px; /* Spazio tra icona e testo */
-    margin-bottom: 5px; /* Margine sotto l'etichetta */
+    margin-bottom: 3px; /* Margine sotto l'etichetta */
 }
 
 .input-label-icon img {
@@ -638,7 +638,7 @@ h1 {
     display: flex;
     justify-content: center;
     gap: 15px; /* Spazio aumentato */
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .voice-controls button {
@@ -693,7 +693,7 @@ h1 {
 }
 
 .save-button {
-    margin-top: 20px; /* Margine più grande */
+    margin-top: 10px; /* Margine più grande */
     padding: 15px 20px; /* Padding aumentato */
     border: none;
     border-radius: 8px; /* Angoli più arrotondati */
@@ -776,7 +776,7 @@ h1 {
     display: flex;
     align-items: center; /* Allinea gli elementi verticalmente */
     gap: 10px; /* Aggiungi un piccolo spazio tra icona e testo */
-    margin-bottom: 8px; /* Spazio tra le diverse voci della legenda */
+    margin-bottom: 5px; /* Spazio tra le diverse voci della legenda */
 }
 
 .legend-icon {
