@@ -521,7 +521,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 10px; /* Aumentato il margine */
+    margin-bottom: 5px; /* Aumentato il margine */
     position: relative;
     flex-shrink: 0; /* Impedisce all'header di restringersi */
 }
