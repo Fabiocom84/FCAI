@@ -211,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Estrai l'array dalla proprietà 'modelli'.
             // Uso '|| []' per evitare l'errore nel caso in cui la proprietà non esista.
             const modelli = data.modelli || []; 
+            console.log('Elemento HTML del menu a tendina:', modelloSelect);
             console.log('Dati Modelli ricevuti:', modelli);
             modelloSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona un modello</option>';
             modelli.forEach(modello => {
@@ -221,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             console.log('Dropdown Modelli popolato.');
 
-            const statusResponse = await fetch(`${backendUrl}/api/get-status`, {
+            const statusResponse = await fetch(`${backendUrl}/api/get-all-statuses`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
