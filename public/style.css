@@ -717,7 +717,7 @@ h1 {
 /* Stili per il pulsante aiuto nel modal */
 .modal-header .help-button-container {
     position: absolute;
-    top: 10px; /* Leggermente più in basso */
+    top: -10px; /* Leggermente più in basso */
     right: 45px; /* Spazio per il pulsante di chiusura */
 }
 
