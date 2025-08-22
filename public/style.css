@@ -567,7 +567,7 @@ h1 {
 }
 
 .close-button:hover {
-    color: #555;
+    color: white;
     transform: rotate(90deg); /* Rotazione all'hover */
     background-color: #5a6268;
 }
@@ -719,7 +719,7 @@ h1 {
 .modal-header .help-button-container {
     position: absolute;
     top: -10px; /* Leggermente più in basso */
-    right: 45px; /* Spazio per il pulsante di chiusura */
+    right: 40px; /* Spazio per il pulsante di chiusura */
 }
 
 .modal-header .help-button {
