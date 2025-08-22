@@ -494,7 +494,7 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding: 25px; /* Aumentato padding */
+    padding: 20px; /* Aumentato padding */
     border-radius: 10px; /* Angoli più arrotondati */
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Ombra più pronunciata */
     z-index: 30;
@@ -586,7 +586,7 @@ h1 {
 
 .modal-body .form-group {
     background-color: #f8f9fa; /* Sfondo per raggruppare visivamente */
-    padding: 5px;
+    padding: 2px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
@@ -614,7 +614,7 @@ h1 {
 .form-group select,
 .form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
     width: 100%;
-    padding: 10px 12px; /* Padding uniforme */
+    padding: 5px 6px; /* Padding uniforme */
     border: 1px solid #cccccc;
     border-radius: 6px; /* Angoli arrotondati */
     box-sizing: border-box;
@@ -782,7 +782,7 @@ h1 {
     display: flex;
     align-items: center; /* Allinea gli elementi verticalmente */
     gap: 10px; /* Aggiungi un piccolo spazio tra icona e testo */
-    margin-bottom: 5px; /* Spazio tra le diverse voci della legenda */
+    margin-bottom: 2px; /* Spazio tra le diverse voci della legenda */
 }
 
 .legend-icon {
@@ -844,7 +844,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 10px; /* Spazio tra i messaggi */
-    margin-bottom: 15px; /* Spazio prima dell'area di input */
+    margin-bottom: 10px; /* Spazio prima dell'area di input */
 }
 
 /* Stili generali per ogni singolo messaggio */
