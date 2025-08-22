@@ -573,16 +573,16 @@ h1 {
 }
 
 .modal-body {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spazio aumentato tra i form-group */
+    gap: 10px; /* Spazio aumentato tra i form-group */
     padding: 0; /* Rimosso padding, gestito da form-group */
 }
 
 .modal-body .form-group {
     background-color: #f8f9fa; /* Sfondo per raggruppare visivamente */
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
