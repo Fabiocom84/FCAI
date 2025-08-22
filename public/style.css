@@ -268,6 +268,12 @@ button[type="submit"]:hover {
     cursor: pointer;
 }
 
+.help-button:hover {
+    background-color: #5a6268; /* Un grigio leggermente più scuro */
+    transform: translateY(-2px); /* Sposta leggermente il pulsante verso l'alto */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Aggiunge un'ombra più evidente */
+}
+
 .help-button-container {
     position: static;
 }
@@ -730,6 +736,12 @@ h1 {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     padding: 0;
     line-height: 1;
+}
+
+.modal-header .help-button:hover {
+    background-color: #5a6268; /* Un grigio leggermente più scuro */
+    transform: translateY(-2px); /* Sposta leggermente il pulsante verso l'alto */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Aggiunge un'ombra più evidente */
 }
 
 /* Legenda */
