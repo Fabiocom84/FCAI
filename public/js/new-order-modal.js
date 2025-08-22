@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Estrai l'array dalla proprietà 'modelli'.
             // Uso '|| []' per evitare l'errore nel caso in cui la proprietà non esista.
             const modelli = data.modelli || []; 
-
+            console.log('Dati Modelli ricevuti:', modelli);
             modelloSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona un modello</option>';
             modelli.forEach(modello => {
                 const option = document.createElement('option');
