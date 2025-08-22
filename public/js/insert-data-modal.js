@@ -206,7 +206,7 @@ class InsertDataModal {
             const data = await response.json();
             const items = data.etichette; // Assumi che la risposta contenga un campo 'etichette'
 
-            targetDropdown.innerHTML = `<option value="" disabled selected>Seleziona un'${type}</option>`;
+            targetDropdown.innerHTML = `<option value="" disabled selected>Seleziona un ${type}</option>`;
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item;
