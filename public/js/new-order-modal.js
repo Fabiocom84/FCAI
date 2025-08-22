@@ -198,21 +198,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const backendUrl = window.BACKEND_URL;
 
         try {
-            const modelliResponse = await fetch(`${backendUrl}/api/get-modelli`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            const modelloResponse = await fetch(`${backendUrl}/api/get-modelli`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            if (!modelliResponse.ok) throw new Error('Errore nel recupero dei modelli.');
+            if (!modelloResponse.ok) {
+                throw new Error('Errore nel recupero dei modelli.');
+            }
 
-            const dati = await modelliResponse.json(); // Ricevi l'oggetto JSON
-            const modelli = dati.modelli; // Estrai l'array dalla proprietà 'modelli'
+            // Ricevi l'oggetto JSON completo
+            const data = await modelloResponse.json(); 
+
+            // Estrai l'array dalla proprietà 'modelli'.
+            // Uso '|| []' per evitare l'errore nel caso in cui la proprietà non esista.
+            const modelli = data.modelli || []; 
 
             modelloSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona un modello</option>';
-            modelli.forEach(modello => { // Ora 'modelli' è un array e forEach funziona
+            modelli.forEach(modello => {
                 const option = document.createElement('option');
                 option.value = modello;
                 option.textContent = modello;
                 modelloSelect.appendChild(option);
             });
+            console.log('Dropdown Modelli popolato.');
 
             const statusResponse = await fetch(`${backendUrl}/api/get-status`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
