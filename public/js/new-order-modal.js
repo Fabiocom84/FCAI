@@ -189,63 +189,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchDynamicDropdownOptions() {
-        const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    console.log('Avvio del caricamento delle opzioni per i dropdown...');
+    showLoadingIndicator();
+
+    try {
+        const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            console.warn('Nessun token di autenticazione trovato per caricare i dropdown.');
+            console.error('Token di autenticazione non trovato.');
+            hideLoadingIndicator();
             return;
         }
 
-        const backendUrl = window.BACKEND_URL;
+        // --- Gestione Dropdown Modelli ---
+        const modelliResponse = await fetch(`${backendUrl}/api/get-modelli`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
 
-        try {
-            const modelloResponse = await fetch(`${backendUrl}/api/get-modelli`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!modelloResponse.ok) {
-                throw new Error('Errore nel recupero dei modelli.');
-            }
-
-            // Ricevi l'oggetto JSON completo
-            const data = await modelloResponse.json(); 
-
-            // Estrai l'array dalla proprietà 'modelli'.
-            // Uso '|| []' per evitare l'errore nel caso in cui la proprietà non esista.
-            const modelli = data.modelli || []; 
-            console.log('Elemento HTML del menu a tendina:', modelloSelect);
-            console.log('Dati Modelli ricevuti:', modelli);
-            modelloSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona un modello</option>';
-            modelli.forEach(modello => {
-                const option = document.createElement('option');
-                option.value = modello;
-                option.textContent = modello;
-                modelloSelect.appendChild(option);
-            });
-            console.log('Dropdown Modelli popolato.');
-
-            const statusResponse = await fetch(`${backendUrl}/api/get-all-statuses`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
-
-            // Ricevi l'oggetto JSON completo
-            const statusData = await statusResponse.json();
-
-            // Estrai l'array dalla proprietà 'statuses'.
-            // L'uso di '|| []' previene l'errore se la proprietà non esiste
-            const statuses = statusData.statuses || [];
-
-            statusSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona uno status</option>';
-            statuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                statusSelect.appendChild(option);
-            });
-            console.log('Dropdown Status popolato.');
-
-        } catch (error) {
-            console.error('Errore nel caricamento delle opzioni dropdown:', error);
-            alert('Errore nel caricamento delle opzioni per Modello e Status. Riprova più tardi.');
+        if (!modelliResponse.ok) {
+            throw new Error('Errore nel recupero dei modelli.');
         }
+
+        const modelliData = await modelliResponse.json();
+        const modelli = modelliData.modelli || [];
+
+        console.log('Dati Modelli ricevuti:', modelli);
+
+        // Assicurati che l'elemento esista prima di manipolarlo
+        if (modelloSelect) {
+            // Svuota il dropdown e aggiungi l'opzione di default
+            modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
+            if (modelli.length > 0) {
+                modelli.forEach(modello => {
+                    const option = document.createElement('option');
+                    option.value = modello;
+                    option.textContent = modello;
+                    modelloSelect.appendChild(option);
+                });
+                console.log('Dropdown Modelli popolato.');
+            } else {
+                console.warn('L\'array dei modelli è vuoto. Nessuna opzione aggiunta.');
+            }
+        }
+
+        // --- Gestione Dropdown Status ---
+        const statusResponse = await fetch(`${backendUrl}/api/get-all-statuses`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (!statusResponse.ok) {
+            throw new Error('Errore nel recupero degli status.');
+        }
+
+        const statusData = await statusResponse.json();
+        const statuses = statusData.statuses || [];
+        
+        console.log('Dati Status ricevuti:', statuses);
+
+        if (statusSelect) {
+            statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
+            if (statuses.length > 0) {
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    statusSelect.appendChild(option);
+                });
+                console.log('Dropdown Status popolato.');
+            } else {
+                console.warn('L\'array degli status è vuoto. Nessuna opzione aggiunta.');
+            }
+        }
+    } catch (error) {
+        console.error('Errore nel caricamento delle opzioni dropdown:', error);
+    } finally {
+        hideLoadingIndicator();
     }
+}
 });
