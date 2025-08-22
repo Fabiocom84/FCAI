@@ -454,7 +454,7 @@ h1 {
     width: calc(285px * 2 + 15px); /* Larghezza di due pulsanti + spazio */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
-    margin-bottom: 15px; /* Spazio sotto il pulsante */
+    margin-bottom: 5px; /* Spazio sotto il pulsante */
 }
 
 .training-button:hover {
@@ -517,7 +517,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px; /* Aumentato il margine */
+    margin-bottom: 15px; /* Aumentato il margine */
     position: relative;
     flex-shrink: 0; /* Impedisce all'header di restringersi */
 }
