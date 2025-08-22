@@ -614,7 +614,7 @@ h1 {
 .form-group select,
 .form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
     width: 100%;
-    padding: 5px 6px; /* Padding uniforme */
+    padding: 8px 10px; /* Padding uniforme */
     border: 1px solid #cccccc;
     border-radius: 6px; /* Angoli arrotondati */
     box-sizing: border-box;
