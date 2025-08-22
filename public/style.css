@@ -264,6 +264,10 @@ button[type="submit"]:hover {
     width: auto;
 }
 
+.help-button {
+    cursor: pointer;
+}
+
 .help-button-container {
     position: static;
 }
@@ -973,7 +977,6 @@ h1 {
     }
     .modal-header .help-button-container {
         right: 35px;
-        cursor: pointer;
     }
     .legend {
         top: 10px;
