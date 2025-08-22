@@ -997,6 +997,7 @@ h1 {
         font-size: 2em;
     }
     .modal-header .help-button-container {
+        top: -5px;
         right: 35px;
     }
     .legend {
