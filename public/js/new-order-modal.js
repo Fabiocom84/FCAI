@@ -188,6 +188,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Funzione per mostrare l'indicatore di caricamento
+    function showLoadingIndicator() {
+        const loadingIndicator = document.getElementById('newOrderLoadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
+    }
+
+    // Funzione per nascondere l'indicatore di caricamento
+    function hideLoadingIndicator() {
+        const loadingIndicator = document.getElementById('newOrderLoadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
     async function fetchDynamicDropdownOptions() {
     console.log('Avvio del caricamento delle opzioni per i dropdown...');
     showLoadingIndicator();
