@@ -89,6 +89,10 @@ h2 {
     text-align: left;
 }
 
+.form-group:first-of-type {
+    margin-top: 0; /* Rimuove il margine superiore del primo elemento del form */
+}
+
 label {
     font-family: 'Roboto', sans-serif;
     display: block;
@@ -633,6 +637,8 @@ h1 {
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
 }
+
+
 
 .voice-controls {
     display: flex;
