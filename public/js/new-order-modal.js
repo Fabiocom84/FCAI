@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const modelliData = await modelliResponse.json();
-        const modelli = modelliData.modelli || [];
+        const modelli = modelliData.models || [];
 
         console.log('Dati Modelli ricevuti:', modelli);
 
