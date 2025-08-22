@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading(); // Mostra l'indicatore di caricamento
 
             try {
-                const response = await fetch(`${window.BACKEND_URL}/api/new-commessa`, {
+                const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
