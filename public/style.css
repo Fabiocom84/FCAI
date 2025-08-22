@@ -771,10 +771,12 @@ h1 {
     padding-bottom: 10px;
 }
 
+/* Allinea le icone e il testo nelle voci della legenda */
 .legend-item {
     display: flex;
-    align-items: flex-start; /* Allinea in alto */
-    margin-bottom: 15px; /* Spazio tra gli item */
+    align-items: center; /* Allinea gli elementi verticalmente */
+    gap: 10px; /* Aggiungi un piccolo spazio tra icona e testo */
+    margin-bottom: 8px; /* Spazio tra le diverse voci della legenda */
 }
 
 .legend-icon {
