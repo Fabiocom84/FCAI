@@ -973,6 +973,7 @@ h1 {
     }
     .modal-header .help-button-container {
         right: 35px;
+        cursor: pointer;
     }
     .legend {
         top: 10px;
