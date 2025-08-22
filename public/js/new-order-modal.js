@@ -225,9 +225,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!statusResponse.ok) throw new Error('Errore nel recupero degli status.');
-            const statuses = await statusResponse.json();
 
-            statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
+            // Ricevi l'oggetto JSON completo
+            const statusData = await statusResponse.json();
+
+            // Estrai l'array dalla proprietà 'statuses'.
+            // L'uso di '|| []' previene l'errore se la proprietà non esiste
+            const statuses = statusData.statuses || [];
+
+            statusSelect.innerHTML = '<option value=\"\" disabled selected>Seleziona uno status</option>';
             statuses.forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
