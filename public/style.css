@@ -271,7 +271,7 @@ button[type="submit"]:hover {
 .help-button:hover {
     background-color: #D3D3D3; /* Un grigio leggermente più scuro */
     transform: translateY(-2px); /* Sposta leggermente il pulsante verso l'alto */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Aggiunge un'ombra più evidente */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra più evidente */
 }
 
 .help-button-container {
