@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelloSelect = document.getElementById('newOrderModello');
     const statusSelect = document.getElementById('newOrderStatus');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = import.meta.env.NEXT_PUBLIC_BACKEND_URL;
 
     // Elementi per l'animazione di caricamento
     const loadingIndicator = document.createElement('div');
