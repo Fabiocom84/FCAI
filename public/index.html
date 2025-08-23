@@ -12,18 +12,6 @@
 
 <body>
     <div class="main-content-wrapper">        
-        <div id="newOrderModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <form id="newOrderForm"> 
-                        <div class="form-group">
-                            <input type="text" id="newOrderCliente">
-                        </div>
-                        <button type="button" class="save-button" id="saveNewOrderButton">Salva Nuova Commessa</button>
-                    </form>
-                </div>
-            </div>
-        </div>        
         <div class="top-controls-wrapper">
             <a href="#" class="logout-button-horizontal" id="logoutBtn">
                 <img src="img/log-out.png" alt="Logout">
@@ -121,6 +109,10 @@
             </div>
             <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
         </div>
+        <div class="modal-body">
+                <form id="newOrderForm"> 
+                    </form>
+            </div>
         <div class="modal-body">
             <div id="newOrderLoadingStatus" style="display: none; text-align: center; margin-bottom: 20px;">
                 <p>Caricamento dati in corso...</p>
