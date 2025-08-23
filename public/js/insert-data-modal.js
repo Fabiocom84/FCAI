@@ -17,7 +17,6 @@ class InsertDataModal {
         this.voiceTranscription = this.modal ? this.modal.querySelector('#voiceTranscription') : null;
         // Entrambi i dropdown ora useranno la logica di 'loadEtichette'
         this.riferimentoDropdown = this.modal ? this.modal.querySelector('#riferimentoDropdown') : null;
-        this.etichetteSelect = this.modal ? this.modal.querySelector('#etichetteDropdown') : null;
 
         this.mediaRecorder = null;
         this.audioChunks = [];
@@ -73,9 +72,6 @@ class InsertDataModal {
         if (this.riferimentoDropdown) {
             this.riferimentoDropdown.value = '';
         }
-        if (this.etichetteSelect) {
-            this.etichetteSelect.value = '';
-        }
         if (this.fileNameDisplay) {
             this.fileNameDisplay.textContent = 'Nessun file selezionato';
         }
@@ -105,8 +101,7 @@ class InsertDataModal {
     
         const transcription = this.voiceTranscription ? this.voiceTranscription.value : '';
         const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : '';
-        const etichetta = this.etichetteSelect ? this.etichetteSelect.value : '';
-    
+            
         let fileContent = null;
         let fileName = null;
     
@@ -150,7 +145,6 @@ class InsertDataModal {
                 body: JSON.stringify({
                     transcription: transcription,
                     riferimento: riferimento,
-                    etichetta: etichetta,
                     fileContent: fileContent,
                     fileName: fileName
                 })
