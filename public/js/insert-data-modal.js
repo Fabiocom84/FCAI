@@ -343,9 +343,3 @@ class InsertDataModal {
         }
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.insertModalInstance) {
-        window.insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '#openInsertDataModalBtn');
-    }
-});

@@ -1,74 +1,115 @@
-let legendInstance; // Definisci una variabile globale
-let insertModalInstance; // Definisci una variabile per l'istanza del modal
+let legendInstance; 
+let insertModalInstance; 
 let chatModalInstance;
-let searchModalInstance;
-let settingsModalInstance;
+let newOrderModalInstance;
+let trainingModalInstance;
 
 document.addEventListener('DOMContentLoaded', function() {
-    insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '.insert-button');
-    legendInstance = new Legend(); // Inizializza la classe Legend
+    legendInstance = new Legend(); 
+    window.legendInstance = legendInstance;
+    modalOverlay = document.getElementById('modalOverlay');
 
-    // Inizializzazione degli altri modal (potrebbe essere gestita in modo più dinamico in futuro)
-    chatModalInstance = document.getElementById('chatModal');
-    searchModalInstance = document.getElementById('searchModal');
-    settingsModalInstance = document.getElementById('settingsModal');
-
-    window.legendInstance = legendInstance; // Rendi accessibile l'istanza della legenda globalmente
-    window.insertModalInstance = insertModalInstance; // Rendi accessibile l'istanza del modal
-    window.chatModalInstance = chatModalInstance;
-    window.searchModalInstance = searchModalInstance;
-    window.settingsModalInstance = settingsModalInstance;
-
-    // Aggiungi un event listener per il pulsante di logout
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
         logoutButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Impedisce il comportamento predefinito del link
+            event.preventDefault(); 
             logoutUser();
         });
     }
 
-    // Chiama la funzione per caricare gli ultimi inserimenti all'avvio della pagina
+    // Carica gli ultimi inserimenti all'avvio
     loadLatestEntries();
 });
 
-// Nuova funzione per gestire il logout dell'utente
-function logoutUser() {
-    // Rimuovi il token da localStorage
-    localStorage.removeItem('authToken');
-    // Rimuovi il token da sessionStorage (per sicurezza)
-    sessionStorage.removeItem('authToken');
-    // Reindirizza l'utente alla pagina di login
-    window.location.href = '/login.html';
+
+//----Funzioni per aprire i modali
+function openInsertDataModal() {
+    if (!insertModalInstance) {
+        insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '.insert-button');
+        window.insertModalInstance = insertModalInstance;
+    }
+    insertModalInstance.show();
 }
 
-function closeInsertModal() {
+function openChatModal() {
+    if (!chatModalInstance) {
+        chatModalInstance = document.getElementById('chatModal');
+        window.chatModalInstance = chatModalInstance;
+    }
+    if (chatModalInstance) {
+        chatModalInstance.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    }
+}
+
+function openNewOrderModal() {
+    if (!newOrderModalInstance) {
+        newOrderModalInstance = document.getElementById('newOrderModal');
+        window.newOrderModalInstance = newOrderModalInstance;
+    }
+    if (newOrderModalInstance) {
+        newOrderModalInstance.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    }
+    loadNewOrderData();
+}
+
+// Funzione per aprire il modale Addestramento
+function openTrainingModal() {
+    if (!trainingModalInstance) {
+        trainingModalInstance = document.getElementById('trainingModal');
+        window.trainingModalInstance = trainingModalInstance;
+    }
+    if (trainingModalInstance) {
+        trainingModalInstance.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    }
+}
+
+
+// Collega le funzioni ai rispettivi pulsanti
+document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
+document.getElementById('closeInsertDataModalBtn')?.addEventListener('click', closeInsertDataModal);
+
+document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
+document.getElementById('closeChatModalBtn')?.addEventListener('click', closeChatModal);
+
+document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
+document.getElementById('closeNewOrderModalBtn')?.addEventListener('click', closeNewOrderModal);
+
+document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
+document.getElementById('closeTrainingModalBtn')?.addEventListener('click', closeTrainingModal);
+
+
+//---Chiusura modali
+function closeInsertDataModal() {
     if (insertModalInstance) {
-        insertModalInstance.close();
+        insertModalInstance.hide();
     }
 }
 
 function closeChatModal() {
     if (chatModalInstance) {
         chatModalInstance.style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
+        modalOverlay.style.display = 'none';
     }
 }
 
-function closeSearchModal() {
-    if (searchModalInstance) {
-        searchModalInstance.style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
+function closeNewOrderModal() {
+    if (newOrderModalInstance) {
+        newOrderModalInstance.style.display = 'none';
+        modalOverlay.style.display = 'none';
     }
 }
 
-function closeSettingsModal() {
-    if (settingsModalInstance) {
-        settingsModalInstance.style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
+function closeTrainingModal() {
+    if (trainingModalInstance) {
+        trainingModalInstance.style.display = 'none';
+        modalOverlay.style.display = 'none';
     }
 }
 
+//---Caricamento latest entries
 function loadLatestEntries() {
   const backendUrl = window.BACKEND_URL;
   // Cerca prima in localStorage, poi in sessionStorage

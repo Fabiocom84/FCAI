@@ -4,7 +4,6 @@
 const chatModal = document.getElementById('chatModal');
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
-const openChatModalBtn = document.getElementById('openChatModalBtn');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
 const modalOverlay = document.getElementById('modalOverlay');
@@ -201,16 +200,6 @@ startChatRecordingBtn.addEventListener('click', () => {
         // onend gestirà il resto
     }
 });
-
-// Rende closeChatModal accessibile globalmente per onclick in HTML
-window.closeChatModal = closeChatModal;
-
-// Event Listener per l'apertura del modale (già presente, ma per completezza)
-openChatModalBtn.addEventListener('click', (event) => {
-    event.preventDefault();
-    openChatModal();
-});
-
 
 // Scorri in fondo ai messaggi all'avvio della pagina (se ce ne sono)
 document.addEventListener('DOMContentLoaded', () => {
