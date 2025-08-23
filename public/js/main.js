@@ -70,9 +70,19 @@ function closeSettingsModal() {
 }
 
 function loadLatestEntries() {
-      const backendUrl = window.BACKEND_URL;
+  const backendUrl = window.BACKEND_URL;
+  const token = localStorage.getItem('authToken'); // Recupera il token da localStorage
+
+  if (!token) {
+    console.error("Token di autenticazione non trovato. Impossibile caricare gli inserimenti recenti.");
+    return; // Interrompe l'esecuzione se il token non c'è
+  }
+
   fetch(`${backendUrl}/api/latest-entries`, {
     method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}` // Aggiunge l'header di autorizzazione
+    }
   })
     .then(response => {
       // Verifica che la risposta sia OK (status code 200-299)
@@ -93,9 +103,6 @@ function loadLatestEntries() {
     .catch(error => {
       // Gestisci gli errori di fetch o di parsing del JSON
       console.error('Errore durante il recupero degli ultimi inserimenti dal backend:', error);
-      // Mostra un messaggio di errore all'utente (opzionale, ma consigliato)
-      // Esempio:
-      // alert('Si è verificato un errore durante il caricamento degli ultimi inserimenti. Riprovare più tardi.');
     });
 }
 
