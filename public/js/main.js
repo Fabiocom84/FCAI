@@ -52,8 +52,6 @@ function openNewOrderModal() {
         newOrderModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
-    // Chiamata alla funzione unificata e corretta
-    loadDynamicDropdowns(); 
 }
 
 // Funzione per aprire il modale Addestramento
