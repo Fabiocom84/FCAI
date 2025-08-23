@@ -144,8 +144,10 @@ if (saveNewOrderButton) {
             return;
         }
 
-        const newOrderForm = document.getElementById('newOrderForm'); // Recupera il form
-        const formData = new FormData(newOrderForm);
+        const form = document.querySelector('#newOrderModal form');
+        if (form) {
+            const formData = new FormData(form);
+        }
 
         // Controllo campi obbligatori
         const requiredFields = ['cliente', 'impianto', 'modello', 'commessa', 'data', 'status'];
