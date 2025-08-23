@@ -55,11 +55,6 @@ class InsertDataModal {
         if (this.riferimentoDropdown) {
             await this.loadEtichette(this.riferimentoDropdown, 'riferimento');
         }
-
-        // Aggiungi questa parte per caricare anche il dropdown delle etichette
-        if (this.etichetteSelect) {
-            await this.loadEtichette(this.etichetteSelect, 'etichetta');
-        }
     }
 
     close() {
