@@ -1,6 +1,6 @@
 let legendInstance;
 let insertDataModalElement; 
-let insertModalInstance; 
+let insertDataModalInstance; 
 let chatModalInstance;
 let newOrderModalInstance;
 let trainingModalInstance;
@@ -26,14 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 //----Funzioni per aprire i modali
 function openInsertDataModal() {
-    // Invece di una classe, prendi l'elemento HTML del modale
-    if (!insertDataModalElement) {
-        insertDataModalElement = document.getElementById('insertDataModal');
+    if (!insertDataModalInstance) {
+        // Crea una nuova istanza della classe e la memorizza
+        insertDataModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '#openInsertDataModalBtn');
+        window.insertDataModalInstance = insertDataModalInstance;
     }
-    if (insertDataModalElement) {
-        insertDataModalElement.style.display = 'block';
-        modalOverlay.style.display = 'block';
-    }
+    // Chiama il metodo open() sull'istanza creata
+    insertDataModalInstance.open();
 }
 
 function openChatModal() {
