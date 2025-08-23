@@ -145,9 +145,11 @@ if (saveNewOrderButton) {
         }
 
         const form = document.querySelector('#newOrderModal form');
-        if (form) {
-            const formData = new FormData(form);
+        if (!form) {
+            console.error('Form non trovato all interno del modale.');
+            return;
         }
+        const formData = new FormData(form);
 
         // Controllo campi obbligatori
         const requiredFields = ['cliente', 'impianto', 'modello', 'commessa', 'data', 'status'];
