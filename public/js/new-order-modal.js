@@ -70,7 +70,7 @@ async function loadDynamicDropdowns() {
 
     try {
         const [modelsResponse, statusResponse] = await Promise.all([
-            fetch(`${backendUrl}/api/get-all-models`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+            fetch(`${backendUrl}/api/get-modelli`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
             fetch(`${backendUrl}/api/get-all-statuses`, { headers: { 'Authorization': `Bearer ${authToken}` } })
         ]);
 
