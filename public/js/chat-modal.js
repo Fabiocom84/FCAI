@@ -6,7 +6,6 @@ const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
-const modalOverlay = document.getElementById('modalOverlay');
 const chatStatus = document.getElementById('chatStatus'); // Importante: deve esserci l'elemento HTML con questo ID!
 
 // Setup del riconoscimento vocale

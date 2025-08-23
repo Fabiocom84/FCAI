@@ -2,7 +2,6 @@
 
 // Elementi DOM
 const newOrderModal = document.getElementById('newOrderModal');
-const modalOverlay = document.getElementById('modalOverlay');
 const closeNewOrderModalBtn = newOrderModal ? newOrderModal.querySelector('.close-button') : null;
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn'); // Presumo che esista
