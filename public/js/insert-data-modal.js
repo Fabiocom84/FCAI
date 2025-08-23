@@ -49,12 +49,16 @@ class InsertDataModal {
 
     async open() {
         this.modal.style.display = 'block';
-        // Visualizza direttamente l'overlay, senza chiamare una funzione globale
         document.getElementById('modalOverlay').style.display = 'block';
 
         // Carica le etichette per il solo dropdown del riferimento
         if (this.riferimentoDropdown) {
             await this.loadEtichette(this.riferimentoDropdown, 'riferimento');
+        }
+
+        // Aggiungi questa parte per caricare anche il dropdown delle etichette
+        if (this.etichetteSelect) {
+            await this.loadEtichette(this.etichetteSelect, 'etichetta');
         }
     }
 
