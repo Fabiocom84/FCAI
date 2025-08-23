@@ -5,6 +5,7 @@ const newOrderModal = document.getElementById('newOrderModal');
 const modalOverlay = document.getElementById('modalOverlay');
 const closeNewOrderModalBtn = newOrderModal ? newOrderModal.querySelector('.close-button') : null;
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
+const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn'); // Presumo che esista
 
 // Elementi dei dropdown
 const modelloSelect = document.getElementById('newOrderModello');
@@ -15,7 +16,8 @@ const backendUrl = window.BACKEND_URL;
 // Elementi per l'animazione di caricamento
 const loadingIndicator = document.createElement('div');
 loadingIndicator.id = 'newOrderLoadingIndicator';
-loadingIndicator.style.display = 'none'; // Inizialmente nascosto
+loadingIndicator.className = 'loading-indicator'; // Aggiungi una classe per lo stile CSS
+loadingIndicator.style.display = 'none';
 loadingIndicator.style.position = 'absolute';
 loadingIndicator.style.top = '50%';
 loadingIndicator.style.left = '50%';
@@ -28,86 +30,67 @@ loadingIndicator.style.textAlign = 'center';
 
 newOrderModal?.appendChild(loadingIndicator);
 
-function showLoadingMessage() {
+// Funzione unificata per mostrare/nascondere il caricamento
+// Accetta un argomento per personalizzare il messaggio
+function showLoading(message = 'Caricamento dati...') {
     if (loadingIndicator) {
+        loadingIndicator.innerHTML = `<p>${message}</p>`;
         loadingIndicator.style.display = 'block';
-        loadingIndicator.innerHTML = '<p>Caricamento dati...</p>';
     }
 }
 
-function hideLoadingMessage() {
+function hideLoading() {
     if (loadingIndicator) {
         loadingIndicator.style.display = 'none';
-        loadingIndicator.innerHTML = '';
     }
 }
 
-// Funzione per caricare i dati dei dropdown
-async function loadNewOrderData() {
-    showLoadingMessage();
+// Funzione per popolare un dropdown in modo generico
+function populateDropdown(selectElement, data, placeholder) {
+    if (!selectElement) return;
+    selectElement.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+    if (data && data.length > 0) {
+        data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            selectElement.appendChild(option);
+        });
+    }
+}
+
+// Funzione per caricare i dati dei dropdown dal backend
+async function loadDynamicDropdowns() {
+    showLoading('Caricamento dati per i dropdown...');
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         console.error('Token di autenticazione non trovato.');
-        hideLoadingMessage();
+        hideLoading();
         return;
     }
 
     try {
-        // --- Gestione Dropdown Modelli ---
-        const modelsResponse = await fetch(`${backendUrl}/api/get-all-models`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
+        const [modelsResponse, statusResponse] = await Promise.all([
+            fetch(`${backendUrl}/api/get-all-models`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+            fetch(`${backendUrl}/api/get-all-statuses`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+        ]);
 
-        if (!modelsResponse.ok) {
-            throw new Error('Errore nel recupero dei modelli.');
+        if (!modelsResponse.ok || !statusResponse.ok) {
+            throw new Error('Errore nel recupero dei dati dei dropdown.');
         }
+
         const modelsData = await modelsResponse.json();
-        const models = modelsData.models || [];
-        if (modelloSelect) {
-            modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
-            if (models.length > 0) {
-                models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model;
-                    option.textContent = model;
-                    modelloSelect.appendChild(option);
-                });
-                console.log('Dropdown Modelli popolato.');
-            } else {
-                console.warn('L\'array dei modelli è vuoto. Nessuna opzione aggiunta.');
-            }
-        }
-
-        // --- Gestione Dropdown Status ---
-        const statusResponse = await fetch(`${backendUrl}/api/get-all-statuses`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        if (!statusResponse.ok) {
-            throw new Error('Errore nel recupero degli status.');
-        }
-
         const statusData = await statusResponse.json();
-        const statuses = statusData.statuses || [];
 
-        if (statusSelect) {
-            statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
-            if (statuses.length > 0) {
-                statuses.forEach(status => {
-                    const option = document.createElement('option');
-                    option.value = status;
-                    option.textContent = status;
-                    statusSelect.appendChild(option);
-                });
-                console.log('Dropdown Status popolato.');
-            } else {
-                console.warn('L\'array degli status è vuoto. Nessuna opzione aggiunta.');
-            }
-        }
+        populateDropdown(modelloSelect, modelsData.models, 'Seleziona un modello');
+        populateDropdown(statusSelect, statusData.statuses, 'Seleziona uno status');
+
+        console.log('Dropdown popolati con successo.');
+
     } catch (error) {
         console.error('Errore nel caricamento delle opzioni dropdown:', error);
     } finally {
-        hideLoadingMessage();
+        hideLoading();
     }
 }
 
@@ -118,7 +101,7 @@ if (openNewOrderModalBtn) {
         newOrderModal.style.display = 'block';
         modalOverlay.style.display = 'block';
         console.log('Modale Nuova Commessa aperto.');
-        await fetchDynamicDropdownOptions();
+        await loadDynamicDropdowns();
     });
 }
 
@@ -127,19 +110,10 @@ window.closeNewOrderModal = function() {
     newOrderModal.style.display = 'none';
     modalOverlay.style.display = 'none';
     // Resetta i campi del form quando il modale viene chiuso
-    document.getElementById('newOrderCliente').value = '';
-    document.getElementById('newOrderImpianto').value = '';
-    if (modelloSelect) modelloSelect.selectedIndex = 0;
-    if (statusSelect) statusSelect.selectedIndex = 0;
-    document.getElementById('newOrderVO').value = '';
-    document.getElementById('newOrderCommessa').value = '';
-    document.getElementById('newOrderData').value = '';
-    document.getElementById('newOrderProvincia').value = '';
-    document.getElementById('newOrderPaese').value = '';
-    document.getElementById('newOrderAnno').value = '';
-    document.getElementById('newOrderMatricola').value = '';
-    document.getElementById('newOrderNote').value = '';
-    document.getElementById('newOrderImmagine').value = '';
+    const newOrderForm = document.getElementById('newOrderForm'); // Recupera il form
+    if (newOrderForm) {
+        newOrderForm.reset();
+    }
     hideLoading(); // Assicurati che l'indicatore sia nascosto alla chiusura
     console.log('Modale Nuova Commessa chiuso e form resettato.');
 };
@@ -164,163 +138,50 @@ if (modalOverlay) {
 if (saveNewOrderButton) {
     saveNewOrderButton.addEventListener('click', async () => {
         console.log('Pulsante "Salva Nuova Commessa" cliccato.');
-            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const authToken = localStorage.getItem('authToken');
         if (!authToken) {
             alert('Autenticazione richiesta. Effettua il login.');
             window.location.href = '/login.html';
             return;
         }
-            const cliente = document.getElementById('newOrderCliente').value;
-        const impianto = document.getElementById('newOrderImpianto').value;
-        const modello = modelloSelect.value;
-        const vo = document.getElementById('newOrderVO').value;
-        const commessa = document.getElementById('newOrderCommessa').value;
-        const data = document.getElementById('newOrderData').value;
-        const provincia = document.getElementById('newOrderProvincia').value;
-        const paese = document.getElementById('newOrderPaese').value;
-        const anno = document.getElementById('newOrderAnno').value;
-        const matricola = document.getElementById('newOrderMatricola').value;
-        const status = statusSelect.value;
-        const note = document.getElementById('newOrderNote').value;
-        const immagineFile = document.getElementById('newOrderImmagine').files[0];
-            if (!cliente || !impianto || !modello || !commessa || !data || !status) {
-            alert('Per favor, compila tutti i campi obbligatori (Cliente, Impianto, Modello, Commessa, Data, Status).');
-            return;
-        }
-            const formData = new FormData();
-        formData.append('cliente', cliente);
-        formData.append('impianto', impianto);
-        formData.append('modello', modello);
-        formData.append('vo', vo);
-        formData.append('commessa', commessa);
-        formData.append('data', data);
-        formData.append('provincia', provincia);
-        formData.append('paese', paese);
-        formData.append('anno', anno);
-        formData.append('matricola', matricola);
-        formData.append('status', status);
-        formData.append('note', note);
-        if (immagineFile) {
-            formData.append('immagine', immagineFile);
-        }
-            showLoading(); // Mostra l'indicatore di caricamento
-            try {
+
+        const newOrderForm = document.getElementById('newOrderForm'); // Recupera il form
+        const formData = new FormData(newOrderForm);
+
+        // Controllo campi obbligatori
+        const requiredFields = ['cliente', 'impianto', 'modello', 'commessa', 'data', 'status'];
+        const isValid = requiredFields.every(field => {
+            if (!formData.get(field) || formData.get(field).trim() === '') {
+                alert(`Per favore, compila il campo obbligatorio: ${field}`);
+                return false;
+            }
+            return true;
+        });
+
+        if (!isValid) return;
+
+        showLoading('Salvataggio in corso...');
+        try {
             const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                },
+                headers: { 'Authorization': `Bearer ${authToken}` },
                 body: formData
             });
-                if (!response.ok) {
+
+            if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Errore durante il salvataggio della commessa.');
             }
-                const result = await response.json();
+
+            const result = await response.json();
             console.log('Commessa salvata con successo:', result);
             alert('Nuova commessa aggiunta con successo!');
             closeNewOrderModal();
-            } catch (error) {
+        } catch (error) {
             console.error('Errore nel salvataggio della nuova commessa:', error);
             alert('Errore nel salvataggio della nuova commessa: ' + error.message);
         } finally {
-            hideLoading(); // Nascondi l'indicatore di caricamento in ogni caso
+            hideLoading();
         }
     });
-}
-
-// Funzione per mostrare l'indicatore di caricamento
-function showLoadingIndicator() {
-    const loadingIndicator = document.getElementById('newOrderLoadingIndicator');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'block';
-    }
-}
-
-// Funzione per nascondere l'indicatore di caricamento
-function hideLoadingIndicator() {
-    const loadingIndicator = document.getElementById('newOrderLoadingIndicator');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-    }
-}
-
-// Aggiungi queste funzioni nel tuo file new-order-modal.js
-function showLoadingMessage() {
-    const loadingStatusElement = document.getElementById('newOrderLoadingStatus');
-    if (loadingStatusElement) {
-        loadingStatusElement.style.display = 'block';
-    }
-}
-
-function hideLoadingMessage() {
-    const loadingStatusElement = document.getElementById('newOrderLoadingStatus');
-    if (loadingStatusElement) {
-        loadingStatusElement.style.display = 'none';
-    }
-}
-
-async function fetchDynamicDropdownOptions() {
-console.log('Avvio del caricamento delle opzioni per i dropdown...');
-// Mostra il nuovo messaggio di caricamento specifico
-showLoadingMessage();
-    try {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        console.error('Token di autenticazione non trovato.');
-        hideLoadingIndicator();
-        return;
-    }
-        // --- Gestione Dropdown Modelli ---
-    const modelliResponse = await fetch(`${backendUrl}/api/get-modelli`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-        if (!modelliResponse.ok) {
-        throw new Error('Errore nel recupero dei modelli.');
-    }
-        const modelliData = await modelliResponse.json();
-    const modelli = modelliData.models || [];
-        // Assicurati che l'elemento esista prima di manipolarlo
-    if (modelloSelect) {
-        // Svuota il dropdown e aggiungi l'opzione di default
-        modelloSelect.innerHTML = '<option value="" disabled selected>Seleziona un modello</option>';
-        if (modelli.length > 0) {
-            modelli.forEach(modello => {
-                const option = document.createElement('option');
-                option.value = modello;
-                option.textContent = modello;
-                modelloSelect.appendChild(option);
-            });
-            console.log('Dropdown Modelli popolato.');
-        } else {
-            console.warn('L\'array dei modelli è vuoto. Nessuna opzione aggiunta.');
-        }
-    }
-        // --- Gestione Dropdown Status ---
-    const statusResponse = await fetch(`${backendUrl}/api/get-all-statuses`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-        if (!statusResponse.ok) {
-        throw new Error('Errore nel recupero degli status.');
-    }
-        const statusData = await statusResponse.json();
-    const statuses = statusData.statuses || [];
-        if (statusSelect) {
-        statusSelect.innerHTML = '<option value="" disabled selected>Seleziona uno status</option>';
-        if (statuses.length > 0) {
-            statuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                statusSelect.appendChild(option);
-            });
-            console.log('Dropdown Status popolato.');
-        } else {
-            console.warn('L\'array degli status è vuoto. Nessuna opzione aggiunta.');
-        }
-    }
-} catch (error) {
-    console.error('Errore nel caricamento delle opzioni dropdown:', error);
-} finally {
-    hideLoadingMessage();
 }

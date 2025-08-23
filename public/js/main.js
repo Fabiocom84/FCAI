@@ -3,11 +3,12 @@ let insertModalInstance;
 let chatModalInstance;
 let newOrderModalInstance;
 let trainingModalInstance;
+let modalOverlay; // Dichiarazione corretta a livello globale
 
 document.addEventListener('DOMContentLoaded', function() {
     legendInstance = new Legend(); 
     window.legendInstance = legendInstance;
-    modalOverlay = document.getElementById('modalOverlay');
+    modalOverlay = document.getElementById('modalOverlay'); // Assegnazione del valore
 
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
@@ -51,7 +52,8 @@ function openNewOrderModal() {
         newOrderModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
-    loadNewOrderData();
+    // Chiamata alla funzione unificata e corretta
+    loadDynamicDropdowns(); 
 }
 
 // Funzione per aprire il modale Addestramento
