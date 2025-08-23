@@ -71,7 +71,8 @@ function closeSettingsModal() {
 
 function loadLatestEntries() {
   const backendUrl = window.BACKEND_URL;
-  const token = localStorage.getItem('authToken'); // Recupera il token da localStorage
+  // Cerca prima in localStorage, poi in sessionStorage
+  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken'); 
 
   if (!token) {
     console.error("Token di autenticazione non trovato. Impossibile caricare gli inserimenti recenti.");
