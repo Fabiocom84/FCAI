@@ -1,4 +1,5 @@
-let legendInstance; 
+let legendInstance;
+let insertDataModalElement; 
 let insertModalInstance; 
 let chatModalInstance;
 let newOrderModalInstance;
@@ -25,11 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 //----Funzioni per aprire i modali
 function openInsertDataModal() {
-    if (!insertModalInstance) {
-        insertModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '.insert-button');
-        window.insertModalInstance = insertModalInstance;
+    // Invece di una classe, prendi l'elemento HTML del modale
+    if (!insertDataModalElement) {
+        insertDataModalElement = document.getElementById('insertDataModal');
     }
-    insertModalInstance.show();
+    if (insertDataModalElement) {
+        insertDataModalElement.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    }
 }
 
 function openChatModal() {
