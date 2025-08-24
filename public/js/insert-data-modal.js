@@ -97,67 +97,59 @@ class InsertDataModal {
     }
 
     async saveData(event) {
-        event.preventDefault(); // Impedisce l'invio del form tradizionale
-    
-        const transcription = this.voiceTranscription ? this.voiceTranscription.value : '';
-        const riferimento = this.riferimentoDropdown ? this.riferimentoDropdown.value : '';
-            
-        let fileContent = null;
-        let fileName = null;
-    
-        if (this.fileUploadInput && this.fileUploadInput.files.length > 0) {
-            const file = this.fileUploadInput.files[0];
-            fileName = file.name;
-            try {
-                fileContent = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = error => reject(error);
-                    reader.readAsDataURL(file);
-                });
-                fileContent = fileContent.split(',')[1];
-            } catch (error) {
-                console.error("Errore durante la lettura del file:", error);
-                alert("Impossibile leggere il file selezionato.");
-                return;
-            }
-        }
-    
-        if (!transcription && !fileContent) {
-            alert("Per favore, inserisci una trascrizione vocale o carica un file.");
-            return;
-        }
-    
+        // Impedisci l'invio predefinito del form
+        event.preventDefault();
+
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
             alert('Autenticazione richiesta. Effettua il login.');
-            window.location.href = 'login.html'; // Reindirizza al login
             return;
         }
-    
+
+        // Ora saveButton è accessibile in tutto il metodo
+        const saveButton = this.modal.querySelector('.save-button');
+        if (saveButton) {
+            saveButton.disabled = true; // Disabilita il pulsante
+        }
+
+        const modalForm = this.modal.querySelector('form');
+        if (!modalForm) {
+            console.error('Form non trovato all\'interno del modale.');
+            return;
+        }
+
+        const formData = new FormData(modalForm);
+
+        const inputData = this.modal.querySelector('#inputData')?.value;
+        onst file = this.fileUploadInput?.files[0];
+        const voiceTranscription = this.voiceTranscription?.value;
+        const riferimento = this.riferimentoDropdown?.value;
+
+        formData.append('data', inputData);
+        if (file) {
+            formData.append('file', file);
+        }
+        if (voiceTranscription) {
+            formData.append('voice_transcription', voiceTranscription);
+        }
+        if (riferimento) {
+            formData.append('riferimento', riferimento);
+        }
+
         try {
             const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({
-                    transcription: transcription,
-                    riferimento: riferimento,
-                    fileContent: fileContent,
-                    fileName: fileName
-                })
+                headers: { 'Authorization': `Bearer ${authToken}` },
+                body: formData
             });
-    
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
             }
-    
+
             console.log('Dati salvati con successo!');
 
-            // Logica per mostrare il messaggio di successo
             const formContent = this.modal.querySelector('.modal-body > form');
             const successMessage = document.getElementById('insertDataSuccessMessage');
 
@@ -167,7 +159,6 @@ class InsertDataModal {
 
                 setTimeout(() => {
                     this.close();
-                    // Ripristina la visualizzazione del form
                     formContent.style.display = 'block';
                     successMessage.style.display = 'none';
                 }, 2000);
