@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLatestEntries();
 });
 
+// Funzione di logout
+function logoutUser() {
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
+    console.log('Token di autenticazione rimosso. Reindirizzamento...');
+    window.location.href = 'login.html'; 
+}
 
 //----Funzioni per aprire i modali
 function openInsertDataModal() {
