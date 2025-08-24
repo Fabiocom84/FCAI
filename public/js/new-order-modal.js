@@ -166,8 +166,20 @@ if (saveNewOrderButton) {
 
             const result = await response.json();
             console.log('Commessa salvata con successo:', result);
-            alert('Nuova commessa aggiunta con successo!');
-            closeNewOrderModal();
+            
+            // Nascondi il form e mostra il messaggio di successo
+            newOrderForm.style.display = 'none';
+            newOrderSuccessMessage.style.display = 'block';
+
+            // Chiudi il modale dopo 2 secondi
+            setTimeout(() => {
+                closeNewOrderModal();
+                // Ripristina la visualizzazione del form e nascondi il messaggio per il prossimo utilizzo
+                newOrderForm.style.display = 'block';
+                newOrderSuccessMessage.style.display = 'none';
+            }, 2000); // Messaggio visibile per 2 secondi
+            
+            // --- FINE LOGICA DI CONFERMA ---
         } catch (error) {
             console.error('Errore nel salvataggio della nuova commessa:', error);
             alert('Errore nel salvataggio della nuova commessa: ' + error.message);
