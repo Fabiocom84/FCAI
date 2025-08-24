@@ -4,12 +4,10 @@ let insertDataModalInstance;
 let chatModalInstance;
 let newOrderModalInstance;
 let trainingModalInstance;
-
-const modalOverlay = document.getElementById('modalOverlay'); 
-window.modalOverlay = modalOverlay; // Rendi la variabile globale
+let modalOverlay;
 
 document.addEventListener('DOMContentLoaded', function() {
-    legendInstance = new Legend(); 
+    legendInstance = new Legend();
     window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); // Assegnazione del valore
 
