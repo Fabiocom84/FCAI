@@ -324,38 +324,6 @@
     <script src="js/insert-data-modal.js"></script>
     <script src="js/legend.js"></script>
     <script src="js/chat-modal.js"></script>
-    <script src="js/new-order-modal.js"></script> 
-    <script>
-        // Funzione per aprire il modale "Nuova Commessa"
-        document.querySelector('.new-order-button').addEventListener('click', function(event) {
-            event.preventDefault();
-            document.getElementById('newOrderModal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        });
-
-        // Funzione per chiudere il modale "Nuova Commessa"
-        function closeNewOrderModal() {
-            document.getElementById('newOrderModal').style.display = 'none';
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-
-        console.log('Controllo autenticazione in index.html...');
-
-        let authToken = localStorage.getItem('authToken');
-        let storageType = 'localStorage';
-
-        if (!authToken) {
-            console.log('Nessun token trovato in localStorage. Controllo sessionStorage.');
-            authToken = sessionStorage.getItem('authToken');
-            storageType = 'sessionStorage';
-        }
-
-        if (!authToken) {
-            console.log('Nessun token trovato né in localStorage né in sessionStorage, reindirizzamento a login.html');
-            window.location.href = '/login.html'; // Percorso esplicito a login.html
-        } else {
-            console.log('Token trovato in', storageType + ':', authToken);
-        }
-    </script>
+    <script src="js/new-order-modal.js"></script>
 </body>
 </html>
