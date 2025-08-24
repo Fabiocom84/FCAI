@@ -155,17 +155,31 @@ class InsertDataModal {
                 throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
             }
     
-            const result = await response.json();
-            alert('Dati salvati con successo: ' + result.message);
-            this.close(); // Chiudi il modale
-    
-            if (typeof window.fetchLatestEntries === 'function') {
-                window.fetchLatestEntries();
+            console.log('Dati salvati con successo!');
+
+            // Logica per mostrare il messaggio di successo
+            const formContent = this.modal.querySelector('.modal-body > form');
+            const successMessage = document.getElementById('insertDataSuccessMessage');
+
+            if (formContent && successMessage) {
+                formContent.style.display = 'none';
+                successMessage.style.display = 'block';
+
+                setTimeout(() => {
+                    this.close();
+                    // Ripristina la visualizzazione del form
+                    formContent.style.display = 'block';
+                    successMessage.style.display = 'none';
+                }, 2000);
             }
-    
+
         } catch (error) {
-            console.error('Errore durante il salvataggio dei dati:', error);
-            alert('Errore: ' + error.message);
+            console.error('Errore nel salvataggio dei dati:', error);
+            alert('Errore nel salvataggio dei dati: ' + error.message);
+        } finally {
+            if (saveButton) {
+                saveButton.disabled = false;
+            }
         }
     }
     
