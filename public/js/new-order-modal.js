@@ -11,6 +11,8 @@ const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage')
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 
+const modalOverlay = document.getElementById('modalOverlay');
+
 const backendUrl = window.BACKEND_URL;
 
 // Elementi per l'animazione di caricamento
