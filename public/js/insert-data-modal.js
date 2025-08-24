@@ -97,79 +97,66 @@ class InsertDataModal {
     }
 
     async saveData(event) {
-        event.preventDefault();
+    event.preventDefault();
 
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            alert('Autenticazione richiesta. Effettua il login.');
-            return;
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        alert('Autenticazione richiesta. Effettua il login.');
+        return;
+    }
+
+    if (this.saveButton) {
+        this.saveButton.disabled = true;
+    }
+
+    const modalForm = this.modal.querySelector('form');
+    if (!modalForm) {
+        console.error('Form non trovato all\'interno del modale.');
+        return;
+    }
+
+    const formData = new FormData(modalForm);
+
+    try {
+        const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
+            method: 'POST',
+            headers: { 
+                // NON includere 'Content-Type' qui. Il browser lo gestisce automaticamente.
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
         }
 
+        console.log('Dati salvati con successo!');
+
+        const formContent = this.modal.querySelector('form');
+        const successMessage = document.getElementById('insertDataSuccessMessage');
+
+        if (formContent && successMessage) {
+            formContent.style.display = 'none';
+            successMessage.style.display = 'block';
+
+            setTimeout(() => {
+                this.close();
+                formContent.style.display = 'block';
+                successMessage.style.display = 'none';
+            }, 2000);
+        }
+
+    } catch (error) {
+        console.error('Errore nel salvataggio dei dati:', error);
+        alert('Errore nel salvataggio dei dati: ' + error.message);
+    } finally {
         if (this.saveButton) {
-            this.saveButton.disabled = true;
-        }
-
-        const modalForm = this.modal.querySelector('form');
-        if (!modalForm) {
-            console.error('Form non trovato all\'interno del modale.');
-            return;
-        }
-
-        const formData = new FormData(modalForm);
-
-        const inputData = this.modal.querySelector('#inputData')?.value;
-        const file = this.fileUploadInput?.files[0];
-        const voiceTranscription = this.voiceTranscription?.value;
-        const riferimento = this.riferimentoDropdown?.value;
-
-        formData.append('data', inputData);
-        if (file) {
-            formData.append('file', file);
-        }
-        if (voiceTranscription) {
-            formData.append('voice_transcription', voiceTranscription);
-        }
-        if (riferimento) {
-            formData.append('riferimento', riferimento);
-        }
-
-        try {
-            const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` },
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
-            }
-
-            console.log('Dati salvati con successo!');
-
-            const formContent = this.modal.querySelector('.modal-body > form');
-            const successMessage = document.getElementById('insertDataSuccessMessage');
-
-            if (formContent && successMessage) {
-                formContent.style.display = 'none';
-                successMessage.style.display = 'block';
-
-                setTimeout(() => {
-                    this.close();
-                    formContent.style.display = 'block';
-                    successMessage.style.display = 'none';
-                }, 2000);
-            }
-
-        } catch (error) {
-            console.error('Errore nel salvataggio dei dati:', error);
-            alert('Errore nel salvataggio dei dati: ' + error.message);
-        } finally {
-            if (this.saveButton) {
-                this.saveButton.disabled = false;
-            }
+            this.saveButton.disabled = false;
         }
     }
+}
     
     // loadRiferimenti() è stato eliminato
 
