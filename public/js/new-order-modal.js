@@ -5,6 +5,7 @@ const newOrderModal = document.getElementById('newOrderModal');
 const closeNewOrderModalBtn = newOrderModal ? newOrderModal.querySelector('.close-button') : null;
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn'); // Presumo che esista
+const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
 
 // Elementi dei dropdown
 const modelloSelect = document.getElementById('newOrderModello');
