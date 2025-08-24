@@ -126,7 +126,10 @@ if (closeNewOrderModalBtn) {
 
 // Gestione del salvataggio dei dati
 if (saveNewOrderButton) {
-    saveNewOrderButton.addEventListener('click', async () => {
+    saveNewOrderButton.addEventListener('click', async (event) => {
+        // Aggiungi questa riga per bloccare il comportamento di submit predefinito del form
+        event.preventDefault(); 
+        
         console.log('Pulsante "Salva Nuova Commessa" cliccato.');
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
