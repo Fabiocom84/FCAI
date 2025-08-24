@@ -9,7 +9,8 @@ let modalOverlay;
 document.addEventListener('DOMContentLoaded', function() {
     legendInstance = new Legend();
     window.legendInstance = legendInstance;
-    modalOverlay = document.getElementById('modalOverlay'); // Assegnazione del valore
+    modalOverlay = document.getElementById('modalOverlay'); 
+    window.modalOverlay = modalOverlay; // Rendi la variabile globale
 
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
