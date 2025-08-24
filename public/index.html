@@ -64,36 +64,38 @@
                 <span class="close-button" onclick="closeInsertDataModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/file.png" alt="Carica File">
-                        <h3>Carica File</h3>
+                <form id="insertDataForm">
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/file.png" alt="Carica File">
+                            <h3>Carica File</h3>
+                        </div>
+                        <input type="file" id="fileUpload">
                     </div>
-                    <input type="file" id="fileUpload">
-                </div>
 
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/voice.png" alt="Registra Vocale">
-                        <h3>Registra Vocale</h3>
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/voice.png" alt="Registra Vocale">
+                            <h3>Registra Vocale</h3>
+                        </div>
+                        <div class="voice-controls">
+                            <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
+                            <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
+                        </div>
+                        <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
+                        <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
                     </div>
-                    <div class="voice-controls">
-                        <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
-                        <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
-                    </div>
-                    <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-                    <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
-                </div>
 
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/tag.png" alt="Riferimento">
-                        <h3>Riferimento</h3>
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/tag.png" alt="Riferimento">
+                            <h3>Riferimento</h3>
+                        </div>
+                        <select id="riferimentoDropdown">
+                            <option value="" disabled selected>Seleziona un riferimento</option>
+                        </select>
                     </div>
-                    <select id="riferimentoDropdown">
-                        <option value="" disabled selected>Seleziona un riferimento</option>
-                    </select>
-                </div>
+                </form>    
 
                 <button class="save-button" id="saveDataButton">Salva Dati</button>
 
