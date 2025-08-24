@@ -120,8 +120,8 @@ class InsertDataModal {
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
             method: 'POST',
-            headers: { 
-                // NON includere 'Content-Type' qui. Il browser lo gestisce automaticamente.
+            headers: {
+                // Rimuovi 'Content-Type': 'multipart/form-data', lo gestisce il browser
                 'Authorization': `Bearer ${authToken}`
             },
             body: formData
