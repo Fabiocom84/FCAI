@@ -151,16 +151,6 @@ if (saveNewOrderButton) {
         }
         const formData = new FormData(form);
 
-        // Controllo campi obbligatori
-        const requiredFields = ['cliente', 'impianto', 'modello', 'commessa', 'data', 'status'];
-        const isValid = requiredFields.every(field => {
-            if (!formData.get(field) || formData.get(field).trim() === '') {
-                alert(`Per favore, compila il campo obbligatorio: ${field}`);
-                return false;
-            }
-            return true;
-        });
-
         if (!isValid) return;
 
         showLoading('Salvataggio in corso...');
