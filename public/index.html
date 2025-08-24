@@ -52,53 +52,56 @@
             <ul id="latestEntriesList" style="list-style: none; padding: 0;">
                 </ul>
         </div>
-    </div> <div id="insertDataModal" class="modal">
+    </div> 
+
+    <div id="insertDataModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Inserisci Dati</h2>
+                <h3>Inserisci Dati</h3>
+                <button type="button" class="close-button">&times;</button>
                 <div class="help-button-container">
                     <button class="help-button" data-legend="insertDataLegend">?</button>
                 </div>
-                <span class="close-button" onclick="closeInsertDataModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/file.png" alt="Carica File">
-                        <h3>Carica File</h3>
+                <form id="insertDataForm">
+                    <div class="form-group">
+                        <label for="inputData">Dati da inserire:</label>
+                        <textarea id="inputData" rows="6" placeholder="Inserisci il testo qui..."></textarea>
                     </div>
-                    <input type="file" id="fileUpload">
-                </div>
 
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/voice.png" alt="Registra Vocale">
-                        <h3>Registra Vocale</h3>
+                    <div class="form-group file-input-group">
+                        <label for="fileUpload">Oppure carica un file di testo (.txt):</label>
+                        <input type="file" id="fileUpload" accept=".txt">
+                        <span class="file-name" id="fileNameDisplay"></span>
                     </div>
-                    <div class="voice-controls">
-                        <button id="startButton"><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
-                        <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
-                    </div>
-                    <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-                    <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
-                </div>
 
-                <div class="form-group">
-                    <div class="input-label-icon">
-                        <img src="img/tag.png" alt="Riferimento">
-                        <h3>Riferimento</h3>
+                    <div class="form-group voice-input-group">
+                        <label>Oppure registra una trascrizione vocale:</label>
+                        <div class="voice-controls">
+                            <button type="button" id="startButton">Registra</button>
+                            <button type="button" id="stopButton" disabled>Ferma</button>
+                        </div>
+                        <p id="recordingStatus">In attesa...</p>
+                        <textarea id="voiceTranscription" rows="2" placeholder="La trascrizione apparirà qui..." readonly></textarea>
                     </div>
-                    <select id="riferimentoDropdown">
-                        <option value="" disabled selected>Seleziona un riferimento</option>
-                    </select>
-                </div>
+
+                    <div class="form-group">
+                        <label for="riferimentoDropdown">Riferimento:</label>
+                        <select id="riferimentoDropdown">
+                            <option value="" disabled selected>Caricamento...</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="submit" class="save-button">Salva Dati</button>
+                    </div>
+                </form>
 
                 <div id="insertDataSuccessMessage" class="modal-message" style="display: none;">
                     <h3>Dati salvati con successo! ✅</h3>
-                    <p>Il modale si chiuderà automaticamente tra poco.</p>
+                    <p>Il modale si chiuderà automaticamente.</p>
                 </div>
-
-                <button class="save-button" id="saveDataButton">Salva Dati</button>
             </div>
         </div>
     </div>
