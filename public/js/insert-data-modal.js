@@ -97,7 +97,6 @@ class InsertDataModal {
     }
 
     async saveData(event) {
-        // Impedisci l'invio predefinito del form
         event.preventDefault();
 
         const authToken = localStorage.getItem('authToken');
@@ -106,10 +105,8 @@ class InsertDataModal {
             return;
         }
 
-        // Ora saveButton è accessibile in tutto il metodo
-        const saveButton = this.modal.querySelector('.save-button');
-        if (saveButton) {
-            saveButton.disabled = true; // Disabilita il pulsante
+        if (this.saveButton) {
+            this.saveButton.disabled = true;
         }
 
         const modalForm = this.modal.querySelector('form');
@@ -121,7 +118,7 @@ class InsertDataModal {
         const formData = new FormData(modalForm);
 
         const inputData = this.modal.querySelector('#inputData')?.value;
-        onst file = this.fileUploadInput?.files[0];
+        const file = this.fileUploadInput?.files[0];
         const voiceTranscription = this.voiceTranscription?.value;
         const riferimento = this.riferimentoDropdown?.value;
 
@@ -168,8 +165,8 @@ class InsertDataModal {
             console.error('Errore nel salvataggio dei dati:', error);
             alert('Errore nel salvataggio dei dati: ' + error.message);
         } finally {
-            if (saveButton) {
-                saveButton.disabled = false;
+            if (this.saveButton) {
+                this.saveButton.disabled = false;
             }
         }
     }
