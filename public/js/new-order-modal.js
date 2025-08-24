@@ -117,29 +117,10 @@ window.closeNewOrderModal = function() {
     console.log('Modale Nuova Commessa chiuso e form resettato.');
 };
 
-// Chiudi il modale cliccando sull'overlay
-const modalOverlay = document.getElementById('modalOverlay');
-if (modalOverlay) {
-    modalOverlay.addEventListener('click', (event) => {
-        if (event.target === modalOverlay) {
-            closeNewOrderModal();
-        }
-    });
-}
-
 // Event listener per il pulsante di chiusura (X)
 if (closeNewOrderModalBtn) {
     closeNewOrderModalBtn.addEventListener('click', () => {
         closeNewOrderModal();
-    });
-}
-
-// Chiudi il modale cliccando sull'overlay
-if (modalOverlay) {
-    modalOverlay.addEventListener('click', (event) => {
-        if (event.target === modalOverlay) {
-            closeNewOrderModal();
-        }
     });
 }
 
