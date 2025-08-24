@@ -108,16 +108,12 @@ if (openNewOrderModalBtn) {
 // Funzione per chiudere il modale e resettare il form
 window.closeNewOrderModal = function() {
     newOrderModal.style.display = 'none';
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (modalOverlay) {
-        modalOverlay.style.display = 'none';
-    }
-    // Resetta i campi del form quando il modale viene chiuso
-    const newOrderForm = document.getElementById('newOrderForm'); // Recupera il form
+    window.modalOverlay.style.display = 'none'; // Utilizza la variabile globale
+    const newOrderForm = document.getElementById('newOrderForm');
     if (newOrderForm) {
         newOrderForm.reset();
     }
-    hideLoading(); // Assicurati che l'indicatore sia nascosto alla chiusura
+    hideLoading();
     console.log('Modale Nuova Commessa chiuso e form resettato.');
 };
 
@@ -182,18 +178,17 @@ if (saveNewOrderButton) {
             console.log('Commessa salvata con successo:', result);
             
             // Nascondi il form e mostra il messaggio di successo
-            newOrderForm.style.display = 'none';
+            form.style.display = 'none';
             newOrderSuccessMessage.style.display = 'block';
 
             // Chiudi il modale dopo 2 secondi
             setTimeout(() => {
                 closeNewOrderModal();
                 // Ripristina la visualizzazione del form e nascondi il messaggio per il prossimo utilizzo
-                newOrderForm.style.display = 'block';
+                form.style.display = 'block';
                 newOrderSuccessMessage.style.display = 'none';
-            }, 2000); // Messaggio visibile per 2 secondi
+            }, 2000);
             
-            // --- FINE LOGICA DI CONFERMA ---
         } catch (error) {
             console.error('Errore nel salvataggio della nuova commessa:', error);
             alert('Errore nel salvataggio della nuova commessa: ' + error.message);
