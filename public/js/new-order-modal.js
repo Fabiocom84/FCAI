@@ -151,8 +151,6 @@ if (saveNewOrderButton) {
         }
         const formData = new FormData(form);
 
-        if (!isValid) return;
-
         showLoading('Salvataggio in corso...');
         try {
             const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
