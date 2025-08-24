@@ -70,7 +70,7 @@
                             <img src="img/file.png" alt="Carica File">
                             <h3>Carica File</h3>
                         </div>
-                        <input type="file" id="fileUpload">
+                        <input type="file" id="fileUpload" name="fileUpload">
                     </div>
 
                     <div class="form-group">
@@ -83,7 +83,7 @@
                             <button id="stopButton" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
                         </div>
                         <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-                        <textarea id="voiceTranscription" placeholder="Testo da salvare..."></textarea>
+                        <textarea id="voiceTranscription" name="voiceTranscription" placeholder="Testo da salvare..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -91,11 +91,11 @@
                             <img src="img/tag.png" alt="Riferimento">
                             <h3>Riferimento</h3>
                         </div>
-                        <select id="riferimentoDropdown">
+                        <select id="riferimentoDropdown" name="riferimentoDropdown">
                             <option value="" disabled selected>Seleziona un riferimento</option>
                         </select>
                     </div>
-                </form>    
+                </form>
 
                 <button class="save-button" id="saveDataButton">Salva Dati</button>
 
