@@ -99,7 +99,7 @@ if (openNewOrderModalBtn) {
     openNewOrderModalBtn.addEventListener('click', async (event) => {
         event.preventDefault();
         newOrderModal.style.display = 'block';
-        modalOverlay.style.display = 'block';
+        window.modalOverlay.style.display = 'block'; // Utilizza la variabile globale
         console.log('Modale Nuova Commessa aperto.');
         await loadDynamicDropdowns();
     });

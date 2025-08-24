@@ -4,7 +4,9 @@ let insertDataModalInstance;
 let chatModalInstance;
 let newOrderModalInstance;
 let trainingModalInstance;
-let modalOverlay; // Dichiarazione corretta a livello globale
+
+const modalOverlay = document.getElementById('modalOverlay'); 
+window.modalOverlay = modalOverlay; // Rendi la variabile globale
 
 document.addEventListener('DOMContentLoaded', function() {
     legendInstance = new Legend(); 
