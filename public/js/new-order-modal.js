@@ -11,8 +11,6 @@ const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage')
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 
-const modalOverlay = document.getElementById('modalOverlay');
-
 const backendUrl = window.BACKEND_URL;
 
 // Elementi per l'animazione di caricamento
@@ -110,7 +108,10 @@ if (openNewOrderModalBtn) {
 // Funzione per chiudere il modale e resettare il form
 window.closeNewOrderModal = function() {
     newOrderModal.style.display = 'none';
-    modalOverlay.style.display = 'none';
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'none';
+    }
     // Resetta i campi del form quando il modale viene chiuso
     const newOrderForm = document.getElementById('newOrderForm'); // Recupera il form
     if (newOrderForm) {
@@ -119,6 +120,16 @@ window.closeNewOrderModal = function() {
     hideLoading(); // Assicurati che l'indicatore sia nascosto alla chiusura
     console.log('Modale Nuova Commessa chiuso e form resettato.');
 };
+
+// Chiudi il modale cliccando sull'overlay
+const modalOverlay = document.getElementById('modalOverlay');
+if (modalOverlay) {
+    modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+            closeNewOrderModal();
+        }
+    });
+}
 
 // Event listener per il pulsante di chiusura (X)
 if (closeNewOrderModalBtn) {
