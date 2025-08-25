@@ -4,7 +4,6 @@ class InsertDataModal {
     constructor(modalId, overlayId, openButtonSelector) {
         console.log("Creata una nuova istanza di InsertDataModal.");
         this.modal = document.getElementById(modalId);
-        // this.overlay gestito centralmente da window.showOverlay()/hideOverlay()
         this.openButton = document.querySelector(openButtonSelector);
         this.closeButton = this.modal ? this.modal.querySelector('.close-button') : null;
         this.saveButton = this.modal ? this.modal.querySelector('.save-button') : null;
@@ -15,7 +14,6 @@ class InsertDataModal {
         this.stopButton = this.modal ? this.modal.querySelector('#stopButton') : null;
         this.recordingStatus = this.modal ? this.modal.querySelector('#recordingStatus') : null;
         this.voiceTranscription = this.modal ? this.modal.querySelector('#voiceTranscription') : null;
-        // Entrambi i dropdown ora useranno la logica di 'loadEtichette'
         this.riferimentoDropdown = this.modal ? this.modal.querySelector('#riferimentoDropdown') : null;
 
         this.mediaRecorder = null;
@@ -39,10 +37,35 @@ class InsertDataModal {
             this.fileUploadInput.addEventListener('change', (event) => this.handleFileUpload(event));
         }
         if (this.startButton) {
-            this.startButton.addEventListener('click', () => this.startRecording());
+            this.startButton.addEventListener('click', async () => {
+                const permissionGranted = await this.checkMicrophonePermission();
+                if (permissionGranted) {
+                    this.startRecording();
+                } else {
+                    console.error("Permesso microfono negato o non concesso.");
+                    if (this.recordingStatus) {
+                        this.recordingStatus.textContent = "Errore: Permesso microfono negato.";
+                    }
+                }
+            });
         }
         if (this.stopButton) {
             this.stopButton.addEventListener('click', () => this.stopRecording());
+        }
+    }
+
+    async checkMicrophonePermission() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.error("API del microfono non supportate in questo browser.");
+            return false;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop()); // Ferma immediatamente il track per non mantenere il microfono attivo
+            return true;
+        } catch (error) {
+            console.error("Errore durante la richiesta di permesso al microfono:", error);
+            return false;
         }
     }
 
@@ -97,67 +120,65 @@ class InsertDataModal {
     }
 
     async saveData(event) {
-    event.preventDefault();
+        event.preventDefault();
 
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-        alert('Autenticazione richiesta. Effettua il login.');
-        return;
-    }
-
-    if (this.saveButton) {
-        this.saveButton.disabled = true;
-    }
-
-    const modalForm = this.modal.querySelector('form');
-    if (!modalForm) {
-        console.error('Form non trovato all\'interno del modale.');
-        return;
-    }
-
-    const formData = new FormData(modalForm);
-
-    try {
-        const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: formData
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Autenticazione richiesta. Effettua il login.');
+            return;
         }
 
-        console.log('Dati salvati con successo!');
-
-        const formContent = this.modal.querySelector('form');
-        const successMessage = document.getElementById('insertDataSuccessMessage');
-
-        if (formContent && successMessage) {
-            formContent.style.display = 'none';
-            successMessage.style.display = 'block';
-
-            setTimeout(() => {
-                this.close();
-                formContent.style.display = 'block';
-                successMessage.style.display = 'none';
-            }, 2000);
-        }
-
-    } catch (error) {
-        console.error('Errore nel salvataggio dei dati:', error);
-        alert('Errore nel salvataggio dei dati: ' + error.message);
-    } finally {
         if (this.saveButton) {
-            this.saveButton.disabled = false;
+            this.saveButton.disabled = true;
+        }
+
+        const modalForm = this.modal.querySelector('form');
+        if (!modalForm) {
+            console.error('Form non trovato all\'interno del modale.');
+            return;
+        }
+
+        const formData = new FormData(modalForm);
+
+        try {
+            const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
+            }
+
+            console.log('Dati salvati con successo!');
+
+            const formContent = this.modal.querySelector('form');
+            const successMessage = document.getElementById('insertDataSuccessMessage');
+
+            if (formContent && successMessage) {
+                formContent.style.display = 'none';
+                successMessage.style.display = 'block';
+
+                setTimeout(() => {
+                    this.close();
+                    formContent.style.display = 'block';
+                    successMessage.style.display = 'none';
+                }, 2000);
+            }
+
+        } catch (error) {
+            console.error('Errore nel salvataggio dei dati:', error);
+            alert('Errore nel salvataggio dei dati: ' + error.message);
+        } finally {
+            if (this.saveButton) {
+                this.saveButton.disabled = false;
+            }
         }
     }
-}
-    
-    // loadRiferimenti() è stato eliminato
 
     // loadEtichette è stata modificata per essere riutilizzabile
     async loadEtichette(targetDropdown, type = 'etichetta') {
