@@ -32,7 +32,6 @@ function logoutUser() {
     window.location.href = 'login.html'; 
 }
 
-//----Funzioni per aprire i modali
 function openInsertDataModal() {
     window.openInsertDataModal();
 }
