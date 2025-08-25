@@ -2,40 +2,33 @@
 
 // Elementi DOM
 const insertDataModal = document.getElementById('insertDataModal');
-const closeInsertDataModalBtn = insertDataModal ? insertDataModal.querySelector('.close-button') : null;
-const saveButton = insertDataModal ? insertDataModal.querySelector('.save-button') : null;
-const fileUploadInput = insertDataModal ? insertDataModal.querySelector('#fileUpload') : null;
-const fileNameDisplay = insertDataModal ? insertDataModal.querySelector('.file-name') : null;
-const startButton = insertDataModal ? insertDataModal.querySelector('#startButton') : null;
-const stopButton = insertDataModal ? insertDataModal.querySelector('#stopButton') : null;
-const recordingStatus = insertDataModal ? insertDataModal.querySelector('#recordingStatus') : null;
-const voiceTranscription = insertDataModal ? insertDataModal.querySelector('#voiceTranscription') : null;
-const riferimentoDropdown = insertDataModal ? insertDataModal.querySelector('#riferimentoDropdown') : null;
+const closeInsertDataModalBtn = insertDataModal?.querySelector('.close-button');
+const saveButton = insertDataModal?.querySelector('.save-button');
+const fileUploadInput = insertDataModal?.querySelector('#fileUpload');
+const fileNameDisplay = insertDataModal?.querySelector('.file-name');
+const startButton = insertDataModal?.querySelector('#startButton');
+const stopButton = insertDataModal?.querySelector('#stopButton');
+const recordingStatus = insertDataModal?.querySelector('#recordingStatus');
+const voiceTranscription = insertDataModal?.querySelector('#voiceTranscription');
+const riferimentoDropdown = insertDataModal?.querySelector('#riferimentoDropdown');
 
 // Variabili per la registrazione
 let mediaRecorder = null;
 let audioChunks = [];
 let isTranscribing = false;
 
-// Funzione unificata per la gestione della chiusura del modale
-window.closeInsertDataModal = function() {
-    if (insertDataModal) {
-        insertDataModal.style.display = 'none';
-    }
-    window.modalOverlay.style.display = 'none';
-    resetForm();
-    stopRecording();
-    console.log('Modale Inserisci Dati chiuso e form resettato.');
-};
-
-// Funzione per aprire il modale
-window.openInsertDataModal = async function() {
-    if (insertDataModal) {
-        insertDataModal.style.display = 'block';
-    }
-    window.modalOverlay.style.display = 'block';
+// Funzione chiamata da main.js per preparare il modale all'apertura
+window.prepareInsertDataModal = async function() {
     await preCheckMicrophonePermission();
     await loadEtichette();
+    console.log('Modale Inserisci Dati preparato.');
+};
+
+// Funzione chiamata da main.js per pulire il modale alla chiusura
+window.cleanupInsertDataModal = function() {
+    resetForm();
+    stopRecording(); // Assicura che ogni registrazione in corso venga fermata
+    console.log('Modale Inserisci Dati resettato.');
 };
 
 function resetForm() {
@@ -46,11 +39,19 @@ function resetForm() {
     if (recordingStatus) recordingStatus.textContent = 'Pronto per registrare';
     if (startButton) startButton.disabled = false;
     if (stopButton) stopButton.disabled = true;
+    
+    // Riporta visibile il form se era nascosto dal messaggio di successo
+    const formContent = insertDataModal?.querySelector('form');
+    const successMessage = document.getElementById('insertDataSuccessMessage');
+    if (formContent) formContent.style.display = 'block';
+    if (successMessage) successMessage.style.display = 'none';
 }
 
-// Event listeners
+// Event listeners specifici del modale
 document.addEventListener('DOMContentLoaded', () => {
-    // Ora gli event listener per open/close sono in main.js
+    if (closeInsertDataModalBtn) {
+        closeInsertDataModalBtn.addEventListener('click', window.closeInsertDataModal);
+    }
     if (saveButton) {
         saveButton.addEventListener('click', saveData);
     }
@@ -68,62 +69,48 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
-        if (this.fileNameDisplay) { // Controllo null
-            this.fileNameDisplay.textContent = file.name;
-        }
+        if (fileNameDisplay) fileNameDisplay.textContent = file.name;
     } else {
-        if (this.fileNameDisplay) { // Controllo null
-            this.fileNameDisplay.textContent = 'Nessun file selezionato';
-        }
+        if (fileNameDisplay) fileNameDisplay.textContent = 'Nessun file selezionato';
     }
 }
 
 async function saveData(event) {
     event.preventDefault();
-
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         alert('Autenticazione richiesta. Effettua il login.');
         return;
     }
-    if (this.saveButton) {
-        this.saveButton.disabled = true;
-    }
+    if (saveButton) saveButton.disabled = true;
 
-    const modalForm = this.modal.querySelector('form');
+    const modalForm = insertDataModal?.querySelector('form');
     if (!modalForm) {
         console.error('Form non trovato all\'interno del modale.');
+        if (saveButton) saveButton.disabled = false;
         return;
     }
-
     const formData = new FormData(modalForm);
 
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            },
+            headers: { 'Authorization': `Bearer ${authToken}` },
             body: formData
         });
-
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
         }
 
         console.log('Dati salvati con successo!');
-        const formContent = this.modal.querySelector('form');
         const successMessage = document.getElementById('insertDataSuccessMessage');
-
-        if (formContent && successMessage) {
-            formContent.style.display = 'none';
+        if (modalForm && successMessage) {
+            modalForm.style.display = 'none';
             successMessage.style.display = 'block';
 
             setTimeout(() => {
-                this.close();
-                formContent.style.display = 'block';
-                successMessage.style.display = 'none';
+                window.closeInsertDataModal(); // Usa la funzione globale di chiusura
             }, 2000);
         }
 
@@ -131,190 +118,135 @@ async function saveData(event) {
         console.error('Errore nel salvataggio dei dati:', error);
         alert('Errore nel salvataggio dei dati: ' + error.message);
     } finally {
-        if (this.saveButton) {
-            this.saveButton.disabled = false;
-        }
+        if (saveButton) saveButton.disabled = false;
     }
 }
 
-// Funzione per caricare le etichette
 async function loadEtichette() {
-    if (!targetDropdown) {
-        console.error(`Target dropdown per ${type} non trovato.`);
+    if (!riferimentoDropdown) {
+        console.error('Dropdown per le etichette non trovato.');
         return;
     }
-
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
-        console.error(`Authentication token not found for ${type}.`);
-        alert(`Autenticazione richiesta per ${type}. Effettua il login.`);
-        window.location.href = 'login.html'; // Reindirizza al login
+        console.error('Token di autenticazione non trovato.');
         return;
     }
     
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/get-etichette`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
         if (!response.ok) {
-            throw new Error(`Errore nella richiesta delle ${type}: ${response.status} `);
+            throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
         }
         const data = await response.json();
-        const items = data.etichette; // Assumi che la risposta contenga un campo 'etichette'
+        const items = data.etichette || [];
 
-        targetDropdown.innerHTML = `<option value="" disabled selected>Seleziona un ${type}</option>`;
+        riferimentoDropdown.innerHTML = `<option value="" disabled selected>Seleziona un riferimento</option>`;
         items.forEach(item => {
             const option = document.createElement('option');
             option.value = item;
             option.textContent = item;
-            targetDropdown.appendChild(option);
+            riferimentoDropdown.appendChild(option);
         });
-        console.log(`Dropdown popolato per ${targetDropdown.id} con ${items.length} ${type}.`);
+        console.log(`Dropdown popolato con ${items.length} etichette.`);
 
     } catch (error) {
-        console.error(`Errore nel caricamento delle ${type}:`, error);
-        // alert(`Impossibile caricare le ${type}. Controlla la console per dettagli.`);
+        console.error('Errore nel caricamento delle etichette:', error);
     }
 }
 
-// Funzione per richiedere il permesso in modo proattivo.
 async function preCheckMicrophonePermission() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
         console.log("Permesso microfono concesso.");
-        if (this.recordingStatus) {
-            this.recordingStatus.textContent = "Pronto per registrare.";
-        }
-        if (this.startButton) {
-            this.startButton.disabled = false;
-        }
-        return true;
+        if (recordingStatus) recordingStatus.textContent = "Pronto per registrare.";
+        if (startButton) startButton.disabled = false;
     } catch (error) {
         console.error("Permesso microfono negato:", error);
-        if (this.recordingStatus) {
-            this.recordingStatus.textContent = "Errore: Permesso microfono negato. Ricarica la pagina e riprova.";
-        }
-        if (this.startButton) {
-            this.startButton.disabled = true;
-        }
-        return false;
+        if (recordingStatus) recordingStatus.textContent = "Permesso microfono negato.";
+        if (startButton) startButton.disabled = true;
     }
 }
 
-// Funzioni per la registrazione audio (startRecording, stopRecording, onStop, transcribeAudio)
 async function startRecording() {
-    if (this.isTranscribing) return; // Non avviare una nuova registrazione se una trascrizione è già in corso
+    if (isTranscribing) return;
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.mediaRecorder = new MediaRecorder(stream);
-        this.audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
 
-        this.mediaRecorder.ondataavailable = event => {
-            this.audioChunks.push(event.data);
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
         };
+        mediaRecorder.onstop = onStop;
 
-        this.mediaRecorder.onstop = () => {
-            this.onStop();
-        };
-
-        this.mediaRecorder.start();
-        if (this.recordingStatus) { // Controllo null
-            this.recordingStatus.textContent = "Registrazione in corso...";
-        }
-        if (this.startButton) { // Controllo null
-            this.startButton.disabled = true;
-        }
-        if (this.stopButton) { // Controllo null
-            this.stopButton.disabled = false;
-        }
+        mediaRecorder.start();
+        if (recordingStatus) recordingStatus.textContent = "Registrazione in corso...";
+        if (startButton) startButton.disabled = true;
+        if (stopButton) stopButton.disabled = false;
     } catch (error) {
         console.error("Errore nell'accesso al microfono:", error);
-        if (this.recordingStatus) { // Controllo null
-            this.recordingStatus.textContent = "Errore: Microfono non accessibile.";
-        }
+        if (recordingStatus) recordingStatus.textContent = "Errore: Microfono non accessibile.";
     }
 }
 
 function stopRecording() {
-    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-        this.mediaRecorder.stop();
-        if (this.recordingStatus) { // Controllo null
-            this.recordingStatus.textContent = "Elaborazione trascrizione...";
-        }
-        if (this.startButton) { // Controllo null
-            this.startButton.disabled = false;
-        }
-        if (this.stopButton) { // Controllo null
-            this.stopButton.disabled = true;
-        }
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        if (recordingStatus) recordingStatus.textContent = "Elaborazione trascrizione...";
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
     }
 }
 
 function onStop() {
-    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-    // Resetta i chunk per la prossima registrazione
-    this.audioChunks = [];
-    this.transcribeAudio(audioBlob);
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    audioChunks = [];
+    transcribeAudio(audioBlob);
 }
 
 async function transcribeAudio(audioBlob) {
-    this.isTranscribing = true;
-    if (this.recordingStatus) { // Controllo null
-        this.recordingStatus.textContent = "Trascrizione in corso...";
-    }
-    if (!audioBlob) {
+    isTranscribing = true;
+    if (recordingStatus) recordingStatus.textContent = "Trascrizione in corso...";
+    if (!audioBlob || audioBlob.size === 0) {
         console.error("Nessun audio da trascrivere.");
-        if (this.recordingStatus) { // Controllo null
-            this.recordingStatus.textContent = "Nessun audio da trascrivere.";
-        }
-        this.isTranscribing = false;
+        if (recordingStatus) recordingStatus.textContent = "Nessun audio da trascrivere.";
+        isTranscribing = false;
         return;
     }
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
-    const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const authToken = localStorage.getItem('authToken');
     if (!authToken) {
-        if (this.recordingStatus) {
-            this.recordingStatus.textContent = "Errore: Autenticazione richiesta.";
-        }
-        console.error("Token di autenticazione mancante per la trascrizione.");
-        this.isTranscribing = false;
+        if (recordingStatus) recordingStatus.textContent = "Errore: Autenticazione richiesta.";
+        isTranscribing = false;
         return;
     }
+
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
             method: 'POST',
             body: formData,
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.error || 'Errore sconosciuto nella trascrizione.');
         }
         if (data.transcription) {
-            if (this.voiceTranscription) { // Controllo null
-                this.voiceTranscription.value = data.transcription;
-            }
-            if (this.recordingStatus) { // Controllo null
-                this.recordingStatus.textContent = "Trascrizione completata.";
-            }
+            if (voiceTranscription) voiceTranscription.value = data.transcription;
+            if (recordingStatus) recordingStatus.textContent = "Trascrizione completata.";
         } else {
-            if (this.recordingStatus) { // Controllo null
-                this.recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
-            }
+            if (recordingStatus) recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
         }
     } catch (error) {
-        console.error("Errore nell'invio dell'audio per la trascrizione:", error);
-        if (this.recordingStatus) { // Controllo null
-            this.recordingStatus.textContent = `Errore di trascrizione: ${error.message}.`;
-        }
+        console.error("Errore durante la trascrizione:", error);
+        if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
     } finally {
-        this.isTranscribing = false;
+        isTranscribing = false;
     }
 }

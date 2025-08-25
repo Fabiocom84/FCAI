@@ -1,17 +1,21 @@
+// js/main.js
+
 let legendInstance;
-let insertDataModalElement; 
+let modalOverlay;
+
+// Istanze dei modali
 let insertDataModalInstance; 
 let chatModalInstance;
 let newOrderModalInstance;
 let trainingModalInstance;
-let modalOverlay;
 
 document.addEventListener('DOMContentLoaded', function() {
     legendInstance = new Legend();
     window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); 
-    window.modalOverlay = modalOverlay; // Rendi la variabile globale
+    window.modalOverlay = modalOverlay;
 
+    // Gestione Logout
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
         logoutButton.addEventListener('click', function(event) {
@@ -20,26 +24,59 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Collega i pulsanti alle funzioni di apertura
+    document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
+    document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
+    document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
+    document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
+
+    // Gestione chiusura con click sull'overlay
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', () => {
+            const openModal = document.querySelector('.modal[style*="display: block"]');
+            if (openModal) {
+                switch (openModal.id) {
+                    case 'insertDataModal':
+                        closeInsertDataModal();
+                        break;
+                    case 'chatModal':
+                        closeChatModal();
+                        break;
+                    case 'newOrderModal':
+                        closeNewOrderModal();
+                        break;
+                    case 'trainingModal':
+                        closeTrainingModal();
+                        break;
+                }
+            }
+        });
+    }
+
     // Carica gli ultimi inserimenti all'avvio
     loadLatestEntries();
 });
 
-// Funzione di logout
-function logoutUser() {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
-    console.log('Token di autenticazione rimosso. Reindirizzamento...');
-    window.location.href = 'login.html'; 
-}
+// --- FUNZIONI DI APERTURA MODALI ---
 
 function openInsertDataModal() {
-    window.openInsertDataModal();
+    if (!insertDataModalInstance) {
+        insertDataModalInstance = document.getElementById('insertDataModal');
+    }
+    if (insertDataModalInstance) {
+        insertDataModalInstance.style.display = 'block';
+        modalOverlay.style.display = 'block';
+        
+        // Chiama le funzioni specifiche dal suo file per preparare il modale
+        if (window.prepareInsertDataModal) {
+            window.prepareInsertDataModal();
+        }
+    }
 }
 
 function openChatModal() {
     if (!chatModalInstance) {
         chatModalInstance = document.getElementById('chatModal');
-        window.chatModalInstance = chatModalInstance;
     }
     if (chatModalInstance) {
         chatModalInstance.style.display = 'block';
@@ -50,7 +87,6 @@ function openChatModal() {
 function openNewOrderModal() {
     if (!newOrderModalInstance) {
         newOrderModalInstance = document.getElementById('newOrderModal');
-        window.newOrderModalInstance = newOrderModalInstance;
     }
     if (newOrderModalInstance) {
         newOrderModalInstance.style.display = 'block';
@@ -58,11 +94,9 @@ function openNewOrderModal() {
     }
 }
 
-// Funzione per aprire il modale Addestramento
 function openTrainingModal() {
     if (!trainingModalInstance) {
         trainingModalInstance = document.getElementById('trainingModal');
-        window.trainingModalInstance = trainingModalInstance;
     }
     if (trainingModalInstance) {
         trainingModalInstance.style.display = 'block';
@@ -70,48 +104,17 @@ function openTrainingModal() {
     }
 }
 
+// --- FUNZIONI DI CHIUSURA MODALI ---
 
-// Collega le funzioni ai rispettivi pulsanti
-document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
-document.getElementById('closeInsertDataModalBtn')?.addEventListener('click', closeInsertDataModal);
-
-document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
-document.getElementById('closeChatModalBtn')?.addEventListener('click', closeChatModal);
-
-document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
-document.getElementById('closeNewOrderModalBtn')?.addEventListener('click', closeNewOrderModal);
-
-document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
-document.getElementById('closeTrainingModalBtn')?.addEventListener('click', closeTrainingModal);
-
-if (modalOverlay) {
-        modalOverlay.addEventListener('click', (event) => {
-            // Chiudi il modale attualmente aperto
-            const openModal = document.querySelector('.modal[style*="display: block"]');
-            if (openModal) {
-                if (openModal.id === 'insertDataModal') {
-                    closeInsertDataModal();
-                } else if (openModal.id === 'chatModal') {
-                    closeChatModal();
-                } else if (openModal.id === 'newOrderModal') {
-                    closeNewOrderModal();
-                } else if (openModal.id === 'trainingModal') {
-                    closeTrainingModal();
-                }
-            }
-        });
-    }
-
-//---Chiusura modali
 function closeInsertDataModal() {
-    const modal = document.getElementById('insertDataModal');
-    if (modal) {
-        modal.style.display = 'none';
+    if (insertDataModalInstance) {
+        insertDataModalInstance.style.display = 'none';
     }
     modalOverlay.style.display = 'none';
-    // Chiama la funzione di reset dal file di implementazione
-    if (window.resetForm) {
-        window.resetForm();
+    
+    // Chiama le funzioni specifiche dal suo file per resettare il modale
+    if (window.cleanupInsertDataModal) {
+        window.cleanupInsertDataModal();
     }
 }
 
@@ -134,6 +137,16 @@ function closeTrainingModal() {
         trainingModalInstance.style.display = 'none';
         modalOverlay.style.display = 'none';
     }
+}
+
+// --- ALTRE FUNZIONI ---
+
+// Funzione di logout
+function logoutUser() {
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
+    console.log('Token di autenticazione rimosso. Reindirizzamento...');
+    window.location.href = 'login.html'; 
 }
 
 //---Caricamento latest entries
