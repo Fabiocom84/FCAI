@@ -4,6 +4,7 @@ class InsertDataModal {
     constructor(modalId, overlayId, openButtonSelector) {
         console.log("Creata una nuova istanza di InsertDataModal.");
         this.modal = document.getElementById(modalId);
+        this.overlay = document.getElementById(overlayId);
         this.openButton = document.querySelector(openButtonSelector);
         this.closeButton = this.modal ? this.modal.querySelector('.close-button') : null;
         this.saveButton = this.modal ? this.modal.querySelector('.save-button') : null;
@@ -30,6 +31,9 @@ class InsertDataModal {
         if (this.closeButton) {
             this.closeButton.addEventListener('click', () => this.close());
         }
+        if (this.overlay) {
+            this.overlay.addEventListener('click', () => this.close());
+        }
         if (this.saveButton) {
             this.saveButton.addEventListener('click', (event) => this.saveData(event));
         }
@@ -37,17 +41,7 @@ class InsertDataModal {
             this.fileUploadInput.addEventListener('change', (event) => this.handleFileUpload(event));
         }
         if (this.startButton) {
-            this.startButton.addEventListener('click', async () => {
-                const permissionGranted = await this.checkMicrophonePermission();
-                if (permissionGranted) {
-                    this.startRecording();
-                } else {
-                    console.error("Permesso microfono negato o non concesso.");
-                    if (this.recordingStatus) {
-                        this.recordingStatus.textContent = "Errore: Permesso microfono negato.";
-                    }
-                }
-            });
+            this.startButton.addEventListener('click', () => this.startRecording());
         }
         if (this.stopButton) {
             this.stopButton.addEventListener('click', () => this.stopRecording());
@@ -71,9 +65,9 @@ class InsertDataModal {
 
     async open() {
         this.modal.style.display = 'block';
-        document.getElementById('modalOverlay').style.display = 'block';
+        this.overlay.style.display = 'block';
 
-        // Carica le etichette per il solo dropdown del riferimento
+        await this.preCheckMicrophonePermission();
         if (this.riferimentoDropdown) {
             await this.loadEtichette(this.riferimentoDropdown, 'riferimento');
         }
@@ -220,6 +214,31 @@ class InsertDataModal {
         } catch (error) {
             console.error(`Errore nel caricamento delle ${type}:`, error);
             // alert(`Impossibile caricare le ${type}. Controlla la console per dettagli.`);
+        }
+    }
+
+    // Funzione per richiedere il permesso in modo proattivo.
+    async preCheckMicrophonePermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            console.log("Permesso microfono concesso.");
+            if (this.recordingStatus) {
+                this.recordingStatus.textContent = "Pronto per registrare.";
+            }
+            if (this.startButton) {
+                this.startButton.disabled = false;
+            }
+            return true;
+        } catch (error) {
+            console.error("Permesso microfono negato:", error);
+            if (this.recordingStatus) {
+                this.recordingStatus.textContent = "Errore: Permesso microfono negato. Ricarica la pagina e riprova.";
+            }
+            if (this.startButton) {
+                this.startButton.disabled = true;
+            }
+            return false;
         }
     }
 
