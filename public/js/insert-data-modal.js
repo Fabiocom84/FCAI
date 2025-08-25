@@ -206,7 +206,7 @@ async function preCheckMicrophonePermission() {
 }
 
 // Funzioni per la registrazione audio (startRecording, stopRecording, onStop, transcribeAudio)
-function startRecording() {
+async function startRecording() {
     if (this.isTranscribing) return; // Non avviare una nuova registrazione se una trascrizione è già in corso
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
