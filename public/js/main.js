@@ -34,13 +34,7 @@ function logoutUser() {
 
 //----Funzioni per aprire i modali
 function openInsertDataModal() {
-    if (!insertDataModalInstance) {
-        // Crea una nuova istanza della classe e la memorizza
-        insertDataModalInstance = new InsertDataModal('insertDataModal', 'modalOverlay', '#openInsertDataModalBtn');
-        window.insertDataModalInstance = insertDataModalInstance;
-    }
-    // Chiama il metodo open() sull'istanza creata
-    insertDataModalInstance.open();
+    window.openInsertDataModal();
 }
 
 function openChatModal() {
