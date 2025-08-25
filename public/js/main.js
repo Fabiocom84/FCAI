@@ -94,12 +94,8 @@ document.getElementById('closeTrainingModalBtn')?.addEventListener('click', clos
 
 //---Chiusura modali
 function closeInsertDataModal() {
-    // Usiamo la variabile che punta all'elemento DOM del modale
-    if (insertDataModalElement) {
-        insertDataModalElement.style.display = 'none';
-    }
-    // Assicuriamoci che anche l'overlay venga nascosto
-    if (modalOverlay) {
+    if (insertDataModalInstance) {
+        insertDataModalInstance.close();
         modalOverlay.style.display = 'none';
     }
 }
