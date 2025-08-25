@@ -91,12 +91,34 @@ document.getElementById('closeNewOrderModalBtn')?.addEventListener('click', clos
 document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
 document.getElementById('closeTrainingModalBtn')?.addEventListener('click', closeTrainingModal);
 
+if (modalOverlay) {
+        modalOverlay.addEventListener('click', (event) => {
+            // Chiudi il modale attualmente aperto
+            const openModal = document.querySelector('.modal[style*="display: block"]');
+            if (openModal) {
+                if (openModal.id === 'insertDataModal') {
+                    closeInsertDataModal();
+                } else if (openModal.id === 'chatModal') {
+                    closeChatModal();
+                } else if (openModal.id === 'newOrderModal') {
+                    closeNewOrderModal();
+                } else if (openModal.id === 'trainingModal') {
+                    closeTrainingModal();
+                }
+            }
+        });
+    }
 
 //---Chiusura modali
 function closeInsertDataModal() {
-    if (insertDataModalInstance) {
-        insertDataModalInstance.close();
-        modalOverlay.style.display = 'none';
+    const modal = document.getElementById('insertDataModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    modalOverlay.style.display = 'none';
+    // Chiama la funzione di reset dal file di implementazione
+    if (window.resetForm) {
+        window.resetForm();
     }
 }
 
