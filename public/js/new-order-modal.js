@@ -62,7 +62,7 @@ function populateDropdown(selectElement, data, placeholder) {
 // Funzione per caricare i dati dei dropdown dal backend
 async function loadDynamicDropdowns() {
     showLoading('Caricamento dati per i dropdown...');
-    const authToken = localStorage.getItem('authToken');
+    const authToken = getAuthToken();
     if (!authToken) {
         console.error('Token di autenticazione non trovato.');
         hideLoading();
@@ -131,7 +131,7 @@ if (saveNewOrderButton) {
         event.preventDefault(); 
         
         console.log('Pulsante "Salva Nuova Commessa" cliccato.');
-        const authToken = localStorage.getItem('authToken');
+        const authToken = getAuthToken();
         if (!authToken) {
             alert('Autenticazione richiesta. Effettua il login.');
             window.location.href = '/login.html';

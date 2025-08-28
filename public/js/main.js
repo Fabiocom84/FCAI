@@ -1,5 +1,9 @@
 // js/main.js
 
+function getAuthToken() {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+}
+
 let legendInstance;
 let modalOverlay;
 
@@ -10,6 +14,11 @@ let newOrderModalInstance;
 let trainingModalInstance;
 
 document.addEventListener('DOMContentLoaded', function() {
+    if (!getAuthToken()) {
+        console.log("Nessun token trovato, reindirizzamento alla pagina di login.");
+        window.location.href = 'login.html';
+        return; // Interrompe l'esecuzione per evitare errori
+    }
     legendInstance = new Legend();
     window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); 
@@ -152,8 +161,7 @@ function logoutUser() {
 //---Caricamento latest entries
 function loadLatestEntries() {
   const backendUrl = window.BACKEND_URL;
-  // Cerca prima in localStorage, poi in sessionStorage
-  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken'); 
+  const token = getAuthToken(); 
 
   if (!token) {
     console.error("Token di autenticazione non trovato. Impossibile caricare gli inserimenti recenti.");

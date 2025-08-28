@@ -77,7 +77,7 @@ function handleFileUpload(event) {
 
 async function saveData(event) {
     event.preventDefault();
-    const authToken = localStorage.getItem('authToken');
+    const authToken = getAuthToken();
     if (!authToken) {
         alert('Autenticazione richiesta. Effettua il login.');
         return;
@@ -127,7 +127,7 @@ async function loadEtichette() {
         console.error('Dropdown per le etichette non trovato.');
         return;
     }
-    const authToken = localStorage.getItem('authToken');
+    const authToken = getAuthToken();
     if (!authToken) {
         console.error('Token di autenticazione non trovato.');
         return;
@@ -222,7 +222,7 @@ async function transcribeAudio(audioBlob) {
     }
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
-    const authToken = localStorage.getItem('authToken');
+    const authToken = getAuthToken();
     if (!authToken) {
         if (recordingStatus) recordingStatus.textContent = "Errore: Autenticazione richiesta.";
         isTranscribing = false;
