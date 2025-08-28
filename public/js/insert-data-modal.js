@@ -172,7 +172,9 @@ async function preCheckMicrophonePermission() {
     }
 }
 
-async function startRecording() {
+async function startRecording(event) { // 1. Accetta l'evento
+    event.stopPropagation(); // 2. Ferma la propagazione dell'evento
+
     if (isTranscribing) return;
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
