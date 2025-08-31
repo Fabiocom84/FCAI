@@ -119,62 +119,38 @@ async function sendChatMessage(messageText) {
         }
 
         typingIndicator.style.display = 'none';
-
-        aiMessageElement = addMessage('ai', ''); // Crea un messaggio AI vuoto
+        aiMessageElement = addMessage('ai', '');
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        
-        // --- INIZIO MODIFICA CHIAVE ---
-        // Accumuliamo l'intera risposta in una variabile per gestire i chunk frammentati
-        let fullResponseData = '';
+        // --- INIZIO NUOVA LOGICA SEMPLIFICATA ---
 
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
-                // Il flusso è finito, ma processiamo quello che abbiamo accumulato
-                break;
-            }
-            
-            fullResponseData += decoder.decode(value, { stream: true });
+        // 1. Attendiamo e leggiamo l'INTERA risposta come testo.
+        // Questo elimina il ciclo 'while' e i problemi di streaming frammentato.
+        const fullResponseData = await response.text();
 
-            // Controlliamo se il delimitatore è PRESENTE nell'intera risposta accumulata
-            if (fullResponseData.includes('--AUDIO--')) {
-                // Se c'è, il flusso di testo è finito. Usciamo dal ciclo per processare.
-                break;
-            } else {
-                // Altrimenti, siamo ancora nella fase di streaming del testo.
-                // Aggiorniamo l'UI con il testo ricevuto finora.
-                aiContentDiv.textContent = fullResponseData;
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-
-        // Ora che il ciclo è finito, abbiamo la risposta completa in fullResponseData
-        // e possiamo processarla in sicurezza.
+        // 2. Ora che abbiamo la stringa completa, la processiamo in sicurezza.
         let fullResponseText = '';
         let audioData = null;
 
         if (fullResponseData.includes('--AUDIO--')) {
-            const parts = fullResponseData.split('--AUDIO--');
+            const parts = fullResponseData.split('--AUDIO--', 2); // Dividi in massimo 2 parti
             fullResponseText = parts[0];
-            
-            try {
-                // Tentiamo di parsare il JSON, ora che dovremmo averlo tutto
-                audioData = JSON.parse(parts[1]);
-            } catch (e) {
-                console.error("Errore nel parsing del JSON audio:", e);
-                // Assegniamo un testo di errore se il JSON è ancora malformato
-                fullResponseText = `Mi dispiace, c'è stato un errore nella ricezione dei dati audio.`;
-            }
+            const jsonPart = parts[1];
 
+            if (jsonPart) {
+                try {
+                    audioData = JSON.parse(jsonPart);
+                } catch (e) {
+                    console.error("Errore nel parsing del JSON audio:", e);
+                    fullResponseText += `\n(Errore nella ricezione dei dati audio)`;
+                }
+            }
         } else {
-            // Se non c'è il delimitatore, la risposta è solo testo (caso anomalo)
+            // Se non c'è il delimitatore, la risposta è solo testo.
             fullResponseText = fullResponseData;
         }
 
-        // Aggiornamento finale dell'interfaccia
+        // 3. Aggiorniamo l'interfaccia una sola volta con il contenuto finale.
         aiContentDiv.textContent = fullResponseText;
 
         if (audioData && audioData.audio) {
@@ -187,12 +163,12 @@ async function sendChatMessage(messageText) {
             audioContainer.appendChild(audio);
             aiMessageElement.appendChild(audioContainer);
         }
-        
-        // Aggiungi alla cronologia solo se c'è testo
+
         if (fullResponseText.trim()) {
             chatHistory.push({ role: 'assistant', content: fullResponseText.trim() });
         }
-        // --- FINE MODIFICA CHIAVE ---
+
+        // --- FINE NUOVA LOGICA SEMPLIFICATA ---
 
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
@@ -203,10 +179,11 @@ async function sendChatMessage(messageText) {
             addMessage('ai', errorText);
         }
     } finally {
+        // Questo blocco verrà ora raggiunto in modo affidabile
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
         chatInput.focus();
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll finale
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
 
