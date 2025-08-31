@@ -97,7 +97,7 @@ h2 {
 /* == 2. LAYOUT PRINCIPALE DELLA PAGINA       == */
 /* ============================================= */
 
-/* Contenitore per la pagina di login */
+/* Contenitore per la pagina di login (questo rimane un pannello) */
 .login-container {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 40px;
@@ -109,16 +109,14 @@ h2 {
     animation: fadeIn 0.8s ease-out;
 }
 
-/* Contenitore per la pagina principale (index) */
+/* Contenitore per la pagina principale (index) - CORRETTO */
 .main-content-wrapper {
     position: relative;
     z-index: 1;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 600px;
+    max-width: 900px; /* Limite per non allargare troppo su schermi grandi */
+    margin: 0 auto; /* Centra orizzontalmente */
+    padding: 60px 20px; /* Spazio verticale e orizzontale */
     text-align: center;
     animation: fadeIn 0.8s ease-out;
     display: flex;
@@ -166,7 +164,7 @@ h2 {
     justify-content: center;
     gap: 15px;
     width: 100%;
-    max-width: 500px;
+    max-width: 600px; /* Limite per i pulsanti */
     margin-left: auto;
     margin-right: auto;
 }
@@ -248,7 +246,7 @@ h2 {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: calc(285px * 2 + 15px); /* Occupa lo spazio di due pulsanti */
+    width: 100%; /* Occupa tutta la larghezza del contenitore */
     height: 60px;
     padding: 6px 10px;
     border-radius: 5px;
@@ -547,9 +545,14 @@ h2 {
 
 /* Box "Ultimi Inserimenti" nella pagina principale */
 .latest-entries {
-    padding: 20px; background-color: white; border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: left;
-    flex-grow: 1; /* Occupa lo spazio verticale rimanente */
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 100%;
+    max-width: 600px; /* Stessa larghezza del container dei pulsanti */
+    margin: 0 auto;
 }
 .latest-entries h2 {
     font-size: 1.4em; color: #333333; margin-top: 0;
@@ -570,12 +573,13 @@ h2 {
 @media (max-width: 600px) {
     h1 { margin-top: 50px; font-size: 1.8em; }
 
-    .main-content-wrapper { padding: 25px; margin: 10px; }
+    .main-content-wrapper { padding: 25px 15px; }
     
     .button-container { flex-direction: column; gap: 10px; }
     .button, .training-button {
         width: 100%;
         max-width: 100%;
+        flex-basis: auto;
     }
     .training-button { height: auto; padding: 15px; }
 
