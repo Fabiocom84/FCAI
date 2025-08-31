@@ -38,7 +38,7 @@ async function closeChatModal() {
         recognition.stop();
     }
     
-    // *** NUOVO: Salva la cronologia della chat alla chiusura ***
+    // Salva la cronologia della chat alla chiusura
     if (chatHistory.length > 1) { // Salva solo se c'è stata una conversazione
         await saveChatHistory();
     }
@@ -54,8 +54,7 @@ async function saveChatHistory() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Aggiungi l'autenticazione se necessaria
-                // 'Authorization': `Bearer ${getAuthToken()}`
+                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
             },
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
@@ -69,61 +68,39 @@ async function saveChatHistory() {
 
     } catch (error) {
         console.error("Errore nel salvataggio della chat:", error);
-        // Potresti mostrare un piccolo messaggio di errore non invasivo
     }
 }
 
-
 // Funzione per aggiungere un messaggio alla chat UI
-function addMessage(sender, text, audioBase64 = null) {
+function addMessage(sender, text) {
     const messageElement = document.createElement('div');
-    // La classe ora è 'chat-message' più il ruolo 'user' o 'ai' per lo stile
     messageElement.classList.add('chat-message', sender);
     
+    // Crea sempre il contenitore per il testo, anche se vuoto, per consistenza
+    const messageContentDiv = document.createElement('div');
+    messageContentDiv.classList.add('message-content');
     if (text) {
-        const messageContentDiv = document.createElement('div');
-        messageContentDiv.classList.add('message-content');
         messageContentDiv.textContent = text;
-        messageElement.appendChild(messageContentDiv);
     }
+    messageElement.appendChild(messageContentDiv);
     
-    // Il resto della funzione per la gestione dell'audio rimane invariato...
-    if (audioBase64) {
-        const audio = new Audio();
-        audio.src = `data:audio/mpeg;base64,${audioBase64}`;
-        audio.controls = true;
-        audio.autoplay = true;
-        
-        const audioContainer = document.createElement('div');
-        audioContainer.classList.add('audio-playback');
-        audioContainer.appendChild(audio);
-        messageElement.appendChild(audioContainer);
-
-        audio.onended = () => console.log("Riproduzione audio completata.");
-        audio.onerror = (e) => console.error("Errore durante la riproduzione audio:", e);
-    }
-
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // *** NUOVO: Aggiungi il messaggio alla cronologia interna ***
-    // (L'AI aggiungerà il suo messaggio completo solo alla fine dello streaming)
     if (sender === 'user') {
         chatHistory.push({ role: 'user', content: text });
     }
     
-    return messageElement; // Ritorna l'elemento per aggiornamenti futuri (streaming)
+    return messageElement; // Ritorna l'elemento per aggiornamenti futuri
 }
 
-
-// *** NUOVO: Funzione di invio messaggio completamente riscritta per lo streaming ***
+// Funzione di invio messaggio riscritta per lo streaming
 async function sendChatMessage(messageText) {
     if (!messageText.trim()) return;
 
     addMessage('user', messageText);
     chatInput.value = '';
     
-    // Disabilita i controlli e mostra l'indicatore di digitazione
     sendChatMessageBtn.disabled = true;
     startChatRecordingBtn.disabled = true;
     typingIndicator.style.display = 'flex';
@@ -135,19 +112,17 @@ async function sendChatMessage(messageText) {
         const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ history: chatHistory }), // Invia l'intera cronologia
+            body: JSON.stringify({ history: chatHistory }),
         });
 
         if (!response.ok) {
             throw new Error(`Errore del server: ${response.status}`);
         }
 
-        typingIndicator.style.display = 'none'; // Nascondi i puntini al primo chunk
+        typingIndicator.style.display = 'none';
 
-        // Crea subito il contenitore del messaggio AI, che verrà riempito in streaming
-        aiMessageElement = addMessage('ai', '...');
+        aiMessageElement = addMessage('ai', ''); // Crea un messaggio AI vuoto
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
-        aiContentDiv.textContent = ''; // Svuota i "..." iniziali
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -156,9 +131,8 @@ async function sendChatMessage(messageText) {
             const { value, done } = await reader.read();
             if (done) break;
             
-            const chunk = decoder.decode(value);
+            const chunk = decoder.decode(value, { stream: true });
 
-            // Gestione del protocollo personalizzato: audio inviato alla fine
             if (chunk.includes('--AUDIO--')) {
                 const parts = chunk.split('--AUDIO--');
                 fullResponseText += parts[0];
@@ -166,9 +140,22 @@ async function sendChatMessage(messageText) {
 
                 const audioData = JSON.parse(parts[1]);
                 if (audioData.audio) {
-                    addMessage('ai', null, audioData.audio); // Aggiunge solo il player audio
+                    // --- INIZIO DELLA CORREZIONE ---
+                    // Non chiamare addMessage di nuovo. Aggiungi l'audio all'elemento esistente.
+                    const audio = new Audio();
+                    audio.src = `data:audio/mpeg;base64,${audioData.audio}`;
+                    audio.controls = true;
+                    audio.autoplay = true;
+
+                    const audioContainer = document.createElement('div');
+                    audioContainer.classList.add('audio-playback');
+                    audioContainer.appendChild(audio);
+
+                    // Aggiungi il player audio allo stesso elemento del messaggio
+                    aiMessageElement.appendChild(audioContainer);
+                    // --- FINE DELLA CORREZIONE ---
                 }
-                break; // Lo stream è terminato
+                break; 
             } else {
                 fullResponseText += chunk;
                 aiContentDiv.textContent = fullResponseText;
@@ -176,18 +163,19 @@ async function sendChatMessage(messageText) {
             }
         }
         
-        // Aggiungi la risposta completa dell'AI alla cronologia
-        chatHistory.push({ role: 'assistant', content: fullResponseText });
+        if (fullResponseText) {
+            chatHistory.push({ role: 'assistant', content: fullResponseText });
+        }
 
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
+        const errorText = `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`;
         if (aiMessageElement) {
-            aiMessageElement.querySelector('.message-content').textContent = `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`;
+            aiMessageElement.querySelector('.message-content').textContent = errorText;
         } else {
-            addMessage('ai', `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`);
+            addMessage('ai', errorText);
         }
     } finally {
-        // Riabilita sempre i controlli
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
         chatInput.focus();

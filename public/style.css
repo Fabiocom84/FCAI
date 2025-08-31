@@ -1,18 +1,37 @@
-/* Generale - già presente e funzionante per il login.html e base per index.html */
+/* ==========================================================================
+   Segretario AI - Foglio di Stile Principale
+   ==========================================================================
+   Struttura del file:
+   1. STILI GLOBALI E FONDAMENTALI      (body, animazioni, tipografia di base)
+   2. LAYOUT PRINCIPALE DELLA PAGINA    (wrapper per login e index)
+   3. COMPONENTI COMUNI                 (pulsanti, form, legenda, etc.)
+   4. STILI PER I MODALI                (regole generiche e specifiche per modale)
+      4.1 Stili Generici per Tutti i Modali
+      4.2 Stili Specifici per Colore Header
+      4.3 Stili Specifici: Chat Modal (#chatModal)
+   5. COMPONENTI SPECIFICI DI PAGINA    (es. ultimi inserimenti)
+   6. MEDIA QUERIES (RESPONSIVE DESIGN) (adattamenti per mobile)
+   ========================================================================== */
+
+/* ============================================= */
+/* == 1. STILI GLOBALI E FONDAMENTALI         == */
+/* ============================================= */
+
+/* Impostazioni base per l'intero documento */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    display: flex; /* Assicura che il contenuto possa essere centrato */
-    flex-direction: column; /* Centra gli elementi verticalmente */
-    justify-content: center; /* Centra il contenuto verticalmente */
-    align-items: center; /* Centra il contenuto orizzontalmente */
-    position: relative; /* Necessario per il pseudo-elemento */
-    background-color: #f0f2f5; /* Fallback color */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Necessario per i pseudo-elementi di sfondo */
+    background-color: #f0f2f5;
 }
 
-/* Pseudo-elemento per lo sfondo sfocato - applicato a tutto il body */
+/* Pseudo-elemento per l'immagine di sfondo sfocata */
 body::before {
     content: '';
     position: fixed;
@@ -20,7 +39,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('img/logo.png'); /* Assicurati che il percorso sia corretto! */
+    background-image: url('img/logo.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -31,7 +50,7 @@ body::before {
     z-index: -2;
 }
 
-/* Overlay bianco semi-trasparente sopra l'immagine sfocata - applicato a tutto il body */
+/* Overlay bianco semi-trasparente sopra l'immagine sfocata */
 body::after {
     content: '';
     position: fixed;
@@ -43,20 +62,42 @@ body::after {
     z-index: -1;
 }
 
-/* Contenitore principale della pagina di login (non sfocato) - da login.html */
-.login-page-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
+/* Animazioni globali */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Stili per il contenitore del login - da login.html */
+@keyframes fadeInModal {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* Tipografia di base */
+h1 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    font-size: 2.2em;
+    color: #2A76B8;
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+h2 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    color: #333333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ============================================= */
+/* == 2. LAYOUT PRINCIPALE DELLA PAGINA       == */
+/* ============================================= */
+
+/* Contenitore per la pagina di login */
 .login-container {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 40px;
@@ -68,195 +109,25 @@ body::after {
     animation: fadeIn 0.8s ease-out;
 }
 
-/* Animazione fadeIn - da login.html */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Stili comuni per h2, form-group, label, input, checkbox, button - da login.html */
-h2 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    color: #333333;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.form-group {
-    margin-bottom: 5px;
-    text-align: left;
-}
-
-#insertDataModal .form-group:first-of-type {
-    margin-top: 0;
-}
-
-label {
-    font-family: 'Roboto', sans-serif;
-    display: block;
-    margin-bottom: 8px;
-    color: #666666;
-    font-size: 0.95em;
-    font-weight: 500;
-}
-
-input[type="text"],
-input[type="password"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #cccccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-size: 1em;
-    font-family: 'Roboto', sans-serif;
-    color: #333333;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus {
-    border-color: #2A76B8;
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
-    outline: none;
-}
-
-input[type="checkbox"] {
-    margin-right: 8px;
-    vertical-align: middle;
-    width: 16px;
-    height: 16px;
-    appearance: none;
-    border: 1px solid #cccccc;
-    border-radius: 3px;
-    cursor: pointer;
-    position: relative;
-    top: 2px;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-input[type="checkbox"]:checked {
-    background-color: #2A76B8;
-    border-color: #2A76B8;
-}
-
-input[type="checkbox"]:checked::before {
-    content: '✔';
-    display: block;
-    color: white;
-    font-size: 12px;
-    line-height: 1;
-    text-align: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-button[type="submit"] {
-    background-color: #2A76B8;
-    color: white;
-    padding: 14px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: 500;
-    width: 100%;
-    margin-top: 20px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-button[type="submit"]:hover {
-    background-color: #1a5c96;
-    transform: translateY(-2px);
-}
-
-.error-message {
-    color: #dc3545;
-    margin-top: 15px;
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-/* NUOVI STILI PER INDEX.HTML */
-
-/* Contenitore principale della pagina di gestione (non sfocato) */
+/* Contenitore per la pagina principale (index) */
 .main-content-wrapper {
-    position: relative; /* Per posizionare il contenuto sopra l'overlay */
-    z-index: 1; /* Assicura che sia sopra l'overlay */
-    background-color: rgba(255, 255, 255, 0.95); /* Stesso effetto del login-container */
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.95);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 600px; /* Larghezza massima adatta alla pagina principale */
+    max-width: 600px;
     text-align: center;
-    animation: fadeIn 0.8s ease-out; /* Stessa animazione del login */
-    display: flex; /* Flexbox per organizzare i contenuti verticalmente */
-    flex-direction: column;
-    gap: 25px; /* Spazio tra gli elementi principali (h1, button-container, latest-entries) */
-    box-sizing: border-box; /* Include padding nel calcolo della larghezza */
-}
-
-/* Stile per il contenitore in alto a sinistra e a destra (Desktop) */
-.top-controls-wrapper {
-    position: absolute;
-    top: 20px; /* Posizionamento dall'alto */
-    left: 20px;
-    right: 20px;
+    animation: fadeIn 0.8s ease-out;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: auto;
-}
-
-/* Stile per il pulsante di logout orizzontale */
-.logout-button-horizontal {
-    /* Nuovo colore rosso più tenue */
-    background-color: #ef9a9a; 
-    color: white;
-    padding: 6px 10px; /* Padding ridotto */
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex; 
-    flex-direction: row; 
-    align-items: center;
-    justify-content: center;
-    gap: 5px; /* Spazio leggermente ridotto tra icona e testo */
-    height: 30px; /* Altezza ridotta per un look più compatto */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    flex-direction: column;
+    gap: 25px;
     box-sizing: border-box;
 }
 
-.logout-button-horizontal img {
-    /* Dimensioni dell'icona ridotte */
-    max-width: 18px;
-    max-height: 18px;
-    margin-bottom: 0;
-}
-
-.logout-button-horizontal span {
-    /* Stile per il testo del pulsante */
-    font-size: 0.8em; /* Dimensione del font più piccola */
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: white;
-}
-
-/* Effetto al passaggio del mouse con un colore più scuro ma sempre tenue */
-.logout-button-horizontal:hover {
-    background-color: #e57373;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Mantiene l'allineamento dei pulsanti in alto */
+/* Contenitore per i controlli in alto (logout, aiuto) */
 .top-controls-wrapper {
     position: absolute;
     top: 20px;
@@ -268,550 +139,7 @@ button[type="submit"]:hover {
     width: auto;
 }
 
-.help-button {
-    cursor: pointer;
-}
-
-.help-button:hover {
-    background-color: #D3D3D3; /* Un grigio leggermente più scuro */
-    transform: translateY(-2px); /* Sposta leggermente il pulsante verso l'alto */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra più evidente */
-}
-
-.help-button-container {
-    position: static;
-}
-
-h1 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 700; /* Bold per il titolo principale */
-    font-size: 2.2em; /* Dimensione maggiore */
-    color: #2A76B8; /* Utilizza il blu del logo */
-    margin-bottom: 0; /* Rimosso il margine inferiore, useremo il gap del wrapper */
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-/* Stili generali per il contenitore dei pulsanti */
-.button-container {
-    margin-bottom: 5px;
-    display: flex;
-    flex-wrap: wrap; /* Permette ai pulsanti di andare a capo */
-    justify-content: center; /* Centra i pulsanti nella riga */
-    gap: 15px; /* Spazio tra i pulsanti orizzontalmente e verticalmente */
-    width: 100%; /* Assicura che il container occupi tutta la larghezza disponibile */
-    max-width: 500px; /* Imposta una larghezza massima per il container */
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Stile base per tutti i pulsanti */
-.button {
-    display: flex;
-    flex-direction: column; /* Impila icona e testo verticalmente */
-    align-items: center; /* Centra orizzontalmente icona e testo all'interno del pulsante */
-    justify-content: center; /* Centra il contenuto verticalmente */
-    padding: 15px 10px;
-    text-align: center;
-    text-decoration: none;
-    color: white; /* Testo bianco per tutti i pulsanti */
-    border: none;
-    border-radius: 5px;
-    box-sizing: border-box;
-    flex-basis: calc(50% - 7.5px); /* Forza due pulsanti per riga (50% meno metà del gap) */
-    max-width: calc(50% - 7.5px);
-    min-height: 100px; /* Altezza minima per i pulsanti */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transizioni per hover */
-}
-
-/* Stile per le immagini all'interno dei pulsanti */
-.button img {
-    max-width: 45px; /* Icone leggermente più grandi */
-    max-height: 45px;
-    margin-bottom: 8px; /* Spazio tra icona e testo */
-}
-
-/* Stile per il testo all'interno dei pulsanti (il <span>) */
-.button span {
-    display: block; /* Assicura che il testo vada a capo sotto l'icona */
-    font-size: 1em; /* Dimensione del font per il testo del pulsante */
-    font-weight: 500;
-    line-height: 1.2;
-    white-space: nowrap; /* Impedisce al testo di andare a capo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
-    color: inherit; /* Assicura che erediti il colore bianco dal .button */
-}
-
-/* Colori specifici e hover per ogni pulsante */
-.insert-button {
-    background-color: #28a745; /* Verde */
-}
-.insert-button:hover {
-    background-color: #218838;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-.chat-button {
-    background-color: #ffc107; /* Giallo scuro */
-    /* NON aggiungere 'color: #333;' qui, erediterà 'white' dal .button */
-}
-.chat-button:hover {
-    background-color: #e0a800;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-/* Pulsante "Nuova Commessa" - Colore VIOLA */
-.new-order-button {
-    background-color: #6f42c1; /* Viola scuro */
-}
-.new-order-button:hover {
-    background-color: #5a3597; /* Viola più scuro al passaggio del mouse */
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-.search-button {
-    background-color: #dc3545; /* Rosso */
-}
-.search-button:hover {
-    background-color: #c82333;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-.latest-entries {
-    margin-top: 0; /* Rimosso il margine superiore, useremo il gap del wrapper */
-    padding: 20px; /* Padding aumentato */
-    background-color: white;
-    border-radius: 8px; /* Angoli più arrotondati */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombra più morbida */
-    text-align: left;
-    flex-grow: 1; /* Permette di riempire lo spazio rimanente */
-}
-
-.latest-entries h2 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    font-size: 1.4em; /* Titolo più grande */
-    color: #333333;
-    margin-top: 0;
-    margin-bottom: 15px; /* Margine inferiore aumentato */
-    padding-bottom: 8px;
-    border-bottom: 2px solid #eeeeee; /* Bordo più spesso */
-}
-
-.entry-item {
-    padding: 12px 0; /* Padding aumentato */
-    border-bottom: 1px dashed #e0e0e0; /* Bordo tratteggiato più discreto */
-    font-size: 0.95em;
-    color: #444; /* Colore testo leggermente più scuro */
-    display: flex; /* Flexbox per organizzare data/ora/riferimento */
-    justify-content: space-between; /* Distribuisce gli elementi */
-    align-items: center;
-    text-decoration: none;
-}
-
-.entry-item:last-child {
-    border-bottom: none;
-}
-
-.entry-date-time {
-    font-weight: 400; /* Normale */
-    color: #777;
-    font-size: 0.85em; /* Più piccolo */
-    flex-shrink: 0; /* Non si restringe */
-}
-
-.entry-text {
-    flex-grow: 1; /* Il testo occupa lo spazio rimanente */
-    margin: 0 10px; /* Margine tra data e riferimento */
-    white-space: nowrap; /* Evita il wrap del testo */
-    overflow: hidden; /* Nasconde il testo che sfora */
-    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
-}
-
-.entry-riferimento {
-    font-weight: 500; /* Medium */
-    color: #2A76B8; /* Blu del logo per il riferimento */
-    flex-shrink: 0; /* Non si restringe */
-}
-
-/* Stile per il pulsante di addestramento */
-.training-button {
-    background-color: #8c96a3;
-    color: white;
-    font-weight: 500;
-    font-size: 1.1em;
-    padding: 6px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 60px; /* L'altezza è la metà dell'altezza standard (120px) */
-    width: calc(285px * 2 + 15px); /* Larghezza di due pulsanti + spazio */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    box-sizing: border-box;
-    margin-bottom: 2px; /* Spazio sotto il pulsante */
-}
-
-.training-button:hover {
-    background-color: #7a8491;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Stile per l'icona nel pulsante di addestramento */
-.training-button img {
-    max-width: 24px;
-    max-height: 24px;
-    filter: invert(1);
-    margin-bottom: 0;
-}
-
-/* Stili per il Modal */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 20;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px; /* Aumentato padding */
-    border-radius: 10px; /* Angoli più arrotondati */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Ombra più pronunciata */
-    z-index: 30;
-    width: 95%;
-    max-width: 600px; /* Più largo per i modali */
-    max-height: 90%;
-    overflow-y: auto;
-    animation: fadeInModal 0.3s ease-out; /* Nuova animazione per i modali */
-    flex-direction: column; /* Imposta il modal come colonna flex per il contenuto */
-}
-
-@keyframes fadeInModal {
-    from { opacity: 0; transform: translate(-50%, -60%); }
-    to { opacity: 1; transform: translate(-50%, -50%); }
-}
-
-.modal-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Il contenuto del modal occupa l'altezza disponibile */
-}
-
-.modal-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 5px; /* Aumentato il margine */
-    position: relative;
-    flex-shrink: 0; /* Impedisce all'header di restringersi */
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.6em; /* Titolo più grande */
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
-
-/* Stili per i titoli dei modal per coerenza colore */
-#insertDataModal .modal-header h2 {
-    color: #28a745;
-}
-
-#chatModal .modal-header h2 {
-    color: #ffc107;
-}
-
-#newOrderModal .modal-header h2 {
-    color: #6f42c1; /* Colore viola per l'header del modal, come il pulsante */
-}
-
-/* Assumendo che ci sia un #searchModal nel tuo HTML */
-#searchModal .modal-header h2 {
-    color: #dc3545;
-}
-
-.close-button {
-    position: absolute;
-    top: -10px; /* Spostato leggermente fuori dal bordo superiore */
-    right: -10px; /* Spostato leggermente fuori dal bordo destro */
-    font-size: 1.5em; /* Più grande */
-    background-color: #6c757d; /* Lo stesso colore del pulsante di aiuto */
-    color: white; /* Per mantenere il simbolo 'X' visibile */
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.close-button:hover {
-    color: white;
-    transform: rotate(90deg); /* Rotazione all'hover */
-    background-color: #5a6268;
-}
-
-.modal-body {
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Spazio aumentato tra i form-group */
-    padding: 0; /* Rimosso padding, gestito da form-group */
-}
-
-.modal-body .form-group {
-    background-color: #f8f9fa; /* Sfondo per raggruppare visivamente */
-    padding: 2px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.input-label-icon {
-    display: flex;
-    align-items: center;
-    gap: 10px; /* Spazio tra icona e testo */
-    margin-bottom: 3px; /* Margine sotto l'etichetta */
-}
-
-.input-label-icon img {
-    max-width: 24px; /* Icona più grande */
-    max-height: 24px;
-}
-
-.input-label-icon h3 {
-    font-size: 1.1em; /* Testo dell'etichetta più grande */
-    color: #333; /* Colore più scuro */
-    font-weight: 500;
-}
-
-.form-group textarea,
-.form-group input[type="file"],
-.form-group select,
-.form-group input[type="text"] { /* Aggiunto input[type="text"] per il modale Nuova Commessa */
-    width: 100%;
-    padding: 8px 10px; /* Padding uniforme */
-    border: 1px solid #cccccc;
-    border-radius: 6px; /* Angoli arrotondati */
-    box-sizing: border-box;
-    font-size: 1em;
-    font-family: 'Roboto', sans-serif; /* Usa Roboto */
-    color: #333333;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.form-group textarea {
-    min-height: 80px; /* Altezza minima adeguata */
-    resize: vertical; /* Permetti ridimensionamento verticale */
-}
-
-.form-group textarea:focus,
-.form-group input[type="file"]:focus,
-.form-group select:focus,
-.form-group input[type="text"]:focus {
-    border-color: #2A76B8;
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
-    outline: none;
-}
-
-
-
-.voice-controls {
-    display: flex;
-    justify-content: center;
-    gap: 15px; /* Spazio aumentato */
-    margin-top: 5px;
-}
-
-.voice-controls button {
-    padding: 10px 15px; /* Padding aumentato */
-    border: 1px solid #ccc;
-    border-radius: 6px; /* Angoli arrotondati */
-    cursor: pointer;
-    font-size: 1em; /* Testo più grande */
-    font-family: 'Roboto', sans-serif;
-    background-color: white;
-    color: #333;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Spazio tra icona e testo */
-}
-
-.voice-controls button img {
-    max-width: 20px; /* Icone più grandi */
-    max-height: 20px;
-}
-
-.voice-controls button:hover {
-    background-color: #eee;
-    transform: translateY(-1px);
-}
-
-#startButton {
-    background-color: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-#startButton:hover {
-    background-color: #c3e6cb;
-}
-
-#stopButton {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-#stopButton:hover {
-    background-color: #f5c6cb;
-}
-
-#recordingStatus {
-    font-size: 0.9em; /* Testo più grande */
-    color: #666; /* Colore più leggibile */
-    margin-top: 8px;
-    margin-bottom: 12px;
-    text-align: center;
-}
-
-.save-button {
-    margin-top: 10px; /* Margine più grande */
-    padding: 15px 20px; /* Padding aumentato */
-    border: none;
-    border-radius: 8px; /* Angoli più arrotondati */
-    background-color: #28a745;
-    color: white;
-    font-size: 1.1em; /* Testo più grande */
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-}
-
-.save-button:hover {
-    background-color: #1e7e34;
-    transform: translateY(-2px);
-}
-
-/* Stili per il pulsante aiuto nel modal */
-.modal-header .help-button-container {
-    position: absolute;
-    top: -10px; /* Leggermente più in basso */
-    right: 40px; /* Spazio per il pulsante di chiusura */
-}
-
-.modal-header .help-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    font-size: 1.1em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer; /* Aggiungi questa riga */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    padding: 0;
-    line-height: 1;
-}
-
-.modal-header .help-button:hover {
-    background-color: #5a6268; /* Un grigio leggermente più scuro */
-    transform: translateY(-2px); /* Sposta leggermente il pulsante verso l'alto */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Aggiunge un'ombra più evidente */
-}
-
-/* Legenda */
-.legend {
-    position: absolute;
-    top: 70px; /* Posiziona più in basso per non sovrapporsi all'header */
-    right: 20px; /* Spostato un po' più a sinistra */
-    background-color: white;
-    border: 1px solid #e0e0e0; /* Bordo più sottile e chiaro */
-    border-radius: 8px;
-    padding: 20px; /* Padding aumentato */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Ombra più pronunciata */
-    z-index: 100; /* Assicura che sia sopra altri elementi e modali */
-    display: none;
-    text-align: left;
-    max-width: 350px; /* Larghezza massima per leggibilità */
-}
-
-.legend h3 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    font-size: 1.3em;
-    color: #333333;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eeeeee;
-    padding-bottom: 10px;
-}
-
-/* Allinea le icone e il testo nelle voci della legenda */
-.legend-item {
-    display: flex;
-    align-items: center; /* Allinea gli elementi verticalmente */
-    gap: 10px; /* Aggiungi un piccolo spazio tra icona e testo */
-    margin-bottom: 2px; /* Spazio tra le diverse voci della legenda */
-}
-
-.legend-icon {
-    width: 35px; /* Icona più grande */
-    height: 35px;
-    margin-right: 15px; /* Spazio maggiore */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0; /* Evita che l'icona si restringa */
-}
-
-.legend-icon img {
-    max-width: 90%;
-    max-height: 90%;
-}
-
-.legend-text {
-    font-size: 0.95em; /* Testo più grande */
-    color: #555;
-    line-height: 1.4;
-}
-
-/* Modifica per la legenda del modal */
-#insertDataLegend, #chatLegend, #newOrderLegend { /* Aggiunto #newOrderLegend */
-    z-index: 40; /* Assicura che sia sopra il modal (z-index: 30) */
-}
-
-/* Release info */
+/* Footer per le informazioni di release */
 .release-info {
     position: fixed;
     bottom: 0;
@@ -823,243 +151,446 @@ h1 {
     padding: 12px 0;
     font-size: 0.8em;
     border-top: 1px solid #e9ecef;
-    z-index: 5; /* Assicurati che sia sotto i modali e le legende, ma sopra lo sfondo */
+    z-index: 5;
 }
 
-/* NUOVI STILI PER CHAT MODAL */
+/* ============================================= */
+/* == 3. COMPONENTI COMUNI                    == */
+/* ============================================= */
 
-.chat-modal-body {
-    flex-grow: 1; /* Permette al body di occupare lo spazio rimanente */
+/* --- Contenitore dei pulsanti della dashboard --- */
+.button-container {
+    margin-bottom: 5px;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Spinge l'input in basso */
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
-    padding-bottom: 0; /* Rimuovi padding inferiore se l'input area ha padding proprio */
-}
-
-.chat-messages {
-    flex-grow: 1; /* Le conversazioni occupano lo spazio rimanente */
-    overflow-y: auto; /* Scorrevole se ci sono troppi messaggi */
-    padding-right: 10px; /* Spazio per la scrollbar */
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Spazio tra i messaggi */
-    margin-bottom: 10px; /* Spazio prima dell'area di input */
-}
-
-/* Stili generali per ogni singolo messaggio */
-.chat-message {
-    display: flex;
-    max-width: 80%; /* Messaggi non troppo larghi */
-    margin: 10px;
-    align-items: flex-end; /* Allinea il content alla fine del contenitore */
-}
-
-.chat-message.user {
-    justify-content: flex-end; /* Allinea a destra i messaggi utente */
+    width: 100%;
+    max-width: 500px;
     margin-left: auto;
-}
-
-.chat-message.ai {
-    justify-content: flex-start; /* Allinea a sinistra i messaggi AI */
     margin-right: auto;
 }
 
-.message-content {
-    padding: 10px 15px;
-    border-radius: 18px;
-    line-height: 1.4;
-}
-
-.chat-message.user .message-content {
-    background-color: #dcf8c6; /* Verde chiaro per l'utente */
-    color: #000;
-}
-
-.chat-message.ai .message-content {
-    background-color: #f1f0f0; /* Grigio chiaro per l'AI */
-    color: #000;
-}
-
-/* Stili per l'indicatore di digitazione "..." */
-.typing-indicator {
+/* Stile base per i pulsanti principali (quadrati) */
+.button {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 10px 15px;
-    background-color: #f1f0f0;
-    border-radius: 18px;
-    margin: 10px;
-    width: fit-content;
-}
-
-.typing-indicator span {
-    height: 8px;
-    width: 8px;
-    background-color: #8e8e8e;
-    border-radius: 50%;
-    display: inline-block;
-    margin: 0 2px;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-
-.typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1.0); }
-}
-
-.message-content {
-    padding: 10px 15px;
-    border-radius: 18px; /* Bordi arrotondati come le bolle di chat */
-    line-height: 1.4;
-    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* Aggiungi il nome dell'AI */
-.ai-message::before {
-    content: 'Frank: ';
-    font-weight: bold;
-    color: #555;
-    margin-right: 5px;
-    font-size: 0.9em;
-    align-self: flex-start; /* Allinea con l'inizio del messaggio */
-    margin-top: 2px; /* Allineamento fine con il testo */
-}
-
-.chat-input-area {
-    display: flex;
-    flex-direction: column; /* Input text sopra i pulsanti */
-    width: 100%;
-    padding: 10px 0 0; /* Padding superiore per separare dalla chat */
-    border-top: 1px solid #eee; /* Linea sottile sopra l'area di input */
-    box-sizing: border-box;
-}
-
-#chatInput {
-    width: 100%; /* Copre l'intera larghezza */
-    min-height: 40px; /* Altezza minima */
-    max-height: 150px; /* Altezza massima per evitare che sia troppo grande */
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 20px; /* Bordi arrotondati per un look moderno */
-    box-sizing: border-box;
-    font-size: 1em;
-    resize: none; /* Disabilita il ridimensionamento manuale */
-    overflow-y: auto; /* Scorri se il testo è troppo lungo */
-    margin-bottom: 10px; /* Spazio tra input e pulsanti */
-}
-
-.chat-controls {
-    display: flex;
-    justify-content: flex-end; /* Allinea i pulsanti a destra */
-    gap: 10px; /* Spazio tra i pulsanti */
-    width: 100%;
-}
-
-.chat-controls button {
-    background-color: #2A76B8; /* Blu del tema principale */
+    justify-content: center;
+    padding: 15px 10px;
+    text-align: center;
+    text-decoration: none;
     color: white;
     border: none;
-    border-radius: 50%; /* Pulsanti rotondi */
-    width: 45px; /* Dimensione fissa per rotondità */
-    height: 45px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    flex-basis: calc(50% - 7.5px);
+    max-width: calc(50% - 7.5px);
+    min-height: 100px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.button img {
+    max-width: 45px;
+    max-height: 45px;
+    margin-bottom: 8px;
+}
+
+.button span {
+    display: block;
+    font-size: 1em;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+}
+
+/* Colori e hover per i pulsanti principali */
+.insert-button { background-color: #28a745; }
+.insert-button:hover { background-color: #218838; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.chat-button { background-color: #ffc107; }
+.chat-button:hover { background-color: #e0a800; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.new-order-button { background-color: #6f42c1; }
+.new-order-button:hover { background-color: #5a3597; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.search-button { background-color: #dc3545; }
+.search-button:hover { background-color: #c82333; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+/* --- Pulsanti secondari (logout, training, aiuto) --- */
+
+.logout-button-horizontal {
+    background-color: #ef9a9a;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.logout-button-horizontal:hover { background-color: #e57373; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
+.logout-button-horizontal img { max-width: 18px; max-height: 18px; }
+.logout-button-horizontal span { font-size: 0.8em; font-weight: 500; color: white; }
+
+.training-button {
+    background-color: #8c96a3;
+    color: white;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: calc(285px * 2 + 15px); /* Occupa lo spazio di due pulsanti */
+    height: 60px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.training-button:hover { background-color: #7a8491; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
+.training-button img { max-width: 24px; max-height: 24px; filter: invert(1); }
+
+.help-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 1.1em;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+.help-button:hover { background-color: #5a6268; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+
+/* --- Elementi Form --- */
+
+.form-group {
+    margin-bottom: 5px;
+    text-align: left;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.input-label-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.input-label-icon img { max-width: 24px; max-height: 24px; }
+.input-label-icon h3 { font-size: 1.1em; color: #333; font-weight: 500; margin: 0; }
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="file"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
+    color: #333333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
+    outline: none;
+}
+
+/* Controlli specifici per la registrazione vocale */
+.voice-controls { display: flex; justify-content: center; gap: 15px; margin-top: 5px; }
+.voice-controls button {
+    padding: 10px 15px; border: 1px solid #ccc; border-radius: 6px; cursor: pointer;
+    font-size: 1em; background-color: white; color: #333;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impedisce ai pulsanti di ridursi */
-    padding: 0; /* Rimuovi padding predefinito */
+    display: flex; align-items: center; gap: 8px;
+}
+.voice-controls button:hover { background-color: #eee; transform: translateY(-1px); }
+.voice-controls button img { max-width: 20px; max-height: 20px; }
+
+#startButton { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+#startButton:hover { background-color: #c3e6cb; }
+#stopButton { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+#stopButton:hover { background-color: #f5c6cb; }
+#recordingStatus { font-size: 0.9em; color: #666; margin-top: 8px; margin-bottom: 12px; text-align: center; }
+
+/* Pulsante Salva Dati (usato nei modali) */
+.save-button {
+    margin-top: 10px; padding: 15px 20px; border: none; border-radius: 8px;
+    background-color: #28a745; color: white; font-size: 1.1em; font-weight: 500;
+    cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: block; width: 100%; box-sizing: border-box; text-align: center;
+}
+.save-button:hover { background-color: #1e7e34; transform: translateY(-2px); }
+
+/* --- Legenda di Aiuto --- */
+.legend {
+    position: absolute; top: 70px; right: 20px; background-color: white;
+    border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 100;
+    display: none; text-align: left; max-width: 350px;
+}
+.legend h3 { font-size: 1.3em; margin-bottom: 15px; border-bottom: 1px solid #eeeeee; padding-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.legend-icon { width: 35px; height: 35px; margin-right: 15px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.legend-icon img { max-width: 90%; max-height: 90%; }
+.legend-text { font-size: 0.95em; color: #555; line-height: 1.4; }
+
+/* ============================================= */
+/* == 4. STILI PER I MODALI                   == */
+/* ============================================= */
+
+/* --- 4.1 Stili Generici per Tutti i Modali --- */
+
+/* Overlay scuro per lo sfondo quando un modale è aperto */
+.modal-overlay {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 20;
 }
 
-.chat-controls button:hover {
-    background-color: #1a5c96;
-    transform: translateY(-1px);
+/* Contenitore base del modale */
+.modal {
+    display: none; position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white; padding: 20px; border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); z-index: 30;
+    width: 95%; max-width: 600px; max-height: 90%;
+    overflow-y: auto; animation: fadeInModal 0.3s ease-out;
+    display: flex; /* Impostato a flex per gestire l'altezza del contenuto */
+    flex-direction: column;
 }
 
-.chat-controls button img {
-    width: 24px; /* Icone più piccole per i pulsanti rotondi */
-    height: 24px;
+/* Wrapper per il contenuto del modale, permette al body di espandersi */
+.modal-content {
+    display: flex; flex-direction: column; height: 100%;
 }
 
-.chat-voice-button.recording-active {
-    background-color: #dc3545; /* Rosso quando in registrazione */
+/* Header del modale */
+.modal-header {
+    display: flex; justify-content: center; align-items: center;
+    margin-bottom: 15px; position: relative; flex-shrink: 0;
 }
-.chat-voice-button.recording-active:hover {
-    background-color: #c82333;
+.modal-header h2 { margin: 0; font-size: 1.6em; text-align: center; letter-spacing: 1.5px; }
+
+/* Posizionamento del pulsante aiuto nell'header del modale */
+.modal-header .help-button-container {
+    position: absolute; top: -5px; right: 40px;
 }
 
+/* Pulsante di chiusura del modale (X) */
+.close-button {
+    position: absolute; top: -10px; right: -10px; font-size: 1.5em;
+    background-color: #6c757d; color: white; border-radius: 50%;
+    width: 35px; height: 35px; display: flex; justify-content: center;
+    align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.close-button:hover { transform: rotate(90deg); background-color: #5a6268; }
+
+/* Corpo del modale, contenitore dei form-group */
+.modal-body {
+    margin-bottom: 10px; display: flex; flex-direction: column;
+    gap: 15px;
+}
+
+/* La legenda deve apparire sopra il modale */
+#insertDataLegend, #chatLegend, #newOrderLegend {
+    z-index: 40;
+}
+
+/* --- 4.2 Stili Specifici per Colore Header --- */
+
+#insertDataModal .modal-header h2 { color: #28a745; }
+#chatModal .modal-header h2 { color: #ffc107; }
+#newOrderModal .modal-header h2 { color: #6f42c1; }
+#searchModal .modal-header h2 { color: #dc3545; } /* Se esistesse */
+
+/* --- 4.3 Stili Specifici: Chat Modal (#chatModal) --- */
+
+/* Il corpo del modale chat deve espandersi per riempire lo spazio */
+.chat-modal-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 15px;
+    padding-bottom: 0;
+}
+
+/* Area dei messaggi, scorrevole */
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Singola bolla di messaggio */
+.chat-message {
+    display: flex;
+    flex-direction: column; /* Impila testo e audio */
+    max-width: 80%;
+    align-items: flex-start; /* Allineamento base */
+}
+
+/* Allineamento a destra per i messaggi dell'utente */
+.chat-message.user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+/* Allineamento a sinistra per i messaggi dell'AI */
+.chat-message.ai {
+    align-self: flex-start;
+}
+
+/* Contenuto testuale della bolla */
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.chat-message.user .message-content { background-color: #dcf8c6; color: #000; }
+.chat-message.ai .message-content { background-color: #f1f0f0; color: #000; }
+
+/* Lettore audio dentro la bolla */
+.audio-playback {
+    margin-top: 8px;
+    max-width: 100%;
+}
+.audio-playback audio {
+    width: 100%;
+    max-width: 280px;
+    height: 40px;
+    display: block;
+}
+
+/* Indicatore "sta scrivendo..." */
+.typing-indicator {
+    display: flex; align-items: center; padding: 10px 15px;
+    background-color: #f1f0f0; border-radius: 18px;
+    margin: 10px; width: fit-content;
+}
+.typing-indicator span {
+    height: 8px; width: 8px; background-color: #8e8e8e;
+    border-radius: 50%; display: inline-block; margin: 0 2px;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+/* Area di input in fondo alla chat */
+.chat-input-area {
+    display: flex; flex-direction: column; width: 100%;
+    padding-top: 10px; border-top: 1px solid #eee; box-sizing: border-box;
+}
+#chatInput {
+    width: 100%; min-height: 40px; max-height: 150px; padding: 10px 12px;
+    border: 1px solid #ccc; border-radius: 20px; box-sizing: border-box;
+    font-size: 1em; resize: none; overflow-y: auto; margin-bottom: 10px;
+}
+
+/* Pulsanti di invio e registrazione vocale */
+.chat-controls { display: flex; justify-content: flex-end; gap: 10px; width: 100%; }
+.chat-controls button {
+    background-color: #2A76B8; color: white; border: none; border-radius: 50%;
+    width: 45px; height: 45px; display: flex; justify-content: center; align-items: center;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    padding: 0;
+}
+.chat-controls button:hover { background-color: #1a5c96; transform: translateY(-1px); }
+.chat-controls button img { width: 24px; height: 24px; }
+.chat-voice-button.recording-active { background-color: #dc3545; }
+.chat-voice-button.recording-active:hover { background-color: #c82333; }
+
+
+/* ============================================= */
+/* == 5. COMPONENTI SPECIFICI DI PAGINA       == */
+/* ============================================= */
+
+/* Box "Ultimi Inserimenti" nella pagina principale */
+.latest-entries {
+    padding: 20px; background-color: white; border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: left;
+    flex-grow: 1; /* Occupa lo spazio verticale rimanente */
+}
+.latest-entries h2 {
+    font-size: 1.4em; color: #333333; margin-top: 0;
+    margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #eeeeee;
+}
+#latestEntriesList { list-style: none; padding: 0; }
+.entry-item {
+    padding: 12px 0; border-bottom: 1px dashed #e0e0e0;
+    font-size: 0.95em; color: #444;
+}
+.entry-item:last-child { border-bottom: none; }
+
+
+/* ============================================= */
+/* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
+/* ============================================= */
 
 @media (max-width: 600px) {
-    .main-content-wrapper {
-        padding: 25px; /* Meno padding su mobile */
-        margin: 10px; /* Margine per non toccare i bordi */
-    }
-    h1 {
-        margin-top: 50px;
-        font-size: 1.8em;
-    }
-    .button-container {
-        flex-direction: column; /* I pulsanti vanno in colonna su schermi piccoli */
-        gap: 10px; /* Riduci il gap su mobile */
-    }
-    .button {
-        width: 100%; /* I pulsanti occupano tutta la larghezza su mobile */
-        max-width: 100%; /* Annulla max-width per 2x2 */
-        margin-right: 0;
-        margin-bottom: 0; /* Il gap gestisce lo spazio */
-    }
-    /* Aggiungi questa nuova regola */
-    .training-button {
-        width: 100%; /* Occupa l'intera larghezza su mobile */
-        height: auto; /* L'altezza si adatta al contenuto */
-        padding: 15px; /* Un padding più generoso per mobile */
+    h1 { margin-top: 50px; font-size: 1.8em; }
+
+    .main-content-wrapper { padding: 25px; margin: 10px; }
+    
+    .button-container { flex-direction: column; gap: 10px; }
+    .button, .training-button {
+        width: 100%;
         max-width: 100%;
     }
-    .modal {
-        padding: 15px;
-    }
-    .close-button {
-        top: -5px;
-        right: -5px;
-        width: 35px;
-        height: 35px;
-        font-size: 2em;
-    }
-    .modal-header .help-button-container {
-        top: -5px;
-        right: 35px;
-    }
-    .legend {
-        top: 10px;
-        right: 10px;
-        max-width: calc(100% - 40px);
-        padding: 15px;
-    }
-    .release-info {
-        font-size: 0.7em;
-    }
+    .training-button { height: auto; padding: 15px; }
 
-    /* Adattamenti per la chat modal su schermi piccoli */
-    .message {
-        max-width: 90%; /* Aumenta larghezza messaggi su mobile */
-    }
-    .chat-input-area {
-        padding: 5px 0 0;
-    }
-    #chatInput {
-        margin-bottom: 8px;
-    }
-    .chat-controls button {
-        width: 40px; /* Pulsanti leggermente più piccoli */
-        height: 40px;
-    }
-    .chat-controls button img {
-        width: 20px; /* Icone più piccole */
-        height: 20px;
-    }
+    .modal { padding: 15px; }
+    .close-button { top: -5px; right: -5px; width: 35px; height: 35px; font-size: 1.2em; }
+    .modal-header .help-button-container { top: -2px; right: 35px; }
+    
+    .legend { top: 10px; right: 10px; max-width: calc(100% - 40px); padding: 15px; }
+    
+    .release-info { font-size: 0.7em; }
+
+    /* Adattamenti per la chat modal su mobile */
+    .chat-message { max-width: 90%; }
+    .chat-input-area { padding: 5px 0 0; }
+    #chatInput { margin-bottom: 8px; }
+    .chat-controls button { width: 40px; height: 40px; }
+    .chat-controls button img { width: 20px; height: 20px; }
 }
