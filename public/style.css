@@ -848,16 +848,11 @@ h1 {
 }
 
 /* Stili generali per ogni singolo messaggio */
-.message {
-    display: flex;
-    max-width: 80%; /* Messaggi non troppo larghi */
-    align-items: flex-end; /* Allinea il content alla fine del contenitore */
-}
-
 .chat-message {
     display: flex;
+    max-width: 80%; /* Messaggi non troppo larghi */
     margin: 10px;
-    max-width: 80%;
+    align-items: flex-end; /* Allinea il content alla fine del contenitore */
 }
 
 .chat-message.user {
