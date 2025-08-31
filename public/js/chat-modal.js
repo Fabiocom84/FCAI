@@ -140,8 +140,7 @@ async function sendChatMessage(messageText) {
 
                 const audioData = JSON.parse(parts[1]);
                 if (audioData.audio) {
-                    // --- INIZIO DELLA CORREZIONE ---
-                    // Non chiamare addMessage di nuovo. Aggiungi l'audio all'elemento esistente.
+                    // Questa logica è corretta: aggiunge l'audio all'elemento del messaggio esistente.
                     const audio = new Audio();
                     audio.src = `data:audio/mpeg;base64,${audioData.audio}`;
                     audio.controls = true;
@@ -153,7 +152,6 @@ async function sendChatMessage(messageText) {
 
                     // Aggiungi il player audio allo stesso elemento del messaggio
                     aiMessageElement.appendChild(audioContainer);
-                    // --- FINE DELLA CORREZIONE ---
                 }
                 break; 
             } else {
