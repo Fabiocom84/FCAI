@@ -395,7 +395,7 @@ h2 {
 
 /* Header del modale */
 .modal-header {
-    display: flex; justify-content: center; align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 15px; position: relative; flex-shrink: 0;
 }
 .modal-header h2 { margin: 0; font-size: 1.6em; text-align: center; letter-spacing: 1.5px; }
@@ -405,9 +405,15 @@ h2 {
     position: absolute; top: -5px; right: 40px;
 }
 
+.modal-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Spazio tra il pulsante '?' e 'X' */
+}
+
 /* Pulsante di chiusura del modale (X) */
 .close-button {
-    position: absolute; top: -10px; right: -10px; font-size: 1.5em;
+    position: relative; font-size: 1.5em;
     background-color: #6c757d; color: white; border-radius: 50%;
     width: 35px; height: 35px; display: flex; justify-content: center;
     align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -570,7 +576,7 @@ h2 {
 /* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
 /* ============================================= */
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
     h1 { margin-top: 50px; font-size: 1.8em; }
 
     .main-content-wrapper { padding: 25px 15px; }
@@ -585,7 +591,6 @@ h2 {
 
     .modal { padding: 15px; }
     .close-button { top: -5px; right: -5px; width: 35px; height: 35px; font-size: 1.2em; }
-    .modal-header .help-button-container { top: -2px; right: 35px; }
     
     .legend { top: 10px; right: 10px; max-width: calc(100% - 40px); padding: 15px; }
     

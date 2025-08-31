@@ -58,10 +58,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Inserisci Dati</h2>
+                <div class="modal-header-buttons">
                 <div class="help-button-container">
-                    <button class="help-button" data-legend="insertDataLegend">?</button>
+                    <button class="help-button" data-legend="chatLegend">?</button>
                 </div>
                 <span class="close-button">&times;</span>
+            </div>
             </div>
             <div class="modal-body">
                 <form id="insertDataForm">
@@ -113,12 +115,13 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Nuova Commessa</h2>
-            <div class="help-button-container">
-                <button class="help-button" data-legend="newOrderLegend">?</button>
+            <div class="modal-header-buttons">
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="chatLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
             </div>
-            <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
-        </div>
-        
+            </div>
         <div class="modal-body">
             <form id="newOrderForm"> 
                 <div class="form-group">
@@ -242,11 +245,13 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Chat AI</h2>
-            <div class="help-button-container">
-                <button class="help-button" data-legend="chatLegend">?</button>
+            <div class="modal-header-buttons">
+                <div class="help-button-container">
+                    <button class="help-button" data-legend="chatLegend">?</button>
+                </div>
+                <span class="close-button" onclick="closeChatModal()">&times;</span>
             </div>
-            <span class="close-button" onclick="closeChatModal()">&times;</span>
-        </div>
+            </div>
         <div class="modal-body chat-modal-body"> 
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-message user">
