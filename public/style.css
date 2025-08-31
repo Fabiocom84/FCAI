@@ -400,11 +400,6 @@ h2 {
 }
 .modal-header h2 { margin: 0; font-size: 1.6em; text-align: center; letter-spacing: 1.5px; }
 
-/* Posizionamento del pulsante aiuto nell'header del modale */
-.modal-header .help-button-container {
-    position: absolute; top: -5px; right: 40px;
-}
-
 .modal-header-buttons {
     display: flex;
     align-items: center;
