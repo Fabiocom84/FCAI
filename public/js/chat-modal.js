@@ -1,21 +1,21 @@
 // js/chat-modal.js
 
-// Elementi DOM
+// --- 1. ELEMENTI DOM ---
 const chatModal = document.getElementById('chatModal');
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
 const chatStatus = document.getElementById('chatStatus');
-const typingIndicator = document.querySelector('.typing-indicator'); // Seleziona il nuovo indicatore
+const typingIndicator = document.querySelector('.typing-indicator');
 
-// Setup del riconoscimento vocale
+// --- 2. STATO DELLA CHAT E RICONOSCIMENTO VOCALE ---
 let recognition;
 let isRecording = false;
 let currentTranscription = '';
-
-// *** NUOVO: Array per la cronologia della chat ***
 let chatHistory = [];
+
+// --- 3. FUNZIONI PRINCIPALI DEL MODALE ---
 
 // Funzione per aprire il modale della chat
 function openChatModal() {
@@ -33,22 +33,18 @@ async function closeChatModal() {
     chatModal.style.display = 'none';
     modalOverlay.style.display = 'none';
 
-    // Ferma la registrazione se attiva
     if (isRecording && recognition) {
         recognition.stop();
     }
     
-    // Salva la cronologia della chat alla chiusura
-    if (chatHistory.length > 1) { // Salva solo se c'è stata una conversazione
+    if (chatHistory.length > 1) {
         await saveChatHistory();
     }
 }
 
 // Funzione per salvare la cronologia della chat
 async function saveChatHistory() {
-    console.log("Salvataggio della cronologia della chat...");
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
-
     try {
         const response = await fetch(`${window.BACKEND_URL}/save-chat`, {
             method: 'POST',
@@ -58,14 +54,9 @@ async function saveChatHistory() {
             },
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
-
-        if (!response.ok) {
-            throw new Error(`Errore del server durante il salvataggio: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`Errore del server: ${response.status}`);
         const result = await response.json();
-        console.log("Chat salvata con successo:", result.message);
-
+        console.log("Chat salvata:", result.message);
     } catch (error) {
         console.error("Errore nel salvataggio della chat:", error);
     }
@@ -76,7 +67,6 @@ function addMessage(sender, text) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', sender);
     
-    // Crea sempre il contenitore per il testo, anche se vuoto, per consistenza
     const messageContentDiv = document.createElement('div');
     messageContentDiv.classList.add('message-content');
     if (text) {
@@ -91,10 +81,10 @@ function addMessage(sender, text) {
         chatHistory.push({ role: 'user', content: text });
     }
     
-    return messageElement; // Ritorna l'elemento per aggiornamenti futuri
+    return messageElement;
 }
 
-// Funzione di invio messaggio riscritta per lo streaming
+// Funzione di invio messaggio (versione robusta e semplificata)
 async function sendChatMessage(messageText) {
     if (!messageText.trim()) return;
 
@@ -122,18 +112,12 @@ async function sendChatMessage(messageText) {
         aiMessageElement = addMessage('ai', '');
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
 
-        // --- INIZIO NUOVA LOGICA SEMPLIFICATA ---
-
-        // 1. Attendiamo e leggiamo l'INTERA risposta come testo.
-        // Questo elimina il ciclo 'while' e i problemi di streaming frammentato.
         const fullResponseData = await response.text();
-
-        // 2. Ora che abbiamo la stringa completa, la processiamo in sicurezza.
         let fullResponseText = '';
         let audioData = null;
 
         if (fullResponseData.includes('--AUDIO--')) {
-            const parts = fullResponseData.split('--AUDIO--', 2); // Dividi in massimo 2 parti
+            const parts = fullResponseData.split('--AUDIO--', 2);
             fullResponseText = parts[0];
             const jsonPart = parts[1];
 
@@ -146,11 +130,9 @@ async function sendChatMessage(messageText) {
                 }
             }
         } else {
-            // Se non c'è il delimitatore, la risposta è solo testo.
             fullResponseText = fullResponseData;
         }
 
-        // 3. Aggiorniamo l'interfaccia una sola volta con il contenuto finale.
         aiContentDiv.textContent = fullResponseText;
 
         if (audioData && audioData.audio) {
@@ -168,8 +150,6 @@ async function sendChatMessage(messageText) {
             chatHistory.push({ role: 'assistant', content: fullResponseText.trim() });
         }
 
-        // --- FINE NUOVA LOGICA SEMPLIFICATA ---
-
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
         const errorText = `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`;
@@ -179,7 +159,6 @@ async function sendChatMessage(messageText) {
             addMessage('ai', errorText);
         }
     } finally {
-        // Questo blocco verrà ora raggiunto in modo affidabile
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
         chatInput.focus();
@@ -187,7 +166,22 @@ async function sendChatMessage(messageText) {
     }
 }
 
-// Logica per il riconoscimento vocale (invariata)
+// --- 4. EVENT LISTENERS ---
+
+// Listener per il pulsante di invio
+sendChatMessageBtn.addEventListener('click', () => {
+    sendChatMessage(chatInput.value);
+});
+
+// Listener per il tasto Invio nell'area di testo
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage(chatInput.value);
+    }
+});
+
+// Listener e logica per il riconoscimento vocale
 startChatRecordingBtn.addEventListener('click', () => {
     if (!('webkitSpeechRecognition' in window)) {
         alert("Spiacente, il riconoscimento vocale non è supportato. Prova Chrome.");
@@ -215,21 +209,19 @@ startChatRecordingBtn.addEventListener('click', () => {
         recognition.onerror = (event) => {
             chatStatus.textContent = `Errore registrazione: ${event.error}`;
             isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra">';
+            startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
             startChatRecordingBtn.classList.remove('recording-active');
         };
 
         recognition.onend = () => {
             isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/mic.png" alt="Registra">';
+            startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
             startChatRecordingBtn.classList.remove('recording-active');
             chatStatus.textContent = "";
             
             if (currentTranscription.trim() !== '') {
                 sendChatMessage(currentTranscription);
                 currentTranscription = '';
-            } else {
-                chatStatus.textContent = "Nessuna voce rilevata.";
             }
         };
 
