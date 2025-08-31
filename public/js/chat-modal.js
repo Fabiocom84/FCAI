@@ -106,7 +106,6 @@ async function sendChatMessage(messageText) {
     typingIndicator.style.display = 'flex';
 
     let aiMessageElement;
-    let fullResponseText = '';
     
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
@@ -126,44 +125,74 @@ async function sendChatMessage(messageText) {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
+        
+        // --- INIZIO MODIFICA CHIAVE ---
+        // Accumuliamo l'intera risposta in una variabile per gestire i chunk frammentati
+        let fullResponseData = '';
 
         while (true) {
             const { value, done } = await reader.read();
-            if (done) break;
+            if (done) {
+                // Il flusso è finito, ma processiamo quello che abbiamo accumulato
+                break;
+            }
             
-            const chunk = decoder.decode(value, { stream: true });
+            fullResponseData += decoder.decode(value, { stream: true });
 
-            if (chunk.includes('--AUDIO--')) {
-                const parts = chunk.split('--AUDIO--');
-                fullResponseText += parts[0];
-                aiContentDiv.textContent = fullResponseText;
-
-                const audioData = JSON.parse(parts[1]);
-                if (audioData.audio) {
-                    // Questa logica è corretta: aggiunge l'audio all'elemento del messaggio esistente.
-                    const audio = new Audio();
-                    audio.src = `data:audio/mpeg;base64,${audioData.audio}`;
-                    audio.controls = true;
-                    audio.autoplay = true;
-
-                    const audioContainer = document.createElement('div');
-                    audioContainer.classList.add('audio-playback');
-                    audioContainer.appendChild(audio);
-
-                    // Aggiungi il player audio allo stesso elemento del messaggio
-                    aiMessageElement.appendChild(audioContainer);
-                }
-                break; 
+            // Controlliamo se il delimitatore è PRESENTE nell'intera risposta accumulata
+            if (fullResponseData.includes('--AUDIO--')) {
+                // Se c'è, il flusso di testo è finito. Usciamo dal ciclo per processare.
+                break;
             } else {
-                fullResponseText += chunk;
-                aiContentDiv.textContent = fullResponseText;
+                // Altrimenti, siamo ancora nella fase di streaming del testo.
+                // Aggiorniamo l'UI con il testo ricevuto finora.
+                aiContentDiv.textContent = fullResponseData;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
-        
-        if (fullResponseText) {
-            chatHistory.push({ role: 'assistant', content: fullResponseText });
+
+        // Ora che il ciclo è finito, abbiamo la risposta completa in fullResponseData
+        // e possiamo processarla in sicurezza.
+        let fullResponseText = '';
+        let audioData = null;
+
+        if (fullResponseData.includes('--AUDIO--')) {
+            const parts = fullResponseData.split('--AUDIO--');
+            fullResponseText = parts[0];
+            
+            try {
+                // Tentiamo di parsare il JSON, ora che dovremmo averlo tutto
+                audioData = JSON.parse(parts[1]);
+            } catch (e) {
+                console.error("Errore nel parsing del JSON audio:", e);
+                // Assegniamo un testo di errore se il JSON è ancora malformato
+                fullResponseText = `Mi dispiace, c'è stato un errore nella ricezione dei dati audio.`;
+            }
+
+        } else {
+            // Se non c'è il delimitatore, la risposta è solo testo (caso anomalo)
+            fullResponseText = fullResponseData;
         }
+
+        // Aggiornamento finale dell'interfaccia
+        aiContentDiv.textContent = fullResponseText;
+
+        if (audioData && audioData.audio) {
+            const audio = new Audio(`data:audio/mpeg;base64,${audioData.audio}`);
+            audio.controls = true;
+            audio.autoplay = true;
+
+            const audioContainer = document.createElement('div');
+            audioContainer.classList.add('audio-playback');
+            audioContainer.appendChild(audio);
+            aiMessageElement.appendChild(audioContainer);
+        }
+        
+        // Aggiungi alla cronologia solo se c'è testo
+        if (fullResponseText.trim()) {
+            chatHistory.push({ role: 'assistant', content: fullResponseText.trim() });
+        }
+        // --- FINE MODIFICA CHIAVE ---
 
     } catch (error) {
         console.error("Errore nell'invio del messaggio alla chat AI:", error);
@@ -177,18 +206,9 @@ async function sendChatMessage(messageText) {
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
         chatInput.focus();
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll finale
     }
 }
-
-// Event listener (rimangono per lo più invariati)
-sendChatMessageBtn.addEventListener('click', () => sendChatMessage(chatInput.value));
-
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendChatMessage(chatInput.value);
-    }
-});
 
 // Logica per il riconoscimento vocale (invariata)
 startChatRecordingBtn.addEventListener('click', () => {
