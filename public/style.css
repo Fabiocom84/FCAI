@@ -571,10 +571,14 @@ h2 {
 /* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
 /* ============================================= */
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
     h1 { margin-top: 50px; font-size: 1.8em; }
 
-    .main-content-wrapper { padding: 25px 15px; }
+    .main-content-wrapper {
+        width: 100%;             /* Forza il contenitore a occupare tutta la larghezza */
+        padding: 25px 15px;      /* Il padding crea i margini interni di 15px */
+        box-sizing: border-box;  /* Assicura che il padding non ecceda la larghezza */
+    }
     
     .button-container { flex-direction: column; gap: 10px; }
     .button, .training-button {
@@ -585,10 +589,11 @@ h2 {
     .training-button { height: auto; padding: 15px; }
 
     .modal {
-        width: 90%; /* Ristretto dal 95% al 90% */
-        max-width: 90%;
-        padding: 10px;
-        box-sizing: border-box; /* Assicura che il padding non allarghi il box */
+        /* Usa calc() per adattarsi allo schermo meno i margini */
+        width: calc(100% - 30px); /* Larghezza schermo - 15px per lato */
+        max-width: 100%;         /* Non serve più un max-width in % */
+        padding: 15px;
+        box-sizing: border-box;
     }
     .modal-header-buttons {
         gap: 5px; /* Riduciamo lo spazio tra i pulsanti su mobile */
