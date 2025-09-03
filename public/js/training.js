@@ -18,7 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function startTrainingProcess(button) {
     const originalText = button.querySelector('span').textContent;
-    const statusElement = document.createElement('p');
+    // Pulisci i messaggi di stato precedenti se esistono
+    let statusElement = button.parentNode.querySelector('.training-status');
+    if (statusElement) {
+        statusElement.remove();
+    }
+    
+    statusElement = document.createElement('p');
+    statusElement.className = 'training-status'; // Aggiungi una classe per identificarlo
     statusElement.style.marginTop = '10px';
     button.parentNode.appendChild(statusElement);
 
@@ -26,9 +33,6 @@ async function startTrainingProcess(button) {
     statusElement.textContent = 'Avvio del processo...';
 
     try {
-        // --- MODIFICA CHIAVE ---
-        // Ora usiamo la funzione getAuthToken() definita in main.js,
-        // che controlla sia localStorage sia sessionStorage.
         const authToken = getAuthToken(); 
         
         if (!authToken) {
@@ -45,7 +49,7 @@ async function startTrainingProcess(button) {
 
         const result = await response.json();
 
-        if (response.ok) { // Controlla se lo status è 2xx (es. 200, 202)
+        if (response.ok) {
             statusElement.textContent = 'Processo accodato. Controllo lo stato...';
             pollForStatus(result.process_id, statusElement, button, originalText);
         } else {
@@ -63,8 +67,14 @@ async function startTrainingProcess(button) {
 function pollForStatus(processId, statusElement, button, originalText) {
     const intervalId = setInterval(async () => {
         try {
-            const authToken = getAuthToken(); // Usa la funzione corretta anche qui
-            const response = await fetch(`${window.BACK-END_URL}/api/get-training-status?process_id=${processId}`, {
+            const authToken = getAuthToken();
+            if (!authToken) {
+                throw new Error("Token sparito durante il polling, login necessario.");
+            }
+            
+            // --- ECCO LA CORREZIONE ---
+            // Rimosso il trattino da BACK-END_URL
+            const response = await fetch(`${window.BACKEND_URL}/api/get-training-status?process_id=${processId}`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
 
@@ -84,12 +94,12 @@ function pollForStatus(processId, statusElement, button, originalText) {
                 if(data.status === 'COMPLETATO'){
                     alert('Addestramento completato con successo!');
                 } else {
-                    alert('Addestramento fallito. Controlla i log per i dettagli.');
+                    alert('Addestramento fallito. Controlla il foglio Training_Status per i dettagli.');
                 }
             }
         } catch (error) {
             console.error("Errore durante il polling dello stato:", error);
-            statusElement.textContent = `Errore durante il controllo dello stato.`;
+            statusElement.textContent = `Errore durante il controllo dello stato: ${error.message}`;
             clearInterval(intervalId);
 
             button.disabled = false;
