@@ -77,27 +77,23 @@ function handleFileUpload(event) {
 
 async function saveData(event) {
     event.preventDefault();
-    const authToken = getAuthToken();
-    if (!authToken) {
-        alert('Autenticazione richiesta. Effettua il login.');
-        return;
-    }
     if (saveButton) saveButton.disabled = true;
 
     const modalForm = insertDataModal?.querySelector('form');
     if (!modalForm) {
-        console.error('Form non trovato all\'interno del modale.');
+        console.error('Form non trovato');
         if (saveButton) saveButton.disabled = false;
         return;
     }
     const formData = new FormData(modalForm);
 
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/save-data`, {
+        // Ora usiamo apiFetch, che gestirà il token e il tipo di contenuto
+        const response = await apiFetch(`${window.BACKEND_URL}/api/save-data`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${authToken}` },
             body: formData
         });
+
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
@@ -108,36 +104,25 @@ async function saveData(event) {
         if (modalForm && successMessage) {
             modalForm.style.display = 'none';
             successMessage.style.display = 'block';
-
-            setTimeout(() => {
-                window.closeInsertDataModal(); // Usa la funzione globale di chiusura
-            }, 2000);
+            setTimeout(() => { window.closeInsertDataModal(); }, 2000);
         }
-
     } catch (error) {
-        console.error('Errore nel salvataggio dei dati:', error);
-        alert('Errore nel salvataggio dei dati: ' + error.message);
+        if (error.message !== "Unauthorized") {
+            console.error('Errore nel salvataggio dei dati:', error);
+            alert('Errore nel salvataggio dei dati: ' + error.message);
+        }
     } finally {
         if (saveButton) saveButton.disabled = false;
     }
 }
 
 async function loadEtichette() {
-    if (!riferimentoDropdown) {
-        console.error('Dropdown per le etichette non trovato.');
-        return;
-    }
-    const authToken = getAuthToken();
-    if (!authToken) {
-        console.error('Token di autenticazione non trovato.');
-        return;
-    }
+    if (!riferimentoDropdown) return;
     
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/get-etichette`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
+        // Usa apiFetch, non serve più l'header Authorization manuale
+        const response = await apiFetch(`${window.BACKEND_URL}/api/get-etichette`);
+
         if (!response.ok) {
             throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
         }
@@ -151,10 +136,10 @@ async function loadEtichette() {
             option.textContent = item;
             riferimentoDropdown.appendChild(option);
         });
-        console.log(`Dropdown popolato con ${items.length} etichette.`);
-
     } catch (error) {
-        console.error('Errore nel caricamento delle etichette:', error);
+        if (error.message !== "Unauthorized") {
+            console.error('Errore nel caricamento delle etichette:', error);
+        }
     }
 }
 
@@ -216,39 +201,31 @@ async function transcribeAudio(audioBlob) {
     isTranscribing = true;
     if (recordingStatus) recordingStatus.textContent = "Trascrizione in corso...";
     if (!audioBlob || audioBlob.size === 0) {
-        console.error("Nessun audio da trascrivere.");
-        if (recordingStatus) recordingStatus.textContent = "Nessun audio da trascrivere.";
-        isTranscribing = false;
-        return;
+        isTranscribing = false; return;
     }
+    
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
-    const authToken = getAuthToken();
-    if (!authToken) {
-        if (recordingStatus) recordingStatus.textContent = "Errore: Autenticazione richiesta.";
-        isTranscribing = false;
-        return;
-    }
-
+    
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
+        // Usa apiFetch, che gestirà il token e il tipo di contenuto
+        const response = await apiFetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
             method: 'POST',
-            body: formData,
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            body: formData
         });
+
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.error || 'Errore sconosciuto nella trascrizione.');
         }
-        if (data.transcription) {
-            if (voiceTranscription) voiceTranscription.value = data.transcription;
-            if (recordingStatus) recordingStatus.textContent = "Trascrizione completata.";
-        } else {
-            if (recordingStatus) recordingStatus.textContent = "Nessuna trascrizione ricevuta.";
-        }
+        if (voiceTranscription) voiceTranscription.value = data.transcription || '';
+        if (recordingStatus) recordingStatus.textContent = data.transcription ? "Trascrizione completata." : "Nessuna trascrizione ricevuta.";
+        
     } catch (error) {
-        console.error("Errore durante la trascrizione:", error);
-        if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
+        if (error.message !== "Unauthorized") {
+            console.error("Errore durante la trascrizione:", error);
+            if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
+        }
     } finally {
         isTranscribing = false;
     }

@@ -44,41 +44,24 @@ async function closeChatModal() {
 
 // Funzione per salvare la cronologia della chat
 async function saveChatHistory() {
-    // Non salvare se la chat ha solo il messaggio di benvenuto
     if (chatHistory.length <= 1) return;
 
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
     
-    // --- INIZIO CORREZIONE ---
-    // Usiamo la funzione globale getAuthToken() che controlla sia localStorage che sessionStorage
-    const authToken = getAuthToken();
-    if (!authToken) {
-        console.error("Impossibile salvare la cronologia della chat: token non trovato.");
-        return; // Interrompi se non c'è il token
-    }
-    // --- FINE CORREZIONE ---
-
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/save-chat`, {
+        const response = await apiFetch(`${window.BACKEND_URL}/api/save-chat`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // Usiamo la variabile authToken che abbiamo appena recuperato
-                'Authorization': `Bearer ${authToken}`
-            },
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
         
-        if (!response.ok) {
-            // Lancia un errore più specifico per il blocco catch
-            throw new Error(`Errore del server: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Errore del server: ${response.status}`);
         
         const result = await response.json();
         console.log("Chat salvata:", result.message);
-
     } catch (error) {
-        console.error("Errore nel salvataggio della chat:", error);
+        if (error.message !== "Unauthorized") {
+            console.error("Errore nel salvataggio della chat:", error);
+        }
     }
 }
 
@@ -118,9 +101,8 @@ async function sendChatMessage(messageText) {
     let aiMessageElement;
     
     try {
-        const response = await fetch(`${window.BACKEND_URL}/api/chat`, {
+        const response = await apiFetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ history: chatHistory }),
         });
 
@@ -129,7 +111,7 @@ async function sendChatMessage(messageText) {
         }
 
         typingIndicator.style.display = 'none';
-        aiMessageElement = addMessage('ai', '');
+        aiMessageElement = addMessage('ai', ''); // Crea un messaggio AI vuoto
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
 
         const fullResponseData = await response.text();
@@ -171,14 +153,18 @@ async function sendChatMessage(messageText) {
         }
 
     } catch (error) {
-        console.error("Errore nell'invio del messaggio alla chat AI:", error);
-        const errorText = `Mi dispiace, c'è stato un errore: ${error.message}. Riprova più tardi.`;
-        if (aiMessageElement) {
-            aiMessageElement.querySelector('.message-content').textContent = errorText;
-        } else {
-            addMessage('ai', errorText);
+        // --- BLOCCO CATCH CORRETTO ---
+        if (error.message !== "Unauthorized") {
+            console.error("Errore nell'invio del messaggio alla chat AI:", error);
+            const errorText = `Mi dispiace, si è verificato un errore: ${error.message}. Riprova più tardi.`;
+            if (aiMessageElement) {
+                aiMessageElement.querySelector('.message-content').textContent = errorText;
+            } else {
+                addMessage('ai', errorText);
+            }
         }
     } finally {
+        // --- BLOCCO FINALLY CORRETTO ---
         sendChatMessageBtn.disabled = false;
         startChatRecordingBtn.disabled = false;
         chatInput.focus();

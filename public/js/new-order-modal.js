@@ -61,18 +61,12 @@ function populateDropdown(selectElement, data, placeholder) {
 
 // Funzione per caricare i dati dei dropdown dal backend
 async function loadDynamicDropdowns() {
-    showLoading('Caricamento dati per i dropdown...');
-    const authToken = getAuthToken();
-    if (!authToken) {
-        console.error('Token di autenticazione non trovato.');
-        hideLoading();
-        return;
-    }
-
+    showLoading('Caricamento dati...');
     try {
+        // Usiamo Promise.all con il nostro nuovo apiFetch
         const [modelsResponse, statusResponse] = await Promise.all([
-            fetch(`${backendUrl}/api/get-modelli`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
-            fetch(`${backendUrl}/api/get-all-statuses`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+            apiFetch(`${window.BACKEND_URL}/api/get-modelli`),
+            apiFetch(`${window.BACKEND_URL}/api/get-all-statuses`)
         ]);
 
         if (!modelsResponse.ok || !statusResponse.ok) {
@@ -85,99 +79,87 @@ async function loadDynamicDropdowns() {
         populateDropdown(modelloSelect, modelsData.models, 'Seleziona un modello');
         populateDropdown(statusSelect, statusData.statuses, 'Seleziona uno status');
 
-        console.log('Dropdown popolati con successo.');
-
     } catch (error) {
-        console.error('Errore nel caricamento delle opzioni dropdown:', error);
+        if (error.message !== "Unauthorized") {
+            console.error('Errore nel caricamento delle opzioni dropdown:', error);
+        }
     } finally {
         hideLoading();
     }
 }
 
-// Funzione per aprire il modale
-if (openNewOrderModalBtn) {
-    openNewOrderModalBtn.addEventListener('click', async (event) => {
-        event.preventDefault();
-        newOrderModal.style.display = 'block';
-        window.modalOverlay.style.display = 'block'; // Utilizza la variabile globale
-        console.log('Modale Nuova Commessa aperto.');
-        await loadDynamicDropdowns();
-    });
-}
-
-// Funzione per chiudere il modale e resettare il form
-window.closeNewOrderModal = function() {
-    newOrderModal.style.display = 'none';
-    window.modalOverlay.style.display = 'none'; // Utilizza la variabile globale
-    const newOrderForm = document.getElementById('newOrderForm');
-    if (newOrderForm) {
-        newOrderForm.reset();
+async function saveNewOrder(event) {
+    event.preventDefault();
+    
+    if (!newOrderForm) {
+        console.error('Form non trovato');
+        return;
     }
-    hideLoading();
-    console.log('Modale Nuova Commessa chiuso e form resettato.');
-};
+    const formData = new FormData(newOrderForm);
 
-// Event listener per il pulsante di chiusura (X)
-if (closeNewOrderModalBtn) {
-    closeNewOrderModalBtn.addEventListener('click', () => {
-        closeNewOrderModal();
-    });
-}
+    showLoading('Salvataggio in corso...');
+    try {
+        // Usiamo apiFetch, che gestisce automaticamente il token per i FormData
+        const response = await apiFetch(`${window.BACKEND_URL}/api/new-order`, {
+            method: 'POST',
+            body: formData
+        });
 
-// Gestione del salvataggio dei dati
-if (saveNewOrderButton) {
-    saveNewOrderButton.addEventListener('click', async (event) => {
-        // Aggiungi questa riga per bloccare il comportamento di submit predefinito del form
-        event.preventDefault(); 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Errore durante il salvataggio della commessa.');
+        }
         
-        console.log('Pulsante "Salva Nuova Commessa" cliccato.');
-        const authToken = getAuthToken();
-        if (!authToken) {
-            alert('Autenticazione richiesta. Effettua il login.');
-            window.location.href = '/login.html';
-            return;
-        }
+        const result = await response.json();
+        console.log('Commessa salvata con successo:', result);
+        
+        newOrderForm.style.display = 'none';
+        if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'block';
 
-        const form = document.querySelector('#newOrderModal form');
-        if (!form) {
-            console.error('Form non trovato all interno del modale.');
-            return;
-        }
-        const formData = new FormData(form);
-
-        showLoading('Salvataggio in corso...');
-        try {
-            const response = await fetch(`${window.BACKEND_URL}/api/new-order`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` },
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore durante il salvataggio della commessa.');
-            }
-
-            const result = await response.json();
-            console.log('Commessa salvata con successo:', result);
-            
-            // Nascondi il form e mostra il messaggio di successo
-            form.style.display = 'none';
-            newOrderSuccessMessage.style.display = 'block';
-
-            // Chiudi il modale dopo 2 secondi
-            setTimeout(() => {
-                closeNewOrderModal();
-                // Ripristina la visualizzazione del form e nascondi il messaggio per il prossimo utilizzo
-                form.style.display = 'block';
-                newOrderSuccessMessage.style.display = 'none';
-            }, 2000);
-            
-        } catch (error) {
+        setTimeout(() => {
+            closeNewOrderModal(); // Chiama la funzione di chiusura globale
+        }, 2000);
+        
+    } catch (error) {
+        if (error.message !== "Unauthorized") {
             console.error('Errore nel salvataggio della nuova commessa:', error);
             alert('Errore nel salvataggio della nuova commessa: ' + error.message);
-        } finally {
-            hideLoading();
         }
-    });
+    } finally {
+        hideLoading();
+    }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
+    
+    if (openNewOrderModalBtn) {
+        openNewOrderModalBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            if (newOrderModal) newOrderModal.style.display = 'block';
+            if (window.modalOverlay) window.modalOverlay.style.display = 'block';
+            await loadDynamicDropdowns();
+        });
+    }
+
+    if (closeNewOrderModalBtn) {
+        // Usiamo la funzione di chiusura definita in main.js per coerenza
+        closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
+    }
+    
+    if (saveNewOrderButton) {
+        saveNewOrderButton.addEventListener('click', saveNewOrder);
+    }
+});
+
+// Funzione di reset chiamata da main.js quando il modale si chiude
+window.resetNewOrderModal = function() {
+    if (newOrderForm) {
+        newOrderForm.reset();
+        newOrderForm.style.display = 'block';
+    }
+    if (newOrderSuccessMessage) {
+        newOrderSuccessMessage.style.display = 'none';
+    }
+    hideLoading();
+};

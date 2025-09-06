@@ -4,6 +4,43 @@ function getAuthToken() {
     return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 }
 
+function logoutUser(message) {
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
+    
+    if (message) {
+        alert(message);
+    }
+    
+    console.log('Token rimosso. Reindirizzamento a login.html...');
+    window.location.href = 'login.html'; 
+}
+
+async function apiFetch(url, options = {}) {
+    const token = getAuthToken();
+    
+    // Inizializza headers, ma non impostare Content-Type di default
+    // Il browser lo imposterà automaticamente per FormData
+    const headers = { ...options.headers };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Se il body non è FormData, imposta Content-Type a JSON
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+        logoutUser("La tua sessione è scaduta o non è valida. Per favore, effettua nuovamente il login.");
+        throw new Error("Unauthorized"); 
+    }
+    return response;
+}
+
 let legendInstance;
 let modalOverlay;
 
@@ -19,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'login.html';
         return; // Interrompe l'esecuzione per evitare errori
     }
+    initializeApp();});
+
+function initializeApp() {
     legendInstance = new Legend();
     window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); 
@@ -64,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carica gli ultimi inserimenti all'avvio
     loadLatestEntries();
-});
+};
 
 // --- FUNZIONI DI APERTURA MODALI ---
 
@@ -150,50 +190,25 @@ function closeTrainingModal() {
 
 // --- ALTRE FUNZIONI ---
 
-// Funzione di logout
-function logoutUser() {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
-    console.log('Token di autenticazione rimosso. Reindirizzamento...');
-    window.location.href = 'login.html'; 
-}
-
 //---Caricamento latest entries
-function loadLatestEntries() {
-  const backendUrl = window.BACKEND_URL;
-  const token = getAuthToken(); 
+async function loadLatestEntries() {
+    try {
+        const response = await apiFetch(`${window.BACKEND_URL}/api/latest-entries`);
 
-  if (!token) {
-    console.error("Token di autenticazione non trovato. Impossibile caricare gli inserimenti recenti.");
-    return; // Interrompe l'esecuzione se il token non c'è
-  }
+        if (!response.ok) {
+            throw new Error(`Errore HTTP! Stato: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Dati ricevuti:", data);
+        updateLatestEntries(data);
 
-  fetch(`${backendUrl}/api/latest-entries`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}` // Aggiunge l'header di autorizzazione
+    } catch (error) {
+        if (error.message !== "Unauthorized") {
+            // Gestisci solo gli errori che non sono 401 (già gestiti da apiFetch)
+            console.error('Errore durante il recupero degli ultimi inserimenti:', error);
+        }
     }
-  })
-    .then(response => {
-      // Verifica che la risposta sia OK (status code 200-299)
-      if (!response.ok) {
-        // Se la risposta non è OK, genera un errore con informazioni dettagliate
-        const errorMessage = `Errore HTTP! Stato: ${response.status}, Testo: ${response.statusText}`;
-        console.error(errorMessage); // Stampa l'errore nel console per debugging
-        throw new Error(errorMessage); // Propaga l'errore per essere catturato nel catch
-      }
-      // Se la risposta è OK, analizza il JSON
-      return response.json();
-    })
-    .then(data => {
-      // Gestisci i dati ricevuti
-      console.log("Dati ricevuti:", data);
-      updateLatestEntries(data);
-    })
-    .catch(error => {
-      // Gestisci gli errori di fetch o di parsing del JSON
-      console.error('Errore durante il recupero degli ultimi inserimenti dal backend:', error);
-    });
 }
 
 function updateLatestEntries(data) {

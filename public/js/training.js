@@ -46,14 +46,11 @@ async function startTrainingProcess(button) {
     statusElement.textContent = 'Avvio del processo...';
 
     try {
-        const authToken = getAuthToken();
-        if (!authToken) throw new Error("Auth token non trovato");
-
-        const response = await fetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${authToken}` }
+        const response = await apiFetch(`${window.BACKEND_URL}/api/trigger-knowledge-update`, {
+            method: 'POST'
         });
         const result = await response.json();
+        if (!response.ok) throw new Error(result.message || `Errore del server: ${response.status}`);
 
         if (response.ok) {
             currentProcessId = result.process_id;
@@ -65,11 +62,12 @@ async function startTrainingProcess(button) {
             throw new Error(result.message || `Errore del server: ${response.status}`);
         }
     } catch (error) {
-        console.error("Errore durante l'avvio dell'addestramento:", error);
-        statusElement.textContent = `Errore: ${error.message}`;
-        isTrainingRunning = false;
-        button.disabled = false;
-        button.querySelector('span').textContent = originalText;
+        if (error.message !== "Unauthorized") {
+            statusElement.textContent = `Errore: ${error.message}`;
+            isTrainingRunning = false;
+            button.disabled = false;
+            button.querySelector('span').textContent = originalText;
+        }
     }
 }
 
@@ -79,20 +77,19 @@ async function stopTrainingProcess(button) {
     button.disabled = true;
 
     try {
-        const authToken = getAuthToken();
-        const response = await fetch(`${window.BACKEND_URL}/api/stop-training`, {
+        const response = await apiFetch(`${window.BACKEND_URL}/api/stop-training`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
             body: JSON.stringify({ process_id: currentProcessId })
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.message);
         
         statusElement.textContent = `Richiesta di interruzione inviata. Attendo la conferma...`;
-
     } catch (error) {
-        alert(`Errore durante la richiesta di stop: ${error.message}`);
-        button.disabled = false; // Riattiva il pulsante se lo stop fallisce
+        if (error.message !== "Unauthorized") {
+            alert(`Errore durante la richiesta di stop: ${error.message}`);
+            button.disabled = false;
+        }
     }
 }
 
@@ -100,23 +97,33 @@ function pollForStatus(processId, statusElement, button, originalText) {
     let heartbeatChars = [' ', '.', '..', '...'];
     let heartbeatIndex = 0;
 
+    // Pulisce eventuali polling precedenti per sicurezza
+    if (pollingIntervalId) clearInterval(pollingIntervalId);
+
     pollingIntervalId = setInterval(async () => {
         try {
-            const authToken = getAuthToken();
-            if (!authToken) throw new Error("Token sparito, login necessario.");
+            const response = await apiFetch(`${window.BACKEND_URL}/api/get-training-status?process_id=${processId}`);
             
-            const response = await fetch(`${window.BACKEND_URL}/api/get-training-status?process_id=${processId}`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-
             if (!response.ok) throw new Error(`Impossibile recuperare lo stato (HTTP ${response.status})`);
+            
+            // --- ECCO LA CORREZIONE FONDAMENTALE ---
+            // Aggiungiamo la riga per leggere e interpretare la risposta JSON
             const data = await response.json();
             
             // Incrementa l'heartbeat visivo
             heartbeatIndex = (heartbeatIndex + 1) % heartbeatChars.length;
             const heartbeat = heartbeatChars[heartbeatIndex];
 
-            statusElement.textContent = `Stato: ${data.status} - ${data.details}${heartbeat}`;
+            // Aggiungiamo anche la formattazione dell'orario per il "battito cardiaco"
+            let formattedTimestamp = '';
+            if (data.last_updated) {
+                try {
+                    const date = new Date(data.last_updated);
+                    formattedTimestamp = `(ultimo aggiornamento: ${date.toLocaleTimeString()})`;
+                } catch (e) {}
+            }
+
+            statusElement.textContent = `Stato: ${data.status} ${formattedTimestamp} - ${data.details}${heartbeat}`;
 
             const terminalStates = ['COMPLETATO', 'FALLITO', 'ANNULLATO'];
             if (terminalStates.includes(data.status)) {
@@ -129,12 +136,14 @@ function pollForStatus(processId, statusElement, button, originalText) {
                 alert(`Addestramento terminato con stato: ${data.status}`);
             }
         } catch (error) {
-            console.error("Errore durante il polling dello stato:", error);
-            statusElement.textContent = `Errore durante il controllo dello stato: ${error.message}`;
-            clearInterval(pollingIntervalId);
-            isTrainingRunning = false;
-            button.disabled = false;
-            button.querySelector('span').textContent = originalText;
+            if (error.message !== "Unauthorized") {
+                statusElement.textContent = `Errore durante il controllo dello stato: ${error.message}`;
+                clearInterval(pollingIntervalId);
+                isTrainingRunning = false;
+                currentProcessId = null;
+                button.disabled = false;
+                button.querySelector('span').textContent = originalText;
+            }
         }
     }, 7000); 
 }
