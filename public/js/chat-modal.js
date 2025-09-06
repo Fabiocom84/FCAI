@@ -44,19 +44,39 @@ async function closeChatModal() {
 
 // Funzione per salvare la cronologia della chat
 async function saveChatHistory() {
+    // Non salvare se la chat ha solo il messaggio di benvenuto
+    if (chatHistory.length <= 1) return;
+
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
+    
+    // --- INIZIO CORREZIONE ---
+    // Usiamo la funzione globale getAuthToken() che controlla sia localStorage che sessionStorage
+    const authToken = getAuthToken();
+    if (!authToken) {
+        console.error("Impossibile salvare la cronologia della chat: token non trovato.");
+        return; // Interrompi se non c'è il token
+    }
+    // --- FINE CORREZIONE ---
+
     try {
         const response = await fetch(`${window.BACKEND_URL}/api/save-chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                // Usiamo la variabile authToken che abbiamo appena recuperato
+                'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
-        if (!response.ok) throw new Error(`Errore del server: ${response.status}`);
+        
+        if (!response.ok) {
+            // Lancia un errore più specifico per il blocco catch
+            throw new Error(`Errore del server: ${response.status}`);
+        }
+        
         const result = await response.json();
         console.log("Chat salvata:", result.message);
+
     } catch (error) {
         console.error("Errore nel salvataggio della chat:", error);
     }
