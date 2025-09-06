@@ -599,6 +599,13 @@ h2 {
 
     h1 { margin-top: 50px; font-size: 1.8em; }
 
+    /* Adattamento del box di login per il mobile */
+    .login-container {
+        width: 90%; /* Occupa il 90% dello schermo invece di una larghezza fissa */
+        padding: 30px 25px; /* Riduci il padding laterale e verticale */
+        box-sizing: border-box; /* Assicura che il padding non causi overflow */
+    }
+
     .main-content-wrapper,
     .latest-entries {
         width: 100%;
