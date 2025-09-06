@@ -109,6 +109,25 @@ h2 {
     animation: fadeIn 0.8s ease-out;
 }
 
+.login-container button {
+    width: 100%; /* Occupa tutta la larghezza del form */
+    padding: 14px 20px; /* Aumenta l'altezza e lo spazio interno */
+    margin-top: 20px; /* Aggiunge spazio sopra il pulsante */
+    font-size: 1.2em; /* Ingrandisce la scritta "Accedi" */
+    font-weight: 500; /* Rende il testo leggermente più marcato */
+    background-color: #2A76B8; /* Un colore blu coerente con il titolo H1 */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Angoli arrotondati */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.login-container button:hover {
+    background-color: #1a5c96; /* Un blu più scuro al passaggio del mouse */
+    transform: translateY(-2px); /* Un leggero effetto di sollevamento */
+}
+
 /* Contenitore per la pagina principale (index) - CORRETTO */
 .main-content-wrapper {
     position: relative;
