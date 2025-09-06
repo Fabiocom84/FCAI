@@ -46,7 +46,7 @@ async function closeChatModal() {
 async function saveChatHistory() {
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
     try {
-        const response = await fetch(`${window.BACKEND_URL}/save-chat`, {
+        const response = await fetch(`${window.BACKEND_URL}/api/save-chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
