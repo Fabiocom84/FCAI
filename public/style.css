@@ -604,6 +604,7 @@ h2 {
         width: 90%; /* Occupa il 90% dello schermo invece di una larghezza fissa */
         padding: 30px 25px; /* Riduci il padding laterale e verticale */
         box-sizing: border-box; /* Assicura che il padding non causi overflow */
+        margin: 0 auto;
     }
 
     .main-content-wrapper,
