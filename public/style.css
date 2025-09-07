@@ -755,17 +755,59 @@ h2 {
 /* == CORREZIONE: Stile Uniforme Pulsanti nella Legenda          == */
 /* ================================================================ */
 
+/* Stile di base per i pulsanti all'interno della legenda */
 .legend .button {
-    flex-shrink: 0;         /* Impedisce al pulsante di rimpicciolirsi */
-    width: 180px;           /* Larghezza fissa per tutti i pulsanti */
-    height: 90px;           /* Altezza fissa per tutti i pulsanti */
-    margin-right: 25px;     /* Aumenta lo spazio tra il pulsante e il testo della legenda */
-    font-size: 0.9em;       /* Rende il testo leggermente più piccolo per adattarsi meglio */
+    width: 130px; /* Larghezza fissa, simile ai pulsanti reali ridotti per la legenda */
+    height: 80px; /* Altezza fissa */
+    flex-shrink: 0;
+    margin-right: 20px; /* Spazio tra il pulsante e il testo */
+    font-size: 0.8em; /* Testo leggermente più piccolo per adattarsi */
+    padding: 10px; /* Padding interno uniforme */
+    display: flex; /* Assicura che icona e testo siano ben allineati */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px; /* Mantieni il bordo arrotondato */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombra leggera */
+    transition: none; /* Rimuove transizioni/hover nella legenda */
+    transform: none; /* Rimuove traslazioni */
+    opacity: 1; /* Assicura piena opacità anche per i 'disabled' nella legenda */
+    cursor: default; /* Non cliccabile */
 }
+
+/* Stile specifico per le immagini all'interno dei pulsanti nella legenda */
+.legend .button img {
+    width: 32px; /* Dimensioni fisse per le icone */
+    height: 32px;
+    margin-bottom: 5px; /* Spazio tra icona e testo */
+}
+
+/* Override colori specifici per i pulsanti nella legenda */
+/* Questi assicureranno che i colori siano corretti e visibili */
+.legend .insert-button { background-color: #27ae60; } /* Verde originale */
+.legend .new-order-button { background-color: #8e44ad; } /* Viola originale */
+.legend .chat-button { background-color: #f1c40f; } /* Giallo originale */
+.legend .google-sheets-button { background-color: #e74c3c; } /* Rosso corretto per "Apri Fogli Google" */
+.legend .insert-hours-button { background-color: #e67e22; } /* Arancione per Inserimento Ore */
+.legend .dashboard-button { background-color: #3498db; } /* Blu per Dashboard */
+.legend .manage-data-button { background-color: #34495e; } /* Grigio Ardesia per Vista Agile */
+.legend .production-orders-button { background-color: #d35400; } /* Arancione scuro per Ordini Produzione */
+.legend .attendance-button { background-color: #16a085; } /* Azzurro per Presenze */
+.legend .future-button { background-color: #8e44ad; } /* Viola per Funzione Futura */
+.legend .training-button { background-color: #e67e22; } /* Arancione per Addestramento AI */
+
+
+/* Rimuovi l'ereditarietà dei colori per i disabled nella legenda se non vogliamo un override specifico */
+.legend .button.disabled {
+    opacity: 1; /* Assicura piena opacità anche se ha la classe disabled, nella legenda non serve l'effetto opaco */
+    cursor: default;
+}
+
 
 /* Assicura che anche il testo della legenda sia ben allineato */
 .legend-text {
     flex-grow: 1;
+    margin-left: 10px; /* Spazio extra tra il pulsante e il testo, se necessario */
 }
 
 /* ============================================= */
