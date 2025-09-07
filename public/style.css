@@ -703,7 +703,7 @@ h2 {
 }
 .insert-hours-button:hover {
     background-color: #ff8c00;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* Dashboard - Blu (Analisi) */
@@ -712,7 +712,7 @@ h2 {
 }
 .dashboard-button:hover {
     background-color: #2980b9;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* Vista Agile - Grigio Ardesia (Strumento Avanzato) */
@@ -721,7 +721,7 @@ h2 {
 }
 .manage-data-button:hover {
     background-color: #34495e;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* Ordini Produzione - Arancione (Produzione) */
@@ -730,7 +730,7 @@ h2 {
 }
 .production-orders-button:hover {
     background-color: #e67e22;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* Presenze - Azzurro (Personale) */
@@ -739,7 +739,7 @@ h2 {
 }
 .attendance-button:hover {
     background-color: #b8860b;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* Pulsante Google Sheets - Verde Scuro (Colore del Brand) */
@@ -748,7 +748,7 @@ h2 {
 }
 .google-sheets-button:hover {
     background-color: #14B56A;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 /* ============================================= */
