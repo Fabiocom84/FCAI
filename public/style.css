@@ -681,6 +681,58 @@ h2 {
     color: #555;
 }
 
+/* ================================================================ */
+/* == STILI SPECIFICI: Colori Nuovi Pulsanti Gestione Ore        == */
+/* ================================================================ */
+
+/* Inserimento Ore - Verde (Azione Positiva) */
+.insert-hours-button {
+    background-color: #27ae60; 
+}
+.insert-hours-button:hover {
+    background-color: #2ecc71;
+}
+
+/* Dashboard - Blu (Analisi) */
+.dashboard-button {
+    background-color: #2980b9;
+}
+.dashboard-button:hover {
+    background-color: #3498db;
+}
+
+/* Vista Agile - Grigio Ardesia (Strumento Avanzato) */
+.manage-data-button {
+    background-color: #34495e;
+}
+.manage-data-button:hover {
+    background-color: #4e6a85;
+}
+
+/* Ordini Produzione - Arancione (Produzione) */
+.production-orders-button {
+    background-color: #d35400;
+}
+.production-orders-button:hover {
+    background-color: #e67e22;
+}
+
+/* Presenze - Azzurro (Personale) */
+.attendance-button {
+    background-color: #16a085;
+}
+.attendance-button:hover {
+    background-color: #1abc9c;
+}
+
+/* Pulsante Google Sheets - Verde Scuro (Colore del Brand) */
+.google-sheets-button {
+    background-color: #0F9D58;
+}
+.google-sheets-button:hover {
+    background-color: #14B56A;
+}
+
 /* ============================================= */
 /* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
 /* ============================================= */
