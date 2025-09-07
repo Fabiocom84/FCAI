@@ -685,12 +685,25 @@ h2 {
 /* == STILI SPECIFICI: Colori Nuovi Pulsanti Gestione Ore        == */
 /* ================================================================ */
 
+/* Stile per i pulsanti disabilitati: mantiene il colore ma riduce l'opacità */
+.button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #95a5a6; /* Colore grigio di base se non specificato altrimenti */
+}
+/* Rimuove l'animazione di hover per i pulsanti disabilitati */
+.button.disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 /* Inserimento Ore - Verde (Azione Positiva) */
 .insert-hours-button {
     background-color: #ff7f50; 
 }
 .insert-hours-button:hover {
     background-color: #ff8c00;
+    transform: translateY(-5px);
 }
 
 /* Dashboard - Blu (Analisi) */
@@ -699,6 +712,7 @@ h2 {
 }
 .dashboard-button:hover {
     background-color: #2980b9;
+    transform: translateY(-5px);
 }
 
 /* Vista Agile - Grigio Ardesia (Strumento Avanzato) */
@@ -707,6 +721,7 @@ h2 {
 }
 .manage-data-button:hover {
     background-color: #34495e;
+    transform: translateY(-5px);
 }
 
 /* Ordini Produzione - Arancione (Produzione) */
@@ -715,6 +730,7 @@ h2 {
 }
 .production-orders-button:hover {
     background-color: #e67e22;
+    transform: translateY(-5px);
 }
 
 /* Presenze - Azzurro (Personale) */
@@ -723,6 +739,7 @@ h2 {
 }
 .attendance-button:hover {
     background-color: #b8860b;
+    transform: translateY(-5px);
 }
 
 /* Pulsante Google Sheets - Verde Scuro (Colore del Brand) */
@@ -731,6 +748,7 @@ h2 {
 }
 .google-sheets-button:hover {
     background-color: #14B56A;
+    transform: translateY(-5px);
 }
 
 /* ============================================= */
