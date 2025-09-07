@@ -751,6 +751,23 @@ h2 {
     transform: translateY(-3px);
 }
 
+/* ================================================================ */
+/* == CORREZIONE: Stile Uniforme Pulsanti nella Legenda          == */
+/* ================================================================ */
+
+.legend .button {
+    flex-shrink: 0;         /* Impedisce al pulsante di rimpicciolirsi */
+    width: 180px;           /* Larghezza fissa per tutti i pulsanti */
+    height: 90px;           /* Altezza fissa per tutti i pulsanti */
+    margin-right: 25px;     /* Aumenta lo spazio tra il pulsante e il testo della legenda */
+    font-size: 0.9em;       /* Rende il testo leggermente più piccolo per adattarsi meglio */
+}
+
+/* Assicura che anche il testo della legenda sia ben allineato */
+.legend-text {
+    flex-grow: 1;
+}
+
 /* ============================================= */
 /* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
 /* ============================================= */
