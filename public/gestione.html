@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Dati - Vista Agile</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="gestione.css"> 
+</head>
+<body class="agile-view-body">
+
+    <div class="agile-main-container">
+        
+        <header class="agile-header">
+            <h1>Gestione Dati (Vista Agile)</h1>
+            <div class="view-selector-container">
+                <label for="tableViewSelector">Seleziona la vista dati:</label>
+                <select id="tableViewSelector" class="styled-select">
+                    <option value="registrazioni_ore" selected>Registrazioni Ore</option>
+                    <option value="operatori">Operatori</option>
+                    <option value="tipologie_lavorazioni">Tipi Lavorazioni</option>
+                    <option value="stati_registrazione">Stati Registrazione</option>
+                    <option value="commesse">Commesse (Sola Lettura)</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="filter-container" id="filterArea">
+            <div class="form-group">
+                <label>Data Inizio:</label>
+                <input type="date" id="filter-start-date">
+            </div>
+            <div class="form-group">
+                <label>Data Fine:</label>
+                <input type="date" id="filter-end-date">
+            </div>
+            <div class="form-group">
+                <label>Operatore:</label>
+                <select id="filter-operatore"></select>
+            </div>
+            <div class="form-group">
+                <label>Commessa:</label>
+                <select id="filter-commessa"></select>
+            </div>
+            <button class="button" id="loadDataBtn">
+                <img src="img/search.png" alt="Cerca">
+                <span>Carica Dati</span>
+            </button>
+        </div>
+        
+        <div class="action-bar" id="actionBar">
+            <button class="button save-button" id="addRowBtn" style="display: none;">+ Aggiungi Operatore</button>
+            <button class="button cancel-button" id="updateStatusBtn">Aggiorna Stato Selezionati</button>
+        </div>
+
+        <div class="grid-container" id="gridWrapper">
+             <div class="loader" style="display: none;">Caricamento...</div>
+             <div class="placeholder-text">Seleziona una vista e imposta i filtri per caricare i dati.</div>
+             </div>
+
+    </div>
+
+    <script src="js/main.js"></script> <script src="js/gestione.js"></script> </body>
+</html>

@@ -41,6 +41,30 @@
                 <img src="img/search.png" alt="Apri Google Sheets">
                 <span>Apri Fogli Google</span>
             </a>
+            <a href="#" class="button insert-hours-button" id="openInsertHoursModalBtn">
+                <img src="img/plus-circle.png" alt="Inserimento Ore">
+                <span>Inserimento Ore</span>
+            </a>
+            <a href="dashboard.html" target="_blank" class="button dashboard-button" id="openDashboardBtn">
+                <img src="img/layout.png" alt="Dashboard">
+                <span>Dashboard</span>
+            </a>
+            <a href="gestione.html" target="_blank" class="button manage-data-button" id="openDataGridBtn">
+                <img src="img/database.png" alt="Gestione Dati">
+                <span>Vista Agile</span>
+            </a>
+            <a href="#" class="button future-button disabled" id="openProductionOrdersBtn">
+                <img src="img/package.png" alt="Ordini Produzione">
+                <span>Ordini Produzione</span>
+            </a>
+            <a href="#" class="button future-button disabled" id="openAttendanceBtn">
+                <img src="img/calendar.png" alt="Presenze">
+                <span>Presenze</span>
+            </a>
+            <a href="#" class="button future-button disabled" id="openEmptyBtn">
+                <img src="img/tool.png" alt="Funzione Futura">
+                <span>Funzione Futura</span>
+            </a>          
             <a href="#" class="training-button" id="openTrainingModalBtn">
                 <img src="img/brain.png" alt="Addestramento">
                 <span>Addestramento</span>
@@ -277,7 +301,82 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
+
+    <div id="insertHoursModal" class="modal" style="display: none;">
+    <div class="modal-content large"> <div class="modal-header header-insert"> <h2>Inserimento Ore Giornaliero</h2>
+            <button class="close-button" id="closeInsertHoursModalBtn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            
+            <div class="insert-form-container">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-data">Data</label>
+                        <input type="date" id="input-data" name="data">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-operatore">Operatore</label>
+                        <select id="input-operatore" name="operatore"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-commessa">Commessa</label>
+                        <select id="input-commessa" name="commessa"></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-lavorazione">Tipo Lavorazione</label>
+                        <select id="input-lavorazione" name="lavorazione"></select>
+                    </div>
+                    <div class="form-group ore-group">
+                        <label for="input-ore">Ore</label>
+                        <input type="number" step="0.5" id="input-ore" name="ore" placeholder="Es. 8.5">
+                    </div>
+                    <div class="form-group desc-group">
+                        <label for="input-descrizione">Descrizione Dettaglio</label>
+                        <input type="text" id="input-descrizione" name="descrizione" placeholder="Es. Saldatura pettine">
+                    </div>
+                    <div class="form-group add-button-group">
+                        <button class="button" id="add-to-table-btn">
+                            <img src="img/plus.png" alt="Aggiungi">
+                            <span>Aggiungi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="provisional-table-container">
+                <table id="provisional-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Operatore</th>
+                            <th>Commessa</th>
+                            <th>Lavorazione</th>
+                            <th>Ore</th>
+                            <th>Descrizione</th>
+                            <th>Azione</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <div class="footer-summary" id="footer-summary">
+                <span>Righe Inserite: 0</span> | <span>Totale Ore: 0.0</span>
+            </div>
+            <button class="button cancel-button" id="cancelInsertHoursBtn">Annulla e Chiudi</button>
+            <button class="save-button" id="saveHoursBtn">Conferma e Salva nel Database</button>
+        </div>
+
+    </div>
+    </div>
 
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
@@ -343,6 +442,7 @@
     <script src="js/legend.js"></script>
     <script src="js/chat-modal.js"></script>
     <script src="js/new-order-modal.js"></script>
+    <script src="js/inserimento-ore.js"></script>
     <script src="js/training.js"></script> </body>
 </body>
 </html>
