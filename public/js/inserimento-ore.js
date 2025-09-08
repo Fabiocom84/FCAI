@@ -1,8 +1,7 @@
-// js/inserimento-ore.js
+// js/inserimento-ore.js (Versione con Tabella Editabile)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELEZIONE ELEMENTI DEL DOM ---
-    // (Il codice di selezione elementi rimane invariato)
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
     const modal = document.getElementById('insertHoursModal');
     const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
@@ -33,15 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function getPreviousWorkingDay() {
         const today = new Date();
-        today.setDate(today.getDate() - 1); // Inizia sottraendo un giorno
-
-        const dayOfWeek = today.getDay(); // 0=Domenica, 1=Lunedì, ..., 6=Sabato
-
-        if (dayOfWeek === 0) { // Se è Domenica
-            today.setDate(today.getDate() - 2); // Sottrai altri 2 giorni per arrivare a Venerdì
-        } else if (dayOfWeek === 6) { // Se è Sabato
-            today.setDate(today.getDate() - 1); // Sottrai un altro giorno per arrivare a Venerdì
-        }
+        today.setDate(today.getDate() - 1); 
+        const dayOfWeek = today.getDay(); 
+        if (dayOfWeek === 0) { today.setDate(today.getDate() - 2); } 
+        else if (dayOfWeek === 6) { today.setDate(today.getDate() - 1); }
         return today;
     }
 
@@ -50,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     openModalBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
         giornoInput.valueAsDate = getPreviousWorkingDay();
-        
         if (!initialDataLoaded) {
             populateInitialData();
             initialDataLoaded = true;
@@ -66,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         clearProvisionalTable();
     };
-
     closeModalBtn.addEventListener('click', closeModal);
 
     // --- CARICAMENTO DATI INIZIALI ---
@@ -132,39 +124,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LOGICA TABELLA PROVVISORIA E FEEDBACK ---
+    // --- NUOVA LOGICA: TABELLA EDITABILE ---
 
-    addToTableBtn.addEventListener('click', () => {
-        if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
-            alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
-            return;
-        }
+    provisionalTableBody.addEventListener('dblclick', function(e) {
+        const cell = e.target.closest('td');
+        // Rendi editabile solo se la cella ha la classe 'editable' e non è già in modifica
+        if (!cell || !cell.classList.contains('editable') || cell.querySelector('input')) return;
 
-        const newRow = provisionalTableBody.insertRow();
-        newRow.dataset.operatorId = operatoreSelect.value; // Aggiungiamo l'ID operatore alla riga per un facile accesso
-
-        newRow.innerHTML = `
-            <td>${giornoInput.value}</td>
-            <td data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
-            <td>${parseFloat(oreInput.value).toFixed(1)}</td>
-            <td data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
-            <td data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
-            <td>${noteInput.value}</td>
-            <td>
-                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;">
-                    <img src="img/trash-2.png" alt="Elimina" style="width:16px; height:16px;">
-                </button>
-            </td>
-        `;
-
-        newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
-            newRow.remove();
-            updateAll();
-        });
-
-        resetInputForm();
-        updateAll();
+        makeCellEditable(cell);
     });
+
+    function makeCellEditable(cell) {
+        const originalValue = cell.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalValue;
+        input.style.width = '95%';
+        input.style.boxSizing = 'border-box';
+
+        cell.innerHTML = '';
+        cell.appendChild(input);
+        input.focus();
+
+        const saveChanges = () => {
+            const newValue = input.value;
+            cell.innerHTML = newValue;
+            // Se la cella è delle ore, la riformattiamo
+            if (cell.dataset.field === 'ore') {
+                const parsedValue = parseFloat(newValue) || 0;
+                cell.textContent = parsedValue.toFixed(1);
+            }
+            updateSummary(); // Aggiorna il totale ore se è stata modificata una cella ore
+        };
+
+        input.addEventListener('blur', saveChanges);
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                input.blur(); // Salva le modifiche
+            } else if (e.key === 'Escape') {
+                cell.innerHTML = originalValue; // Annulla
+            }
+        });
+    }
 
     function resetInputForm() {
         operatoreSelect.value = "";
@@ -215,18 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryFooter.innerHTML = `<span>Righe Inserite: ${rowCount}</span> | <span>Totale Ore: ${totalHours.toFixed(1)}</span>`;
     }
 
-    function clearProvisionalTable() {
-        provisionalTableBody.innerHTML = '';
-        updateAll();
-    }
+    function clearProvisionalTable() { provisionalTableBody.innerHTML = ''; updateAll(); }
 
-    // --- SALVATAGGIO FINALE ---
     saveHoursBtn.addEventListener('click', () => {
-        if (provisionalTableBody.rows.length === 0) {
-            alert("Nessun dato da salvare.");
-            return;
-        }
-        
+        if (provisionalTableBody.rows.length === 0) { alert("Nessun dato da salvare."); return; }
         const dataToSend = Array.from(provisionalTableBody.rows).map(row => ({
             giorno: row.cells[0].textContent,
             operatore_id: row.cells[1].dataset.id,
@@ -235,27 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
             descrizione_id: row.cells[4].dataset.id,
             note: row.cells[5].textContent,
         }));
-
         console.log("Dati pronti per il salvataggio:", dataToSend);
         alert(`Dati pronti per essere inviati! (${dataToSend.length} righe)`);
-        
-        // QUI VA LA LOGICA DI CHIAMATA API PER IL SALVATAGGIO
-        // Esempio:
-        /*
-        apiFetch('/api/salva-ore', { method: 'POST', body: JSON.stringify(dataToSend) })
-            .then(response => {
-                if (response.ok) {
-                    alert("Salvataggio completato con successo!");
-                    clearProvisionalTable();
-                    closeModal();
-                } else {
-                    alert("Errore durante il salvataggio.");
-                }
-            });
-        */
-       
-       // Per ora, simuliamo il successo
-       clearProvisionalTable();
-       modal.style.display = 'none';
+        clearProvisionalTable();
+        modal.style.display = 'none';
     });
 });
