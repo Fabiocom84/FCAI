@@ -586,7 +586,7 @@ h2 {
 .entry-item:last-child { border-bottom: none; }
 
 /* ================================================================ */
-/* == STILI MODALE INSERIMENTO ORE (Versione Corretta 2.2)       == */
+/* == STILI MODALE INSERIMENTO ORE (Versione Definitiva 2.3)     == */
 /* ================================================================ */
 
 /* Modale più grande per contenere il nuovo layout */
@@ -607,6 +607,12 @@ h2 {
     padding: 0 20px;
     margin-bottom: 0;
 }
+
+/* NUOVO: Regola per colorare il titolo del modale */
+#insertHoursModal .modal-header h2 {
+    color: #28a745; /* Verde, come i pulsanti di azione */
+}
+
 
 /* Contenitore superiore che si divide in due colonne */
 .modal-top-section {
@@ -705,26 +711,24 @@ h2 {
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 6px;
-    height: 38px; /* Altezza fissa per tutti */
+    height: 38px;
 }
 .form-grid textarea {
-    resize: none; /* Disabilita il resize manuale */
-    /* NUOVO: Aggiustamenti specifici per allineare perfettamente il testo */
+    resize: none;
     padding-top: 10px;
     padding-bottom: 10px;
-    line-height: 1.3; /* Assicura che una singola riga di testo sia centrata */
+    line-height: 1.3;
+    /* MODIFICATO: Forza l'annullamento dell'altezza minima ereditata */
+    min-height: 38px;
 }
 
 /* Posizionamento specifico per il layout richiesto */
-/* Riga 1 */
-.form-grid .form-group:nth-child(1) { grid-column: span 3; } /* Giorno */
-.form-grid .form-group:nth-child(2) { grid-column: span 6; } /* Operatore */
-.form-grid .form-group:nth-child(3) { grid-column: span 3; } /* Ore */
-/* Riga 2 */
-.form-grid .form-group:nth-child(4) { grid-column: span 12; } /* Etichetta */
-/* Riga 3 */
-.form-grid .form-group:nth-child(5) { grid-column: span 8; } /* Descrizione (70%) */
-.form-grid .form-group:nth-child(6) { grid-column: span 4; } /* Note (30%) */
+.form-grid .form-group:nth-child(1) { grid-column: span 3; }
+.form-grid .form-group:nth-child(2) { grid-column: span 6; }
+.form-grid .form-group:nth-child(3) { grid-column: span 3; }
+.form-grid .form-group:nth-child(4) { grid-column: span 12; }
+.form-grid .form-group:nth-child(5) { grid-column: span 8; }
+.form-grid .form-group:nth-child(6) { grid-column: span 4; }
 
 .insert-form-container-new .save-button {
     margin-top: auto;
@@ -733,12 +737,12 @@ h2 {
 }
 
 /* Sezione Inferiore: Tabella Provvisoria */
-/* Se questa sezione esiste, questi stili si applicano, altrimenti vengono ignorati */
 .provisional-table-container-new {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    min-height: 200px;
+    /* MODIFICATO: Ridotta altezza minima per compattare il layout */
+    min-height: 150px;
 }
 .table-wrapper {
     width: 100%;
