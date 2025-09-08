@@ -586,7 +586,7 @@ h2 {
 .entry-item:last-child { border-bottom: none; }
 
 /* ================================================================ */
-/* == NUOVI STILI PER MODALE INSERIMENTO ORE (Layout 2.0)        == */
+/* == NUOVI STILI PER MODALE INSERIMENTO ORE (Layout 2.1)        == */
 /* ================================================================ */
 
 /* Modale più grande per contenere il nuovo layout */
@@ -594,7 +594,7 @@ h2 {
     width: 90vw;
     max-width: 1400px;
     height: 85vh;
-    padding: 0; /* Rimuoviamo il padding per un controllo totale */
+    padding: 0; 
 }
 
 /* Il contenuto del modale ora gestisce il layout principale */
@@ -612,14 +612,14 @@ h2 {
 .modal-top-section {
     display: flex;
     gap: 20px;
-    height: 300px; /* Altezza fissa per l'area di input */
+    height: 300px; 
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 15px;
 }
 
 /* --- Pannello Sinistro: Lista Personale --- */
 .personnel-list-container {
-    flex: 1; /* Occupa 1/3 dello spazio */
+    flex: 1.5; /* MODIFICATO: Aumentata la larghezza relativa (da 1 a 1.5) */
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 10px;
@@ -635,21 +635,29 @@ h2 {
 }
 #personnel-feedback-list {
     list-style: none;
-    padding: 0;
+    padding: 0 5px; /* Aggiunto un piccolo padding laterale */
     margin: 0;
-    overflow-y: auto; /* Scroll se la lista è troppo lunga */
+    overflow-y: auto; 
+    /* NUOVO: Layout a 3 colonne */
+    column-count: 3;
+    column-gap: 15px;
 }
 #personnel-feedback-list li {
-    padding: 8px 12px;
-    border-bottom: 1px solid #eee;
+    padding: 4px 6px; /* MODIFICATO: Spaziatura ridotta per compattare */
     font-size: 0.9em;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* NUOVO: Evita che un elemento si spezzi tra le colonne */
+    break-inside: avoid-column;
+    margin-bottom: 4px; /* Aggiunto piccolo margine inferiore */
 }
-#personnel-feedback-list li:last-child {
-    border-bottom: none;
+/* NUOVO: Stile per il personale già inserito */
+#personnel-feedback-list li.inserted {
+    color: #d9534f; /* Rosso */
+    font-weight: bold;
 }
+
 .entry-count-badge {
     background-color: #2A76B8;
     color: white;
@@ -661,61 +669,70 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    visibility: hidden; /* Nascosto di default */
+    visibility: hidden; 
+    flex-shrink: 0; /* Impedisce al badge di rimpicciolirsi */
+    margin-left: 8px; /* Spazio tra nome e badge */
 }
 .entry-count-badge.visible {
-    visibility: visible; /* Visibile quando il conteggio è > 0 */
+    visibility: visible;
 }
 
 /* --- Pannello Destro: Form di Inserimento --- */
 .insert-form-container-new {
-    flex: 2; /* Occupa 2/3 dello spazio */
+    flex: 2; /* MODIFICATO: Larghezza relativa (da 2 a 2) */
     display: flex;
     flex-direction: column;
 }
 .insert-form-container-new h4 {
-    margin: 0 0 10px 0;
+    margin: 0 0 15px 0; /* Aumentato margine inferiore */
     text-align: center;
 }
+/* MODIFICATO: Griglia del form completamente riorganizzata */
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Due colonne di larghezza uguale */
+    /* Definiamo 4 colonne per una maggiore flessibilità */
+    grid-template-columns: 1fr 1fr 1.5fr 1.5fr; 
     gap: 15px;
-    margin-bottom: 15px;
 }
 .form-grid .form-group {
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: none;
-}
-.form-grid .form-group.full-width {
-    grid-column: 1 / -1; /* Occupa tutta la larghezza */
+    margin: 0; padding: 0; background: none; border: none;
 }
 .form-grid label {
-    font-size: 0.85em;
-    font-weight: 500;
-    margin-bottom: 5px;
-    display: block;
+    font-size: 0.85em; font-weight: 500; margin-bottom: 5px; display: block;
 }
 .form-grid input, .form-grid select, .form-grid textarea {
-    padding: 8px 10px;
-    font-size: 0.9em;
+    padding: 8px 10px; font-size: 0.9em;
 }
+
+/* NUOVO: Posizionamento specifico per ogni campo nella griglia */
+.fg-giorno { grid-column: 1 / 2; }
+.fg-ore { grid-column: 2 / 3; }
+.fg-operatore { grid-column: 3 / 5; } /* Occupa 2 colonne */
+.fg-descrizione { grid-column: 1 / 3; } /* Occupa 2 colonne */
+.fg-etichetta { grid-column: 3 / 5; } /* Occupa 2 colonne */
+.fg-note { grid-column: 1 / 5; } /* Occupa tutte e 4 le colonne */
+
+/* MODIFICATO: Stile del pulsante Aggiungi */
+.insert-form-container-new .save-button {
+    margin-top: auto; /* Spinge il pulsante in fondo al contenitore flex */
+    padding: 10px; /* Un po' più piccolo */
+    font-size: 1em;
+}
+
 
 /* --- Sezione Inferiore: Tabella Provvisoria --- */
 .provisional-table-container-new {
-    flex-grow: 1; /* Occupa tutto lo spazio verticale rimanente */
+    flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    min-height: 200px; /* Altezza minima per non collassare */
+    min-height: 200px;
 }
 .provisional-table-container-new h4 {
     margin: 0 0 10px 0;
 }
 .table-wrapper {
     width: 100%;
-    overflow-y: auto; /* Scroll verticale per la tabella */
+    overflow-y: auto; 
     flex-grow: 1;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -725,26 +742,16 @@ h2 {
     border-collapse: collapse;
 }
 #provisional-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: #f1f3f5;
+    position: sticky; top: 0; z-index: 1; background-color: #f1f3f5;
 }
 #provisional-table th, #provisional-table td {
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9em;
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 0.9em;
 }
 
 /* --- Footer --- */
 .modal.large .modal-footer {
-    padding: 0 20px;
-    margin-top: 10px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 0 20px; margin-top: 10px; flex-shrink: 0;
+    display: flex; justify-content: space-between; align-items: center;
 }
 
 /* ================================================================ */

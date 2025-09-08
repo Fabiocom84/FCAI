@@ -2,11 +2,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELEZIONE ELEMENTI DEL DOM ---
+    // (Il codice di selezione elementi rimane invariato)
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
     const modal = document.getElementById('insertHoursModal');
     const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
     
-    // Elementi del nuovo form
     const giornoInput = document.getElementById('input-giorno');
     const operatoreSelect = document.getElementById('input-operatore');
     const oreInput = document.getElementById('input-ore');
@@ -14,15 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const descrizioneSelect = document.getElementById('input-descrizione');
     const noteInput = document.getElementById('input-note');
 
-    // Lista per feedback e tabella
     const personnelList = document.getElementById('personnel-feedback-list');
     const provisionalTableBody = document.getElementById('provisional-table-body');
     
-    // Pulsanti di azione
     const addToTableBtn = document.getElementById('add-to-table-btn');
     const saveHoursBtn = document.getElementById('saveHoursBtn');
     
-    // Riepilogo
     const summaryFooter = document.getElementById('footer-summary');
 
     let initialDataLoaded = false;
@@ -191,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             counts[operatorId] = (counts[operatorId] || 0) + 1;
         }
 
-        // 2. Aggiorna la lista del personale con i conteggi
+        // 2. Aggiorna la lista del personale con i conteggi e il colore
         const listItems = personnelList.querySelectorAll('li');
         listItems.forEach(li => {
             const operatorId = li.dataset.operatorId;
@@ -201,8 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (count > 0) {
                 badge.textContent = count;
                 badge.classList.add('visible');
+                li.classList.add('inserted'); // NUOVO: Aggiunge la classe per il colore rosso
             } else {
                 badge.classList.remove('visible');
+                li.classList.remove('inserted'); // NUOVO: Rimuove la classe
             }
         });
     }
