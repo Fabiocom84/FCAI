@@ -806,6 +806,15 @@ h2 {
     flex-grow: 1;
 }
 
+/* Correzione per l'icona Addestramento nella legenda */
+.legend .training-button {
+    width: 35px;
+    height: 35px;
+    min-height: unset; /* Annulla l'altezza minima ereditata */
+    padding: 5px;      /* Un po' di padding per l'icona interna */
+    box-sizing: border-box; /* Assicura che il padding non aumenti le dimensioni */
+}
+
 /* ============================================= */
 /* == 6. MEDIA QUERIES (RESPONSIVE DESIGN)    == */
 /* ============================================= */
