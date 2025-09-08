@@ -708,7 +708,11 @@ h2 {
     height: 38px; /* Altezza fissa per tutti */
 }
 .form-grid textarea {
-    resize: none;
+    resize: none; /* Disabilita il resize manuale */
+    /* NUOVO: Aggiustamenti specifici per allineare perfettamente il testo */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.3; /* Assicura che una singola riga di testo sia centrata */
 }
 
 /* Posizionamento specifico per il layout richiesto */
