@@ -1,191 +1,262 @@
 // js/inserimento-ore.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Seleziona gli elementi del DOM una sola volta per efficienza
+    // --- SELEZIONE ELEMENTI DEL DOM ---
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
-    const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
-    const cancelModalBtn = document.getElementById('cancelInsertHoursBtn');
     const modal = document.getElementById('insertHoursModal');
+    const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
+    
+    // Elementi del nuovo form
+    const giornoInput = document.getElementById('input-giorno');
+    const operatoreSelect = document.getElementById('input-operatore');
+    const oreInput = document.getElementById('input-ore');
+    const etichettaSelect = document.getElementById('input-etichetta');
+    const descrizioneSelect = document.getElementById('input-descrizione');
+    const noteInput = document.getElementById('input-note');
 
+    // Lista per feedback e tabella
+    const personnelList = document.getElementById('personnel-feedback-list');
+    const provisionalTableBody = document.getElementById('provisional-table-body');
+    
+    // Pulsanti di azione
     const addToTableBtn = document.getElementById('add-to-table-btn');
     const saveHoursBtn = document.getElementById('saveHoursBtn');
-    const provisionalTableBody = document.querySelector('#provisional-table tbody');
     
-    // Campi del form di input
-    const dateInput = document.getElementById('input-data');
-    const operatorSelect = document.getElementById('input-operatore');
-    const commessaSelect = document.getElementById('input-commessa');
-    const lavorazioneSelect = document.getElementById('input-lavorazione');
-    const oreInput = document.getElementById('input-ore');
-    const descrizioneInput = document.getElementById('input-descrizione');
+    // Riepilogo
     const summaryFooter = document.getElementById('footer-summary');
 
-    let dataLoaded = false; // Flag per caricare i dati dei select solo una volta
+    let initialDataLoaded = false;
 
-    // 1. GESTIONE APERTURA E CHIUSURA MODALE
-    openModalBtn.addEventListener('click', async () => {
+    // --- FUNZIONI DI UTILITÀ ---
+    
+    /**
+     * Calcola il giorno lavorativo precedente.
+     * Es: Lunedì -> Venerdì precedente, Domenica -> Venerdì precedente.
+     * @returns {Date} Oggetto Date del giorno lavorativo precedente.
+     */
+    function getPreviousWorkingDay() {
+        const today = new Date();
+        today.setDate(today.getDate() - 1); // Inizia sottraendo un giorno
+
+        const dayOfWeek = today.getDay(); // 0=Domenica, 1=Lunedì, ..., 6=Sabato
+
+        if (dayOfWeek === 0) { // Se è Domenica
+            today.setDate(today.getDate() - 2); // Sottrai altri 2 giorni per arrivare a Venerdì
+        } else if (dayOfWeek === 6) { // Se è Sabato
+            today.setDate(today.getDate() - 1); // Sottrai un altro giorno per arrivare a Venerdì
+        }
+        return today;
+    }
+
+    // --- GESTIONE MODALE ---
+
+    openModalBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
-        // Imposta la data odierna come default
-        dateInput.valueAsDate = new Date();
+        giornoInput.valueAsDate = getPreviousWorkingDay();
         
-        // Carica i dati per i menu a tendina solo se non sono già stati caricati
-        if (!dataLoaded) {
-            await populateSelects();
-            dataLoaded = true;
+        if (!initialDataLoaded) {
+            populateInitialData();
+            initialDataLoaded = true;
         }
     });
 
     const closeModal = () => {
-        // Chiede conferma se ci sono dati non salvati
         if (provisionalTableBody.rows.length > 0) {
-            if (!confirm("Ci sono dati non salvati nella tabella. Sei sicuro di voler chiudere? Le modifiche andranno perse.")) {
+            if (!confirm("Ci sono dati non salvati. Sei sicuro di voler chiudere? Le modifiche andranno perse.")) {
                 return;
             }
         }
         modal.style.display = 'none';
-        clearProvisionalTable(); // Pulisce la tabella alla chiusura
+        clearProvisionalTable();
     };
 
     closeModalBtn.addEventListener('click', closeModal);
-    cancelModalBtn.addEventListener('click', closeModal);
 
-    // 2. POPOLAMENTO DEI MENU A TENDINA (SELECTS)
-    async function populateSelects() {
+    // --- CARICAMENTO DATI INIZIALI ---
+    
+    // Funzione mock per simulare una chiamata API
+    const mockApiFetch = (endpoint) => {
+        return new Promise(resolve => {
+            let data = [];
+            if (endpoint === '/api/operatori') {
+                data = [
+                    { id: 1, nome: 'Mario Rossi' }, { id: 2, nome: 'Luca Bianchi' },
+                    { id: 3, nome: 'Anna Verdi' }, { id: 4, nome: 'Paolo Neri' }
+                ];
+            } else if (endpoint === '/api/etichette') {
+                data = [ { id: 101, nome: 'Standard' }, { id: 102, nome: 'Urgente' }, { id: 103, nome: 'Manutenzione' } ];
+            } else if (endpoint === '/api/descrizioni') {
+                data = [ { id: 201, nome: 'Assemblaggio' }, { id: 202, nome: 'Controllo Qualità' }, { id: 203, nome: 'Imballaggio' } ];
+            }
+            resolve(data);
+        });
+    };
+
+    async function populateInitialData() {
         try {
-            // Utilizziamo Promise.all per eseguire le chiamate in parallelo
-            const [operatoriRes, commesseRes, lavorazioniRes] = await Promise.all([
-                apiFetch('/api/operatori'),
-                apiFetch('/api/commesse'),
-                apiFetch('/api/lavorazioni')
+            const [operatori, etichette, descrizioni] = await Promise.all([
+                mockApiFetch('/api/operatori'),
+                mockApiFetch('/api/etichette'), // Simula chiamata a Google Sheets
+                mockApiFetch('/api/descrizioni')
             ]);
 
-            // Controlla che tutte le risposte siano andate a buon fine
-            if (!operatoriRes.ok || !commesseRes.ok || !lavorazioniRes.ok) {
-                throw new Error('Errore nel caricamento dei dati per i menu a tendina.');
-            }
-
-            const operatori = await operatoriRes.json();
-            const commesse = await commesseRes.json();
-            const lavorazioni = await lavorazioniRes.json();
+            populateSelect(operatoreSelect, operatori, 'id', 'nome');
+            populateSelect(etichettaSelect, etichette, 'id', 'nome');
+            populateSelect(descrizioneSelect, descrizioni, 'id', 'nome');
             
-            // Popola i select
-            populateOptions(operatorSelect, operatori, 'operatore_id', 'nome', 'cognome');
-            populateOptions(commessaSelect, commesse, 'commessa_id', 'nome_commessa');
-            populateOptions(lavorazioneSelect, lavorazioni, 'lavorazione_id', 'nome_lavorazione');
+            populatePersonnelList(operatori);
 
         } catch (error) {
-            console.error("Errore durante il popolamento dei select:", error);
-            alert("Impossibile caricare i dati iniziali. Riprovare.");
+            console.error("Errore nel caricamento dei dati iniziali:", error);
+            alert("Impossibile caricare i dati. Riprova più tardi.");
         }
     }
-    
-    function populateOptions(selectElement, data, valueKey, textKey, textKey2 = '') {
-        selectElement.innerHTML = '<option value="">Seleziona...</option>'; // Opzione di default
+
+    function populateSelect(selectElement, data, valueKey, textKey) {
+        selectElement.innerHTML = '<option value="">Seleziona...</option>';
         data.forEach(item => {
             const option = document.createElement('option');
             option.value = item[valueKey];
-            option.textContent = item[textKey] + (textKey2 && item[textKey2] ? ` ${item[textKey2]}` : '');
+            option.textContent = item[textKey];
             selectElement.appendChild(option);
         });
     }
 
-    // 3. LOGICA TABELLA PROVVISORIA
+    function populatePersonnelList(operatori) {
+        personnelList.innerHTML = '';
+        operatori.forEach(op => {
+            const li = document.createElement('li');
+            li.dataset.operatorId = op.id;
+            li.innerHTML = `
+                <span>${op.nome}</span>
+                <span class="entry-count-badge">0</span>
+            `;
+            personnelList.appendChild(li);
+        });
+    }
+
+    // --- LOGICA TABELLA PROVVISORIA E FEEDBACK ---
+
     addToTableBtn.addEventListener('click', () => {
-        // Validazione semplice
-        if (!dateInput.value || !operatorSelect.value || !commessaSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
-            alert("Compilare almeno i campi Data, Operatore, Commessa e Ore (> 0).");
+        if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
+            alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
             return;
         }
 
         const newRow = provisionalTableBody.insertRow();
+        newRow.dataset.operatorId = operatoreSelect.value; // Aggiungiamo l'ID operatore alla riga per un facile accesso
+
         newRow.innerHTML = `
-            <td data-field="data">${dateInput.value}</td>
-            <td data-field="operatore" data-id="${operatorSelect.value}">${operatorSelect.options[operatorSelect.selectedIndex].text}</td>
-            <td data-field="commessa" data-id="${commessaSelect.value}">${commessaSelect.options[commessaSelect.selectedIndex].text}</td>
-            <td data-field="lavorazione" data-id="${lavorazioneSelect.value}">${lavorazioneSelect.options[lavorazioneSelect.selectedIndex].text}</td>
-            <td data-field="ore" class="editable">${parseFloat(oreInput.value).toFixed(1)}</td>
-            <td data-field="descrizione" class="editable">${descrizioneInput.value}</td>
+            <td>${giornoInput.value}</td>
+            <td data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
+            <td>${parseFloat(oreInput.value).toFixed(1)}</td>
+            <td data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
+            <td data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
+            <td>${noteInput.value}</td>
             <td>
-                <button class="delete-row-btn">
-                    <img src="img/trash-2.png" alt="Elimina">
+                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;">
+                    <img src="img/trash-2.png" alt="Elimina" style="width:16px; height:16px;">
                 </button>
             </td>
         `;
-        
-        // Aggiungi l'evento per l'eliminazione della riga
+
         newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
             newRow.remove();
-            updateSummary();
+            updateAll();
         });
 
         resetInputForm();
-        updateSummary();
+        updateAll();
     });
 
     function resetInputForm() {
-        // Resetta solo i campi variabili, mantenendo la data
-        operatorSelect.value = "";
-        commessaSelect.value = "";
-        lavorazioneSelect.value = "";
+        operatoreSelect.value = "";
         oreInput.value = "";
-        descrizioneInput.value = "";
-        operatorSelect.focus(); // Sposta il focus sul primo campo da reinserire
+        etichettaSelect.value = "";
+        descrizioneSelect.value = "";
+        noteInput.value = "";
+        operatoreSelect.focus();
     }
+    
+    function updateAll() {
+        updateFeedbackCounters();
+        updateSummary();
+    }
+    
+    function updateFeedbackCounters() {
+        const counts = {};
+        // 1. Conta le occorrenze di ogni operatore nella tabella
+        for (const row of provisionalTableBody.rows) {
+            const operatorId = row.dataset.operatorId;
+            counts[operatorId] = (counts[operatorId] || 0) + 1;
+        }
 
+        // 2. Aggiorna la lista del personale con i conteggi
+        const listItems = personnelList.querySelectorAll('li');
+        listItems.forEach(li => {
+            const operatorId = li.dataset.operatorId;
+            const badge = li.querySelector('.entry-count-badge');
+            const count = counts[operatorId] || 0;
+
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        });
+    }
+    
     function updateSummary() {
         const rowCount = provisionalTableBody.rows.length;
         let totalHours = 0;
         for (const row of provisionalTableBody.rows) {
-            totalHours += parseFloat(row.cells[4].textContent);
+            totalHours += parseFloat(row.cells[2].textContent);
         }
         summaryFooter.innerHTML = `<span>Righe Inserite: ${rowCount}</span> | <span>Totale Ore: ${totalHours.toFixed(1)}</span>`;
     }
-    
+
     function clearProvisionalTable() {
         provisionalTableBody.innerHTML = '';
-        updateSummary();
+        updateAll();
     }
 
-
-    // 4. SALVATAGGIO FINALE NEL DATABASE
-    saveHoursBtn.addEventListener('click', async () => {
+    // --- SALVATAGGIO FINALE ---
+    saveHoursBtn.addEventListener('click', () => {
         if (provisionalTableBody.rows.length === 0) {
             alert("Nessun dato da salvare.");
             return;
         }
+        
+        const dataToSend = Array.from(provisionalTableBody.rows).map(row => ({
+            giorno: row.cells[0].textContent,
+            operatore_id: row.cells[1].dataset.id,
+            ore: parseFloat(row.cells[2].textContent),
+            etichetta_id: row.cells[3].dataset.id,
+            descrizione_id: row.cells[4].dataset.id,
+            note: row.cells[5].textContent,
+        }));
 
-        const dataToSend = [];
-        for (const row of provisionalTableBody.rows) {
-            const rowData = {
-                data_lavoro: row.cells[0].textContent,
-                operatore_id: row.cells[1].dataset.id,
-                commessa_id: row.cells[2].dataset.id,
-                lavorazione_id: row.cells[3].dataset.id,
-                ore: parseFloat(row.cells[4].textContent),
-                descrizione_dettaglio: row.cells[5].textContent
-            };
-            dataToSend.push(rowData);
-        }
-
-        try {
-            const response = await apiFetch('/api/registrazioni/batch', {
-                method: 'POST',
-                body: JSON.stringify(dataToSend)
+        console.log("Dati pronti per il salvataggio:", dataToSend);
+        alert(`Dati pronti per essere inviati! (${dataToSend.length} righe)`);
+        
+        // QUI VA LA LOGICA DI CHIAMATA API PER IL SALVATAGGIO
+        // Esempio:
+        /*
+        apiFetch('/api/salva-ore', { method: 'POST', body: JSON.stringify(dataToSend) })
+            .then(response => {
+                if (response.ok) {
+                    alert("Salvataggio completato con successo!");
+                    clearProvisionalTable();
+                    closeModal();
+                } else {
+                    alert("Errore durante il salvataggio.");
+                }
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
-            }
-
-            alert("Dati salvati con successo!");
-            clearProvisionalTable();
-            modal.style.display = 'none';
-
-        } catch (error) {
-            console.error("Errore nel salvataggio massivo:", error);
-            alert(`Salvataggio fallito: ${error.message}`);
-        }
+        */
+       
+       // Per ora, simuliamo il successo
+       clearProvisionalTable();
+       modal.style.display = 'none';
     });
-
 });

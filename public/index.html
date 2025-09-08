@@ -303,78 +303,90 @@
     </div>
     </div>
 
-    <div id="insertHoursModal" class="modal" style="display: none;">
-    <div class="modal-content large"> <div class="modal-header header-insert"> <h2>Inserimento Ore Giornaliero</h2>
-            <button class="close-button" id="closeInsertHoursModalBtn">&times;</button>
-        </div>
+    <div id="insertHoursModal" class="modal-overlay" style="display: none;">
+    <div class="modal large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Inserimento Ore Lavorative</h2>
+                <div class="modal-header-buttons">
+                    <button class="help-button">?</button>
+                    <button id="closeInsertHoursModalBtn" class="close-button">&times;</button>
+                </div>
+            </div>
 
-        <div class="modal-body">
+            <div class="modal-top-section">
+                <div class="personnel-list-container">
+                    <h4>Personale</h4>
+                    <ul id="personnel-feedback-list">
+                        </ul>
+                </div>
+
+                <div class="insert-form-container-new">
+                    <h4>Dati Inserimento</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="input-giorno">Giorno</label>
+                            <input type="date" id="input-giorno">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-operatore">Operatore</label>
+                            <select id="input-operatore">
+                                <option value="">Seleziona...</option>
+                            </select>
+                        </div>
+                         <div class="form-group">
+                            <label for="input-ore">Ore</label>
+                            <input type="number" id="input-ore" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-etichetta">Etichetta (da GSheets)</label>
+                            <select id="input-etichetta">
+                                <option value="">Seleziona...</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="input-descrizione">Descrizione Lavoro</label>
+                            <select id="input-descrizione">
+                                <option value="">Seleziona...</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="input-note">Note</label>
+                            <textarea id="input-note" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <button id="add-to-table-btn" class="save-button" style="margin-top: auto;">Aggiungi alla Tabella</button>
+                </div>
+            </div>
+
+            <div class="provisional-table-container-new">
+                 <h4>Riepilogo Inserimenti</h4>
+                <div class="table-wrapper">
+                    <table id="provisional-table">
+                        <thead>
+                            <tr>
+                                <th>Giorno</th>
+                                <th>Operatore</th>
+                                <th>Ore</th>
+                                <th>Etichetta</th>
+                                <th>Descrizione</th>
+                                <th>Note</th>
+                                <th>Azione</th>
+                            </tr>
+                        </thead>
+                        <tbody id="provisional-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
             
-            <div class="insert-form-container">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="input-data">Data</label>
-                        <input type="date" id="input-data" name="data">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-operatore">Operatore</label>
-                        <select id="input-operatore" name="operatore"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="input-commessa">Commessa</label>
-                        <select id="input-commessa" name="commessa"></select>
-                    </div>
+            <div class="modal-footer">
+                 <div id="footer-summary" class="footer-summary">
+                    <span>Righe Inserite: 0</span> | <span>Totale Ore: 0.0</span>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="input-lavorazione">Tipo Lavorazione</label>
-                        <select id="input-lavorazione" name="lavorazione"></select>
-                    </div>
-                    <div class="form-group ore-group">
-                        <label for="input-ore">Ore</label>
-                        <input type="number" step="0.5" id="input-ore" name="ore" placeholder="Es. 8.5">
-                    </div>
-                    <div class="form-group desc-group">
-                        <label for="input-descrizione">Descrizione Dettaglio</label>
-                        <input type="text" id="input-descrizione" name="descrizione" placeholder="Es. Saldatura pettine">
-                    </div>
-                    <div class="form-group add-button-group">
-                        <button class="button" id="add-to-table-btn">
-                            <img src="img/plus.png" alt="Aggiungi">
-                            <span>Aggiungi</span>
-                        </button>
-                    </div>
-                </div>
+                <button id="saveHoursBtn" class="save-button" style="width: 250px;">Salva Dati Definitivi</button>
             </div>
-
-            <div class="provisional-table-container">
-                <table id="provisional-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Operatore</th>
-                            <th>Commessa</th>
-                            <th>Lavorazione</th>
-                            <th>Ore</th>
-                            <th>Descrizione</th>
-                            <th>Azione</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
-            </div>
-
         </div>
-
-        <div class="modal-footer">
-            <div class="footer-summary" id="footer-summary">
-                <span>Righe Inserite: 0</span> | <span>Totale Ore: 0.0</span>
-            </div>
-            <button class="button cancel-button" id="cancelInsertHoursBtn">Annulla e Chiudi</button>
-            <button class="save-button" id="saveHoursBtn">Conferma e Salva nel Database</button>
-        </div>
-
     </div>
     </div>
 

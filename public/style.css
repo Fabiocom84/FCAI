@@ -586,99 +586,165 @@ h2 {
 .entry-item:last-child { border-bottom: none; }
 
 /* ================================================================ */
-/* == STILI SPECIFICI: Modale Inserimento Ore                      == */
+/* == NUOVI STILI PER MODALE INSERIMENTO ORE (Layout 2.0)        == */
 /* ================================================================ */
 
-/* Permette al modale di essere più grande, quasi a tutto schermo */
-.modal-content.large {
-    max-width: 95%;
-    width: 1200px; /* Impostiamo una larghezza massima per schermi grandi */
+/* Modale più grande per contenere il nuovo layout */
+.modal.large {
+    width: 90vw;
+    max-width: 1400px;
+    height: 85vh;
+    padding: 0; /* Rimuoviamo il padding per un controllo totale */
 }
 
-/* Layout per l'area di input, usando flexbox per allineare i campi */
-.insert-form-container {
-    padding: 15px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #f7f9fc;
+/* Il contenuto del modale ora gestisce il layout principale */
+.modal.large .modal-content {
+    padding: 20px;
+    gap: 15px;
 }
 
-.form-row {
+.modal.large .modal-header {
+    padding: 0 20px;
+    margin-bottom: 0;
+}
+
+/* Contenitore superiore che si divide in due colonne */
+.modal-top-section {
     display: flex;
+    gap: 20px;
+    height: 300px; /* Altezza fissa per l'area di input */
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+/* --- Pannello Sinistro: Lista Personale --- */
+.personnel-list-container {
+    flex: 1; /* Occupa 1/3 dello spazio */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+.personnel-list-container h4 {
+    margin: 0 0 10px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+#personnel-feedback-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto; /* Scroll se la lista è troppo lunga */
+}
+#personnel-feedback-list li {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#personnel-feedback-list li:last-child {
+    border-bottom: none;
+}
+.entry-count-badge {
+    background-color: #2A76B8;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8em;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden; /* Nascosto di default */
+}
+.entry-count-badge.visible {
+    visibility: visible; /* Visibile quando il conteggio è > 0 */
+}
+
+/* --- Pannello Destro: Form di Inserimento --- */
+.insert-form-container-new {
+    flex: 2; /* Occupa 2/3 dello spazio */
+    display: flex;
+    flex-direction: column;
+}
+.insert-form-container-new h4 {
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Due colonne di larghezza uguale */
     gap: 15px;
     margin-bottom: 15px;
 }
-
-.form-row .form-group {
-    flex: 1; /* Ogni campo occupa lo stesso spazio */
-    min-width: 150px;
+.form-grid .form-group {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
 }
-.form-row .ore-group { flex: 0.5; } /* Campo ore più piccolo */
-.form-row .desc-group { flex: 2; } /* Campo descrizione più grande */
+.form-grid .form-group.full-width {
+    grid-column: 1 / -1; /* Occupa tutta la larghezza */
+}
+.form-grid label {
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+.form-grid input, .form-grid select, .form-grid textarea {
+    padding: 8px 10px;
+    font-size: 0.9em;
+}
 
-/* Stile per il pulsante 'Aggiungi' */
-.add-button-group {
+/* --- Sezione Inferiore: Tabella Provvisoria --- */
+.provisional-table-container-new {
+    flex-grow: 1; /* Occupa tutto lo spazio verticale rimanente */
     display: flex;
-    align-items: flex-end; /* Allinea il pulsante in basso */
+    flex-direction: column;
+    min-height: 200px; /* Altezza minima per non collassare */
 }
-#add-to-table-btn {
+.provisional-table-container-new h4 {
+    margin: 0 0 10px 0;
+}
+.table-wrapper {
     width: 100%;
-    height: 38px; /* Stessa altezza degli input */
+    overflow-y: auto; /* Scroll verticale per la tabella */
+    flex-grow: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
 }
-
-
-/* Stile per la tabella provvisoria */
-.provisional-table-container {
-    width: 100%;
-    max-height: 40vh; /* Altezza massima, poi appare la barra di scorrimento */
-    overflow-y: auto;
-    border-bottom: 1px solid #e0e0e0;
-}
-
 #provisional-table {
     width: 100%;
     border-collapse: collapse;
 }
-
 #provisional-table thead {
-    position: sticky; /* Intestazione fissa durante lo scorrimento */
+    position: sticky;
     top: 0;
+    z-index: 1;
     background-color: #f1f3f5;
 }
-
 #provisional-table th, #provisional-table td {
     padding: 10px 12px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
-}
-
-#provisional-table td {
-    background-color: #fff;
-}
-
-#provisional-table td.editable {
-    cursor: pointer;
-    background-color: #fdfde6; /* Evidenzia le celle modificabili */
-}
-
-.delete-row-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-}
-.delete-row-btn img {
-    width: 16px;
-    height: 16px;
-}
-
-/* Riepilogo nel footer */
-.modal-footer {
-    justify-content: space-between; /* Spinge gli elementi ai lati */
-}
-.footer-summary {
     font-size: 0.9em;
-    font-weight: 500;
-    color: #555;
+}
+
+/* --- Footer --- */
+.modal.large .modal-footer {
+    padding: 0 20px;
+    margin-top: 10px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* ================================================================ */
