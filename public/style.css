@@ -1041,3 +1041,87 @@ h2 {
     .chat-controls button { width: 40px; height: 40px; }
     .chat-controls button img { width: 20px; height: 20px; }
 }
+
+/* ================================================================ */
+/* == 7. MEDIA QUERIES SPECIFICHE: MODALE INSERIMENTO ORE        == */
+/* ================================================================ */
+
+@media (max-width: 800px) { /* Breakpoint specifico per questo modale complesso */
+
+    /* --- Ri-organizza la struttura principale del modale --- */
+    #insertHoursModal .modal-top-section {
+        flex-direction: column; /* I pannelli (lista e form) vanno uno sotto l'altro */
+        height: auto; /* L'altezza diventa automatica */
+    }
+
+    /* 1. Nascondi la lista del personale su mobile */
+    #insertHoursModal .personnel-list-container {
+        display: none;
+    }
+
+    /* 2. Riorganizza il form a colonna singola */
+    #insertHoursModal .form-grid {
+        grid-template-columns: 1fr; /* Una sola colonna per tutti i campi */
+        gap: 12px; /* Riduci lo spazio tra i campi */
+    }
+    
+    /* Forza tutti i campi del form ad occupare l'intera larghezza */
+    #insertHoursModal .form-grid .form-group:nth-child(n) {
+        grid-column: span 1;
+    }
+
+    /* 3. Trasforma la tabella in una lista di "Card" */
+    #insertHoursModal #provisional-table thead {
+        display: none; /* Nascondi l'intestazione della tabella (Giorno, Operatore, etc.) */
+    }
+
+    #insertHoursModal #provisional-table,
+    #insertHoursModal #provisional-table tbody,
+    #insertHoursModal #provisional-table tr,
+    #insertHoursModal #provisional-table td {
+        display: block; /* Ogni elemento diventa un blocco a sé stante */
+        width: 100% !important; /* Forza la larghezza piena */
+        box-sizing: border-box;
+    }
+
+    /* Stile di ogni riga, che ora è una "Card" */
+    #insertHoursModal #provisional-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden; /* Nasconde eventuali sbordature */
+    }
+
+    #insertHoursModal #provisional-table td {
+        border: none;
+        border-bottom: 1px dashed #eee;
+        position: relative;
+        padding: 8px 8px 8px 45%; /* Spazio a sinistra per l'etichetta */
+        text-align: right; /* Allinea il valore a destra */
+        min-height: 38px; /* Altezza minima per la cella */
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    #insertHoursModal #provisional-table td:last-child {
+        border-bottom: none; /* Rimuovi il bordo dall'ultima cella (quella del pulsante) */
+    }
+
+    /* Crea l'etichetta usando l'attributo 'data-label' che abbiamo aggiunto via JS */
+    #insertHoursModal #provisional-table td:not(:last-child)::before {
+        content: attr(data-label); /* Mostra il contenuto di data-label */
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        font-weight: 500;
+        color: #333;
+        text-align: left;
+    }
+
+    /* Stile per la cella del pulsante Elimina */
+    #insertHoursModal #provisional-table td:last-child {
+        background-color: #f8f9fa;
+        justify-content: center; /* Centra il pulsante */
+        padding: 5px;
+    }
+}

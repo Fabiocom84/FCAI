@@ -112,35 +112,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOGICA TABELLA PROVVISORIA ---
     
     addToTableBtn.addEventListener('click', () => {
-        if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
-            alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
-            return;
-        }
+    if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
+        alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
+        return;
+    }
 
-        const newRow = provisionalTableBody.insertRow();
-        newRow.dataset.operatorId = operatoreSelect.value;
+    const newRow = provisionalTableBody.insertRow();
+    newRow.dataset.operatorId = operatoreSelect.value;
 
-        // HTML della riga aggiornato: rimosse classi "editable" e aggiunta colonna Azione
-        newRow.innerHTML = `
-            <td data-field="giorno">${giornoInput.value}</td>
-            <td data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
-            <td data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
-            <td data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
-            <td data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
-            <td data-field="note">${noteInput.value}</td>
-            <td>
-                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
-                    <img src="img/trash-2.png" alt="Elimina">
-                </button>
-            </td>
+    // MODIFICATO: Aggiunto l'attributo 'data-label' a ogni cella per la vista mobile
+    newRow.innerHTML = `
+        <td data-label="Giorno:" data-field="giorno">${giornoInput.value}</td>
+        <td data-label="Operatore:" data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
+        <td data-label="Ore:" data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
+        <td data-label="Etichetta:" data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
+        <td data-label="Descrizione:" data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
+        <td data-label="Note:" data-field="note">${noteInput.value}</td>
+        <td>
+            <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
+                <img src="img/trash-2.png" alt="Elimina">
+            </button>
+        </td>
         `;
 
-        // NUOVO (ma in realtà è un ritorno): Listener per il pulsante Elimina appena creato
+        // Listener per il pulsante Elimina appena creato
         newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
             newRow.remove();
             updateAll(); // Aggiorna i totali e i badge
         });
-        
+    
         resetInputForm();
         updateAll();
     });
