@@ -124,6 +124,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    addToTableBtn.addEventListener('click', () => {
+        if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
+            alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
+            return;
+        }
+
+        const newRow = provisionalTableBody.insertRow();
+        newRow.dataset.operatorId = operatoreSelect.value; // Aggiungiamo l'ID operatore alla riga per un facile accesso
+
+        // Aggiungo la classe 'editable' solo alle celle che voglio siano modificabili
+        newRow.innerHTML = `
+            <td class="editable" data-field="giorno">${giornoInput.value}</td>
+            <td data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
+            <td class="editable" data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
+            <td data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
+            <td data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
+            <td class="editable" data-field="note">${noteInput.value}</td>
+            <td>
+                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;">
+                    <img src="img/trash-2.png" alt="Elimina" style="width:16px; height:16px;">
+                </button>
+            </td>
+        `;
+
+        newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
+            newRow.remove();
+            updateAll();
+        });
+
+        resetInputForm();
+        updateAll();
+    });
+
     // --- NUOVA LOGICA: TABELLA EDITABILE ---
 
     provisionalTableBody.addEventListener('dblclick', function(e) {
