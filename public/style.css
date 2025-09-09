@@ -751,8 +751,31 @@ h2 {
 }
 #provisional-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
 }
+
+/* 1. Colonna Giorno (stretta) */
+#provisional-table th:nth-child(1) { width: 12%; }
+
+/* 2. Colonna Operatore (media) */
+#provisional-table th:nth-child(2) { width: 22%; }
+
+/* 3. Colonna Ore (molto stretta) */
+#provisional-table th:nth-child(3) { width: 8%; }
+
+/* 4. Colonna Etichetta (larga) */
+#provisional-table th:nth-child(4) { width: 23%; }
+
+/* 5. Colonna Descrizione (larga) */
+#provisional-table th:nth-child(5) { width: 23%; }
+
+/* 6. Colonna Note (stretta) */
+#provisional-table th:nth-child(6) { width: 10%; }
+
+/* 7. Colonna Azione/Elimina (strettissima) */
+#provisional-table th:nth-child(7) { width: 5%; }
+
 #provisional-table thead {
     position: sticky; top: 0; z-index: 1; background-color: #f1f3f5;
 }
