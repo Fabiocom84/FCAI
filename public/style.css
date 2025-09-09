@@ -756,19 +756,19 @@ h2 {
 }
 
 /* 1. Colonna Giorno (stretta) */
-#provisional-table th:nth-child(1) { width: 12%; }
+#provisional-table th:nth-child(1) { width: 10%; }
 
 /* 2. Colonna Operatore (media) */
-#provisional-table th:nth-child(2) { width: 22%; }
+#provisional-table th:nth-child(2) { width: 18%; }
 
 /* 3. Colonna Ore (molto stretta) */
 #provisional-table th:nth-child(3) { width: 8%; }
 
 /* 4. Colonna Etichetta (larga) */
-#provisional-table th:nth-child(4) { width: 23%; }
+#provisional-table th:nth-child(4) { width: 26%; }
 
 /* 5. Colonna Descrizione (larga) */
-#provisional-table th:nth-child(5) { width: 23%; }
+#provisional-table th:nth-child(5) { width: 26%; }
 
 /* 6. Colonna Note (stretta) */
 #provisional-table th:nth-child(6) { width: 10%; }
