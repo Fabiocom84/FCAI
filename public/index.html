@@ -309,7 +309,7 @@
             <div class="modal-header">
                 <h2>Inserimento Ore Lavorative</h2>
                 <div class="modal-header-buttons">
-                    <button class="help-button">?</button>
+                    <button class="help-button" data-legend="insertHoursLegend">?</button>
                     <button id="closeInsertHoursModalBtn" class="close-button">&times;</button>
                 </div>
             </div>
@@ -444,6 +444,30 @@
         <h3>Aiuto - Chat AI</h3>
         <div class="legend-item">
             <div class="legend-text">Interagisci con l'intelligenza artificiale per porre domande e ottenere analisi sui dati.</div>
+        </div>
+    </div>
+
+    <div id="insertHoursLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Inserimento Ore</h3>
+        <div class="legend-item">
+            <div class="legend-text">
+                <strong>Lista Personale (Sinistra):</strong> Clicca su un nome per pre-selezionarlo nel form. Il badge numerico indica le ore totali già inserite per quella persona nella tabella sottostante. I nomi in rosso sono già presenti in tabella.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-text">
+                <strong>Dati Inserimento (Destra):</strong> Compila i campi e clicca su "Aggiungi alla Tabella" per creare una nuova riga nel riepilogo.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-text">
+                <strong>Riepilogo Inserimenti:</strong> Questa tabella mostra tutte le righe pronte per essere salvate. Fai <strong>doppio clic</strong> su una cella (Giorno, Ore, Note) per modificarla direttamente.
+            </div>
+        </div>
+         <div class="legend-item">
+            <div class="legend-text">
+                <strong>Salva Dati Definitivi:</strong> Al termine, clicca questo pulsante per salvare tutte le righe presenti nel riepilogo.
+            </div>
         </div>
     </div>
 

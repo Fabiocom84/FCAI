@@ -610,7 +610,7 @@ h2 {
 
 /* NUOVO: Regola per colorare il titolo del modale */
 #insertHoursModal .modal-header h2 {
-    color: #28a745; /* Verde, come i pulsanti di azione */
+    color: #ff7f50; /* Arancione, come il pulsante di attivazione */
 }
 
 
