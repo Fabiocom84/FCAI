@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td data-field="note">${noteInput.value}</td>
             <td>
                 <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
-                    <img src="img/trash-2.png" alt="Elimina" style="width:18px; height:18px;">
+                    <img src="img/trash-2.png" alt="Elimina">
                 </button>
             </td>
         `;

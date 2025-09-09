@@ -764,6 +764,29 @@ h2 {
     transition: background-color 0.2s ease;
 }
 
+/* NUOVO: Restringe l'ultima colonna (quella del pulsante elimina) */
+#provisional-table tbody tr td:last-child {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+    padding: 0 8px; /* Padding laterale bilanciato */
+}
+
+.delete-row-btn {
+    background: none;
+    border: none;
+    padding: 2px; /* Piccolo padding per aumentare l'area cliccabile */
+    cursor: pointer;
+    line-height: 0; /* Rimuove spazio extra sotto l'immagine */
+}
+
+.delete-row-btn img {
+    /* Dimensione adattiva legata alla grandezza del testo (em) */
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: middle; /* Allinea l'icona verticalmente al centro della riga */
+}
+
 /* --- Footer --- */
 .modal.large .modal-footer {
     padding: 10px 20px 0 20px;
