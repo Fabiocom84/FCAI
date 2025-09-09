@@ -763,10 +763,6 @@ h2 {
     background-color: #fff;
     transition: background-color 0.2s ease;
 }
-#provisional-table td.editable:hover {
-    background-color: #e8f4ff;
-    cursor: pointer;
-}
 
 /* --- Footer --- */
 .modal.large .modal-footer {

@@ -111,9 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGICA TABELLA PROVVISORIA ---
     
-    /**
-     * MODIFICATO: Rimossa la colonna Azione dall'HTML generato.
-     */
     addToTableBtn.addEventListener('click', () => {
         if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
             alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
@@ -123,51 +120,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRow = provisionalTableBody.insertRow();
         newRow.dataset.operatorId = operatoreSelect.value;
 
+        // HTML della riga aggiornato: rimosse classi "editable" e aggiunta colonna Azione
         newRow.innerHTML = `
-            <td class="editable" data-field="giorno">${giornoInput.value}</td>
+            <td data-field="giorno">${giornoInput.value}</td>
             <td data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
-            <td class="editable" data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
+            <td data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
             <td data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
             <td data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
-            <td class="editable" data-field="note">${noteInput.value}</td>
+            <td data-field="note">${noteInput.value}</td>
+            <td>
+                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
+                    <img src="img/trash-2.png" alt="Elimina" style="width:18px; height:18px;">
+                </button>
+            </td>
         `;
-        // La colonna con il pulsante elimina è stata rimossa.
+
+        // NUOVO (ma in realtà è un ritorno): Listener per il pulsante Elimina appena creato
+        newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
+            newRow.remove();
+            updateAll(); // Aggiorna i totali e i badge
+        });
         
         resetInputForm();
         updateAll();
     });
-
-    // --- LOGICA TABELLA EDITABILE (invariata) ---
-    provisionalTableBody.addEventListener('dblclick', function(e) { /* ... (invariata) ... */ 
-        const cell = e.target.closest('td');
-        if (!cell || !cell.classList.contains('editable') || cell.querySelector('input')) return;
-        makeCellEditable(cell);
-    });
-    function makeCellEditable(cell) { /* ... (invariata) ... */ 
-        const originalValue = cell.textContent;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = originalValue;
-        input.style.width = '95%';
-        input.style.boxSizing = 'border-box';
-        cell.innerHTML = '';
-        cell.appendChild(input);
-        input.focus();
-        const saveChanges = () => {
-            const newValue = input.value;
-            cell.innerHTML = newValue;
-            if (cell.dataset.field === 'ore') {
-                const parsedValue = parseFloat(newValue) || 0;
-                cell.textContent = parsedValue.toFixed(1);
-            }
-            updateAll(); // Aggiorna tutto, inclusi i badge delle ore
-        };
-        input.addEventListener('blur', saveChanges);
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { input.blur(); } 
-            else if (e.key === 'Escape') { cell.innerHTML = originalValue; }
-        });
-    }
 
     // --- AGGIORNAMENTO UI ---
     function resetInputForm() { /* ... (invariata) ... */ 
