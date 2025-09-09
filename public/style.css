@@ -593,7 +593,7 @@ h2 {
 .modal.large {
     width: 90vw;
     max-width: 1400px;
-    height: 85vh;
+    max-height: 85vh;
     padding: 0; 
 }
 
@@ -617,8 +617,7 @@ h2 {
 /* Contenitore superiore che si divide in due colonne */
 .modal-top-section {
     display: flex;
-    gap: 20px;
-    height: 300px; 
+    gap: 20px; 
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 15px;
 }
@@ -684,6 +683,7 @@ h2 {
     flex: 2;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 .insert-form-container-new h4 {
     margin: 0 0 15px 0;
@@ -731,7 +731,6 @@ h2 {
 .form-grid .form-group:nth-child(6) { grid-column: span 4; }
 
 .insert-form-container-new .save-button {
-    margin-top: auto;
     padding: 10px;
     font-size: 1em;
 }
@@ -742,11 +741,10 @@ h2 {
     display: flex;
     flex-direction: column;
     /* MODIFICATO: Ridotta altezza minima per compattare il layout */
-    min-height: 150px;
+    min-height: 0px;
 }
 .table-wrapper {
-    width: 100%;
-    overflow-y: auto; 
+    width: 100%; 
     flex-grow: 1;
     border: 1px solid #e0e0e0;
     border-radius: 8px;

@@ -1,60 +1,50 @@
-// js/inserimento-ore.js (Versione con Tabella Editabile)
+// js/inserimento-ore.js (Versione 2.4)
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- SELEZIONE ELEMENTI DEL DOM ---
+    // --- SELEZIONE ELEMENTI DEL DOM (invariata) ---
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
     const modal = document.getElementById('insertHoursModal');
     const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
-    
     const giornoInput = document.getElementById('input-giorno');
     const operatoreSelect = document.getElementById('input-operatore');
     const oreInput = document.getElementById('input-ore');
     const etichettaSelect = document.getElementById('input-etichetta');
     const descrizioneSelect = document.getElementById('input-descrizione');
     const noteInput = document.getElementById('input-note');
-
     const personnelList = document.getElementById('personnel-feedback-list');
     const provisionalTableBody = document.getElementById('provisional-table-body');
-    
     const addToTableBtn = document.getElementById('add-to-table-btn');
     const saveHoursBtn = document.getElementById('saveHoursBtn');
-    
     const summaryFooter = document.getElementById('footer-summary');
-
     let initialDataLoaded = false;
 
-    // --- FUNZIONI DI UTILITÀ ---
-    
-    /**
-     * Calcola il giorno lavorativo precedente.
-     * Es: Lunedì -> Venerdì precedente, Domenica -> Venerdì precedente.
-     * @returns {Date} Oggetto Date del giorno lavorativo precedente.
-     */
+    // --- FUNZIONI DI UTILITÀ (invariate) ---
     function getPreviousWorkingDay() {
         const today = new Date();
-        today.setDate(today.getDate() - 1); 
-        const dayOfWeek = today.getDay(); 
-        if (dayOfWeek === 0) { today.setDate(today.getDate() - 2); } 
-        else if (dayOfWeek === 6) { today.setDate(today.getDate() - 1); }
+        const currentDay = today.getDay(); // 0=Domenica, 1=Lunedì...
+        
+        // Oggi è il 9 Settembre 2025, che è un Martedì (giorno 2)
+        // Il giorno lavorativo precedente è Lunedì 8.
+        let daysToSubtract = 1;
+        if (currentDay === 1) { // Se è Lunedì
+            daysToSubtract = 3; // Vai a Venerdì
+        } else if (currentDay === 0) { // Se è Domenica
+            daysToSubtract = 2; // Vai a Venerdì
+        }
+        today.setDate(today.getDate() - daysToSubtract);
         return today;
     }
-
-    // --- GESTIONE MODALE ---
-
+    
+    // --- GESTIONE MODALE (invariata) ---
     openModalBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
         giornoInput.valueAsDate = getPreviousWorkingDay();
-        if (!initialDataLoaded) {
-            populateInitialData();
-            initialDataLoaded = true;
-        }
+        if (!initialDataLoaded) { populateInitialData(); initialDataLoaded = true; }
     });
 
     const closeModal = () => {
         if (provisionalTableBody.rows.length > 0) {
-            if (!confirm("Ci sono dati non salvati. Sei sicuro di voler chiudere? Le modifiche andranno perse.")) {
-                return;
-            }
+            if (!confirm("Ci sono dati non salvati. Sei sicuro di voler chiudere?")) { return; }
         }
         modal.style.display = 'none';
         clearProvisionalTable();
@@ -62,9 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModalBtn.addEventListener('click', closeModal);
 
     // --- CARICAMENTO DATI INIZIALI ---
-    
-    // Funzione mock per simulare una chiamata API
-    const mockApiFetch = (endpoint) => {
+    const mockApiFetch = (endpoint) => { /* ... (invariata) ... */ 
         return new Promise(resolve => {
             let data = [];
             if (endpoint === '/api/operatori') {
@@ -80,28 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
             resolve(data);
         });
     };
-
-    async function populateInitialData() {
+    async function populateInitialData() { /* ... (invariata) ... */ 
         try {
             const [operatori, etichette, descrizioni] = await Promise.all([
-                mockApiFetch('/api/operatori'),
-                mockApiFetch('/api/etichette'), // Simula chiamata a Google Sheets
-                mockApiFetch('/api/descrizioni')
+                mockApiFetch('/api/operatori'), mockApiFetch('/api/etichette'), mockApiFetch('/api/descrizioni')
             ]);
-
             populateSelect(operatoreSelect, operatori, 'id', 'nome');
             populateSelect(etichettaSelect, etichette, 'id', 'nome');
             populateSelect(descrizioneSelect, descrizioni, 'id', 'nome');
-            
             populatePersonnelList(operatori);
-
-        } catch (error) {
-            console.error("Errore nel caricamento dei dati iniziali:", error);
-            alert("Impossibile caricare i dati. Riprova più tardi.");
-        }
+        } catch (error) { console.error("Errore caricamento dati:", error); alert("Impossibile caricare i dati."); }
     }
-
-    function populateSelect(selectElement, data, valueKey, textKey) {
+    function populateSelect(selectElement, data, valueKey, textKey) { /* ... (invariata) ... */ 
         selectElement.innerHTML = '<option value="">Seleziona...</option>';
         data.forEach(item => {
             const option = document.createElement('option');
@@ -111,19 +89,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * MODIFICATO: Aggiunto event listener per pre-caricare l'operatore al click.
+     */
     function populatePersonnelList(operatori) {
         personnelList.innerHTML = '';
         operatori.forEach(op => {
             const li = document.createElement('li');
             li.dataset.operatorId = op.id;
-            li.innerHTML = `
-                <span>${op.nome}</span>
-                <span class="entry-count-badge">0</span>
-            `;
+            li.style.cursor = 'pointer'; // Aggiunge il cursore a puntatore
+            li.innerHTML = `<span>${op.nome}</span><span class="entry-count-badge">0</span>`;
+            
+            // NUOVO: Aggiungi l'evento click
+            li.addEventListener('click', () => {
+                operatoreSelect.value = op.id;
+            });
+
             personnelList.appendChild(li);
         });
     }
 
+    // --- LOGICA TABELLA PROVVISORIA ---
+    
+    /**
+     * MODIFICATO: Rimossa la colonna Azione dall'HTML generato.
+     */
     addToTableBtn.addEventListener('click', () => {
         if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
             alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
@@ -131,9 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const newRow = provisionalTableBody.insertRow();
-        newRow.dataset.operatorId = operatoreSelect.value; // Aggiungiamo l'ID operatore alla riga per un facile accesso
+        newRow.dataset.operatorId = operatoreSelect.value;
 
-        // Aggiungo la classe 'editable' solo alle celle che voglio siano modificabili
         newRow.innerHTML = `
             <td class="editable" data-field="giorno">${giornoInput.value}</td>
             <td data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
@@ -141,119 +130,101 @@ document.addEventListener('DOMContentLoaded', () => {
             <td data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
             <td data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
             <td class="editable" data-field="note">${noteInput.value}</td>
-            <td>
-                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;">
-                    <img src="img/trash-2.png" alt="Elimina" style="width:16px; height:16px;">
-                </button>
-            </td>
         `;
-
-        newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
-            newRow.remove();
-            updateAll();
-        });
-
+        // La colonna con il pulsante elimina è stata rimossa.
+        
         resetInputForm();
         updateAll();
     });
 
-    // --- NUOVA LOGICA: TABELLA EDITABILE ---
-
-    provisionalTableBody.addEventListener('dblclick', function(e) {
+    // --- LOGICA TABELLA EDITABILE (invariata) ---
+    provisionalTableBody.addEventListener('dblclick', function(e) { /* ... (invariata) ... */ 
         const cell = e.target.closest('td');
-        // Rendi editabile solo se la cella ha la classe 'editable' e non è già in modifica
         if (!cell || !cell.classList.contains('editable') || cell.querySelector('input')) return;
-
         makeCellEditable(cell);
     });
-
-    function makeCellEditable(cell) {
+    function makeCellEditable(cell) { /* ... (invariata) ... */ 
         const originalValue = cell.textContent;
         const input = document.createElement('input');
         input.type = 'text';
         input.value = originalValue;
         input.style.width = '95%';
         input.style.boxSizing = 'border-box';
-
         cell.innerHTML = '';
         cell.appendChild(input);
         input.focus();
-
         const saveChanges = () => {
             const newValue = input.value;
             cell.innerHTML = newValue;
-            // Se la cella è delle ore, la riformattiamo
             if (cell.dataset.field === 'ore') {
                 const parsedValue = parseFloat(newValue) || 0;
                 cell.textContent = parsedValue.toFixed(1);
             }
-            updateSummary(); // Aggiorna il totale ore se è stata modificata una cella ore
+            updateAll(); // Aggiorna tutto, inclusi i badge delle ore
         };
-
         input.addEventListener('blur', saveChanges);
-
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                input.blur(); // Salva le modifiche
-            } else if (e.key === 'Escape') {
-                cell.innerHTML = originalValue; // Annulla
-            }
+            if (e.key === 'Enter') { input.blur(); } 
+            else if (e.key === 'Escape') { cell.innerHTML = originalValue; }
         });
     }
 
-    function resetInputForm() {
-        operatoreSelect.value = "";
-        oreInput.value = "";
-        etichettaSelect.value = "";
-        descrizioneSelect.value = "";
-        noteInput.value = "";
-        operatoreSelect.focus();
+    // --- AGGIORNAMENTO UI ---
+    function resetInputForm() { /* ... (invariata) ... */ 
+        operatoreSelect.value = ""; oreInput.value = ""; etichettaSelect.value = "";
+        descrizioneSelect.value = ""; noteInput.value = ""; operatoreSelect.focus();
     }
     
     function updateAll() {
-        updateFeedbackCounters();
+        updateFeedbackHours(); // Nome funzione cambiato per chiarezza
         updateSummary();
     }
     
-    function updateFeedbackCounters() {
-        const counts = {};
-        // 1. Conta le occorrenze di ogni operatore nella tabella
+    /**
+     * MODIFICATO: Ora calcola la SOMMA DELLE ORE, non il conteggio delle righe.
+     */
+    function updateFeedbackHours() {
+        const hoursByOperator = {};
         for (const row of provisionalTableBody.rows) {
             const operatorId = row.dataset.operatorId;
-            counts[operatorId] = (counts[operatorId] || 0) + 1;
+            const hours = parseFloat(row.cells[2].textContent) || 0;
+            hoursByOperator[operatorId] = (hoursByOperator[operatorId] || 0) + hours;
         }
 
-        // 2. Aggiorna la lista del personale con i conteggi e il colore
         const listItems = personnelList.querySelectorAll('li');
         listItems.forEach(li => {
             const operatorId = li.dataset.operatorId;
             const badge = li.querySelector('.entry-count-badge');
-            const count = counts[operatorId] || 0;
+            const totalHours = hoursByOperator[operatorId] || 0;
 
-            if (count > 0) {
-                badge.textContent = count;
+            if (totalHours > 0) {
+                badge.textContent = totalHours.toFixed(1);
                 badge.classList.add('visible');
-                li.classList.add('inserted'); // NUOVO: Aggiunge la classe per il colore rosso
+                li.classList.add('inserted');
             } else {
                 badge.classList.remove('visible');
-                li.classList.remove('inserted'); // NUOVO: Rimuove la classe
+                li.classList.remove('inserted');
             }
         });
     }
     
-    function updateSummary() {
+    function updateSummary() { /* ... (invariata) ... */ 
         const rowCount = provisionalTableBody.rows.length;
         let totalHours = 0;
         for (const row of provisionalTableBody.rows) {
-            totalHours += parseFloat(row.cells[2].textContent);
+            totalHours += parseFloat(row.cells[2].textContent) || 0;
         }
         summaryFooter.innerHTML = `<span>Righe Inserite: ${rowCount}</span> | <span>Totale Ore: ${totalHours.toFixed(1)}</span>`;
     }
 
     function clearProvisionalTable() { provisionalTableBody.innerHTML = ''; updateAll(); }
 
+    /**
+     * MODIFICATO: Aggiunti i campi 'stato' e 'data_registrazione' all'oggetto da salvare.
+     */
     saveHoursBtn.addEventListener('click', () => {
         if (provisionalTableBody.rows.length === 0) { alert("Nessun dato da salvare."); return; }
+        
         const dataToSend = Array.from(provisionalTableBody.rows).map(row => ({
             giorno: row.cells[0].textContent,
             operatore_id: row.cells[1].dataset.id,
@@ -261,9 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
             etichetta_id: row.cells[3].dataset.id,
             descrizione_id: row.cells[4].dataset.id,
             note: row.cells[5].textContent,
+            // NUOVI CAMPI AGGIUNTI AL SALVATAGGIO
+            stato: 'Da Registrare',
+            data_registrazione: null
         }));
+
         console.log("Dati pronti per il salvataggio:", dataToSend);
         alert(`Dati pronti per essere inviati! (${dataToSend.length} righe)`);
+        
         clearProvisionalTable();
         modal.style.display = 'none';
     });
