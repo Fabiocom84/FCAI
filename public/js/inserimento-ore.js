@@ -210,28 +210,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearProvisionalTable() { provisionalTableBody.innerHTML = ''; updateAll(); }
 
-    /**
-     * MODIFICATO: Aggiunti i campi 'stato' e 'data_registrazione' all'oggetto da salvare.
-     */
-    saveHoursBtn.addEventListener('click', () => {
-        if (provisionalTableBody.rows.length === 0) { alert("Nessun dato da salvare."); return; }
-        
-        const dataToSend = Array.from(provisionalTableBody.rows).map(row => ({
-            giorno: row.cells[0].textContent,
-            operatore_id: row.cells[1].dataset.id,
-            ore: parseFloat(row.cells[2].textContent),
-            etichetta_id: row.cells[3].dataset.id,
-            descrizione_id: row.cells[4].dataset.id,
+    // MODIFICATO: La funzione ora è 'async' per usare Supabase
+    saveHoursBtn.addEventListener('click', async () => {
+        if (provisionalTableBody.rows.length === 0) {
+            alert("Nessun dato da salvare.");
+            return;
+        }
+
+        // 1. Prepara i dati nel formato corretto per le colonne del database
+        const rowsToInsert = Array.from(provisionalTableBody.rows).map(row => ({
+            data_lavoro: row.cells[0].textContent,
+            id_personale_fk: parseInt(row.cells[1].dataset.id, 10),
+            ore_lavorate: parseFloat(row.cells[2].textContent),
+            id_etichetta_fk: row.cells[3].dataset.id ? parseInt(row.cells[3].dataset.id, 10) : null,
+            id_descrizione_fk: row.cells[4].dataset.id ? parseInt(row.cells[4].dataset.id, 10) : null,
             note: row.cells[5].textContent,
-            // NUOVI CAMPI AGGIUNTI AL SALVATAGGIO
             stato: 'Da Registrare',
-            data_registrazione: null
+            data_aggiornamento_stato: null
         }));
 
-        console.log("Dati pronti per il salvataggio:", dataToSend);
-        alert(`Dati pronti per essere inviati! (${dataToSend.length} righe)`);
-        
-        clearProvisionalTable();
-        modal.style.display = 'none';
+        console.log("Invio dei seguenti dati a Supabase:", rowsToInsert);
+
+        try {
+            // 2. Invia i dati in blocco alla tabella 'registrazioni_ore'
+            const { error } = await supabase
+                .from('registrazioni_ore')
+                .insert(rowsToInsert);
+
+            if (error) {
+                // Se Supabase restituisce un errore, lo mostriamo
+                throw error;
+            }
+
+            // 3. Se il salvataggio va a buon fine, mostra un messaggio di successo
+            alert(`Salvataggio completato! Sono state aggiunte ${rowsToInsert.length} righe.`);
+            
+            // Pulisci la tabella e chiudi il modale
+            clearProvisionalTable();
+            modal.style.display = 'none';
+
+        } catch (error) {
+            console.error("Errore durante il salvataggio dei dati su Supabase:", error);
+            alert(`Errore nel salvataggio dei dati: ${error.message}`);
+        }
     });
-});
