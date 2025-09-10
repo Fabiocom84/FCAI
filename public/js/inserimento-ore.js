@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selectElement.appendChild(option);
         });
     }
-    
+
     async function populateInitialData() {
         try {
             // 1. Carica il personale attivo dalla tabella 'personale'
@@ -254,3 +254,4 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Errore nel salvataggio dei dati: ${error.message}`);
         }
     });
+}
