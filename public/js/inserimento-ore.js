@@ -107,13 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
         personnelList.innerHTML = '';
         operatori.forEach(op => {
             const li = document.createElement('li');
-            li.dataset.operatorId = op.id;
-            li.style.cursor = 'pointer'; // Aggiunge il cursore a puntatore
-            li.innerHTML = `<span>${op.nome}</span><span class="entry-count-badge">0</span>`;
             
-            // NUOVO: Aggiungi l'evento click
+            // CORRETTO: Usa 'id_personale' come definito nel database
+            li.dataset.operatorId = op.id_personale; 
+            li.style.cursor = 'pointer';
+            
+            // CORRETTO: Usa 'nome_cognome' come definito nel database
+            li.innerHTML = `<span>${op.nome_cognome}</span><span class="entry-count-badge">0</span>`;
+            
             li.addEventListener('click', () => {
-                operatoreSelect.value = op.id;
+                // CORRETTO: Usa 'id_personale' anche qui
+                operatoreSelect.value = op.id_personale;
             });
 
             personnelList.appendChild(li);
