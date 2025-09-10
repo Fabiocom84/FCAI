@@ -1,9 +1,9 @@
-// js/inserimento-ore.js (Versione 2.4)
+// js/inserimento-ore.js (Versione Corretta)
 
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- SELEZIONE ELEMENTI DEL DOM (invariata) ---
+    // --- SELEZIONE ELEMENTI DEL DOM ---
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
     const modal = document.getElementById('insertHoursModal');
     const closeModalBtn = document.getElementById('closeInsertHoursModalBtn');
@@ -20,13 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryFooter = document.getElementById('footer-summary');
     let initialDataLoaded = false;
 
-    // --- FUNZIONI DI UTILITÀ (invariate) ---
+    // --- FUNZIONI DI UTILITÀ ---
     function getPreviousWorkingDay() {
         const today = new Date();
         const currentDay = today.getDay(); // 0=Domenica, 1=Lunedì...
-        
-        // Oggi è il 9 Settembre 2025, che è un Martedì (giorno 2)
-        // Il giorno lavorativo precedente è Lunedì 8.
         let daysToSubtract = 1;
         if (currentDay === 1) { // Se è Lunedì
             daysToSubtract = 3; // Vai a Venerdì
@@ -37,11 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return today;
     }
     
-    // --- GESTIONE MODALE (invariata) ---
+    // --- GESTIONE MODALE ---
     openModalBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
         giornoInput.valueAsDate = getPreviousWorkingDay();
-        if (!initialDataLoaded) { populateInitialData(); initialDataLoaded = true; }
+        if (!initialDataLoaded) {
+            populateInitialData();
+            initialDataLoaded = true;
+        }
     });
 
     const closeModal = () => {
@@ -53,11 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     closeModalBtn.addEventListener('click', closeModal);
 
+    // --- FUNZIONI DI POPOLAMENTO ---
     function populateSelect(selectElement, data, valueKey, textKey) {
-        // Pulisce le opzioni esistenti e aggiunge quella di default
         selectElement.innerHTML = '<option value="">Seleziona...</option>';
-        
-        // Aggiunge un'opzione per ogni elemento ricevuto dai dati
         data.forEach(item => {
             const option = document.createElement('option');
             option.value = item[valueKey];
@@ -68,30 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function populateInitialData() {
         try {
-            // 1. Carica il personale attivo dalla tabella 'personale'
             const { data: operatori, error: errorOperatori } = await supabase
                 .from('personale')
                 .select('*')
-                .eq('attivo', true); // Seleziona solo il personale 'attivo'
+                .eq('attivo', true);
             if (errorOperatori) throw errorOperatori;
 
-            // 2. Carica le etichette dalla tabella 'etichette'
             const { data: etichette, error: errorEtichette } = await supabase
                 .from('etichette')
                 .select('*');
             if (errorEtichette) throw errorEtichette;
 
-            // 3. Carica le descrizioni dalla tabella 'descrizioni_lavoro'
             const { data: descrizioni, error: errorDescrizioni } = await supabase
                 .from('descrizioni_lavoro')
                 .select('*');
             if (errorDescrizioni) throw errorDescrizioni;
 
-            // Popola i menu a tendina e la lista con i dati reali
             populateSelect(operatoreSelect, operatori, 'id_personale', 'nome_cognome');
             populateSelect(etichettaSelect, etichette, 'id_etichetta', 'nome_etichetta');
             populateSelect(descrizioneSelect, descrizioni, 'id_descrizione', 'nome_descrizione');
-
             populatePersonnelList(operatori);
 
         } catch (error) {
@@ -100,60 +93,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }   
 
-    /**
-     * MODIFICATO: Aggiunto event listener per pre-caricare l'operatore al click.
-     */
     function populatePersonnelList(operatori) {
         personnelList.innerHTML = '';
         operatori.forEach(op => {
             const li = document.createElement('li');
-            
-            // CORRETTO: Usa 'id_personale' come definito nel database
             li.dataset.operatorId = op.id_personale; 
             li.style.cursor = 'pointer';
-            
-            // CORRETTO: Usa 'nome_cognome' come definito nel database
             li.innerHTML = `<span>${op.nome_cognome}</span><span class="entry-count-badge">0</span>`;
-            
             li.addEventListener('click', () => {
-                // CORRETTO: Usa 'id_personale' anche qui
                 operatoreSelect.value = op.id_personale;
             });
-
             personnelList.appendChild(li);
         });
     }
 
     // --- LOGICA TABELLA PROVVISORIA ---
-    
     addToTableBtn.addEventListener('click', () => {
-    if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
-        alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
-        return;
-    }
+        if (!giornoInput.value || !operatoreSelect.value || !oreInput.value || parseFloat(oreInput.value) <= 0) {
+            alert("Compilare almeno i campi Giorno, Operatore e Ore (> 0).");
+            return;
+        }
 
-    const newRow = provisionalTableBody.insertRow();
-    newRow.dataset.operatorId = operatoreSelect.value;
-
-    // MODIFICATO: Aggiunto l'attributo 'data-label' a ogni cella per la vista mobile
-    newRow.innerHTML = `
-        <td data-label="Giorno:" data-field="giorno">${giornoInput.value}</td>
-        <td data-label="Operatore:" data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
-        <td data-label="Ore:" data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
-        <td data-label="Etichetta:" data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
-        <td data-label="Descrizione:" data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
-        <td data-label="Note:" data-field="note">${noteInput.value}</td>
-        <td>
-            <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
-                <img src="img/trash-2.png" alt="Elimina">
-            </button>
-        </td>
+        const newRow = provisionalTableBody.insertRow();
+        newRow.dataset.operatorId = operatoreSelect.value;
+        newRow.innerHTML = `
+            <td data-label="Giorno:" data-field="giorno">${giornoInput.value}</td>
+            <td data-label="Operatore:" data-field="operatore" data-id="${operatoreSelect.value}">${operatoreSelect.options[operatoreSelect.selectedIndex].text}</td>
+            <td data-label="Ore:" data-field="ore">${parseFloat(oreInput.value).toFixed(1)}</td>
+            <td data-label="Etichetta:" data-field="etichetta" data-id="${etichettaSelect.value}">${etichettaSelect.options[etichettaSelect.selectedIndex].text}</td>
+            <td data-label="Descrizione:" data-field="descrizione" data-id="${descrizioneSelect.value}">${descrizioneSelect.options[descrizioneSelect.selectedIndex].text}</td>
+            <td data-label="Note:" data-field="note">${noteInput.value}</td>
+            <td>
+                <button class="delete-row-btn" style="background:none; border:none; cursor:pointer;" title="Elimina Riga">
+                    <img src="img/trash-2.png" alt="Elimina">
+                </button>
+            </td>
         `;
 
-        // Listener per il pulsante Elimina appena creato
         newRow.querySelector('.delete-row-btn').addEventListener('click', () => {
             newRow.remove();
-            updateAll(); // Aggiorna i totali e i badge
+            updateAll();
         });
     
         resetInputForm();
@@ -161,19 +140,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- AGGIORNAMENTO UI ---
-    function resetInputForm() { /* ... (invariata) ... */ 
+    function resetInputForm() { 
         operatoreSelect.value = ""; oreInput.value = ""; etichettaSelect.value = "";
         descrizioneSelect.value = ""; noteInput.value = ""; operatoreSelect.focus();
     }
     
     function updateAll() {
-        updateFeedbackHours(); // Nome funzione cambiato per chiarezza
+        updateFeedbackHours();
         updateSummary();
     }
     
-    /**
-     * MODIFICATO: Ora calcola la SOMMA DELLE ORE, non il conteggio delle righe.
-     */
     function updateFeedbackHours() {
         const hoursByOperator = {};
         for (const row of provisionalTableBody.rows) {
@@ -199,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    function updateSummary() { /* ... (invariata) ... */ 
+    function updateSummary() {
         const rowCount = provisionalTableBody.rows.length;
         let totalHours = 0;
         for (const row of provisionalTableBody.rows) {
@@ -208,16 +184,17 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryFooter.innerHTML = `<span>Righe Inserite: ${rowCount}</span> | <span>Totale Ore: ${totalHours.toFixed(1)}</span>`;
     }
 
-    function clearProvisionalTable() { provisionalTableBody.innerHTML = ''; updateAll(); }
+    function clearProvisionalTable() {
+        provisionalTableBody.innerHTML = '';
+        updateAll();
+    }
 
-    // MODIFICATO: La funzione ora è 'async' per usare Supabase
     saveHoursBtn.addEventListener('click', async () => {
         if (provisionalTableBody.rows.length === 0) {
             alert("Nessun dato da salvare.");
             return;
         }
 
-        // 1. Prepara i dati nel formato corretto per le colonne del database
         const rowsToInsert = Array.from(provisionalTableBody.rows).map(row => ({
             data_lavoro: row.cells[0].textContent,
             id_personale_fk: parseInt(row.cells[1].dataset.id, 10),
@@ -232,20 +209,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Invio dei seguenti dati a Supabase:", rowsToInsert);
 
         try {
-            // 2. Invia i dati in blocco alla tabella 'registrazioni_ore'
             const { error } = await supabase
                 .from('registrazioni_ore')
                 .insert(rowsToInsert);
 
             if (error) {
-                // Se Supabase restituisce un errore, lo mostriamo
                 throw error;
             }
 
-            // 3. Se il salvataggio va a buon fine, mostra un messaggio di successo
             alert(`Salvataggio completato! Sono state aggiunte ${rowsToInsert.length} righe.`);
             
-            // Pulisci la tabella e chiudi il modale
             clearProvisionalTable();
             modal.style.display = 'none';
 
@@ -254,4 +227,5 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Errore nel salvataggio dei dati: ${error.message}`);
         }
     });
-}
+    
+}); // <-- QUESTA E' LA CHIUSURA CORRETTA DEL DOMContentLoaded
