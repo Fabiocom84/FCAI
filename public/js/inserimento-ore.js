@@ -53,6 +53,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     closeModalBtn.addEventListener('click', closeModal);
 
+    function populateSelect(selectElement, data, valueKey, textKey) {
+        // Pulisce le opzioni esistenti e aggiunge quella di default
+        selectElement.innerHTML = '<option value="">Seleziona...</option>';
+        
+        // Aggiunge un'opzione per ogni elemento ricevuto dai dati
+        data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[valueKey];
+            option.textContent = item[textKey];
+            selectElement.appendChild(option);
+        });
+    }
+    
     async function populateInitialData() {
         try {
             // 1. Carica il personale attivo dalla tabella 'personale'
