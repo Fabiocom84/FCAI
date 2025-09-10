@@ -1,5 +1,7 @@
 // js/inserimento-ore.js (Versione 2.4)
 
+import { supabase } from './supabase-client.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELEZIONE ELEMENTI DEL DOM (invariata) ---
     const openModalBtn = document.getElementById('openInsertHoursModalBtn');
@@ -51,43 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     closeModalBtn.addEventListener('click', closeModal);
 
-    // --- CARICAMENTO DATI INIZIALI ---
-    const mockApiFetch = (endpoint) => { /* ... (invariata) ... */ 
-        return new Promise(resolve => {
-            let data = [];
-            if (endpoint === '/api/operatori') {
-                data = [
-                    { id: 1, nome: 'Mario Rossi' }, { id: 2, nome: 'Luca Bianchi' },
-                    { id: 3, nome: 'Anna Verdi' }, { id: 4, nome: 'Paolo Neri' }
-                ];
-            } else if (endpoint === '/api/etichette') {
-                data = [ { id: 101, nome: 'Standard' }, { id: 102, nome: 'Urgente' }, { id: 103, nome: 'Manutenzione' } ];
-            } else if (endpoint === '/api/descrizioni') {
-                data = [ { id: 201, nome: 'Assemblaggio' }, { id: 202, nome: 'Controllo Qualità' }, { id: 203, nome: 'Imballaggio' } ];
-            }
-            resolve(data);
-        });
-    };
-    async function populateInitialData() { /* ... (invariata) ... */ 
+    async function populateInitialData() {
         try {
-            const [operatori, etichette, descrizioni] = await Promise.all([
-                mockApiFetch('/api/operatori'), mockApiFetch('/api/etichette'), mockApiFetch('/api/descrizioni')
-            ]);
-            populateSelect(operatoreSelect, operatori, 'id', 'nome');
-            populateSelect(etichettaSelect, etichette, 'id', 'nome');
-            populateSelect(descrizioneSelect, descrizioni, 'id', 'nome');
+            // 1. Carica il personale attivo dalla tabella 'personale'
+            const { data: operatori, error: errorOperatori } = await supabase
+                .from('personale')
+                .select('*')
+                .eq('attivo', true); // Seleziona solo il personale 'attivo'
+            if (errorOperatori) throw errorOperatori;
+
+            // 2. Carica le etichette dalla tabella 'etichette'
+            const { data: etichette, error: errorEtichette } = await supabase
+                .from('etichette')
+                .select('*');
+            if (errorEtichette) throw errorEtichette;
+
+            // 3. Carica le descrizioni dalla tabella 'descrizioni_lavoro'
+            const { data: descrizioni, error: errorDescrizioni } = await supabase
+                .from('descrizioni_lavoro')
+                .select('*');
+            if (errorDescrizioni) throw errorDescrizioni;
+
+            // Popola i menu a tendina e la lista con i dati reali
+            populateSelect(operatoreSelect, operatori, 'id_personale', 'nome_cognome');
+            populateSelect(etichettaSelect, etichette, 'id_etichetta', 'nome_etichetta');
+            populateSelect(descrizioneSelect, descrizioni, 'id_descrizione', 'nome_descrizione');
+
             populatePersonnelList(operatori);
-        } catch (error) { console.error("Errore caricamento dati:", error); alert("Impossibile caricare i dati."); }
-    }
-    function populateSelect(selectElement, data, valueKey, textKey) { /* ... (invariata) ... */ 
-        selectElement.innerHTML = '<option value="">Seleziona...</option>';
-        data.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item[valueKey];
-            option.textContent = item[textKey];
-            selectElement.appendChild(option);
-        });
-    }
+
+        } catch (error) {
+            console.error("Errore nel caricamento dei dati da Supabase:", error);
+            alert("Impossibile caricare i dati dal database. Controlla la console per i dettagli.");
+        }
+    }   
 
     /**
      * MODIFICATO: Aggiunto event listener per pre-caricare l'operatore al click.
