@@ -1054,6 +1054,7 @@ h2 {
 .login-container .form-group input[type="email"],
 .login-container .form-group input[type="password"] {
     width: 100%;
+    height: 42px;
     box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza */
 }
 
