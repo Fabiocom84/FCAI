@@ -1,58 +1,50 @@
-// File: js/login.js
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Seleziona il form di login dopo che il DOM è stato caricato
     const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (!loginForm) {
+        console.error('Elemento form di login non trovato.');
+        return;
     }
-});
 
-async function handleLogin(event) {
-    event.preventDefault();
-    const errorMessageDiv = document.getElementById('errorMessage');
-    errorMessageDiv.style.display = 'none'; // Nascondi il messaggio di errore precedente
+    async function handleLogin(event) {
+        event.preventDefault();
+        errorMessage.textContent = '';
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
 
-    // L'URL del backend dovrebbe essere centralizzato in un file di configurazione,
-    // ma per ora lo lasciamo qui per chiarezza.
-    const authUrl = `${window.BACKEND_URL || 'https://segretario-ai-backend-service-980771764885.europe-west1.run.app'}`;
-
-    try {
-        const response = await fetch(\${API_BASE_URL}/api/auth`, {`
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: username, password: password, rememberMe: rememberMe })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || `Errore HTTP: ${response.status}`);
+        if (!email || !password) {
+            errorMessage.textContent = 'Inserire sia email che password.';
+            return;
         }
 
-        if (data.success && data.token) {
-            console.log('Autenticazione riuscita!');
-            // Salva il token in base alla scelta dell'utente
-            if (rememberMe) {
-                localStorage.setItem('authToken', data.token);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Login riuscito, salva i dati della sessione e reindirizza
+                localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+                localStorage.setItem('supabase.auth.user', JSON.stringify(data.user));
+                window.location.href = 'index.html'; // Reindirizza alla pagina principale
             } else {
-                sessionStorage.setItem('authToken', data.token);
+                // Mostra l'errore restituito dal backend (es. "Credenziali non valide")
+                errorMessage.textContent = data.error || 'Si è verificato un errore.';
             }
-            // Reindirizza alla pagina principale
-            window.location.href = 'index.html';
-        } else {
-            throw new Error(data.message || 'Credenziali non valide fornite dal server.');
-        }
 
-    } catch (error) {
-        console.error('Errore durante la comunicazione con il server:', error);
-        errorMessageDiv.textContent = error.message;
-        errorMessageDiv.style.display = 'block';
+        } catch (error) {
+            console.error("Errore durante la comunicazione con il server:", error);
+            errorMessage.textContent = 'Impossibile connettersi al server. Riprova più tardi.';
+        }
     }
-}
+
+    loginForm.addEventListener('submit', handleLogin);
+});
