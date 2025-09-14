@@ -22,7 +22,7 @@ async function handleLogin(event) {
     const authUrl = `${window.BACKEND_URL || 'https://segretario-ai-backend-service-980771764885.europe-west1.run.app'}`;
 
     try {
-        const response = await fetch(authUrl, {
+        const response = await fetch(\${API_BASE_URL}/api/auth`, {`
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
