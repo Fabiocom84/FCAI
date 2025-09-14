@@ -1,5 +1,7 @@
 // js/insert-data-modal.js
 
+import { API_BASE_URL } from './config.js';
+
 // Elementi DOM
 const insertDataModal = document.getElementById('insertDataModal');
 const closeInsertDataModalBtn = insertDataModal?.querySelector('.close-button');

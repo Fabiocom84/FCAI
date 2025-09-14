@@ -1,5 +1,7 @@
 // js/new-order-modal.js
 
+import { API_BASE_URL } from './config.js';
+
 // Elementi DOM
 const newOrderModal = document.getElementById('newOrderModal');
 const closeNewOrderModalBtn = newOrderModal ? newOrderModal.querySelector('.close-button') : null;

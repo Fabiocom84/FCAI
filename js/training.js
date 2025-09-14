@@ -1,5 +1,7 @@
 // File: js/training.js (Versione Finale)
 
+import { API_BASE_URL } from './config.js';
+
 // Variabili globali per tracciare lo stato
 let isTrainingRunning = false;
 let currentProcessId = null;

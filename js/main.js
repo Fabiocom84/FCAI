@@ -1,5 +1,8 @@
 // js/main.js
 
+import { API_BASE_URL } from './config.js';
+import { supabase } from './supabase-client.js';
+
 function getAuthToken() {
     return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 }

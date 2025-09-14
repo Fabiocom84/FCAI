@@ -1,5 +1,8 @@
 // js/script.js
 
+import { API_BASE_URL } from './config.js';
+import { supabase } from './supabase-client.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // Questo è il posto per la logica generale del tuo sito,
     // che non è specifica di un singolo modale.
