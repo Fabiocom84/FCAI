@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');
