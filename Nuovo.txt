@@ -1,0 +1,22 @@
+Accesso supabase
+SUPABASE_URL="https://mqfhsiezsorpdnskcsgw.supabase.co"
+SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZmhzaWV6c29ycGRuc2tjc2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MjY3NTgsImV4cCI6MjA3MzEwMjc1OH0.JImF22KAyhAVDdVTvDWF3nwv2CyQIt8aiT76IghSFqI"
+
+Attivazione ambiente venv backend: source venv/bin/activate
+
+Attivazione api cloud run: gcloud services enable run.googleapis.com
+Mettere in ascolto il backend: python app.py
+
+Deploy codice modificato backend: gcloud run deploy segretario-ai-backend-service --source . --region europe-west1
+gcloud run deploy segretario-ai-backend-service \
+  --source . \
+  --region europe-west1 \
+  --service-account "backend-segretario-ai@segretario-ai-produzione.iam.gserviceaccount.com"
+
+Test backend:
+curl -i -X OPTIONS \
+   -H "Origin: https://fcai-git-sviluppo-backend-fabios-projects-20334498.vercel.app" \
+   -H "Access-Control-Request-Method: GET" \
+   https://segretario-ai-backend-service-460205196659.europe-west1.run.app/api/init-inserimento-ore
+
+Passare ad un nuovo ramo del frontend: git checkout -b sviluppo-backend
