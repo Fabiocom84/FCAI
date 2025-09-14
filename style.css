@@ -1042,6 +1042,21 @@ h2 {
     .chat-controls button img { width: 20px; height: 20px; }
 }
 
+/* ====================================================== */
+/* == REGOLA CORRETTIVA PER INPUT FORM LOGIN           == */
+/* ====================================================== */
+
+/*
+  Questa regola si applica specificamente ai campi email e password
+  all'interno del login e garantisce che si espandano per tutta
+  la larghezza disponibile.
+*/
+.login-container .form-group input[type="email"],
+.login-container .form-group input[type="password"] {
+    width: 100%;
+    box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza */
+}
+
 /* ================================================================ */
 /* == 7. MEDIA QUERIES SPECIFICHE: MODALE INSERIMENTO ORE        == */
 /* ================================================================ */
