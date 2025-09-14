@@ -1055,6 +1055,10 @@ h2 {
 .login-container .form-group input[type="password"] {
     width: 100%;
     height: 42px;
+    border: 1px solid #ccc;        /* Bordo grigio chiaro, solido e di 1px */
+    border-radius: 5px;          /* Angoli leggermente arrotondati (più moderno) */
+    padding: 0 10px;               /* Spaziatura interna per il testo */
+    font-size: 1rem;               /* Dimensione del testo uniforme */
     box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza */
 }
 
