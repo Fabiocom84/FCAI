@@ -1,4 +1,6 @@
-// js/inserimento-ore.js (Versione Corretta)
+// js/inserimento-ore.js (Versione aggiornata per parlare con il Backend)
+
+import { API_BASE_URL } from './config.js'; // Importa l'URL del backend
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELEZIONE ELEMENTI DEL DOM ---
@@ -52,46 +54,49 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModalBtn.addEventListener('click', closeModal);
 
     // --- FUNZIONI DI POPOLAMENTO ---
+    async function populateInitialData() {
+        try {
+            // Chiama la nostra API sul backend che restituisce tutti i dati necessari
+            const response = await fetch(`${API_BASE_URL}/api/init-inserimento-ore`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Errore dal backend: ${response.status}`);
+            }
+
+            const initData = await response.json();
+            
+            // Popola i menu con i dati ricevuti dal backend
+            populateSelect(operatoreSelect, initData.personale, 'id_personale', 'nome_cognome');
+            // Nota: Ho usato 'lavorazioni' e 'id_lavorazione' basandomi sul nostro ultimo app.py
+            populateSelect(lavorazioneSelect, initData.lavorazioni, 'id_lavorazione', 'nome_lavorazione');
+            
+            populatePersonnelList(initData.personale);
+
+        } catch (error) {
+            console.error("Errore nel caricamento dei dati iniziali dal backend:", error);
+            alert(`Impossibile caricare i dati per il modale: ${error.message}`);
+        }
+    }   
+
     function populateSelect(selectElement, data, valueKey, textKey) {
+        if (!selectElement) return;
         selectElement.innerHTML = '<option value="">Seleziona...</option>';
         data.forEach(item => {
             const option = document.createElement('option');
             option.value = item[valueKey];
-            option.textContent = item[textKey];
+            // Per le lavorazioni, potremmo voler mostrare anche il tipo
+            if (item.tipi_lavorazione && item.tipi_lavorazione.nome_tipo) {
+                 option.textContent = `${item.tipi_lavorazione.nome_tipo} - ${item[textKey]}`;
+            } else {
+                 option.textContent = item[textKey];
+            }
             selectElement.appendChild(option);
         });
     }
 
-    async function populateInitialData() {
-        try {
-            // 1. Chiama la nostra nuova API sul backend
-            const response = await fetch(`${API_BASE_URL}/api/init-inserimento-ore`);
-
-            if (!response.ok) {
-                throw new Error(`Errore dal backend: ${response.status} ${response.statusText}`);
-            }
-
-            // 2. Estrai i dati dal JSON di risposta
-            const init_data = await response.json();
-
-            const operatori = init_data.personale;
-            const etichette = init_data.etichette;
-            const descrizioni = init_data.descrizioni;
-
-            // 3. Popola i menu a tendina e la lista (questo codice non cambia)
-            populateSelect(operatoreSelect, operatori, 'id_personale', 'nome_cognome');
-            populateSelect(etichettaSelect, etichette, 'id_etichetta', 'nome_etichetta');
-            populateSelect(descrizioneSelect, descrizioni, 'id_descrizione', 'nome_descrizione');
-
-            populatePersonnelList(operatori);
-
-        } catch (error) {
-            console.error("Errore nel caricamento dei dati iniziali dal backend:", error);
-            alert("Impossibile caricare i dati iniziali. Controlla la console per i dettagli.");
-        }
-    }
-
     function populatePersonnelList(operatori) {
+        // ... (questa funzione rimane la stessa)
         personnelList.innerHTML = '';
         operatori.forEach(op => {
             const li = document.createElement('li');
