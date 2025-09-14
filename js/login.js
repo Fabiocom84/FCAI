@@ -34,8 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 // Login riuscito, salva i dati della sessione e reindirizza
-                localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-                localStorage.setItem('supabase.auth.user', JSON.stringify(data.user));
+                // NOTA: Usiamo 'authToken' per coerenza con main.js
+                // e salviamo l'intero oggetto sessione che contiene il token.
+                localStorage.setItem('authToken', JSON.stringify(data.session)); 
                 window.location.href = 'index.html'; // Reindirizza alla pagina principale
             } else {
                 // Mostra l'errore restituito dal backend (es. "Credenziali non valide")
