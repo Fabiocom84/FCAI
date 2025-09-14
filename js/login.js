@@ -19,7 +19,7 @@ async function handleLogin(event) {
 
     // L'URL del backend dovrebbe essere centralizzato in un file di configurazione,
     // ma per ora lo lasciamo qui per chiarezza.
-    const authUrl = `${window.BACKEND_URL || 'https://fcai-tau.vercel.app'}/api/auth`;
+    const authUrl = `${window.BACKEND_URL || 'https://segretario-ai-backend-service-980771764885.europe-west1.run.app'}`;
 
     try {
         const response = await fetch(authUrl, {
