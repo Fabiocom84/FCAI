@@ -192,8 +192,7 @@ function closeTrainingModal() {
 //---Caricamento latest entries
 async function loadLatestEntries() {
     try {
-        const response = await apiFetch(`${window.BACKEND_URL}/api/latest-entries`);
-
+        const response = await apiFetch(`${API_BASE_URL}/api/latest-entries`);
         if (!response.ok) {
             throw new Error(`Errore HTTP! Stato: ${response.status}`);
         }
