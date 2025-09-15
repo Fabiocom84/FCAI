@@ -37,6 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
             filters: ['search'],
             actions: ['addRow']
         },
+        'clienti': {
+            apiEndpoint: '/api/clienti',
+            columns: [
+                // Corrisponde alla colonna 'ragione_sociale' in Supabase
+                { key: 'ragione_sociale', label: 'Ragione Sociale', editable: true },
+                // Corrisponde alla colonna 'codice_cliente' in Supabase
+                { key: 'codice_cliente', label: 'Codice Cliente', editable: true, type: 'text' } // Usiamo 'text' ma possiamo aggiungere validazione numerica se serve
+            ],
+            filters: ['search'],
+            actions: ['addRow']
+        },
         // Aggiungere qui le configurazioni per 'tipologie_lavorazioni', 'stati_registrazione', 'commesse'
         // ...
     };
