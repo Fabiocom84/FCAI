@@ -1,8 +1,9 @@
 // js/gestione.js
 
+import { API_BASE_URL } from './config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_BASE_URL = 'http://127.0.0.1:8080';
     async function apiFetch(endpoint, options = {}) {
         const url = `${API_BASE_URL}${endpoint}`;
         
