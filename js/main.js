@@ -54,11 +54,6 @@ let newOrderModalInstance;
 let trainingModalInstance;
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (!getAuthToken()) {
-        console.log("Nessun token trovato, reindirizzamento alla pagina di login.");
-        window.location.href = 'login.html';
-        return; // Interrompe l'esecuzione per evitare errori
-    }
     initializeApp();});
 
 function initializeApp() {

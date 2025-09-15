@@ -8,6 +8,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+    <script>
+        const userProfile = localStorage.getItem('currentUserProfile');
+        const authToken = localStorage.getItem('authToken');
+
+        // Se uno dei due manca, reindirizza subito al login
+        if (!userProfile || !authToken) {
+            // Usiamo replace() così l'utente non può tornare indietro con il tasto "back"
+            window.location.replace('login.html');
+        }
+    </script>
+    
 </head>
 
 <body>
@@ -478,8 +490,8 @@
 
     <script type="module" src="js/supabase-client.js"></script>
     <script type="module" src="js/config.js"></script>
-    <script type="module" src="js/main.js"></script>
     <script type="module" src="js/legend.js"></script>
+    <script type="module" src="js/main.js"></script>    
     <script type="module" src="js/chat-modal.js"></script>
     <script type="module" src="js/new-order-modal.js"></script>
     <script type="module" src="js/insert-data-modal.js"></script>

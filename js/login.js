@@ -33,12 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                // Login riuscito, salva i dati della sessione e reindirizza
-                // NOTA: Usiamo 'authToken' per coerenza con main.js
-                // e salviamo l'intero oggetto sessione che contiene il token.
-                localStorage.setItem('authToken', JSON.stringify(data.session)); 
-                window.location.href = 'index.html'; // Reindirizza alla pagina principale
-            } else {
+                // Login riuscito, salva TUTTI i dati ricevuti
+                localStorage.setItem('authToken', JSON.stringify(data.session));
+                localStorage.setItem('currentUserProfile', JSON.stringify(data.user_profile));
+                window.location.href = 'index.html'; 
+            }  else {
                 // Mostra l'errore restituito dal backend (es. "Credenziali non valide")
                 errorMessage.textContent = data.error || 'Si è verificato un errore.';
             }
