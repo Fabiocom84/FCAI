@@ -1,6 +1,42 @@
 // js/gestione.js
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    const API_BASE_URL = 'http://127.0.0.1:8080';
+    async function apiFetch(endpoint, options = {}) {
+        const url = `${API_BASE_URL}${endpoint}`;
+        
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                // 'Authorization': `Bearer ${localStorage.getItem('user-token')}`
+            }
+        };
+
+        const mergedOptions = { ...defaultOptions, ...options };
+        mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
+
+        if (mergedOptions.body) {
+            mergedOptions.body = JSON.stringify(mergedOptions.body);
+        }
+
+        try {
+            const response = await fetch(url, mergedOptions);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Errore HTTP: ${response.status}`);
+            }
+            if (response.status === 204) {
+                 return {};
+            }
+            return await response.json();
+
+        } catch (error) {
+            console.error(`Errore nella chiamata API a ${endpoint}:`, error);
+            throw error; 
+        }
+    }
+
     // === SELEZIONE ELEMENTI DOM ===
     const viewSelector = document.getElementById('tableViewSelector');
     const filterArea = document.getElementById('filterArea');
