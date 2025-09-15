@@ -1,4 +1,4 @@
-class Legend {
+export default class Legend {
     constructor() {
         this.legends = {};
         this.attachEventListeners();

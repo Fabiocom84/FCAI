@@ -2,6 +2,7 @@
 
 import { API_BASE_URL } from './config.js';
 import { supabase } from './supabase-client.js';
+import Legend from './legend.js';
 
 function getAuthToken() {
     return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
