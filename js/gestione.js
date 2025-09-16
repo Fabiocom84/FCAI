@@ -176,18 +176,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const config = viewConfig[view];
         if (!config) return;
 
-        gridWrapper.innerHTML = ''; // Pulisce la griglia
+        gridWrapper.innerHTML = ''; 
         if(placeholderText) placeholderText.style.display = 'none';
         loader.style.display = 'block';
 
-        // === INIZIO MODIFICA ===
-        // Costruisce l'URL con i parametri di filtro
         const params = new URLSearchParams();
-    
-        // Logica per leggere i valori dai filtri e aggiungerli a 'params'
+
         const startDate = document.getElementById('filter-start-date')?.value;
         if (startDate) params.append('start_date', startDate);
-    
+
         const endDate = document.getElementById('filter-end-date')?.value;
         if (endDate) params.append('end_date', endDate);
 
@@ -197,17 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const commessa = document.getElementById('filter-commessa')?.value;
         if (commessa) params.append('commessa', commessa);
 
-        // Aggiungiamo la logica per il filtro di ricerca
         const searchTerm = document.getElementById('filter-search-term')?.value;
         if (searchTerm) {
-           params.append('search', searchTerm);
+            params.append('search', searchTerm);
         }
-        // === FINE MODIFICA ===
 
-        const fullUrl = `${API_BASE_URL}${config.apiEndpoint}?${params.toString()}`;
+        // --- MODIFICA QUI ---
+        // Non aggiungiamo più API_BASE_URL qui. Passiamo solo l'endpoint e i parametri.
+        const endpointWithParams = `${config.apiEndpoint}?${params.toString()}`;
 
         try {
-            const data = await apiFetch(fullUrl); // apiFetch già gestisce il .json()
+            // Ora apiFetch riceverà solo "/api/clienti?search=..." e costruirà l'URL corretto
+            const data = await apiFetch(endpointWithParams);
             renderTable(data, config.columns);
 
         } catch (error) {
