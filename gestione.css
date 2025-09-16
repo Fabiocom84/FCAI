@@ -57,7 +57,7 @@ body.agile-view-body {
 /* --- FINE BARRA DEGLI STRUMENTI --- */
 
 
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI --- */
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione corretta) --- */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -70,23 +70,23 @@ body.agile-view-body {
     font-weight: 600;
 }
 
-/* Stile per input e select */
+/* Stile per input e select per avere altezza uniforme */
 .filter-container input[type="text"],
 .filter-container input[type="date"],
 .filter-container select,
 .styled-select {
-    padding: 6px 10px;
+    padding: 0 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
-    height: 34px; /* Altezza fissa per allineamento */
+    height: 36px; /* Altezza fissa */
     box-sizing: border-box;
 }
 
-/* Stile base per tutti i pulsanti */
+/* Stile base per tutti i pulsanti per avere altezza uniforme */
 .button {
     padding: 0 15px;
-    height: 34px; /* Altezza fissa per allineamento */
+    height: 36px; /* Altezza fissa (stessa degli input) */
     border: 1px solid #b0b0b0;
     border-radius: 4px;
     font-size: 0.9em;
@@ -96,9 +96,10 @@ body.agile-view-body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background-color: #f0f0f0; /* Grigio chiaro di default */
+    background-color: #f0f0f0;
     color: #333;
     transition: background-color 0.2s, box-shadow 0.2s;
+    white-space: nowrap; /* Impedisce al testo di andare a capo */
 }
 
 .button:hover {
@@ -111,14 +112,26 @@ body.agile-view-body {
     width: 16px;
 }
 
+/* Stile specifico per il pulsante "Carica Dati" (con icona) */
+#loadDataBtn {
+    padding: 0 12px; /* Leggermente meno padding laterale per l'icona */
+    background-color: #007bff; /* Blu più deciso */
+    border-color: #0069d9;
+    color: white;
+}
+#loadDataBtn:hover {
+    background-color: #0069d9;
+}
+
+
 /* Pulsante primario (es. Aggiungi) */
 .action-bar .button.save-button {
-    background-color: #27ae60; /* Verde */
-    border-color: #229954;
+    background-color: #28a745; /* Verde standard */
+    border-color: #218838;
     color: white;
 }
 .action-bar .button.save-button:hover {
-    background-color: #229954;
+    background-color: #218838;
 }
 /* --- FINE STILE UNIFORME --- */
 
