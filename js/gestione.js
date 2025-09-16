@@ -177,24 +177,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!config) return;
 
         gridWrapper.innerHTML = ''; // Pulisce la griglia
+        if(placeholderText) placeholderText.style.display = 'none';
         loader.style.display = 'block';
-        placeholderText.style.display = 'none';
 
+        // === INIZIO MODIFICA ===
         // Costruisce l'URL con i parametri di filtro
         const params = new URLSearchParams();
-        // (Logica per leggere i valori dai filtri e aggiungerli a 'params')
-        // Esempio:
+    
+        // Logica per leggere i valori dai filtri e aggiungerli a 'params'
         const startDate = document.getElementById('filter-start-date')?.value;
         if (startDate) params.append('start_date', startDate);
-        // ... e così via per gli altri filtri ...
+    
+        const endDate = document.getElementById('filter-end-date')?.value;
+        if (endDate) params.append('end_date', endDate);
 
-        const fullUrl = `${config.apiEndpoint}?${params.toString()}`;
+        const operatore = document.getElementById('filter-operatore')?.value;
+        if (operatore) params.append('operatore', operatore);
+
+        const commessa = document.getElementById('filter-commessa')?.value;
+        if (commessa) params.append('commessa', commessa);
+
+        // Aggiungiamo la logica per il filtro di ricerca
+        const searchTerm = document.getElementById('filter-search-term')?.value;
+        if (searchTerm) {
+           params.append('search', searchTerm);
+        }
+        // === FINE MODIFICA ===
+
+        const fullUrl = `${API_BASE_URL}${config.apiEndpoint}?${params.toString()}`;
 
         try {
-            const response = await apiFetch(fullUrl);
-            if (!response.ok) throw new Error(`Errore API: ${response.statusText}`);
-            
-            const data = await response.json();
+            const data = await apiFetch(fullUrl); // apiFetch già gestisce il .json()
             renderTable(data, config.columns);
 
         } catch (error) {
