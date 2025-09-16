@@ -59,3 +59,97 @@ body.agile-view-body {
     padding: 25px;
     min-height: 60vh; /* Altezza minima per la tabella */
 }
+
+/* Migliora l'allineamento e lo spazio nel contenitore dei filtri */
+.filter-container {
+    display: flex;
+    align-items: flex-end; /* Allinea gli elementi in basso */
+    flex-wrap: wrap; /* Permette di andare a capo su schermi piccoli */
+    gap: 15px; /* Spazio tra gli elementi */
+}
+
+/* Stile base per tutti i gruppi di form (etichetta + input) */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 0.85em;
+    color: #555;
+    font-weight: 600;
+}
+
+/* Stile per tutti gli input di testo e select */
+.filter-container input[type="text"],
+.filter-container input[type="date"],
+.filter-container select,
+.styled-select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+    background-color: #fff;
+    min-width: 200px; /* Larghezza minima */
+}
+
+/* Stile generale per i pulsanti */
+.button {
+    padding: 8px 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.button img {
+    height: 16px;
+    width: 16px;
+}
+
+/* Stile specifico per il pulsante "Carica Dati" */
+#loadDataBtn {
+    background-color: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+#loadDataBtn:hover {
+    background-color: #2980b9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Stile specifico per il pulsante "Aggiungi" nella action-bar */
+.action-bar .button.save-button {
+    background-color: #2ecc71;
+    color: white;
+    border-color: #27ae60;
+    font-size: 1em; /* Leggermente più grande */
+    padding: 10px 20px;
+}
+
+.action-bar .button.save-button:hover {
+    background-color: #27ae60;
+}
+
+/* Stile per la tabella (aggiunto per completezza) */
+.agile-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.agile-table th, .agile-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+.agile-table th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
