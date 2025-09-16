@@ -210,30 +210,28 @@ async function loadLatestEntries() {
 }
 
 function updateLatestEntries(data) {
-    const entries = data.latest_entries; 
     const latestEntriesList = document.querySelector('.latest-entries ul');
+    
+    // Se l'elemento non esiste in questa pagina, esci subito dalla funzione.
+    if (!latestEntriesList) {
+        return; 
+    }
 
-    if (latestEntriesList) {
-        latestEntriesList.innerHTML = '';
+    const entries = data.latest_entries; 
+    latestEntriesList.innerHTML = '';
 
-        if (entries && entries.length > 0) {
-            entries.forEach(entry => {
-                const listItem = document.createElement('li');
-                listItem.style.marginBottom = '15px';
-                listItem.style.padding = '10px';
-                listItem.style.borderBottom = '1px solid #eee';
-
-                // Usa innerHTML per interpretare i tag HTML
-                listItem.innerHTML = entry; 
-
-                latestEntriesList.appendChild(listItem);
-            });
-        } else {
+    if (entries && entries.length > 0) {
+        entries.forEach(entry => {
             const listItem = document.createElement('li');
-            listItem.textContent = 'Nessun inserimento recente.';
+            listItem.style.marginBottom = '15px';
+            listItem.style.padding = '10px';
+            listItem.style.borderBottom = '1px solid #eee';
+            listItem.innerHTML = entry; 
             latestEntriesList.appendChild(listItem);
-        }
+        });
     } else {
-        console.error('Elemento .latest-entries ul non trovato.');
+        const listItem = document.createElement('li');
+        listItem.textContent = 'Nessun inserimento recente.';
+        latestEntriesList.appendChild(listItem);
     }
 }
