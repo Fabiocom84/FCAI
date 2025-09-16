@@ -103,12 +103,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderFilters(config.filters);
         renderActions(config.actions, selectedView);
-        
-        // Aggiungi event listener al pulsante 'Carica Dati'
+    
         const loadDataBtn = document.getElementById('loadDataBtn');
         if(loadDataBtn) {
-            loadDataBtn.addEventListener('click', () => loadAndRenderData(selectedView));
+            // Il pulsante ora carica i dati CON i filtri
+            loadDataBtn.addEventListener('click', () => loadAndRenderData(selectedView, false));
         }
+
+        // NUOVA LOGICA: Carica i dati di default all'inizializzazione della vista
+        loadAndRenderData(selectedView, true);
     }
 
     // === FUNZIONI DI RENDERING DINAMICO ===
@@ -172,42 +175,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // === FUNZIONI DI CARICAMENTO E VISUALIZZAZIONE DATI ===
-    async function loadAndRenderData(view) {
+    async function loadAndRenderData(view, isInitialLoad = false) {
         const config = viewConfig[view];
         if (!config) return;
 
-        gridWrapper.innerHTML = ''; 
+        gridWrapper.innerHTML = '';
         if(placeholderText) placeholderText.style.display = 'none';
         loader.style.display = 'block';
 
         const params = new URLSearchParams();
 
-        const startDate = document.getElementById('filter-start-date')?.value;
-        if (startDate) params.append('start_date', startDate);
-
-        const endDate = document.getElementById('filter-end-date')?.value;
-        if (endDate) params.append('end_date', endDate);
-
-        const operatore = document.getElementById('filter-operatore')?.value;
-        if (operatore) params.append('operatore', operatore);
-
-        const commessa = document.getElementById('filter-commessa')?.value;
-        if (commessa) params.append('commessa', commessa);
-
-        const searchTerm = document.getElementById('filter-search-term')?.value;
-        if (searchTerm) {
-            params.append('search', searchTerm);
+        if (isInitialLoad) {
+            // Per il caricamento iniziale, impostiamo un limite e un ordinamento di default
+            params.append('limit', '50');
+            params.append('sortBy', config.columns[0].key); // Ordina per la prima colonna
+            params.append('sortOrder', 'asc'); // Ordine ascendente
+        } else {
+            // Per il caricamento manuale, leggiamo i filtri
+            const searchTerm = document.getElementById('filter-search-term')?.value;
+            if (searchTerm) {
+                params.append('search', searchTerm);
+            }
+            // ... (qui in futuro aggiungeremo gli altri filtri come la data) ...
         }
 
-        // --- MODIFICA QUI ---
-        // Non aggiungiamo più API_BASE_URL qui. Passiamo solo l'endpoint e i parametri.
         const endpointWithParams = `${config.apiEndpoint}?${params.toString()}`;
 
         try {
-            // Ora apiFetch riceverà solo "/api/clienti?search=..." e costruirà l'URL corretto
             const data = await apiFetch(endpointWithParams);
             renderTable(data, config.columns);
-
         } catch (error) {
             console.error(`Errore nel caricamento dati per ${view}:`, error);
             gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;

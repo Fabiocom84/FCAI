@@ -1,9 +1,9 @@
-/* css/gestione.css */
+/* css/gestione.css - NUOVO STILE COMPLETO */
 
 body.agile-view-body {
     background-color: #f4f7f9;
-    display: block; /* Sovrascrive il flex del body principale */
     padding: 20px;
+    font-family: Arial, sans-serif;
 }
 
 .agile-main-container {
@@ -13,6 +13,7 @@ body.agile-view-body {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    border: 1px solid #dcdcdc;
 }
 
 .agile-header {
@@ -20,92 +21,89 @@ body.agile-view-body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 25px;
-    background-color: #2c3e50;
+    background-color: #4a5568; /* Grigio scuro stile corporate */
     color: white;
 }
 
 .agile-header h1 {
     margin: 0;
-    font-size: 1.5em;
-}
-
-.view-selector-container label {
-    margin-right: 10px;
-    font-size: 0.9em;
-}
-
-.styled-select { /* Stile base per il selettore */
-    padding: 8px 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 1em;
-}
-
-.filter-container {
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    padding: 20px 25px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #fbfcfe;
-}
-
-.action-bar {
-    padding: 10px 25px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.grid-container {
-    padding: 25px;
-    min-height: 60vh; /* Altezza minima per la tabella */
-}
-
-/* Migliora l'allineamento e lo spazio nel contenitore dei filtri */
-.filter-container {
-    display: flex;
-    align-items: flex-end; /* Allinea gli elementi in basso */
-    flex-wrap: wrap; /* Permette di andare a capo su schermi piccoli */
-    gap: 15px; /* Spazio tra gli elementi */
-}
-
-/* Stile base per tutti i gruppi di form (etichetta + input) */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.form-group label {
-    font-size: 0.85em;
-    color: #555;
+    font-size: 1.4em;
     font-weight: 600;
 }
 
-/* Stile per tutti gli input di testo e select */
+/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" --- */
+.agile-toolbar {
+    display: flex;
+    justify-content: space-between; /* Allinea filtri a sx e azioni a dx */
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #dcdcdc;
+    background-color: #f7f9fc;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+/* --- FINE BARRA DEGLI STRUMENTI --- */
+
+
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-size: 0.8em;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Stile per input e select */
 .filter-container input[type="text"],
 .filter-container input[type="date"],
 .filter-container select,
 .styled-select {
-    padding: 8px 10px;
+    padding: 6px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
-    background-color: #fff;
-    min-width: 200px; /* Larghezza minima */
+    height: 34px; /* Altezza fissa per allineamento */
+    box-sizing: border-box;
 }
 
-/* Stile generale per i pulsanti */
+/* Stile base per tutti i pulsanti */
 .button {
-    padding: 8px 15px;
-    border: 1px solid transparent;
+    padding: 0 15px;
+    height: 34px; /* Altezza fissa per allineamento */
+    border: 1px solid #b0b0b0;
     border-radius: 4px;
     font-size: 0.9em;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    background-color: #f0f0f0; /* Grigio chiaro di default */
+    color: #333;
     transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.button:hover {
+    background-color: #e0e0e0;
+    border-color: #999;
 }
 
 .button img {
@@ -113,43 +111,72 @@ body.agile-view-body {
     width: 16px;
 }
 
-/* Stile specifico per il pulsante "Carica Dati" */
-#loadDataBtn {
-    background-color: #3498db;
-    color: white;
-    border-color: #2980b9;
-}
-
-#loadDataBtn:hover {
-    background-color: #2980b9;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Stile specifico per il pulsante "Aggiungi" nella action-bar */
+/* Pulsante primario (es. Aggiungi) */
 .action-bar .button.save-button {
-    background-color: #2ecc71;
+    background-color: #27ae60; /* Verde */
+    border-color: #229954;
     color: white;
-    border-color: #27ae60;
-    font-size: 1em; /* Leggermente più grande */
-    padding: 10px 20px;
 }
-
 .action-bar .button.save-button:hover {
-    background-color: #27ae60;
+    background-color: #229954;
+}
+/* --- FINE STILE UNIFORME --- */
+
+
+/* --- STRUTTURA TABELLA STILE "EXCEL" --- */
+.grid-container {
+    padding: 0; /* Rimuoviamo il padding per far toccare la tabella ai bordi */
+    min-height: 60vh;
+    overflow-x: auto; /* Permette lo scroll orizzontale se la tabella è larga */
 }
 
-/* Stile per la tabella (aggiunto per completezza) */
 .agile-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
 }
+
 .agile-table th, .agile-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
+    border-bottom: 1px solid #dcdcdc;
+    border-right: 1px solid #dcdcdc;
+    padding: 10px 12px;
     text-align: left;
+    font-size: 0.9em;
 }
-.agile-table th {
-    background-color: #f2f2f2;
+
+.agile-table th:first-child, .agile-table td:first-child {
+    border-left: none;
+}
+.agile-table th:last-child, .agile-table td:last-child {
+    border-right: none;
+}
+
+/* Intestazione della tabella */
+.agile-table thead th {
+    background-color: #e9ecef;
     font-weight: 600;
+    color: #495057;
+    position: sticky; /* Intestazione fissa allo scroll verticale */
+    top: 0;
+}
+
+/* Colori alternati per le righe (effetto zebra) */
+.agile-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Evidenzia la riga al passaggio del mouse */
+.agile-table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+/* --- FINE STILE TABELLA --- */
+
+/* Loader e placeholder */
+.loader {
+    padding: 40px;
+    text-align: center;
+}
+.placeholder-text, .error-text {
+    padding: 40px;
+    text-align: center;
+    color: #666;
 }
