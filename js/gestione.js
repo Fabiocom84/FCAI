@@ -92,66 +92,51 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectDataCache = {}; // Cache per i dati dei menu a tendina
 
     // === FUNZIONE DI INIZIALIZZAZIONE ===
+    
     function initializeView() {
         const selectedView = viewSelector.value;
-        const config = viewConfig[selectedView];
-
-        if (!config) {
-            console.error(`Configurazione non trovata per la vista: ${selectedView}`);
-            return;
-        }
-
-        renderFilters(config.filters);
-        renderActions(config.actions, selectedView);
     
-        const loadDataBtn = document.getElementById('loadDataBtn');
-        if(loadDataBtn) {
-            // Il pulsante ora carica i dati CON i filtri
-            loadDataBtn.addEventListener('click', () => loadAndRenderData(selectedView, false));
+        // Chiama la nuova funzione unificata per la toolbar
+        renderToolbar(selectedView);
+    
+        // Collega l'evento al nuovo pulsante 'Cerca'
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => loadAndRenderData(selectedView, false));
         }
 
-        // NUOVA LOGICA: Carica i dati di default all'inizializzazione della vista
+        // Carica i dati di default all'inizializzazione
         loadAndRenderData(selectedView, true);
     }
 
     // === FUNZIONI DI RENDERING DINAMICO ===
-    async function renderFilters(filters) {
-        filterArea.innerHTML = ''; // Pulisce i filtri precedenti
-        let filterHtml = '';
 
-        if (filters.includes('dateRange')) {
-            filterHtml += `
-                <div class="form-group">
-                    <label>Data Inizio:</label>
-                    <input type="date" id="filter-start-date">
-                </div>
-                <div class="form-group">
-                    <label>Data Fine:</label>
-                    <input type="date" id="filter-end-date">
-                </div>`;
-        }
-        if (filters.includes('operatore')) {
-             if (!selectDataCache.operatori) {
-                const res = await apiFetch('/api/operatori');
-                selectDataCache.operatori = await res.json();
-             }
-            filterHtml += createSelectHtml('operatore', 'Operatore', selectDataCache.operatori, 'operatore_id', 'nome', 'cognome');
-        }
-        if (filters.includes('commessa')) {
-             if (!selectDataCache.commesse) {
-                const res = await apiFetch('/api/commesse');
-                selectDataCache.commesse = await res.json();
-             }
-            filterHtml += createSelectHtml('commessa', 'Commessa', selectDataCache.commesse, 'commessa_id', 'nome_commessa');
-        }
-        if (filters.includes('search')) {
-            filterHtml += `<div class="form-group"><label>Cerca:</label><input type="text" id="filter-search-term" placeholder="Scrivi per cercare..."></div>`;
-        }
+    function renderToolbar(view) {
+        const config = viewConfig[view];
+        if (!config) return;
 
-        filterHtml += `<button class="button" id="loadDataBtn"><img src="img/search.png" alt="Cerca"><span>Carica Dati</span></button>`;
-        filterArea.innerHTML = filterHtml;
+        // Svuotiamo entrambe le vecchie aree (ora sono dentro .agile-toolbar)
+        filterArea.innerHTML = '';
+        actionBar.innerHTML = '';
+
+        // Creiamo il gruppo di ricerca
+        let searchGroupHtml = `
+            <div class="form-group">
+                <label>Cerca in ${view}:</label>
+                <input type="text" id="filter-search-term" placeholder="Scrivi e premi Cerca...">
+            </div>
+            <button class="button" id="searchBtn">Cerca</button>
+        `;
+        filterArea.innerHTML = searchGroupHtml;
+
+        // Creiamo i pulsanti di azione
+        let actionsHtml = `
+            <button class="button save-button" id="addRowBtn">+ Aggiungi</button>
+            <button class="button" id="editRowBtn" disabled>Modifica</button>
+        `;
+        actionBar.innerHTML = actionsHtml;
     }
-    
+
     function createSelectHtml(id, label, data, valueKey, textKey, textKey2 = '') {
         let options = '<option value="">Tutti</option>';
         data.forEach(item => {
@@ -160,21 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<div class="form-group"><label>${label}:</label><select id="filter-${id}">${options}</select></div>`;
     }
 
-    function renderActions(actions, view) {
-        actionBar.innerHTML = ''; // Pulisce le azioni precedenti
-        let actionsHtml = '';
-        if (actions.includes('updateStatus')) {
-            actionsHtml += `<button class="button" id="updateStatusBtn">Aggiorna Stato Selezionati</button>`;
-        }
-        if (actions.includes('addRow')) {
-            const label = view === 'operatori' ? '+ Aggiungi Operatore' : '+ Aggiungi';
-            actionsHtml += `<button class="button save-button" id="addRowBtn">${label}</button>`;
-        }
-        actionBar.innerHTML = actionsHtml;
-    }
-
-
     // === FUNZIONI DI CARICAMENTO E VISUALIZZAZIONE DATI ===
+    
+    function handleRowSelection() {
+        const editBtn = document.getElementById('editRowBtn');
+        const radioButtons = document.querySelectorAll('input[name="rowSelector"]');
+    
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (editBtn) {
+                    // Abilita il pulsante 'Modifica' se un radio è selezionato
+                    editBtn.disabled = false;
+                }
+            });
+        });
+    }
+    
     async function loadAndRenderData(view, isInitialLoad = false) {
         const config = viewConfig[view];
         if (!config) return;
@@ -214,16 +200,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTable(data, columns) {
         if (!data || data.length === 0) {
-            gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato per i filtri selezionati.</div>`;
+            gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
             return;
         }
 
         const table = document.createElement('table');
-        table.className = 'agile-table'; // Aggiungi una classe per lo stile
+        table.className = 'agile-table';
 
         // Crea l'intestazione
         const thead = table.createTHead();
         const headerRow = thead.insertRow();
+    
+        // Aggiungi le nuove intestazioni fisse
+        const thNum = document.createElement('th');
+        thNum.textContent = '#';
+        headerRow.appendChild(thNum);
+
+        const thSelect = document.createElement('th');
+        thSelect.textContent = 'Seleziona';
+        headerRow.appendChild(thSelect);
+
         columns.forEach(col => {
             const th = document.createElement('th');
             th.textContent = col.label;
@@ -232,24 +228,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Crea il corpo della tabella
         const tbody = table.createTBody();
-        data.forEach(rowData => {
+        data.forEach((rowData, index) => {
             const row = tbody.insertRow();
+        
+            // Aggiungi le nuove celle fisse
+            // Cella per il numero di riga
+            const cellNum = row.insertCell();
+            cellNum.textContent = index + 1;
+
+            // Cella per il radio button di selezione
+            const cellSelect = row.insertCell();
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'rowSelector'; // Lo stesso 'name' per tutti li rende un gruppo unico
+            radio.value = rowData.id_cliente; // O un altro ID univoco della riga
+            cellSelect.appendChild(radio);
+
             columns.forEach(col => {
                 const cell = row.insertCell();
                 cell.textContent = rowData[col.key] || '';
                 if (col.editable) {
                     cell.classList.add('editable');
-                    // Aggiungere qui la logica per la modifica inline
                 }
             });
         });
 
+        gridWrapper.innerHTML = ''; // Pulisce il wrapper prima di aggiungere la nuova tabella
         gridWrapper.appendChild(table);
+
+        // Collega la logica di selezione alla tabella appena creata
+        handleRowSelection();
     }
-
-    // === EVENT LISTENERS ===
-    viewSelector.addEventListener('change', initializeView);
-
-    // === INIZIALIZZAZIONE AL CARICAMENTO DELLA PAGINA ===
-    initializeView(); 
 });
