@@ -209,61 +209,120 @@ document.addEventListener('DOMContentLoaded', () => {
             gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
             return;
         }
-
         const table = document.createElement('table');
         table.className = 'agile-table';
-
-        // Crea l'intestazione
         const thead = table.createTHead();
         const headerRow = thead.insertRow();
     
-        // Aggiungi le nuove intestazioni fisse
-        const thNum = document.createElement('th');
-        thNum.textContent = '#';
-        headerRow.appendChild(thNum);
-
-        const thSelect = document.createElement('th');
-        thSelect.textContent = 'Seleziona';
-        headerRow.appendChild(thSelect);
-
-        columns.forEach(col => {
-            const th = document.createElement('th');
-            th.textContent = col.label;
+        // Intestazioni fisse
+        ['#', 'Seleziona'].forEach(text => {
+             th = document.createElement('th');
+            th.textContent = text;
             headerRow.appendChild(th);
         });
-
-        // Crea il corpo della tabella
+    
+        // Intestazioni dinamiche con filtri
+        columns.forEach(col => {
+            const th = document.createElement('th');
+            // Usiamo un contenitore per il testo e l'icona
+            const headerContent = document.createElement('div');
+            headerContent.className = 'column-header-content';
+        
+            const label = document.createElement('span');
+            label.textContent = col.label;
+        
+            const filterIcon = document.createElement('span');
+            filterIcon.className = 'filter-icon';
+            filterIcon.textContent = '🔽'; // Icona del filtro
+            filterIcon.dataset.columnKey = col.key;
+        
+            headerContent.appendChild(label);
+            headerContent.appendChild(filterIcon);
+            th.appendChild(headerContent);
+            headerRow.appendChild(th);
+        });
+    
+        // Corpo della tabella (invariato)
         const tbody = table.createTBody();
         data.forEach((rowData, index) => {
             const row = tbody.insertRow();
-        
-            // Aggiungi le nuove celle fisse
-            // Cella per il numero di riga
             const cellNum = row.insertCell();
             cellNum.textContent = index + 1;
-
-            // Cella per il radio button di selezione
             const cellSelect = row.insertCell();
             const radio = document.createElement('input');
             radio.type = 'radio';
-            radio.name = 'rowSelector'; // Lo stesso 'name' per tutti li rende un gruppo unico
-            radio.value = rowData.id_cliente; // O un altro ID univoco della riga
+            radio.name = 'rowSelector';
+            radio.value = rowData.id_cliente; 
             cellSelect.appendChild(radio);
-
             columns.forEach(col => {
                 const cell = row.insertCell();
                 cell.textContent = rowData[col.key] || '';
-                if (col.editable) {
-                    cell.classList.add('editable');
-                }
             });
         });
 
-        gridWrapper.innerHTML = ''; // Pulisce il wrapper prima di aggiungere la nuova tabella
+        gridWrapper.innerHTML = '';
         gridWrapper.appendChild(table);
-
-        // Collega la logica di selezione alla tabella appena creata
         handleRowSelection();
+    
+        // Aggiungiamo gli eventi ai nuovi pulsanti filtro
+        attachFilterEventListeners(data);
+    }
+
+    // AGGIUNGI QUESTA NUOVA FUNZIONE in gestione.js
+    function attachFilterEventListeners(tableData) {
+            document.querySelectorAll('.filter-icon').forEach(icon => {
+            icon.addEventListener('click', event => {
+                event.stopPropagation();
+                const columnKey = event.currentTarget.dataset.columnKey;
+                const uniqueValues = [...new Set(tableData.map(item => item[columnKey]))].sort();
+            
+                // Chiudi altri popup aperti
+                document.querySelectorAll('.filter-popup').forEach(p => p.remove());
+
+                const popup = document.createElement('div');
+                popup.className = 'filter-popup';
+            
+                let listItems = uniqueValues.map(value => `
+                    <li>
+                        <label>
+                            <input type="checkbox" class="filter-checkbox" value="${value}">
+                            ${value}
+                        </label>
+                    </li>
+                `).join('');
+
+                popup.innerHTML = `
+                    <ul class="filter-popup-list">${listItems}</ul>
+                    <div class="filter-popup-buttons">
+                        <button class="button" id="apply-filter">Applica</button>
+                        <button class="button" id="clear-filter">Pulisci</button>
+                    </div>
+                `;
+            
+                document.body.appendChild(popup);
+                const rect = icon.getBoundingClientRect();
+                popup.style.top = `${rect.bottom + window.scrollY}px`;
+                popup.style.left = `${rect.left + window.scrollX}px`;
+
+                // Evento per il pulsante APPLICA (da implementare la logica di ricarica)
+                popup.querySelector('#apply-filter').addEventListener('click', () => {
+                    alert('Logica "Applica filtro" da implementare!');
+                    popup.remove();
+                });
+                // Evento per il pulsante PULISCI (da implementare)
+                popup.querySelector('#clear-filter').addEventListener('click', () => {
+                    alert('Logica "Pulisci filtro" da implementare!');
+                    popup.remove();
+                });
+            });
+        });
+    
+        // Chiudi il popup se si clicca altrove
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filter-popup')) {
+                document.querySelectorAll('.filter-popup').forEach(p => p.remove());
+            }
+        }, true);
     }
 
     // === EVENT LISTENER E AVVIO INIZIALE ===

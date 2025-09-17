@@ -173,4 +173,49 @@ body.agile-view-body {
     background-color: #dbeafe; /* Un blu molto chiaro */
     font-weight: 600; /* Testo in grassetto per evidenziare */
 }
+
+/* Stile per l'header della tabella con filtro */
+.agile-table th .column-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.filter-icon {
+    cursor: pointer;
+    font-size: 0.8em;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+.filter-icon:hover {
+    background-color: #dcdcdc;
+}
+
+/* Stile per il popup del filtro */
+.filter-popup {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.filter-popup-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.filter-popup-list li {
+    padding: 4px 0;
+    white-space: nowrap;
+}
+.filter-popup-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
 /* --- FINE STILE TABELLA --- */
