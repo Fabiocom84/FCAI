@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let selectDataCache = {}; // Cache per i dati dei menu a tendina
+    let activeFilters = {};
 
     // === FUNZIONE DI INIZIALIZZAZIONE ===
     
@@ -178,17 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams();
 
         if (isInitialLoad) {
-            // Per il caricamento iniziale, impostiamo un limite e un ordinamento di default
+            activeFilters = {}; // Resetta i filtri quando si cambia vista
             params.append('limit', '50');
-            params.append('sortBy', config.columns[0].key); // Ordina per la prima colonna
-            params.append('sortOrder', 'asc'); // Ordine ascendente
+            params.append('sortBy', config.columns[0].key);
+            params.append('sortOrder', 'asc');
         } else {
-            // Per il caricamento manuale, leggiamo i filtri
+            // Filtro dalla barra di ricerca generica
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) {
                 params.append('search', searchTerm);
             }
-            // ... (qui in futuro aggiungeremo gli altri filtri come la data) ...
+        
+            // --- NUOVA LOGICA: Aggiungi i filtri di colonna attivi ---
+            for (const columnKey in activeFilters) {
+                if (activeFilters[columnKey].length > 0) {
+                    activeFilters[columnKey].forEach(value => {
+                        params.append(columnKey, value);
+                    });
+                }
+            }
         }
 
         const endpointWithParams = `${config.apiEndpoint}?${params.toString()}`;
@@ -283,56 +292,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // AGGIUNGI QUESTA NUOVA FUNZIONE in gestione.js
     function attachFilterEventListeners(tableData) {
-            document.querySelectorAll('.filter-icon').forEach(icon => {
+        const selectedView = viewSelector.value;
+
+        document.querySelectorAll('.filter-icon').forEach(icon => {
+            // Evidenzia l'icona se c'è un filtro attivo per quella colonna
+            const columnKey = icon.dataset.columnKey;
+            if (activeFilters[columnKey] && activeFilters[columnKey].length > 0) {
+                icon.style.color = '#007bff'; // Blu per indicare filtro attivo
+            }
+
             icon.addEventListener('click', event => {
                 event.stopPropagation();
-                const columnKey = event.currentTarget.dataset.columnKey;
-                const uniqueValues = [...new Set(tableData.map(item => item[columnKey]))].sort();
+                const currentColumnKey = event.currentTarget.dataset.columnKey;
+                const uniqueValues = [...new Set(tableData.map(item => item[currentColumnKey]))].sort();
             
-                // Chiudi altri popup aperti
                 document.querySelectorAll('.filter-popup').forEach(p => p.remove());
 
                 const popup = document.createElement('div');
                 popup.className = 'filter-popup';
             
-                let listItems = uniqueValues.map(value => `
-                    <li>
-                        <label>
-                            <input type="checkbox" class="filter-checkbox" value="${value}">
-                            ${value}
-                        </label>
-                    </li>
-                `).join('');
+                // Ricostruisce le checkbox, preselezionando quelle già attive
+                let listItems = uniqueValues.map(value => {
+                    const isChecked = activeFilters[currentColumnKey]?.includes(String(value)) ? 'checked' : '';
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
+                }).join('');
 
                 popup.innerHTML = `
                     <ul class="filter-popup-list">${listItems}</ul>
                     <div class="filter-popup-buttons">
                         <button class="button" id="apply-filter">Applica</button>
                         <button class="button" id="clear-filter">Pulisci</button>
-                    </div>
-                `;
+                    </div>`;
             
                 document.body.appendChild(popup);
                 const rect = icon.getBoundingClientRect();
                 popup.style.top = `${rect.bottom + window.scrollY}px`;
                 popup.style.left = `${rect.left + window.scrollX}px`;
 
-                // Evento per il pulsante APPLICA (da implementare la logica di ricarica)
+                // --- Logica per APPLICA ---
                 popup.querySelector('#apply-filter').addEventListener('click', () => {
-                    alert('Logica "Applica filtro" da implementare!');
+                    const selectedValues = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                    activeFilters[currentColumnKey] = selectedValues;
+                    loadAndRenderData(selectedView, false); // Ricarica i dati con i filtri
                     popup.remove();
                 });
-                // Evento per il pulsante PULISCI (da implementare)
+            
+                // --- Logica per PULISCI ---
                 popup.querySelector('#clear-filter').addEventListener('click', () => {
-                    alert('Logica "Pulisci filtro" da implementare!');
+                    delete activeFilters[currentColumnKey]; // Rimuove il filtro per questa colonna
+                    loadAndRenderData(selectedView, false); // Ricarica i dati
                     popup.remove();
                 });
             });
         });
     
-        // Chiudi il popup se si clicca altrove
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-popup')) {
+            if (!e.target.closest('.filter-popup') && !e.target.classList.contains('filter-icon')) {
                 document.querySelectorAll('.filter-popup').forEach(p => p.remove());
             }
         }, true);
