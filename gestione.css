@@ -44,7 +44,7 @@ body.agile-view-body {
 .agile-toolbar {
     display: flex;
     align-items: center;
-    padding: 8px 15px; /* Spaziatura interna della barra */
+    padding: 8px 25px; /* Spaziatura interna della barra */
     border-bottom: 1px solid #dcdcdc;
     background-color: #f7f9fc;
     gap: 15px;
