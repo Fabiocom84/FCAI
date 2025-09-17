@@ -295,10 +295,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedView = viewSelector.value;
 
         document.querySelectorAll('.filter-icon').forEach(icon => {
-            // Evidenzia l'icona se c'è un filtro attivo per quella colonna
             const columnKey = icon.dataset.columnKey;
+        
+            // Applica/rimuove la classe 'active' all'icona all'avvio
             if (activeFilters[columnKey] && activeFilters[columnKey].length > 0) {
-                icon.style.color = '#007bff'; // Blu per indicare filtro attivo
+                icon.classList.add('active');
+            } else {
+                icon.classList.remove('active');
             }
 
             icon.addEventListener('click', event => {
@@ -329,18 +332,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 popup.style.top = `${rect.bottom + window.scrollY}px`;
                 popup.style.left = `${rect.left + window.scrollX}px`;
 
-                // --- Logica per APPLICA ---
+                // --- Logica per APPLICA (con aggiunta della classe) ---
                 popup.querySelector('#apply-filter').addEventListener('click', () => {
                     const selectedValues = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                    activeFilters[currentColumnKey] = selectedValues;
-                    loadAndRenderData(selectedView, false); // Ricarica i dati con i filtri
+                    activeFilters[columnKey] = selectedValues;
+                    loadAndRenderData(selectedView, false);
                     popup.remove();
                 });
             
-                // --- Logica per PULISCI ---
+                // --- Logica per PULISCI (con rimozione della classe) ---
                 popup.querySelector('#clear-filter').addEventListener('click', () => {
-                    delete activeFilters[currentColumnKey]; // Rimuove il filtro per questa colonna
-                    loadAndRenderData(selectedView, false); // Ricarica i dati
+                    delete activeFilters[columnKey];
+                    loadAndRenderData(selectedView, false);
                     popup.remove();
                 });
             });

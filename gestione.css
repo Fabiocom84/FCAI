@@ -192,6 +192,11 @@ body.agile-view-body {
     background-color: #dcdcdc;
 }
 
+.filter-icon.active {
+    color: #007bff; /* Blu acceso */
+    font-weight: bold;
+}
+
 /* Stile per il popup del filtro */
 .filter-popup {
     position: absolute;
