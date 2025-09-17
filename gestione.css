@@ -66,7 +66,7 @@ body.agile-view-body {
 /* --- FINE BARRA DEGLI STRUMENTI --- */
 
 
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione corretta) --- */
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione compatta) --- */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -79,23 +79,21 @@ body.agile-view-body {
     font-weight: 600;
 }
 
-/* Stile per input e select per avere altezza uniforme */
+/* Altezza basata sul padding per essere poco più grande del testo */
 .filter-container input[type="text"],
 .filter-container input[type="date"],
 .filter-container select,
 .styled-select {
-    padding: 0 10px;
+    padding: 6px 10px; /* Padding verticale ridotto */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
-    height: 36px; /* Altezza fissa */
     box-sizing: border-box;
 }
 
-/* Stile base per tutti i pulsanti per avere altezza uniforme */
+/* Stile base per tutti i pulsanti, altezza basata sul padding */
 .button {
-    padding: 0 15px;
-    height: 36px; /* Altezza fissa (stessa degli input) */
+    padding: 6px 15px; /* Padding verticale ridotto */
     border: 1px solid #b0b0b0;
     border-radius: 4px;
     font-size: 0.9em;
@@ -108,7 +106,7 @@ body.agile-view-body {
     background-color: #f0f0f0;
     color: #333;
     transition: background-color 0.2s, box-shadow 0.2s;
-    white-space: nowrap; /* Impedisce al testo di andare a capo */
+    white-space: nowrap; 
 }
 
 .button:hover {
@@ -121,35 +119,40 @@ body.agile-view-body {
     width: 16px;
 }
 
-/* Stile specifico per il pulsante "Carica Dati" (con icona) */
-#loadDataBtn {
-    padding: 0 12px; /* Leggermente meno padding laterale per l'icona */
-    background-color: #007bff; /* Blu più deciso */
+#searchBtn {
+    background-color: #007bff;
     border-color: #0069d9;
     color: white;
 }
-#loadDataBtn:hover {
+#searchBtn:hover {
     background-color: #0069d9;
 }
 
-
-/* Pulsante primario (es. Aggiungi) */
+/* Pulsanti di azione (Aggiungi, Modifica) */
 .action-bar .button.save-button {
-    background-color: #28a745; /* Verde standard */
+    background-color: #28a745;
     border-color: #218838;
     color: white;
 }
 .action-bar .button.save-button:hover {
     background-color: #218838;
 }
+
+#editRowBtn[disabled] {
+    background-color: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+    border-color: #ced4da;
+}
 /* --- FINE STILE UNIFORME --- */
 
 
-/* --- STRUTTURA TABELLA STILE "EXCEL" --- */
+/* --- STRUTTURA TABELLA STILE "EXCEL" (versione aggiornata) --- */
 .grid-container {
-    padding: 0; /* Rimuoviamo il padding per far toccare la tabella ai bordi */
-    min-height: 60vh;
-    overflow-x: auto; /* Permette lo scroll orizzontale se la tabella è larga */
+    padding: 25px; /* Aggiungiamo padding per staccare la tabella dai bordi */
+    padding-top: 0;
+    flex-grow: 1; /* Fa in modo che la tabella occupi lo spazio rimanente */
+    overflow-y: auto; /* Aggiunge scroll verticale solo alla tabella */
 }
 
 .agile-table {
@@ -160,25 +163,34 @@ body.agile-view-body {
 .agile-table th, .agile-table td {
     border-bottom: 1px solid #dcdcdc;
     border-right: 1px solid #dcdcdc;
-    padding: 10px 12px;
+    padding: 8px 10px; /* Padding ridotto per un look più compatto */
     text-align: left;
     font-size: 0.9em;
 }
 
 .agile-table th:first-child, .agile-table td:first-child {
-    border-left: none;
+    border-left: 1px solid #dcdcdc; /* Aggiungiamo bordo sinistro */
 }
-.agile-table th:last-child, .agile-table td:last-child {
-    border-right: none;
-}
+
 
 /* Intestazione della tabella */
 .agile-table thead th {
     background-color: #e9ecef;
     font-weight: 600;
     color: #495057;
-    position: sticky; /* Intestazione fissa allo scroll verticale */
+    position: sticky;
     top: 0;
+    text-transform: uppercase; /* TESTO IN MAIUSCOLO */
+}
+
+/* Colonne a larghezza fissa */
+.agile-table th:nth-child(1), .agile-table td:nth-child(1) {
+    width: 50px; /* Larghezza fissa per colonna '#' */
+    text-align: center;
+}
+.agile-table th:nth-child(2), .agile-table td:nth-child(2) {
+    width: 80px; /* Larghezza fissa per colonna 'Seleziona' */
+    text-align: center;
 }
 
 /* Colori alternati per le righe (effetto zebra) */
@@ -191,14 +203,3 @@ body.agile-view-body {
     background-color: #e2e6ea;
 }
 /* --- FINE STILE TABELLA --- */
-
-/* Loader e placeholder */
-.loader {
-    padding: 40px;
-    text-align: center;
-}
-.placeholder-text, .error-text {
-    padding: 40px;
-    text-align: center;
-    color: #666;
-}
