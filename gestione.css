@@ -262,4 +262,9 @@ body.agile-view-body {
 #clear-filter:hover {
     background-color: #0069d9;
 }
+
+/* Stile per l'header della colonna con filtro attivo */
+.agile-table th.filter-active {
+    background-color: #dbeafe; /* Stesso blu della riga selezionata */
+}
 /* --- FINE STILE TABELLA --- */

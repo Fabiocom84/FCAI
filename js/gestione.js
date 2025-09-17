@@ -137,15 +137,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleAddRow(view) {
+        // Cerca se esiste già una riga per un nuovo inserimento
+        const existingNewRow = document.querySelector('.new-row-form');
+        if (existingNewRow) {
+            // Se esiste, la rimuove e termina la funzione
+            existingNewRow.remove();
+            return;
+        }
+
         const config = viewConfig[view];
         const table = gridWrapper.querySelector('table');
         if (!table) return;
 
-        // Evita di aggiungere più righe nuove contemporaneamente
-        if (document.querySelector('.new-row-form')) return;
-
         const tbody = table.querySelector('tbody');
-        const newRow = tbody.insertRow(0); // Inserisce la riga all'inizio
+        const newRow = tbody.insertRow(0);
         newRow.classList.add('new-row-form', 'selected-row');
 
         // # e Seleziona (celle vuote)
@@ -368,16 +373,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.filter-icon').forEach(icon => {
             const columnKey = icon.dataset.columnKey;
-        
-            // Applica/rimuove la classe 'active' all'icona all'avvio
+            const th = icon.closest('th'); // Selezioniamo l'intera cella di intestazione
+
+            // Applica/rimuove lo stile all'avvio
             if (activeFilters[columnKey] && activeFilters[columnKey].length > 0) {
-                icon.classList.add('active');
+                th.classList.add('filter-active');
             } else {
-                icon.classList.remove('active');
+                th.classList.remove('filter-active');
             }
 
             icon.addEventListener('click', event => {
                 event.stopPropagation();
+                const existingPopup = document.querySelector('.filter-popup');
+
+                // Se clicco sull'icona e il popup esiste già, lo chiudo
+                if (existingPopup) {
+                    existingPopup.remove();
+                    return;
+                }
+
                 const currentColumnKey = event.currentTarget.dataset.columnKey;
                 const uniqueValues = [...new Set(tableData.map(item => item[currentColumnKey]))].sort();
             
@@ -395,26 +409,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 popup.innerHTML = `
                     <ul class="filter-popup-list">${listItems}</ul>
                     <div class="filter-popup-buttons">
-                        <button class="button" id="apply-filter">Applica</button>
-                        <button class="button" id="clear-filter">Pulisci</button>
-                    </div>`;
+                        {/* --- MODIFICA QUI --- */}
+                        <button class="button icon-button" id="apply-filter">Applica</button>
+                        <button class="button icon-button" id="clear-filter">Pulisci</button>
+                    </div>
+                `;
             
                 document.body.appendChild(popup);
                 const rect = icon.getBoundingClientRect();
                 popup.style.top = `${rect.bottom + window.scrollY}px`;
                 popup.style.left = `${rect.left + window.scrollX}px`;
 
-                // --- Logica per APPLICA (con aggiunta della classe) ---
+                // Logica per APPLICA
                 popup.querySelector('#apply-filter').addEventListener('click', () => {
                     const selectedValues = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                    activeFilters[columnKey] = selectedValues;
+                    activeFilters[currentColumnKey] = selectedValues;
                     loadAndRenderData(selectedView, false);
                     popup.remove();
                 });
             
-                // --- Logica per PULISCI (con rimozione della classe) ---
+                // Logica per PULISCI
                 popup.querySelector('#clear-filter').addEventListener('click', () => {
-                    delete activeFilters[columnKey];
+                    delete activeFilters[currentColumnKey];
                     loadAndRenderData(selectedView, false);
                     popup.remove();
                 });
