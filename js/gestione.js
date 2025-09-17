@@ -209,22 +209,27 @@ document.addEventListener('DOMContentLoaded', () => {
             gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
             return;
         }
+
         const table = document.createElement('table');
         table.className = 'agile-table';
+
+        // Crea l'intestazione
         const thead = table.createTHead();
         const headerRow = thead.insertRow();
     
-        // Intestazioni fisse
+        // Aggiungi le intestazioni fisse '#' e 'Seleziona'
         ['#', 'Seleziona'].forEach(text => {
-             th = document.createElement('th');
+            const th = document.createElement('th');
             th.textContent = text;
             headerRow.appendChild(th);
         });
     
-        // Intestazioni dinamiche con filtri
+        // --- INIZIO CORREZIONE ---
+        // Aggiungi le intestazioni dinamiche con la logica dei filtri
         columns.forEach(col => {
-            const th = document.createElement('th');
-            // Usiamo un contenitore per il testo e l'icona
+            const th = document.createElement('th'); // <-- QUESTA RIGA MANCAVA
+        
+            // Contenitore per testo e icona
             const headerContent = document.createElement('div');
             headerContent.className = 'column-header-content';
         
@@ -233,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
             const filterIcon = document.createElement('span');
             filterIcon.className = 'filter-icon';
-            filterIcon.textContent = '🔽'; // Icona del filtro
+            filterIcon.textContent = '🔽';
             filterIcon.dataset.columnKey = col.key;
         
             headerContent.appendChild(label);
@@ -241,30 +246,38 @@ document.addEventListener('DOMContentLoaded', () => {
             th.appendChild(headerContent);
             headerRow.appendChild(th);
         });
-    
-        // Corpo della tabella (invariato)
+        // --- FINE CORREZIONE ---
+
+        // Crea il corpo della tabella
         const tbody = table.createTBody();
         data.forEach((rowData, index) => {
             const row = tbody.insertRow();
+        
             const cellNum = row.insertCell();
             cellNum.textContent = index + 1;
+
             const cellSelect = row.insertCell();
             const radio = document.createElement('input');
             radio.type = 'radio';
             radio.name = 'rowSelector';
-            radio.value = rowData.id_cliente; 
+            radio.value = rowData.id_cliente; // O un altro ID univoco
             cellSelect.appendChild(radio);
+
             columns.forEach(col => {
                 const cell = row.insertCell();
                 cell.textContent = rowData[col.key] || '';
+                if (col.editable) {
+                    cell.classList.add('editable');
+                }
             });
         });
 
         gridWrapper.innerHTML = '';
         gridWrapper.appendChild(table);
+
         handleRowSelection();
     
-        // Aggiungiamo gli eventi ai nuovi pulsanti filtro
+        // Collega gli eventi ai nuovi pulsanti filtro
         attachFilterEventListeners(data);
     }
 
