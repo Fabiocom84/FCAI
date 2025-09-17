@@ -40,69 +40,57 @@ body.agile-view-body {
     font-weight: 600;
 }
 
-/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 4 - compatta) --- */
+/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 5 - extra sottile) --- */
 .agile-toolbar {
     display: flex;
     align-items: center;
-    padding: 8px 15px; /* Padding verticale ridotto per abbassare la toolbar */
+    padding: 6px 15px; /* Padding verticale ulteriormente ridotto */
     border-bottom: 1px solid #dcdcdc;
     background-color: #f7f9fc;
-    flex-wrap: wrap;
-    gap: 15px; /* Spazio ridotto tra i gruppi */
+    gap: 15px;
     justify-content: flex-start;
 }
 
 .toolbar-group {
     display: flex;
     align-items: center;
-    gap: 6px; /* Spazio ridotto tra gli elementi di un gruppo */
+    gap: 6px;
 }
 /* --- FINE BARRA DEGLI STRUMENTI --- */
 
 
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 4 - compatta e colorata) --- */
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 5 - extra sottile) --- */
 .toolbar-group input[type="text"] {
-    padding: 5px 8px; /* Padding ridotto per abbassare l'input */
+    padding: 4px 8px; /* Padding ridotto */
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
-/* Rimuoviamo altezza e larghezza fisse, la dimensione dipende dal padding e font-size */
 .button.icon-button {
-    font-size: 1.1em;
-    padding: 5px; /* Padding ridotto per rimpicciolire i pulsanti */
-    width: auto; /* Larghezza automatica */
-    min-width: 32px; /* Larghezza minima per un aspetto quadrato */
-    height: auto;
-    line-height: 1; /* Assicura che l'icona sia centrata bene */
+    font-size: 1em; /* Icone leggermente più piccole */
+    padding: 4px; /* Padding ridotto */
+    width: 30px; /* Larghezza e altezza fisse e più piccole */
+    height: 30px;
+    line-height: 1;
 }
 
-/* Colori specifici per i pulsanti di azione */
-#editRowBtn {
-    background-color: #f1c40f; /* Giallo */
-    border-color: #f39c12;
-    color: #fff;
-}
-#editRowBtn:hover {
-    background-color: #f39c12;
-}
+/* Colori specifici (invariati) */
+#editRowBtn { background-color: #f1c40f; border-color: #f39c12; color: #fff; }
+#editRowBtn:hover { background-color: #f39c12; }
+#deleteRowBtn { background-color: #e67e22; border-color: #d35400; color: #fff; }
+#deleteRowBtn:hover { background-color: #d35400; }
+#searchBtn { background-color: #007bff; border-color: #0069d9; color: white; }
+#searchBtn:hover { background-color: #0069d9; }
+#addRowBtn { background-color: #28a745; border-color: #218838; color: white; }
+#addRowBtn:hover { background-color: #218838; }
 
-#deleteRowBtn {
-    background-color: #e67e22; /* Arancione */
-    border-color: #d35400;
-    color: #fff;
-}
-#deleteRowBtn:hover {
-    background-color: #d35400;
-}
 
-/* Stile per pulsanti disabilitati (ora si applica a tutti, inclusi quelli colorati) */
+/* Stile per pulsanti disabilitati (MODIFICATO) */
 .button:disabled {
-    background-color: #e9ecef !important; /* !important per sovrascrivere i colori specifici */
-    color: #adb5bd !important;
+    opacity: 0.6; /* Applica trasparenza invece di cambiare colore */
     cursor: not-allowed;
-    border-color: #ced4da !important;
+    /* Rimosse le regole di colore e sfondo con !important */
 }
 /* --- FINE STILE UNIFORME --- */
 
