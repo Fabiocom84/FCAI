@@ -97,18 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeView() {
         const selectedView = viewSelector.value;
     
-        // Aggiorniamo la logica DOM per il nuovo contenitore unico
-        const toolbarArea = document.getElementById('toolbarArea');
-    
         renderToolbar(selectedView);
     
         const searchBtn = document.getElementById('searchBtn');
         if (searchBtn) {
             searchBtn.addEventListener('click', () => loadAndRenderData(selectedView, false));
         }
+    
+        // --- NUOVA RIGA ---
+        // Collega l'evento al pulsante Aggiungi
+        const addRowBtn = document.getElementById('addRowBtn');
+        if (addRowBtn) {
+            addRowBtn.addEventListener('click', () => handleAddRow(selectedView));
+        }
+        // --- FINE NUOVA RIGA ---
 
         loadAndRenderData(selectedView, true);
     }
+
 
     // === FUNZIONI DI RENDERING DINAMICO ===
 
@@ -128,6 +134,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="button icon-button" id="searchBtn" title="Cerca">🔍</button>
             </div>
         `;
+    }
+
+    function handleAddRow(view) {
+        const config = viewConfig[view];
+        const table = gridWrapper.querySelector('table');
+        if (!table) return;
+
+        // Evita di aggiungere più righe nuove contemporaneamente
+        if (document.querySelector('.new-row-form')) return;
+
+        const tbody = table.querySelector('tbody');
+        const newRow = tbody.insertRow(0); // Inserisce la riga all'inizio
+        newRow.classList.add('new-row-form', 'selected-row');
+
+        // # e Seleziona (celle vuote)
+        newRow.insertCell().textContent = '*';
+        newRow.insertCell();
+
+        // Colonne editabili come input
+        config.columns.forEach(col => {
+            const cell = newRow.insertCell();
+            if (col.editable) {
+                const input = document.createElement('input');
+                input.type = col.type || 'text';
+                input.placeholder = col.label;
+                input.dataset.key = col.key;
+                cell.appendChild(input);
+            }
+        });
+
+        // Cella per il pulsante Salva
+        const actionCell = newRow.insertCell();
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Salva';
+        saveBtn.className = 'button';
+        saveBtn.style.backgroundColor = '#28a745';
+        saveBtn.style.color = 'white';
+        saveBtn.onclick = () => saveNewRow(view, newRow);
+        actionCell.appendChild(saveBtn);
+    }
+
+    async function saveNewRow(view, row) {
+        const config = viewConfig[view];
+        const newObject = {};
+    
+        row.querySelectorAll('input[data-key]').forEach(input => {
+            newObject[input.dataset.key] = input.value;
+        });
+
+        // Validazione semplice: controlla che almeno un campo sia stato riempito
+        if (Object.values(newObject).every(val => !val)) {
+            alert("Compilare almeno un campo per salvare.");
+            return;
+        }
+
+        try {
+            await apiFetch(config.apiEndpoint, {
+                method: 'POST',
+                body: newObject
+            });
+        
+            // Ricarica i dati per mostrare la nuova riga
+            loadAndRenderData(view, true); 
+
+        } catch (error) {
+            alert(`Errore nella creazione: ${error.message}`);
+        }
     }
 
     function createSelectHtml(id, label, data, valueKey, textKey, textKey2 = '') {

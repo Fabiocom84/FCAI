@@ -223,4 +223,28 @@ body.agile-view-body {
     display: flex;
     justify-content: space-between;
 }
+
+/* Stile per i pulsanti nel popup del filtro */
+.filter-popup-buttons .button {
+    padding: 4px 10px; /* Padding ridotto per rimpicciolirli */
+    font-size: 0.8em;
+}
+
+#apply-filter {
+    background-color: #28a745; /* Verde */
+    border-color: #218838;
+    color: white;
+}
+#apply-filter:hover {
+    background-color: #218838;
+}
+
+#clear-filter {
+    background-color: #007bff; /* Blu */
+    border-color: #0069d9;
+    color: white;
+}
+#clear-filter:hover {
+    background-color: #0069d9;
+}
 /* --- FINE STILE TABELLA --- */
