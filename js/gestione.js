@@ -150,12 +150,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleRowSelection() {
         const editBtn = document.getElementById('editRowBtn');
         const radioButtons = document.querySelectorAll('input[name="rowSelector"]');
-    
+        let lastSelected = null; // Teniamo traccia dell'ultima riga selezionata
+
         radioButtons.forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (editBtn) {
-                    // Abilita il pulsante 'Modifica' se un radio è selezionato
-                    editBtn.disabled = false;
+            radio.addEventListener('click', (event) => {
+                const currentRadio = event.currentTarget;
+                const currentRow = currentRadio.closest('tr');
+
+                // Rimuovi l'evidenziazione da tutte le righe
+                document.querySelectorAll('.agile-table tbody tr').forEach(r => r.classList.remove('selected-row'));
+            
+                if (lastSelected === currentRadio) {
+                    // Se si clicca di nuovo sullo stesso radio, lo si deseleziona
+                    currentRadio.checked = false;
+                    lastSelected = null;
+                    if (editBtn) editBtn.disabled = true;
+                } else {
+                    // Altrimenti, si seleziona la nuova riga
+                    currentRow.classList.add('selected-row');
+                    lastSelected = currentRadio;
+                    if (editBtn) editBtn.disabled = false;
                 }
             });
         });

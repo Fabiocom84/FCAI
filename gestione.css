@@ -74,7 +74,7 @@ body.agile-view-body {
 }
 
 .form-group label {
-    font-size: 0.8em;
+    font-size: 0.75em; /* Etichetta più piccola */
     color: #333;
     font-weight: 600;
 }
@@ -84,25 +84,25 @@ body.agile-view-body {
 .filter-container input[type="date"],
 .filter-container select,
 .styled-select {
-    padding: 6px 10px; /* Padding verticale ridotto */
+    padding: 4px 8px; /* Padding verticale e orizzontale ridotto */
     border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9em;
+    border-radius: 3px;
+    font-size: 0.85em; /* Font più piccolo */
     box-sizing: border-box;
 }
 
 /* Stile base per tutti i pulsanti, altezza basata sul padding */
 .button {
-    padding: 6px 15px; /* Padding verticale ridotto */
+    padding: 4px 12px; /* Padding verticale e orizzontale ridotto */
     border: 1px solid #b0b0b0;
-    border-radius: 4px;
-    font-size: 0.9em;
+    border-radius: 3px;
+    font-size: 0.85em; /* Font più piccolo */
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     background-color: #f0f0f0;
     color: #333;
     transition: background-color 0.2s, box-shadow 0.2s;
@@ -201,5 +201,11 @@ body.agile-view-body {
 /* Evidenzia la riga al passaggio del mouse */
 .agile-table tbody tr:hover {
     background-color: #e2e6ea;
+}
+
+/* Stile per la riga quando viene selezionata */
+.agile-table tbody tr.selected-row {
+    background-color: #dbeafe; /* Un blu molto chiaro */
+    font-weight: 600; /* Testo in grassetto per evidenziare */
 }
 /* --- FINE STILE TABELLA --- */
