@@ -40,86 +40,69 @@ body.agile-view-body {
     font-weight: 600;
 }
 
-/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 3) --- */
+/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 4 - compatta) --- */
 .agile-toolbar {
     display: flex;
-    align-items: center; /* Allinea verticalmente gli elementi */
-    padding: 12px 25px;
+    align-items: center;
+    padding: 8px 15px; /* Padding verticale ridotto per abbassare la toolbar */
     border-bottom: 1px solid #dcdcdc;
     background-color: #f7f9fc;
     flex-wrap: wrap;
-    gap: 20px;
-    justify-content: flex-start; /* Allinea tutto a sinistra */
+    gap: 15px; /* Spazio ridotto tra i gruppi */
+    justify-content: flex-start;
 }
 
-/* Gruppi di elementi nella toolbar */
 .toolbar-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px; /* Spazio ridotto tra gli elementi di un gruppo */
 }
 /* --- FINE BARRA DEGLI STRUMENTI --- */
 
 
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 3 - icone) --- */
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 4 - compatta e colorata) --- */
 .toolbar-group input[type="text"] {
-    padding: 6px 10px;
+    padding: 5px 8px; /* Padding ridotto per abbassare l'input */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
 }
 
-/* Stile per tutti i pulsanti */
-.button {
-    padding: 6px 12px;
-    border: 1px solid #b0b0b0;
-    border-radius: 4px;
-    font-size: 0.9em;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f0f0;
-    color: #333;
-    transition: background-color 0.2s;
-}
-.button:hover {
-    background-color: #e0e0e0;
+/* Rimuoviamo altezza e larghezza fisse, la dimensione dipende dal padding e font-size */
+.button.icon-button {
+    font-size: 1.1em;
+    padding: 5px; /* Padding ridotto per rimpicciolire i pulsanti */
+    width: auto; /* Larghezza automatica */
+    min-width: 32px; /* Larghezza minima per un aspetto quadrato */
+    height: auto;
+    line-height: 1; /* Assicura che l'icona sia centrata bene */
 }
 
-/* Stile specifico per pulsanti con solo icone */
-.icon-button {
-    font-size: 1.2em; /* Rende l'icona (testo) più grande */
-    padding: 6px;
-    width: 34px; /* Larghezza fissa per renderli quadrati */
-    height: 34px; /* Altezza fissa */
+/* Colori specifici per i pulsanti di azione */
+#editRowBtn {
+    background-color: #f1c40f; /* Giallo */
+    border-color: #f39c12;
+    color: #fff;
+}
+#editRowBtn:hover {
+    background-color: #f39c12;
 }
 
-/* Colori specifici */
-#searchBtn {
-    background-color: #007bff;
-    border-color: #0069d9;
-    color: white;
+#deleteRowBtn {
+    background-color: #e67e22; /* Arancione */
+    border-color: #d35400;
+    color: #fff;
 }
-#searchBtn:hover {
-    background-color: #0069d9;
-}
-#addRowBtn {
-    background-color: #28a745;
-    border-color: #218838;
-    color: white;
-}
-#addRowBtn:hover {
-    background-color: #218838;
+#deleteRowBtn:hover {
+    background-color: #d35400;
 }
 
-/* Stile per pulsanti disabilitati */
+/* Stile per pulsanti disabilitati (ora si applica a tutti, inclusi quelli colorati) */
 .button:disabled {
-    background-color: #e9ecef;
-    color: #adb5bd;
+    background-color: #e9ecef !important; /* !important per sovrascrivere i colori specifici */
+    color: #adb5bd !important;
     cursor: not-allowed;
-    border-color: #ced4da;
+    border-color: #ced4da !important;
 }
 /* --- FINE STILE UNIFORME --- */
 
