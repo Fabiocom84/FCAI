@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-    
+
     async function loadAndRenderData(view, isInitialLoad = false) {
         const config = viewConfig[view];
         if (!config) return;
@@ -259,4 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Collega la logica di selezione alla tabella appena creata
         handleRowSelection();
     }
+
+    // === EVENT LISTENER E AVVIO INIZIALE ===
+    viewSelector.addEventListener('change', initializeView);
+    initializeView();
 });
