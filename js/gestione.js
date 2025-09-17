@@ -169,8 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Salva';
         saveBtn.className = 'button';
-        saveBtn.style.backgroundColor = '#28a745';
-        saveBtn.style.color = 'white';
+        saveBtn.className = 'button save-button-dynamic';
         saveBtn.onclick = () => saveNewRow(view, newRow);
         actionCell.appendChild(saveBtn);
     }
