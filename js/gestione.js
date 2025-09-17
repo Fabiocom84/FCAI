@@ -96,45 +96,37 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeView() {
         const selectedView = viewSelector.value;
     
-        // Chiama la nuova funzione unificata per la toolbar
+        // Aggiorniamo la logica DOM per il nuovo contenitore unico
+        const toolbarArea = document.getElementById('toolbarArea');
+    
         renderToolbar(selectedView);
     
-        // Collega l'evento al nuovo pulsante 'Cerca'
         const searchBtn = document.getElementById('searchBtn');
         if (searchBtn) {
             searchBtn.addEventListener('click', () => loadAndRenderData(selectedView, false));
         }
 
-        // Carica i dati di default all'inizializzazione
         loadAndRenderData(selectedView, true);
     }
 
     // === FUNZIONI DI RENDERING DINAMICO ===
 
     function renderToolbar(view) {
-        const config = viewConfig[view];
-        if (!config) return;
+        const toolbar = document.getElementById('toolbarArea');
+        if (!toolbar) return;
 
-        // Svuotiamo entrambe le vecchie aree (ora sono dentro .agile-toolbar)
-        filterArea.innerHTML = '';
-        actionBar.innerHTML = '';
-
-        // Creiamo il gruppo di ricerca
-        let searchGroupHtml = `
-            <div class="form-group">
-                <label>Cerca in ${view}:</label>
-                <input type="text" id="filter-search-term" placeholder="Scrivi e premi Cerca...">
+        // Usiamo simboli Unicode per le icone: ➕ ✏️ 🗑️ 🔍
+        toolbar.innerHTML = `
+            <div class="toolbar-group">
+                <button class="button icon-button" id="addRowBtn" title="Aggiungi Nuova Voce">➕</button>
+                <button class="button icon-button" id="editRowBtn" title="Modifica Riga Selezionata" disabled>✏️</button>
+                <button class="button icon-button" id="deleteRowBtn" title="Cancella Riga Selezionata" disabled>🗑️</button>
             </div>
-            <button class="button" id="searchBtn">Cerca</button>
+            <div class="toolbar-group search-group">
+                <input type="text" id="filter-search-term" placeholder="Cerca in ${view}...">
+                <button class="button icon-button" id="searchBtn" title="Cerca">🔍</button>
+            </div>
         `;
-        filterArea.innerHTML = searchGroupHtml;
-
-        // Creiamo i pulsanti di azione
-        let actionsHtml = `
-            <button class="button save-button" id="addRowBtn">+ Aggiungi</button>
-            <button class="button" id="editRowBtn" disabled>Modifica</button>
-        `;
-        actionBar.innerHTML = actionsHtml;
     }
 
     function createSelectHtml(id, label, data, valueKey, textKey, textKey2 = '') {
@@ -149,27 +141,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function handleRowSelection() {
         const editBtn = document.getElementById('editRowBtn');
+        const deleteBtn = document.getElementById('deleteRowBtn'); // Nuovo pulsante
         const radioButtons = document.querySelectorAll('input[name="rowSelector"]');
-        let lastSelected = null; // Teniamo traccia dell'ultima riga selezionata
+        let lastSelected = null;
 
         radioButtons.forEach(radio => {
             radio.addEventListener('click', (event) => {
                 const currentRadio = event.currentTarget;
                 const currentRow = currentRadio.closest('tr');
 
-                // Rimuovi l'evidenziazione da tutte le righe
                 document.querySelectorAll('.agile-table tbody tr').forEach(r => r.classList.remove('selected-row'));
             
                 if (lastSelected === currentRadio) {
-                    // Se si clicca di nuovo sullo stesso radio, lo si deseleziona
                     currentRadio.checked = false;
                     lastSelected = null;
                     if (editBtn) editBtn.disabled = true;
+                    if (deleteBtn) deleteBtn.disabled = true; // Disabilita anche cancella
                 } else {
-                    // Altrimenti, si seleziona la nuova riga
                     currentRow.classList.add('selected-row');
                     lastSelected = currentRadio;
                     if (editBtn) editBtn.disabled = false;
+                    if (deleteBtn) deleteBtn.disabled = false; // Abilita anche cancella
                 }
             });
         });

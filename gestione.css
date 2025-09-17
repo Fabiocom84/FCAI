@@ -40,85 +40,63 @@ body.agile-view-body {
     font-weight: 600;
 }
 
-/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" --- */
+/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 3) --- */
 .agile-toolbar {
     display: flex;
-    justify-content: space-between; /* Allinea filtri a sx e azioni a dx */
-    align-items: center;
-    padding: 15px 25px;
+    align-items: center; /* Allinea verticalmente gli elementi */
+    padding: 12px 25px;
     border-bottom: 1px solid #dcdcdc;
     background-color: #f7f9fc;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: flex-start; /* Allinea tutto a sinistra */
 }
 
-.filter-container {
+/* Gruppi di elementi nella toolbar */
+.toolbar-group {
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-.action-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 /* --- FINE BARRA DEGLI STRUMENTI --- */
 
 
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione compatta) --- */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.form-group label {
-    font-size: 0.75em; /* Etichetta più piccola */
-    color: #333;
-    font-weight: 600;
-}
-
-/* Altezza basata sul padding per essere poco più grande del testo */
-.filter-container input[type="text"],
-.filter-container input[type="date"],
-.filter-container select,
-.styled-select {
-    padding: 4px 8px; /* Padding verticale e orizzontale ridotto */
+/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 3 - icone) --- */
+.toolbar-group input[type="text"] {
+    padding: 6px 10px;
     border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 0.85em; /* Font più piccolo */
-    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
 
-/* Stile base per tutti i pulsanti, altezza basata sul padding */
+/* Stile per tutti i pulsanti */
 .button {
-    padding: 4px 12px; /* Padding verticale e orizzontale ridotto */
+    padding: 6px 12px;
     border: 1px solid #b0b0b0;
-    border-radius: 3px;
-    font-size: 0.85em; /* Font più piccolo */
+    border-radius: 4px;
+    font-size: 0.9em;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
     background-color: #f0f0f0;
     color: #333;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    white-space: nowrap; 
+    transition: background-color 0.2s;
 }
-
 .button:hover {
     background-color: #e0e0e0;
-    border-color: #999;
 }
 
-.button img {
-    height: 16px;
-    width: 16px;
+/* Stile specifico per pulsanti con solo icone */
+.icon-button {
+    font-size: 1.2em; /* Rende l'icona (testo) più grande */
+    padding: 6px;
+    width: 34px; /* Larghezza fissa per renderli quadrati */
+    height: 34px; /* Altezza fissa */
 }
 
+/* Colori specifici */
 #searchBtn {
     background-color: #007bff;
     border-color: #0069d9;
@@ -127,18 +105,17 @@ body.agile-view-body {
 #searchBtn:hover {
     background-color: #0069d9;
 }
-
-/* Pulsanti di azione (Aggiungi, Modifica) */
-.action-bar .button.save-button {
+#addRowBtn {
     background-color: #28a745;
     border-color: #218838;
     color: white;
 }
-.action-bar .button.save-button:hover {
+#addRowBtn:hover {
     background-color: #218838;
 }
 
-#editRowBtn[disabled] {
+/* Stile per pulsanti disabilitati */
+.button:disabled {
     background-color: #e9ecef;
     color: #adb5bd;
     cursor: not-allowed;
