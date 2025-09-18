@@ -159,6 +159,7 @@
 .agile-view-body .agile-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
 .agile-view-body .agile-table tbody tr:hover { background-color: #e2e6ea; }
 .agile-view-body .agile-table tbody tr.selected-row { background-color: #dbeafe; }
+.agile-view-body .agile-table th.filter-active {background-color: #dbeafe; }
 .agile-view-body .agile-table th.filter-active { background-color: #dbeafe; }
 
 .agile-view-body .column-header-content { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
