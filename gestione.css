@@ -160,7 +160,7 @@
 .agile-view-body .agile-table tbody tr:hover { background-color: #e2e6ea; }
 .agile-view-body .agile-table tbody tr.selected-row { background-color: #dbeafe; }
 .agile-view-body .agile-table thead th.filter-active { 
-    background-color: #dbeafe; 
+    background-color: #dbeafe !important; /* Force priority */
 }
 
 .agile-view-body .column-header-content { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
