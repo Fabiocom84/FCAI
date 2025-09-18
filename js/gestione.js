@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_cliente'
             },
-            // Qui verranno aggiunte le configurazioni per le altre tabelle
         },
 
         /**
@@ -36,13 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.toolbarArea = document.getElementById('toolbarArea');
             this.dom.gridWrapper = document.getElementById('gridWrapper');
             
-            // Imposta gli eventi che vengono attivati una sola volta
             this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
             this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
             this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
             document.addEventListener('click', this.handleDocumentClick.bind(this), true);
 
-            // Carica la vista iniziale selezionata nell'HTML
             this.handleViewChange();
         },
 
@@ -51,28 +48,22 @@ document.addEventListener('DOMContentLoaded', () => {
          */
         handleViewChange() {
             this.state.currentView = this.dom.viewSelector.value;
-            this.state.isAddingNewRow = false; // Annulla l'aggiunta se si cambia vista
+            this.state.isAddingNewRow = false;
             this.renderToolbar();
             this.loadAndRenderData(true);
         },
 
         /**
-         * Gestisce i click sui pulsanti della toolbar usando la delegazione degli eventi.
+         * Gestisce i click sui pulsanti della toolbar.
          */
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
 
             switch (button.id) {
-                case 'searchBtn':
-                    this.loadAndRenderData(false);
-                    break;
-                case 'addRowBtn':
-                    this.handleAddRow();
-                    break;
-                case 'saveNewRowBtn':
-                    this.handleSaveNewRow();
-                    break;
+                case 'searchBtn': this.loadAndRenderData(false); break;
+                case 'addRowBtn': this.handleAddRow(); break;
+                case 'saveNewRowBtn': this.handleSaveNewRow(); break;
             }
         },
         
@@ -222,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderToolbar() {
             const view = this.state.currentView;
             this.dom.toolbarArea.innerHTML = `
-                <div class.toolbar-group">
+                <div class="toolbar-group">
                     <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
                     <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
                     <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
@@ -257,7 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const th = document.createElement('th');
                 const thContent = document.createElement('div');
                 thContent.className = 'column-header-content';
-                thContent.innerHTML = `<span>${col.label}</span><span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
+                const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
+                thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`;
                 th.appendChild(thContent);
                 headerRow.appendChild(th);
             });
@@ -357,5 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Avvia l'applicazione
     App.init();
 });

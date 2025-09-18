@@ -1,6 +1,6 @@
 /* ==========================================================================
    FOGLIO DI STILE PER LA VISTA DI GESTIONE AGILE
-   Versione Ottimizzata e Riorganizzata
+   Versione Definitiva con Selettori Specifici
    ========================================================================== */
 
 /* 1. LAYOUT GLOBALE DELLA PAGINA
@@ -74,6 +74,8 @@
     font-weight: 600;
     box-sizing: border-box;
     vertical-align: middle;
+    height: auto;
+    min-height: unset;
 }
 
 .agile-view-body .button {
@@ -95,6 +97,7 @@
     font-size: 1.1em;
     width: 32px;
     height: 32px;
+    padding: 5px;
 }
 
 /* Classi Modificatrici per i Colori dei Pulsanti */
@@ -162,7 +165,7 @@
 
 /* 5. POPUP FILTRI
    ========================================================================== */
-.filter-popup { /* Questa regola rimane globale perché il popup è appeso al body */
+.filter-popup {
     position: absolute;
     background-color: white;
     border: 1px solid #ccc;
