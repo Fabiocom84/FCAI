@@ -151,7 +151,7 @@
 /* Colonne a larghezza fissa */
 .agile-view-body .agile-table th:nth-child(1), .agile-table td:nth-child(1),
 .agile-view-body .agile-table th:nth-child(2), .agile-table td:nth-child(2) {
-    width: 35px; /* Larghezza ridotta e identica per entrambe */
+    width: 25px; /* Larghezza ridotta e identica per entrambe */
     text-align: center;
 }
 
