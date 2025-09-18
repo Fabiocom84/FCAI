@@ -1,4 +1,4 @@
-// js/gestione.js - Versione Riorganizzata e Ottimizzata
+// js/gestione.js - Versione Completa, Corretta e Ottimizzata
 
 import { API_BASE_URL } from './config.js';
 
@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Gestore dell'intera applicazione per la Vista Agile.
-     * Contiene lo stato, gli elementi del DOM e tutte le funzioni logiche.
      */
     const App = {
         dom: {},
@@ -26,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_cliente'
             },
+            // Qui verranno aggiunte le configurazioni per le altre tabelle
         },
 
         /**
@@ -35,13 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.viewSelector = document.getElementById('tableViewSelector');
             this.dom.toolbarArea = document.getElementById('toolbarArea');
             this.dom.gridWrapper = document.getElementById('gridWrapper');
-            this.dom.loader = document.querySelector('.loader');
             
+            // Imposta gli eventi che vengono attivati una sola volta
             this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
             this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
             this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
             document.addEventListener('click', this.handleDocumentClick.bind(this), true);
 
+            // Carica la vista iniziale selezionata nell'HTML
             this.handleViewChange();
         },
 
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         /**
-         * Gestisce i click sui pulsanti della toolbar.
+         * Gestisce i click sui pulsanti della toolbar usando la delegazione degli eventi.
          */
         handleToolbarClick(event) {
             const button = event.target.closest('button');
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         /**
-         * Gestisce i click all'interno della tabella (selezione e filtri).
+         * Gestisce i click all'interno della griglia (selezione righe e icone filtro).
          */
         handleTableClick(event) {
             const target = event.target;
@@ -219,22 +220,142 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Funzioni di Rendering e Utility ---
         
         renderToolbar() {
-            // ... (codice invariato)
+            const view = this.state.currentView;
+            this.dom.toolbarArea.innerHTML = `
+                <div class.toolbar-group">
+                    <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
+                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
+                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
+                    <button class="button button--primary" id="saveNewRowBtn" title="Salva" disabled>Salva</button>
+                </div>
+                <div class="toolbar-group search-group">
+                    <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
+                    <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
+                </div>`;
         },
+
         renderTable() {
-            // ... (codice invariato)
+            const data = this.state.tableData;
+            const config = this.viewConfig[this.state.currentView];
+            
+            if (!data || data.length === 0) {
+                this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'agile-table';
+            
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            ['#', 'Seleziona'].forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            config.columns.forEach(col => {
+                const th = document.createElement('th');
+                const thContent = document.createElement('div');
+                thContent.className = 'column-header-content';
+                thContent.innerHTML = `<span>${col.label}</span><span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
+                th.appendChild(thContent);
+                headerRow.appendChild(th);
+            });
+
+            const tbody = table.createTBody();
+            data.forEach((rowData, index) => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = index + 1;
+                const cellSelect = row.insertCell();
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'rowSelector';
+                radio.value = rowData[config.idColumn];
+                cellSelect.appendChild(radio);
+                config.columns.forEach(col => {
+                    row.insertCell().textContent = rowData[col.key] || '';
+                });
+            });
+
+            this.dom.gridWrapper.innerHTML = '';
+            this.dom.gridWrapper.appendChild(table);
         },
+        
         openColumnFilterPopup(iconElement, columnKey) {
-            // ... (codice invariato)
+            const existingPopup = document.querySelector('.filter-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+                if (existingPopup.dataset.column === columnKey) return;
+            }
+
+            const uniqueValues = [...new Set(this.state.tableData.map(item => item[columnKey]))].sort();
+            const popup = document.createElement('div');
+            popup.className = 'filter-popup';
+            popup.dataset.column = columnKey;
+
+            const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+            const listItems = uniqueValues.map(value => {
+                const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
+            }).join('');
+
+            popup.innerHTML = `
+                <ul class="filter-popup-list">${listItems}</ul>
+                <div class="filter-popup-buttons">
+                    <button class="button button--primary" id="apply-filter">Applica</button>
+                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                </div>`;
+            
+            document.body.appendChild(popup);
+            const rect = iconElement.getBoundingClientRect();
+            popup.style.top = `${rect.bottom + window.scrollY}px`;
+            popup.style.left = `${rect.left + window.scrollX}px`;
         },
+
         handleDocumentClick(event) {
-            // ... (codice invariato)
+            const popup = document.querySelector('.filter-popup');
+            if (!popup) return;
+
+            const target = event.target;
+            if (target.id === 'apply-filter') {
+                const columnKey = popup.dataset.column;
+                this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                this.loadAndRenderData(false);
+                popup.remove();
+            } else if (target.id === 'clear-filter') {
+                const columnKey = popup.dataset.column;
+                delete this.state.activeFilters[columnKey];
+                this.loadAndRenderData(false);
+                popup.remove();
+            } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
+                popup.remove();
+            }
         },
+        
         async apiFetch(endpoint, options = {}) {
-            // ... (codice invariato)
+            const url = `${API_BASE_URL}${endpoint}`;
+            const mergedOptions = {
+                ...options,
+                headers: { 'Content-Type': 'application/json', ...options.headers }
+            };
+
+            if (mergedOptions.body && typeof mergedOptions.body !== 'string') {
+                mergedOptions.body = JSON.stringify(mergedOptions.body);
+            }
+
+            try {
+                const response = await fetch(url, mergedOptions);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Errore HTTP: ${response.status}` }));
+                    throw new Error(errorData.error);
+                }
+                return response.status === 204 ? {} : await response.json();
+            } catch (error) {
+                console.error(`Errore nella chiamata API a ${endpoint}:`, error);
+                throw error;
+            }
         }
     };
     
-    // Inizializza l'applicazione
     App.init();
 });
