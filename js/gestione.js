@@ -159,9 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 await this.apiFetch(config.apiEndpoint, { method: 'POST', body: newObject });
                 document.getElementById('saveNewRowBtn').disabled = true;
                 this.state.isAddingNewRow = false;
+                await this.showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK' });
                 this.loadAndRenderData(true);
             } catch (error) {
-                alert(`Errore nella creazione: ${error.message}`);
+                this.showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK' });
             }
         },
         
@@ -184,25 +185,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
-        handleDeleteRow() {
+        async handleDeleteRow() { // Make the function async
             if (!this.state.lastSelectedRadio) {
-                alert("Nessuna riga selezionata.");
-                return;
+                return this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
             }
             const id = this.state.lastSelectedRadio.value;
             const rowElement = this.state.lastSelectedRadio.closest('tr');
             const rowName = rowElement.cells[2].textContent;
-            if (confirm(`Sei sicuro di voler eliminare "${rowName}"?`)) {
+
+            const isConfirmed = await this.showModal({
+                title: 'Conferma Eliminazione',
+                message: `Sei sicuro di voler eliminare il cliente "${rowName}"? L'azione è irreversibile.`,
+                confirmText: 'Elimina',
+                cancelText: 'Annulla'
+            });
+
+            if (isConfirmed) {
                 const config = this.viewConfig[this.state.currentView];
                 const endpoint = `${config.apiEndpoint}/${id}`;
-                this.apiFetch(endpoint, { method: 'DELETE' })
-                    .then(() => {
-                        alert("Elemento eliminato con successo.");
-                        this.loadAndRenderData(true);
-                    })
-                    .catch(error => {
-                        alert(`Errore durante l'eliminazione: ${error.message}`);
-                    });
+                try {
+                    await this.apiFetch(endpoint, { method: 'DELETE' });
+                    this.showModal({ title: 'Successo', message: 'Elemento eliminato con successo.', confirmText: 'OK' });
+                    this.loadAndRenderData(true);
+                } catch (error) {
+                    this.showModal({ title: 'Errore', message: `Errore durante l'eliminazione: ${error.message}`, confirmText: 'OK' });
+                }
             }
         },
 
@@ -240,11 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 await this.apiFetch(endpoint, { method: 'PUT', body: updatedData });
-                alert("Elemento modificato con successo.");
                 this.state.isEditingRow = false;
-                this.handleViewChange(); // Resets the entire view, including toolbar and data
+                await this.showModal({ title: 'Successo', message: 'Elemento modificato con successo.', confirmText: 'OK' });
+                this.handleViewChange();
             } catch (error) {
-                alert(`Errore durante la modifica: ${error.message}`);
+                this.showModal({ title: 'Errore', message: `Errore durante la modifica: ${error.message}`, confirmText: 'OK' });
             }
         },
 
@@ -371,6 +378,52 @@ document.addEventListener('DOMContentLoaded', () => {
                     const valueText = li.textContent.toLowerCase();
                     li.style.display = valueText.includes(searchTerm) ? '' : 'none';
                 });
+            });
+        },
+
+        /**
+        * Shows a custom modal and returns a Promise that resolves with the user's choice.
+        * @param {object} options - Configuration for the modal.
+        * @param {string} options.title - The title of the modal.
+        * @param {string} options.message - The body text of the modal.
+        * @param {string} options.confirmText - Text for the confirmation button (e.g., 'OK', 'Elimina').
+        * @param {string} [options.cancelText] - Optional text for a cancel button. If provided, shows two buttons.
+        * @returns {Promise<boolean>} - Resolves true if confirmed, false if canceled.
+        */
+        showModal({ title, message, confirmText, cancelText }) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('custom-modal-overlay');
+                const modalTitle = document.getElementById('custom-modal-title');
+                const modalMessage = document.getElementById('custom-modal-message');
+                const modalButtons = document.getElementById('custom-modal-buttons');
+
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalButtons.innerHTML = ''; // Clear previous buttons
+
+                // Create Confirm Button
+                const confirmBtn = document.createElement('button');
+                confirmBtn.textContent = confirmText;
+                confirmBtn.className = 'button button--primary';
+                modalButtons.appendChild(confirmBtn);
+                confirmBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(true);
+                };
+
+                // Create Cancel Button (only if cancelText is provided)
+                if (cancelText) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = cancelText;
+                    cancelBtn.className = 'button'; // Default button style
+                    modalButtons.appendChild(cancelBtn);
+                    cancelBtn.onclick = () => {
+                        overlay.style.display = 'none';
+                        resolve(false);
+                    };
+                }
+
+                overlay.style.display = 'flex';
             });
         },
 
