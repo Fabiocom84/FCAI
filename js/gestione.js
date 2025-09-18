@@ -118,11 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('deleteRowBtn').disabled = true;
             
             const config = this.viewConfig[this.state.currentView];
-            const table = this.dom.gridWrapper.querySelector('table');
-            if (!table) { // If there's no table yet, create one
-                this.renderTable([]); // Render an empty table structure first
+            let table = this.dom.gridWrapper.querySelector('table');
+            if (!table) {
+                this.renderTable([]); 
+                table = this.dom.gridWrapper.querySelector('table');
             }
-            const tbody = this.dom.gridWrapper.querySelector('table tbody');
+            const tbody = table.querySelector('tbody');
 
             const newRow = tbody.insertRow(0);
             newRow.classList.add('new-row-form', 'selected-row');
@@ -276,10 +277,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            if (!data || data.length === 0) {
-                this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
+            // If data is explicitly passed as empty, create the structure for the new row form
+            if (data.length === 0 && !document.querySelector('.placeholder-text')) {
+                this.dom.gridWrapper.innerHTML = '';
+                const table = document.createElement('table');
+                table.className = 'agile-table';
+                const thead = table.createTHead();
+                // ... create headers ...
+                const tbody = table.createTBody();
+                this.dom.gridWrapper.appendChild(table);
                 return;
             }
+
+            if (data.length === 0) {
+                 this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
+                 return;
+            }
+
             const table = document.createElement('table');
             table.className = 'agile-table';
             const thead = table.createTHead();
@@ -320,15 +334,78 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         openColumnFilterPopup(iconElement, columnKey) {
-            // ... (this function remains unchanged from the previous correct version)
+            const existingPopup = document.querySelector('.filter-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+                if (existingPopup.dataset.column === columnKey) return;
+            }
+            const uniqueValues = [...new Set(this.state.tableData.map(item => item[columnKey]))].sort();
+            const popup = document.createElement('div');
+            popup.className = 'filter-popup';
+            popup.dataset.column = columnKey;
+            const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+            const listItems = uniqueValues.map(value => {
+                const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
+            }).join('');
+            popup.innerHTML = `
+                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                <ul class="filter-popup-list">${listItems}</ul>
+                <div class="filter-popup-buttons">
+                    <button class="button button--primary" id="apply-filter">Applica</button>
+                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                </div>`;
+            document.body.appendChild(popup);
+            const rect = iconElement.getBoundingClientRect();
+            popup.style.top = `${rect.bottom + window.scrollY}px`;
+            popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+            const searchInput = popup.querySelector('#popup-search-input');
+            const listElements = popup.querySelectorAll('.filter-popup-list li');
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                listElements.forEach(li => {
+                    const valueText = li.textContent.toLowerCase();
+                    li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                });
+            });
         },
 
         handleDocumentClick(event) {
-            // ... (this function remains unchanged from the previous correct version)
+            const popup = document.querySelector('.filter-popup');
+            if (!popup) return;
+            const target = event.target;
+            if (target.id === 'apply-filter') {
+                const columnKey = popup.dataset.column;
+                this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                this.loadAndRenderData(false);
+                popup.remove();
+            } else if (target.id === 'clear-filter') {
+                const columnKey = popup.dataset.column;
+                delete this.state.activeFilters[columnKey];
+                this.loadAndRenderData(false);
+                popup.remove();
+            } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
+                popup.remove();
+            }
         },
         
         async apiFetch(endpoint, options = {}) {
-            // ... (this function remains unchanged from the previous correct version)
+            const url = `${API_BASE_URL}${endpoint}`;
+            const mergedOptions = { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } };
+            if (mergedOptions.body && typeof mergedOptions.body !== 'string') {
+                mergedOptions.body = JSON.stringify(mergedOptions.body);
+            }
+            try {
+                const response = await fetch(url, mergedOptions);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Errore HTTP: ${response.status}` }));
+                    throw new Error(errorData.error);
+                }
+                return response.status === 204 ? {} : await response.json();
+            } catch (error) {
+                console.error(`Errore nella chiamata API a ${endpoint}:`, error);
+                throw error;
+            }
         }
     };
     
