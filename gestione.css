@@ -1,219 +1,168 @@
-/* css/gestione.css - NUOVO STILE COMPLETO */
+/* ==========================================================================
+   FOGLIO DI STILE PER LA VISTA DI GESTIONE AGILE
+   Versione Ottimizzata e Riorganizzata
+   ========================================================================== */
 
-body.agile-view-body {
-    background-color: #f4f7f9;
-    padding: 0; /* Rimuoviamo il padding per usare tutto lo spazio */
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex; /* Centriamo il contenitore */
+/* 1. LAYOUT GLOBALE DELLA PAGINA
+   ========================================================================== */
+.agile-view-body {
+    display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    padding: 0;
+    margin: 0;
+    background-color: #f4f7f9;
+    font-family: Arial, sans-serif;
 }
 
-.agile-main-container {
-    width: 95vw;  /* 95% della larghezza della finestra */
-    height: 95vh; /* 95% dell'altezza della finestra */
-    max-width: none;
-    margin: 0; /* Rimuoviamo il margine auto */
+.agile-view-body .agile-main-container {
+    width: 95vw;
+    height: 95vh;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
     border: 1px solid #dcdcdc;
-    display: flex; /* Usiamo flex per gestire meglio gli spazi interni */
+    display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-.agile-header {
+.agile-view-body .agile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 25px;
-    background-color: #4a5568; /* Grigio scuro stile corporate */
+    background-color: #4a5568;
     color: white;
+    flex-shrink: 0;
 }
 
-.agile-header h1 {
+.agile-view-body .agile-header h1 {
     margin: 0;
     font-size: 1.4em;
     font-weight: 600;
 }
 
-/* --- BARRA DEGLI STRUMENTI STILE "EXCEL RIBBON" (versione 6 - definitiva) --- */
-.agile-toolbar {
+/* 2. BARRA DEGLI STRUMENTI (TOOLBAR)
+   ========================================================================== */
+.agile-view-body .agile-toolbar {
     display: flex;
     align-items: center;
-    padding: 8px 25px; /* Spaziatura interna della barra */
+    padding: 8px 25px;
     border-bottom: 1px solid #dcdcdc;
     background-color: #f7f9fc;
     gap: 15px;
     justify-content: flex-start;
-    min-height: auto; /* Resetta qualsiasi altezza minima preesistente */
+    flex-shrink: 0;
 }
 
-.toolbar-group {
+.agile-view-body .toolbar-group {
     display: flex;
     align-items: center;
     gap: 6px;
 }
-/* --- FINE BARRA DEGLI STRUMENTI --- */
 
-
-/* --- STILE UNIFORME PER CONTROLLI E PULSANTI (versione 7 - Unificata) --- */
-
-/* REGOLA BASE PER TUTTI I PULSANTI E INPUT NELL'APPLICAZIONE */
-.agile-main-container .button,
-.agile-main-container input[type="text"] {
-    padding: 5px 10px !important;
-    height: auto !important;
-    min-height: unset !important;
+/* 3. COMPONENTI COMUNI (PULSANTI E INPUT)
+   ========================================================================== */
+.agile-view-body .button,
+.agile-view-body .toolbar-group input[type="text"] {
+    padding: 5px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
     font-weight: 600;
     box-sizing: border-box;
-    vertical-align: middle; /* Allinea bene testo e pulsanti */
+    vertical-align: middle;
 }
 
-/* Stile base per tutti i pulsanti */
-.agile-main-container .button {
+.agile-view-body .button {
     cursor: pointer;
     background-color: #f0f0f0;
     color: #333;
-    transition: background-color 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     white-space: nowrap;
+    transition: background-color 0.2s;
 }
-.agile-main-container .button:hover {
+.agile-view-body .button:hover {
     background-color: #e0e0e0;
 }
 
-/* Pulsanti solo-icona */
-.agile-main-container .icon-button {
+.agile-view-body .icon-button {
     font-size: 1.1em;
-    padding: 5px !important;
     width: 32px;
     height: 32px;
 }
 
-/* COLORI SPECIFICI PER OGNI PULSANTE */
-#addRowBtn, .save-button-dynamic { background-color: #28a745; border-color: #218838; color: white; }
-#addRowBtn:hover, .save-button-dynamic:hover { background-color: #218838; }
+/* Classi Modificatrici per i Colori dei Pulsanti */
+.agile-view-body .button--primary { background-color: #28a745; border-color: #218838; color: white; }
+.agile-view-body .button--primary:hover { background-color: #218838; }
 
-#editRowBtn { background-color: #f1c40f; border-color: #f39c12; color: #fff; }
-#editRowBtn:hover { background-color: #f39c12; }
+.agile-view-body .button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
+.agile-view-body .button--secondary:hover { background-color: #0069d9; }
 
-#deleteRowBtn { background-color: #e67e22; border-color: #d35400; color: #fff; }
-#deleteRowBtn:hover { background-color: #d35400; }
+.agile-view-body .button--warning { background-color: #f1c40f; border-color: #f39c12; color: white; }
+.agile-view-body .button--warning:hover { background-color: #f39c12; }
 
-#searchBtn { background-color: #007bff; border-color: #0069d9; color: white; }
-#searchBtn:hover { background-color: #0069d9; }
+.agile-view-body .button--danger { background-color: #e67e22; border-color: #d35400; color: white; }
+.agile-view-body .button--danger:hover { background-color: #d35400; }
 
-#apply-filter { background-color: #28a745; border-color: #218838; color: white; }
-#apply-filter:hover { background-color: #218838; }
-
-#clear-filter { background-color: #007bff; border-color: #0069d9; color: white; }
-#clear-filter:hover { background-color: #0069d9; }
-
-/* Stile per pulsanti disabilitati (ora unificato) */
-.agile-main-container .button:disabled {
+.agile-view-body .button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
-/* --- FINE STILE UNIFORME --- */
 
-
-/* --- STRUTTURA TABELLA STILE "EXCEL" (versione aggiornata) --- */
-.grid-container {
-    padding: 25px; /* Aggiungiamo padding per staccare la tabella dai bordi */
-    padding-top: 0;
-    flex-grow: 1; /* Fa in modo che la tabella occupi lo spazio rimanente */
-    overflow-y: auto; /* Aggiunge scroll verticale solo alla tabella */
+/* 4. TABELLA DATI
+   ========================================================================== */
+.agile-view-body .grid-container {
+    padding: 0 25px 25px 25px;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
-.agile-table {
+.agile-view-body .agile-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.agile-table th, .agile-table td {
-    border-bottom: 1px solid #dcdcdc;
-    border-right: 1px solid #dcdcdc;
-    padding: 8px 10px; /* Padding ridotto per un look più compatto */
-    text-align: left;
-    font-size: 0.9em;
-}
-
-.agile-table th:first-child, .agile-table td:first-child {
-    border-left: 1px solid #dcdcdc; /* Aggiungiamo bordo sinistro */
-}
-
-
-/* Intestazione della tabella */
-.agile-table thead th {
+.agile-view-body .agile-table thead th {
     background-color: #e9ecef;
     font-weight: 600;
     color: #495057;
     position: sticky;
     top: 0;
-    text-transform: uppercase; /* TESTO IN MAIUSCOLO */
+    text-transform: uppercase;
+}
+
+.agile-view-body .agile-table th, 
+.agile-view-body .agile-table td {
+    border: 1px solid #dcdcdc;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.9em;
 }
 
 /* Colonne a larghezza fissa */
-.agile-table th:nth-child(1), .agile-table td:nth-child(1) {
-    width: 50px; /* Larghezza fissa per colonna '#' */
-    text-align: center;
-}
-.agile-table th:nth-child(2), .agile-table td:nth-child(2) {
-    width: 80px; /* Larghezza fissa per colonna 'Seleziona' */
-    text-align: center;
-}
+.agile-view-body .agile-table th:nth-child(1), .agile-table td:nth-child(1) { width: 50px; text-align: center; }
+.agile-view-body .agile-table th:nth-child(2), .agile-table td:nth-child(2) { width: 80px; text-align: center; }
 
-/* Colori alternati per le righe (effetto zebra) */
-.agile-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
+/* Stili righe e header con filtri */
+.agile-view-body .agile-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+.agile-view-body .agile-table tbody tr:hover { background-color: #e2e6ea; }
+.agile-view-body .agile-table tbody tr.selected-row { background-color: #dbeafe; }
+.agile-view-body .agile-table th.filter-active { background-color: #dbeafe; }
 
-/* Evidenzia la riga al passaggio del mouse */
-.agile-table tbody tr:hover {
-    background-color: #e2e6ea;
-}
+.agile-view-body .column-header-content { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.agile-view-body .filter-icon { cursor: pointer; font-size: 0.8em; padding: 2px 4px; border-radius: 3px; }
+.agile-view-body .filter-icon:hover { background-color: #dcdcdc; }
+.agile-view-body .filter-icon.active { color: #007bff; font-weight: bold; }
 
-/* Stile per la riga quando viene selezionata */
-.agile-table tbody tr.selected-row {
-    background-color: #dbeafe; /* Un blu molto chiaro */
-    font-weight: 600; /* Testo in grassetto per evidenziare */
-}
-
-/* Stile per l'header della tabella con filtro */
-.agile-table th .column-header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.filter-icon {
-    cursor: pointer;
-    font-size: 0.8em;
-    padding: 2px 4px;
-    border-radius: 3px;
-}
-.filter-icon:hover {
-    background-color: #dcdcdc;
-}
-
-.filter-icon.active {
-    color: #007bff; /* Blu acceso */
-    font-weight: bold;
-}
-
-/* Stile per il popup del filtro (AGGIORNATO) */
-.filter-popup {
+/* 5. POPUP FILTRI
+   ========================================================================== */
+.filter-popup { /* Questa regola rimane globale perché il popup è appeso al body */
     position: absolute;
     background-color: white;
     border: 1px solid #ccc;
@@ -221,63 +170,21 @@ body.agile-view-body {
     border-radius: 4px;
     padding: 10px;
     z-index: 100;
-    width: max-content; /* Adatta la larghezza al contenuto */
-    max-width: 250px; /* Limita la larghezza massima */
+    width: max-content;
+    max-width: 250px;
     max-height: 200px;
     overflow-y: auto;
 }
+.filter-popup-list { list-style: none; padding: 0; margin: 0; }
+.filter-popup-list li { padding: 4px 0; white-space: nowrap; }
+.filter-popup-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
 
-/* Stile per i pulsanti nel popup del filtro (AGGIORNATO) */
-.filter-popup-buttons .button {
-    padding: 2px 8px !important; /* Padding ridotto per rimpicciolirli */
-    font-size: 0.8em !important;
-    height: auto !important;
+/* 6. ALTRI COMPONENTI
+   ========================================================================== */
+.agile-view-body .loader,
+.agile-view-body .placeholder-text,
+.agile-view-body .error-text {
+    padding: 40px;
+    text-align: center;
+    color: #666;
 }
-
-.filter-popup-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.filter-popup-list li {
-    padding: 4px 0;
-    white-space: nowrap;
-}
-.filter-popup-buttons {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-}
-
-#apply-filter {
-    background-color: #28a745; /* Verde */
-    border-color: #218838;
-    color: white;
-}
-#apply-filter:hover {
-    background-color: #218838;
-}
-
-#clear-filter {
-    background-color: #007bff; /* Blu */
-    border-color: #0069d9;
-    color: white;
-}
-#clear-filter:hover {
-    background-color: #0069d9;
-}
-
-/* Stile per l'header della colonna con filtro attivo */
-.agile-table th.filter-active {
-    background-color: #dbeafe; /* Stesso blu della riga selezionata */
-}
-
-#saveNewRowBtn {
-    background-color: #28a745; /* Verde */
-    border-color: #218838;
-    color: white;
-}
-#saveNewRowBtn:hover {
-    background-color: #218838;
-}
-/* --- FINE STILE TABELLA --- */
