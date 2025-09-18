@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(popup);
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
-            popup.style.left = `${rect.left + window.scrollX}px`;
+            popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
         },
 
         handleDocumentClick(event) {
