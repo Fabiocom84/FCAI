@@ -118,6 +118,15 @@
     cursor: not-allowed;
 }
 
+/* Stile specifico per i pulsanti Salva Modifiche e Annulla */
+.agile-view-body #saveChangesBtn,
+.agile-view-body #cancelEditBtn {
+    font-size: 1.1em;
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+}
+
 /* 4. TABELLA DATI
    ========================================================================== */
 .agile-view-body .grid-container {
