@@ -228,18 +228,21 @@ document.addEventListener('DOMContentLoaded', () => {
         async handleSaveChanges() {
             const editingRow = document.querySelector('.editing-row');
             if (!editingRow) return;
+
             const config = this.viewConfig[this.state.currentView];
             const updatedData = {};
             editingRow.querySelectorAll('input[data-key]').forEach(input => {
                 updatedData[input.dataset.key] = input.value;
             });
+    
             const id = this.state.lastSelectedRadio.value;
             const endpoint = `${config.apiEndpoint}/${id}`;
+
             try {
                 await this.apiFetch(endpoint, { method: 'PUT', body: updatedData });
                 alert("Elemento modificato con successo.");
                 this.state.isEditingRow = false;
-                this.loadAndRenderData(true);
+                this.handleViewChange(); // Resets the entire view, including toolbar and data
             } catch (error) {
                 alert(`Errore durante la modifica: ${error.message}`);
             }
@@ -247,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         handleCancelEdit() {
             this.state.isEditingRow = false;
-            this.loadAndRenderData(true);
+            this.handleViewChange(); // Resets the entire view, including toolbar and data
         },
 
         renderToolbar() {
@@ -267,9 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderToolbarForEditing() {
             const toolbarGroup = this.dom.toolbarArea.querySelector('.toolbar-group');
+            // Replace the content with two icon buttons: Save and Cancel
             toolbarGroup.innerHTML = `
-                <button class="button button--primary" id="saveChangesBtn" title="Salva Modifiche">Salva Modifiche</button>
-                <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla">❌</button>
+                <button class="button icon-button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button>
+                <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla Modifiche">❌</button>
             `;
         },
 
