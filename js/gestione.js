@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'searchBtn': this.loadAndRenderData(false); break;
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'saveNewRowBtn': this.handleSaveNewRow(); break;
+                case 'editRowBtn': this.handleEditRow(); break;
+                case 'deleteRowBtn': this.handleDeleteRow(); break;
+                case 'saveChangesBtn': this.handleSaveChanges(); break;
+                case 'cancelEditBtn': this.handleCancelEdit(); break;
             }
         },
         
@@ -181,6 +185,93 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.loadAndRenderData(true);
             } catch (error) {
                 alert(`Errore nella creazione: ${error.message}`);
+            }
+        },
+
+        handleEditRow() {
+            if (!this.state.lastSelectedRadio) {
+                alert("Nessuna riga selezionata.");
+                return;
+            }
+            const row = this.state.lastSelectedRadio.closest('tr');
+            row.classList.add('editing-row'); // Mark the row as being edited
+
+            const config = this.viewConfig[this.state.currentView];
+
+            // Make cells editable
+            config.columns.forEach((col, index) => {
+                if (col.editable) {
+                    const cell = row.cells[index + 2]; // +2 to skip '#' and 'Select' columns
+                    const currentValue = cell.textContent;
+                    cell.innerHTML = `<input type="text" value="${currentValue}" data-key="${col.key}" />`;
+                }
+            });
+            // Update toolbar buttons
+            document.getElementById('editRowBtn').style.display = 'none';
+            document.getElementById('deleteRowBtn').style.display = 'none';
+            document.getElementById('addRowBtn').style.display = 'none';
+            document.getElementById('saveNewRowBtn').style.display = 'inline-flex';
+            document.getElementById('saveNewRowBtn').id = 'saveChangesBtn'; // Temporarily change ID
+    
+            const cancelBtn = document.createElement('button');
+            cancelBtn.id = 'cancelEditBtn';
+            cancelBtn.className = 'button icon-button button--danger';
+            cancelBtn.innerHTML = '❌';
+            cancelBtn.title = 'Annulla Modifiche';
+            document.querySelector('.toolbar-group').appendChild(cancelBtn);
+        },
+
+        handleSaveChanges() {
+            const editingRow = document.querySelector('.editing-row');
+            if (!editingRow) return;
+
+            const config = this.viewConfig[this.state.currentView];
+            const updatedData = {};
+    
+            editingRow.querySelectorAll('input[data-key]').forEach(input => {
+                updatedData[input.dataset.key] = input.value;
+            });
+    
+            const clienteId = this.state.lastSelectedRadio.value;
+            const endpoint = `${config.apiEndpoint}/${clienteId}`;
+
+            this.apiFetch(endpoint, { method: 'PUT', body: updatedData })
+                .then(() => {
+                    alert("Cliente modificato con successo.");
+                    this.loadAndRenderData(true);
+                })
+                .catch(error => {
+                    alert(`Errore durante la modifica: ${error.message}`);
+                    this.loadAndRenderData(true); // Reload to discard failed edits
+                });
+        },
+
+        handleCancelEdit() {
+            this.loadAndRenderData(true); // Simply reload the data to cancel
+        },
+
+        handleDeleteRow() {
+            if (!this.state.lastSelectedRadio) {
+                alert("Nessuna riga selezionata.");
+                return;
+            }
+
+            const clienteId = this.state.lastSelectedRadio.value;
+            const rowElement = this.state.lastSelectedRadio.closest('tr');
+            const clienteNome = rowElement.cells[2].textContent; // Get the client name for the confirmation
+
+            if (confirm(`Sei sicuro di voler eliminare il cliente "${clienteNome}"?`)) {
+                const config = this.viewConfig[this.state.currentView];
+                const endpoint = `${config.apiEndpoint}/${clienteId}`;
+
+                this.apiFetch(endpoint, { method: 'DELETE' })
+                    .then(() => {
+                        alert("Cliente eliminato con successo.");
+                        this.loadAndRenderData(true); // Refresh the table
+                    })
+                    .catch(error => {
+                        alert(`Errore durante l'eliminazione: ${error.message}`);
+                    });
             }
         },
         
