@@ -1,6 +1,6 @@
 /* ==========================================================================
    FOGLIO DI STILE PER LA VISTA DI GESTIONE AGILE
-   Versione Definitiva con Selettori Specifici
+   Versione Definitiva e Corretta
    ========================================================================== */
 
 /* 1. LAYOUT GLOBALE DELLA PAGINA
@@ -151,7 +151,7 @@
 /* Colonne a larghezza fissa */
 .agile-view-body .agile-table th:nth-child(1), .agile-table td:nth-child(1),
 .agile-view-body .agile-table th:nth-child(2), .agile-table td:nth-child(2) {
-    width: 25px; /* Larghezza ridotta e identica per entrambe */
+    width: 25px;
     text-align: center;
 }
 
@@ -159,8 +159,10 @@
 .agile-view-body .agile-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
 .agile-view-body .agile-table tbody tr:hover { background-color: #e2e6ea; }
 .agile-view-body .agile-table tbody tr.selected-row { background-color: #dbeafe; }
+
+/* REGOLA DEFINITIVA PER IL FILTRO ATTIVO */
 .agile-view-body .agile-table thead th.filter-active { 
-    background-color: #dbeafe !important; /* Force priority */
+    background-color: #dbeafe;
 }
 
 .agile-view-body .column-header-content { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
