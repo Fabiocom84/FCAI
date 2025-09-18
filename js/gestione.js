@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="button icon-button" id="addRowBtn" title="Aggiungi Nuova Voce">➕</button>
                 <button class="button icon-button" id="editRowBtn" title="Modifica Riga Selezionata" disabled>✏️</button>
                 <button class="button icon-button" id="deleteRowBtn" title="Cancella Riga Selezionata" disabled>🗑️</button>
+                <button class="button" id="saveNewRowBtn" title="Salva Nuova Riga" style="display: none;">Salva</button>
             </div>
             <div class="toolbar-group search-group">
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}...">
@@ -137,13 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleAddRow(view) {
-        // Cerca se esiste già una riga per un nuovo inserimento
         const existingNewRow = document.querySelector('.new-row-form');
-        if (existingNewRow) {
-            // Se esiste, la rimuove e termina la funzione
+            if (existingNewRow) {
             existingNewRow.remove();
+            document.getElementById('saveNewRowBtn').style.display = 'none'; // Nasconde il pulsante Salva
             return;
         }
+
+        document.getElementById('saveNewRowBtn').style.display = 'inline-flex';
 
         const config = viewConfig[view];
         const table = gridWrapper.querySelector('table');
@@ -225,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         radioButtons.forEach(radio => {
             radio.addEventListener('click', (event) => {
+                document.getElementById('saveNewRowBtn').style.display = 'none';
                 const currentRadio = event.currentTarget;
                 const currentRow = currentRadio.closest('tr');
 
@@ -409,7 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 popup.innerHTML = `
                     <ul class="filter-popup-list">${listItems}</ul>
                     <div class="filter-popup-buttons">
-                        {/* --- MODIFICA QUI --- */}
                         <button class="button icon-button" id="apply-filter">Applica</button>
                         <button class="button icon-button" id="clear-filter">Pulisci</button>
                     </div>

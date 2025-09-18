@@ -212,7 +212,7 @@ body.agile-view-body {
     font-weight: bold;
 }
 
-/* Stile per il popup del filtro */
+/* Stile per il popup del filtro (AGGIORNATO) */
 .filter-popup {
     position: absolute;
     background-color: white;
@@ -221,9 +221,19 @@ body.agile-view-body {
     border-radius: 4px;
     padding: 10px;
     z-index: 100;
+    width: max-content; /* Adatta la larghezza al contenuto */
+    max-width: 250px; /* Limita la larghezza massima */
     max-height: 200px;
     overflow-y: auto;
 }
+
+/* Stile per i pulsanti nel popup del filtro (AGGIORNATO) */
+.filter-popup-buttons .button {
+    padding: 2px 8px !important; /* Padding ridotto per rimpicciolirli */
+    font-size: 0.8em !important;
+    height: auto !important;
+}
+
 .filter-popup-list {
     list-style: none;
     padding: 0;
@@ -237,12 +247,6 @@ body.agile-view-body {
     margin-top: 10px;
     display: flex;
     justify-content: space-between;
-}
-
-/* Stile per i pulsanti nel popup del filtro */
-.filter-popup-buttons .button {
-    padding: 4px 10px; /* Padding ridotto per rimpicciolirli */
-    font-size: 0.8em;
 }
 
 #apply-filter {
@@ -266,5 +270,14 @@ body.agile-view-body {
 /* Stile per l'header della colonna con filtro attivo */
 .agile-table th.filter-active {
     background-color: #dbeafe; /* Stesso blu della riga selezionata */
+}
+
+#saveNewRowBtn {
+    background-color: #28a745; /* Verde */
+    border-color: #218838;
+    color: white;
+}
+#saveNewRowBtn:hover {
+    background-color: #218838;
 }
 /* --- FINE STILE TABELLA --- */
