@@ -162,7 +162,7 @@
 
 /* REGOLA DEFINITIVA PER IL FILTRO ATTIVO */
 .agile-view-body .agile-table thead th.filter-active { 
-    background-color: #dbeafe;
+    background-color: #dbeafe !important;
 }
 
 .agile-view-body .column-header-content { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
