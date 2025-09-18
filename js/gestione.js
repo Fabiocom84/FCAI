@@ -239,9 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
-            ['#', 'Seleziona'].forEach(text => {
+            const fixedHeaders = [
+                { text: '#', title: 'Numero Riga' },
+                { text: '☑️', title: 'Seleziona' }
+            ];
+
+            fixedHeaders.forEach(header => {
                 const th = document.createElement('th');
-                th.textContent = text;
+                th.textContent = header.text;
+                th.title = header.title; // Aggiunge un tooltip al passaggio del mouse
                 headerRow.appendChild(th);
             });
             config.columns.forEach(col => {

@@ -149,8 +149,11 @@
 }
 
 /* Colonne a larghezza fissa */
-.agile-view-body .agile-table th:nth-child(1), .agile-table td:nth-child(1) { width: 50px; text-align: center; }
-.agile-view-body .agile-table th:nth-child(2), .agile-table td:nth-child(2) { width: 80px; text-align: center; }
+.agile-view-body .agile-table th:nth-child(1), .agile-table td:nth-child(1),
+.agile-view-body .agile-table th:nth-child(2), .agile-table td:nth-child(2) {
+    width: 45px; /* Larghezza ridotta e identica per entrambe */
+    text-align: center;
+}
 
 /* Stili righe e header con filtri */
 .agile-view-body .agile-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
