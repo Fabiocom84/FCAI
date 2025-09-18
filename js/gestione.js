@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.viewSelector = document.getElementById('tableViewSelector');
             this.dom.toolbarArea = document.getElementById('toolbarArea');
             this.dom.gridWrapper = document.getElementById('gridWrapper');
-            
+        
             this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
             this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
             this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
@@ -47,10 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
+
             switch (button.id) {
                 case 'searchBtn': this.loadAndRenderData(false); break;
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'saveNewRowBtn': this.handleSaveNewRow(); break;
+                case 'editRowBtn': this.handleEditRow(); break;
+                case 'deleteRowBtn': this.handleDeleteRow(); break;
+                case 'saveChangesBtn': this.handleSaveChanges(); break;
+                case 'cancelEditBtn': this.handleCancelEdit(); break;
             }
         },
         
@@ -174,19 +179,105 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
-        renderToolbar() {
-            const view = this.state.currentView;
-            this.dom.toolbarArea.innerHTML = `
-                <div class="toolbar-group">
-                    <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
-                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
-                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
-                    <button class="button button--primary" id="saveNewRowBtn" title="Salva" disabled>Salva</button>
-                </div>
-                <div class="toolbar-group search-group">
-                    <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
-                    <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
-                </div>`;
+        handleDeleteRow() {
+            if (!this.state.lastSelectedRadio) {
+                alert("Nessuna riga selezionata.");
+                return;
+            }
+
+            const id = this.state.lastSelectedRadio.value;
+            const rowElement = this.state.lastSelectedRadio.closest('tr');
+            const rowName = rowElement.cells[2].textContent;
+
+            if (confirm(`Sei sicuro di voler eliminare "${rowName}"?`)) {
+                const config = this.viewConfig[this.state.currentView];
+                const endpoint = `${config.apiEndpoint}/${id}`;
+
+                this.apiFetch(endpoint, { method: 'DELETE' })
+                    .then(() => {
+                        alert("Elemento eliminato con successo.");
+                        this.loadAndRenderData(true);
+                    })
+                    .catch(error => {
+                        alert(`Errore durante l'eliminazione: ${error.message}`);
+                    });
+            }
+        },
+
+        handleEditRow() {
+            if (!this.state.lastSelectedRadio) {
+                alert("Nessuna riga selezionata.");
+                return;
+            }
+        
+            this.state.isEditingRow = true;
+            const row = this.state.lastSelectedRadio.closest('tr');
+            row.classList.add('editing-row');
+            const config = this.viewConfig[this.state.currentView];
+
+            config.columns.forEach((col, index) => {
+                if (col.editable) {
+                    const cell = row.cells[index + 2];
+                    const currentValue = cell.textContent;
+                    cell.innerHTML = `<input type="text" value="${currentValue}" data-key="${col.key}" style="width: 100%; box-sizing: border-box;">`;
+                }
+            });
+
+            // Update toolbar for editing state
+            this.renderToolbarForEditing();
+        },
+
+        async handleSaveChanges() {
+            const editingRow = document.querySelector('.editing-row');
+            if (!editingRow) return;
+
+            const config = this.viewConfig[this.state.currentView];
+            const updatedData = {};
+        
+            editingRow.querySelectorAll('input[data-key]').forEach(input => {
+                updatedData[input.dataset.key] = input.value;
+            });
+        
+            const id = this.state.lastSelectedRadio.value;
+            const endpoint = `${config.apiEndpoint}/${id}`;
+
+            try {
+                await this.apiFetch(endpoint, { method: 'PUT', body: updatedData });
+                alert("Elemento modificato con successo.");
+                this.state.isEditingRow = false;
+                this.loadAndRenderData(true);
+            } catch (error) {
+                alert(`Errore durante la modifica: ${error.message}`);
+            }
+        },
+
+        handleCancelEdit() {
+            this.state.isEditingRow = false;
+            this.loadAndRenderData(true); // Simply reload to cancel
+        },
+
+
+        renderToolbarForEditing() {
+            const editBtn = document.getElementById('editRowBtn');
+            const deleteBtn = document.getElementById('deleteRowBtn');
+            const addBtn = document.getElementById('addRowBtn');
+            const saveNewBtn = document.getElementById('saveNewRowBtn');
+        
+            // Hide standard buttons
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            addBtn.style.display = 'none';
+            saveNewBtn.textContent = "Salva Modifiche";
+            saveNewBtn.id = "saveChangesBtn"; // Temporarily change ID for the event handler
+            saveNewBtn.disabled = false;
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.id = 'cancelEditBtn';
+            cancelBtn.className = 'button icon-button button--danger';
+            cancelBtn.title = 'Annulla';
+            cancelBtn.innerHTML = '❌';
+        
+            saveNewBtn.parentElement.appendChild(cancelBtn);
         },
 
         renderTable() {
