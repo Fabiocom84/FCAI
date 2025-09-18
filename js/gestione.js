@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
                     <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
                     <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
-                    <button class="button button--primary" id="saveNewRowBtn" title="Salva" disabled>Salva</button>
+                    <button class="button icon-button button--primary" id="saveNewRowBtn" title="Salva" disabled>💾</button> {/* MODIFIED */}
                 </div>
                 <div class="toolbar-group search-group">
                     <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
@@ -277,9 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderToolbarForEditing() {
             const toolbarGroup = this.dom.toolbarArea.querySelector('.toolbar-group');
-            // Replace the content with two icon buttons: Save and Cancel
             toolbarGroup.innerHTML = `
-                <button class="button icon-button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button>
+                <button class="button icon-button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button> {/* MODIFIED */}
                 <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla Modifiche">❌</button>
             `;
         },
