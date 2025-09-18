@@ -385,20 +385,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeColumnFilters = this.state.activeFilters[columnKey] || [];
             const listItems = uniqueValues.map(value => {
                 const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
+                // Wrap each value in a span for easier searching
+                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
             }).join('');
 
+            // --- START OF MODIFICATION ---
             popup.innerHTML = `
+                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
                 <ul class="filter-popup-list">${listItems}</ul>
                 <div class="filter-popup-buttons">
                     <button class="button button--primary" id="apply-filter">Applica</button>
                     <button class="button button--secondary" id="clear-filter">Pulisci</button>
                 </div>`;
-            
+    
             document.body.appendChild(popup);
+    
+            // Positioning logic (remains the same)
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+
+            // Add live search functionality
+            const searchInput = popup.querySelector('#popup-search-input');
+            const listElements = popup.querySelectorAll('.filter-popup-list li');
+
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                listElements.forEach(li => {
+                    const valueSpan = li.querySelector('.filter-value');
+                    const valueText = valueSpan.textContent.toLowerCase();
+                    if (valueText.includes(searchTerm)) {
+                        li.style.display = '';
+                    } else {
+                        li.style.display = 'none';
+                    }
+                });
+            });
+            // --- END OF MODIFICATION ---
         },
 
         handleDocumentClick(event) {
