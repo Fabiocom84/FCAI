@@ -308,48 +308,56 @@ document.addEventListener('DOMContentLoaded', () => {
         updateToolbarState() {
             const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
 
+            // Get references to all controls
             const buttons = {
                 add: document.getElementById('addRowBtn'),
                 edit: document.getElementById('editRowBtn'),
                 del: document.getElementById('deleteRowBtn'),
                 save: document.getElementById('saveBtn'),
                 cancel: document.getElementById('cancelBtn'),
+                search: document.getElementById('searchBtn'),
             };
-            const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
+            const searchInput = document.getElementById('filter-search-term');
 
-            // Default state: show main buttons, hide action buttons
-            buttons.add.style.display = 'inline-flex';
-            buttons.edit.style.display = 'inline-flex';
-            buttons.del.style.display = 'inline-flex';
-            buttons.save.style.display = 'none';
-            buttons.cancel.style.display = 'none';
-            searchGroup.style.display = 'flex';
-            
-            // Rule: Main screen -> only Add and Search are enabled
-            buttons.add.disabled = false;
-            buttons.edit.disabled = true;
-            buttons.del.disabled = true;
+            // --- Apply Logic Based on State ---
 
-            // Rule: Row selected -> only Edit and Delete are enabled
-            if (lastSelectedRadio) {
-                buttons.add.disabled = true;
-                buttons.edit.disabled = false;
-                buttons.del.disabled = false;
-            }
-
-            // Rule: Adding or Editing -> only Save and Cancel are visible and enabled
+            // Rule: Adding or Editing
             if (isAddingNewRow || isEditingRow) {
-                buttons.add.style.display = 'none';
-                buttons.edit.style.display = 'none';
-                buttons.del.style.display = 'none';
-                searchGroup.style.display = 'none';
-                
-                buttons.save.style.display = 'inline-flex';
-                buttons.cancel.style.display = 'inline-flex';
                 buttons.save.disabled = false;
                 buttons.cancel.disabled = false;
+                
+                buttons.add.disabled = true;
+                buttons.edit.disabled = true;
+                buttons.del.disabled = true;
+                buttons.search.disabled = true;
+                searchInput.disabled = true;
+                return; // Stop here
             }
+
+            // Rule: A row is selected
+            if (lastSelectedRadio) {
+                buttons.edit.disabled = false;
+                buttons.del.disabled = false;
+                
+                buttons.add.disabled = true; // Can't add when a row is selected
+                buttons.save.disabled = true;
+                buttons.cancel.disabled = true;
+                buttons.search.disabled = false;
+                searchInput.disabled = false;
+                return; // Stop here
+            }
+
+            // Rule: Default state (no row selected, not adding/editing)
+            buttons.add.disabled = false;
+            buttons.search.disabled = false;
+            searchInput.disabled = false;
+
+            buttons.edit.disabled = true;
+            buttons.del.disabled = true;
+            buttons.save.disabled = true;
+            buttons.cancel.disabled = true;
         },
+
 
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
