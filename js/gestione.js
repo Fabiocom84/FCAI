@@ -461,41 +461,63 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
         
-        openColumnFilterPopup(iconElement, columnKey) {
+        async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
             const existingPopup = document.querySelector('.filter-popup');
             if (existingPopup) {
                 existingPopup.remove();
                 if (existingPopup.dataset.column === columnKey) return;
             }
-            const uniqueValues = [...new Set(this.state.tableData.map(item => item[columnKey]))].sort();
+
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
-            const activeColumnFilters = this.state.activeFilters[columnKey] || [];
-            const listItems = uniqueValues.map(value => {
-                const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
-            }).join('');
-            popup.innerHTML = `
-                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                <ul class="filter-popup-list">${listItems}</ul>
-                <div class="filter-popup-buttons">
-                    <button class="button button--primary" id="apply-filter">Applica</button>
-                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                </div>`;
+            // Show a loading message initially
+            popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
+            
             document.body.appendChild(popup);
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-            const searchInput = popup.querySelector('#popup-search-input');
-            const listElements = popup.querySelectorAll('.filter-popup-list li');
-            searchInput.addEventListener('input', () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                listElements.forEach(li => {
-                    const valueText = li.textContent.toLowerCase();
-                    li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+
+            try {
+                // --- START OF NEW LOGIC ---
+                // Call the new API to get ALL unique values
+                const tableName = this.state.currentView;
+                const uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                // --- END OF NEW LOGIC ---
+
+                const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                const listItems = uniqueValues.map(value => {
+                    const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                }).join('');
+
+                // Replace loading message with the full filter UI
+                popup.innerHTML = `
+                    <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                    <ul class="filter-popup-list">${listItems}</ul>
+                    <div class="filter-popup-buttons">
+                        <button class="button button--primary" id="apply-filter">Applica</button>
+                        <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                    </div>`;
+                
+                // Reposition after content is loaded, as width may have changed
+                popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+
+                // Add live search functionality
+                const searchInput = popup.querySelector('#popup-search-input');
+                const listElements = popup.querySelectorAll('.filter-popup-list li');
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    listElements.forEach(li => {
+                        const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
+                        li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                    });
                 });
-            });
+
+            } catch (error) {
+                popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
+            }
         },
 
         handleDocumentClick(event) {
