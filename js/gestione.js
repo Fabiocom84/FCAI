@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
-
             switch (button.id) {
                 case 'searchBtn': this.loadAndRenderData(true); break;
                 case 'addRowBtn': this.handleAddRow(); break;
@@ -80,10 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async loadAndRenderData(isNewQuery = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
-
-            if (isNewQuery) {
-                this.state.currentPage = 1;
-            }
+            if (isNewQuery) { this.state.currentPage = 1; }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
@@ -95,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
-            
             for (const key in this.state.activeFilters) {
                 this.state.activeFilters[key].forEach(value => params.append(key, value));
             }
@@ -103,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
                 const response = await this.apiFetch(endpoint);
-                
                 this.state.tableData = response.data;
                 this.renderTable();
                 this.renderPagination(response.count);
@@ -122,19 +116,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 save: document.getElementById('saveBtn'),
                 cancel: document.getElementById('cancelBtn'),
             };
-
-            if (!buttons.add) return;
+            if (!buttons.add) return; 
 
             const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
 
-            const showMain = !isAddingNewRow && !isEditingRow;
-            buttons.add.style.display = showMain ? 'inline-flex' : 'none';
-            buttons.edit.style.display = showMain ? 'inline-flex' : 'none';
-            buttons.del.style.display = showMain ? 'inline-flex' : 'none';
-            searchGroup.style.display = showMain ? 'flex' : 'none';
+            const showMainInterface = !isAddingNewRow && !isEditingRow;
+            buttons.add.style.display = showMainInterface ? 'inline-flex' : 'none';
+            buttons.edit.style.display = showMainInterface ? 'inline-flex' : 'none';
+            buttons.del.style.display = showMainInterface ? 'inline-flex' : 'none';
+            searchGroup.style.display = showMainInterface ? 'flex' : 'none';
 
-            buttons.save.style.display = !showMain ? 'inline-flex' : 'none';
-            buttons.cancel.style.display = !showMain ? 'inline-flex' : 'none';
+            const showActionInterface = isAddingNewRow || isEditingRow;
+            buttons.save.style.display = showActionInterface ? 'inline-flex' : 'none';
+            buttons.cancel.style.display = showActionInterface ? 'inline-flex' : 'none';
 
             buttons.edit.disabled = !lastSelectedRadio;
             buttons.del.disabled = !lastSelectedRadio;
@@ -224,8 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async handleDeleteRow() {
             if (!this.state.lastSelectedRadio) {
-                this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
-                return;
+                return this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
             }
             const id = this.state.lastSelectedRadio.value;
             const rowElement = this.state.lastSelectedRadio.closest('tr');
@@ -298,8 +291,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!config) return;
 
             if (data.length === 0 && this.state.isAddingNewRow) {
-                // Render empty structure for the new row form
-            } else if (!data || data.length === 0) {
+                 const table = document.createElement('table'); table.className = 'agile-table';
+                 const thead = table.createTHead(); const headerRow = thead.insertRow();
+                 const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
+                 fixedHeaders.forEach(header => { const th = document.createElement('th'); th.textContent = header.text; th.title = header.title; headerRow.appendChild(th); });
+                 config.columns.forEach(col => { const th = document.createElement('th'); const thContent = document.createElement('div'); thContent.className = 'column-header-content'; const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`; thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`; th.classList.toggle('filter-active', this.state.activeFilters[col.key]?.length > 0); th.appendChild(thContent); headerRow.appendChild(th); });
+                 table.createTBody(); this.dom.gridWrapper.innerHTML = ''; this.dom.gridWrapper.appendChild(table); return;
+            }
+            
+            if (!data || data.length === 0) {
                  this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
                  return;
             }
@@ -348,36 +348,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 existingPopup.remove();
                 if (existingPopup.dataset.column === columnKey) return;
             }
-            const uniqueValues = [...new Set(this.state.tableData.map(item => item[columnKey]))].sort();
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
-            const activeColumnFilters = this.state.activeFilters[columnKey] || [];
-            const listItems = uniqueValues.map(value => {
-                const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
-            }).join('');
-            popup.innerHTML = `
-                <div class="filter-popup-buttons">
-                    <button class="button button--primary" id="apply-filter">Applica</button>
-                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                </div>
-                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                <ul class="filter-popup-list">${listItems}</ul>
-            `;
+            popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
             document.body.appendChild(popup);
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-            const searchInput = popup.querySelector('#popup-search-input');
-            const listElements = popup.querySelectorAll('.filter-popup-list li');
-            searchInput.addEventListener('input', () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                listElements.forEach(li => {
-                    const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
-                    li.style.display = valueText.includes(searchTerm) ? '' : 'none';
-                });
-            });
+            const tableName = this.state.currentView;
+            this.apiFetch(`/api/distinct/${tableName}/${columnKey}`)
+                .then(uniqueValues => {
+                    const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                    const listItems = uniqueValues.map(value => {
+                        const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                        return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                    }).join('');
+                    popup.innerHTML = `
+                        <div class="filter-popup-buttons">
+                            <button class="button button--primary" id="apply-filter">Applica</button>
+                            <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                        </div>
+                        <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                        <ul class="filter-popup-list">${listItems}</ul>`;
+                    popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+                    const searchInput = popup.querySelector('#popup-search-input');
+                    const listElements = popup.querySelectorAll('.filter-popup-list li');
+                    searchInput.addEventListener('input', () => {
+                        const searchTerm = searchInput.value.toLowerCase();
+                        listElements.forEach(li => {
+                            const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
+                            li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                        });
+                    });
+                })
+                .catch(error => { popup.innerHTML = `<div class="error-text">Errore filtri</div>`; });
         },
 
         handleDocumentClick(event) {
