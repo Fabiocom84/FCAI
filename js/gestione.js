@@ -4,6 +4,9 @@ import { API_BASE_URL } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    /**
+     * Gestore dell'intera applicazione per la Vista Agile.
+     */
     const App = {
         dom: {},
         state: {
@@ -25,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         },
 
+        /**
+         * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
+         */
         init() {
             this.dom.viewSelector = document.getElementById('tableViewSelector');
             this.dom.toolbarArea = document.getElementById('toolbarArea');
@@ -38,14 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
             this.handleViewChange();
         },
 
+        /**
+         * Gestisce il cambio di vista dal menu a tendina.
+         */
         handleViewChange() {
             this.state.currentView = this.dom.viewSelector.value;
             this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
+            this.state.lastSelectedRadio = null;
             this.renderToolbar();
+            this.updateToolbarState();
             this.loadAndRenderData(true);
         },
 
+        /**
+         * Gestisce i click sui pulsanti della toolbar.
+         */
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
@@ -53,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (button.id) {
                 case 'searchBtn': this.loadAndRenderData(false); break;
                 case 'addRowBtn': this.handleAddRow(); break;
-                case 'saveNewRowBtn': this.handleSaveNewRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
                 case 'saveChangesBtn': this.handleSaveChanges(); break;
@@ -61,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         
+        /**
+         * Gestisce i click all'interno della griglia (selezione righe e icone filtro).
+         */
         handleTableClick(event) {
             const target = event.target;
             if (target.matches('.filter-icon')) {
@@ -72,6 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        /**
+         * Carica i dati dal backend e avvia il rendering della tabella.
+         */
         async loadAndRenderData(isInitialLoad = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
@@ -101,48 +120,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         
+        /**
+         * Aggiunge o rimuove una riga vuota per l'inserimento.
+         */
         handleAddRow() {
-            const saveBtn = document.getElementById('saveNewRowBtn');
             const existingNewRow = document.querySelector('.new-row-form');
 
             if (existingNewRow) {
                 existingNewRow.remove();
-                saveBtn.disabled = true;
                 this.state.isAddingNewRow = false;
-                return;
-            }
-
-            this.state.isAddingNewRow = true;
-            saveBtn.disabled = false;
-            document.getElementById('editRowBtn').disabled = true;
-            document.getElementById('deleteRowBtn').disabled = true;
-            
-            const config = this.viewConfig[this.state.currentView];
-            let table = this.dom.gridWrapper.querySelector('table');
-            if (!table) {
-                this.renderTable([]); 
-                table = this.dom.gridWrapper.querySelector('table');
-            }
-            const tbody = table.querySelector('tbody');
-
-            const newRow = tbody.insertRow(0);
-            newRow.classList.add('new-row-form', 'selected-row');
-            
-            newRow.insertCell().textContent = '*';
-            newRow.insertCell();
-
-            config.columns.forEach(col => {
-                const cell = newRow.insertCell();
-                if (col.editable) {
-                    const input = document.createElement('input');
-                    input.type = col.type || 'text';
-                    input.placeholder = col.label;
-                    input.dataset.key = col.key;
-                    cell.appendChild(input);
+            } else {
+                this.state.isAddingNewRow = true;
+                
+                const config = this.viewConfig[this.state.currentView];
+                let table = this.dom.gridWrapper.querySelector('table');
+                if (!table) {
+                    this.renderTable([]); 
+                    table = this.dom.gridWrapper.querySelector('table');
                 }
-            });
+                const tbody = table.querySelector('tbody');
+
+                const newRow = tbody.insertRow(0);
+                newRow.classList.add('new-row-form', 'selected-row');
+                
+                newRow.insertCell().textContent = '*';
+                newRow.insertCell();
+
+                config.columns.forEach(col => {
+                    const cell = newRow.insertCell();
+                    if (col.editable) {
+                        const input = document.createElement('input');
+                        input.type = col.type || 'text';
+                        input.placeholder = col.label;
+                        input.dataset.key = col.key;
+                        cell.appendChild(input);
+                    }
+                });
+            }
+            this.updateToolbarState();
         },
-        
+
+        /**
+         * Salva i dati inseriti nella nuova riga (chiamato da handleSaveChanges).
+         */
         async handleSaveNewRow() {
             const newRow = document.querySelector('.new-row-form');
             if (!newRow) return;
@@ -152,50 +172,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 newObject[input.dataset.key] = input.value;
             });
             if (Object.values(newObject).every(val => !val)) {
-                alert("Compilare almeno un campo per salvare.");
+                this.showModal({ title: 'Attenzione', message: 'Compilare almeno un campo per salvare.', confirmText: 'OK' });
                 return;
             }
             try {
                 await this.apiFetch(config.apiEndpoint, { method: 'POST', body: newObject });
-                document.getElementById('saveNewRowBtn').disabled = true;
                 this.state.isAddingNewRow = false;
                 await this.showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK' });
-                this.loadAndRenderData(true);
+                this.handleViewChange();
             } catch (error) {
                 this.showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK' });
             }
         },
         
+        /**
+         * Gestisce la logica di selezione/deselezione di una riga.
+         */
         handleRowSelection(currentRadio) {
-            const saveBtn = document.getElementById('saveNewRowBtn');
-            const editBtn = document.getElementById('editRowBtn');
-            const deleteBtn = document.getElementById('deleteRowBtn');
-            saveBtn.disabled = true;
             document.querySelectorAll('.agile-table tbody tr').forEach(r => r.classList.remove('selected-row'));
             if (this.state.lastSelectedRadio === currentRadio) {
                 currentRadio.checked = false;
                 this.state.lastSelectedRadio = null;
-                editBtn.disabled = true;
-                deleteBtn.disabled = true;
             } else {
                 currentRadio.closest('tr').classList.add('selected-row');
                 this.state.lastSelectedRadio = currentRadio;
-                editBtn.disabled = false;
-                deleteBtn.disabled = false;
             }
+            this.updateToolbarState();
         },
 
-        async handleDeleteRow() { // Make the function async
+        /**
+         * Gestisce la cancellazione di una riga selezionata.
+         */
+        async handleDeleteRow() {
             if (!this.state.lastSelectedRadio) {
-                return this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
+                this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
+                return;
             }
             const id = this.state.lastSelectedRadio.value;
             const rowElement = this.state.lastSelectedRadio.closest('tr');
             const rowName = rowElement.cells[2].textContent;
-
+            
             const isConfirmed = await this.showModal({
                 title: 'Conferma Eliminazione',
-                message: `Sei sicuro di voler eliminare il cliente "${rowName}"? L'azione è irreversibile.`,
+                message: `Sei sicuro di voler eliminare "${rowName}"? L'azione è irreversibile.`,
                 confirmText: 'Elimina',
                 cancelText: 'Annulla'
             });
@@ -206,18 +225,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     await this.apiFetch(endpoint, { method: 'DELETE' });
                     this.showModal({ title: 'Successo', message: 'Elemento eliminato con successo.', confirmText: 'OK' });
-                    this.loadAndRenderData(true);
+                    this.handleViewChange();
                 } catch (error) {
                     this.showModal({ title: 'Errore', message: `Errore durante l'eliminazione: ${error.message}`, confirmText: 'OK' });
                 }
             }
         },
 
+        /**
+         * Trasforma una riga in modalità di modifica.
+         */
         handleEditRow() {
-            if (!this.state.lastSelectedRadio) {
-                alert("Nessuna riga selezionata.");
-                return;
-            }
+            if (!this.state.lastSelectedRadio) return;
             this.state.isEditingRow = true;
             const row = this.state.lastSelectedRadio.closest('tr');
             row.classList.add('editing-row');
@@ -229,22 +248,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.innerHTML = `<input type="text" value="${currentValue}" data-key="${col.key}" style="width: 100%; box-sizing: border-box;">`;
                 }
             });
-            this.renderToolbarForEditing();
+            this.updateToolbarState();
         },
 
+        /**
+         * Salva le modifiche apportate a una riga.
+         */
         async handleSaveChanges() {
             const editingRow = document.querySelector('.editing-row');
             if (!editingRow) return;
-
             const config = this.viewConfig[this.state.currentView];
             const updatedData = {};
             editingRow.querySelectorAll('input[data-key]').forEach(input => {
                 updatedData[input.dataset.key] = input.value;
             });
-    
             const id = this.state.lastSelectedRadio.value;
             const endpoint = `${config.apiEndpoint}/${id}`;
-
             try {
                 await this.apiFetch(endpoint, { method: 'PUT', body: updatedData });
                 this.state.isEditingRow = false;
@@ -255,19 +274,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        /**
+         * Annulla la modalità di modifica.
+         */
         handleCancelEdit() {
+            this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
-            this.handleViewChange(); // Resets the entire view, including toolbar and data
+            this.loadAndRenderData(true).then(() => this.updateToolbarState());
         },
-
+        
+        // --- Funzioni di Rendering e Utility ---
+        
         renderToolbar() {
             const view = this.state.currentView;
             this.dom.toolbarArea.innerHTML = `
                 <div class="toolbar-group">
                     <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
-                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
-                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
-                    <button class="button icon-button button--primary" id="saveNewRowBtn" title="Salva" disabled>💾</button>
+                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica">✏️</button>
+                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella">🗑️</button>
+                    <button class="button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button>
+                    <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla">❌</button>
                 </div>
                 <div class="toolbar-group search-group">
                     <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
@@ -275,35 +301,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         },
 
-        renderToolbarForEditing() {
-            const toolbarGroup = this.dom.toolbarArea.querySelector('.toolbar-group');
-            toolbarGroup.innerHTML = `
-                <button class="button icon-button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button>
-                <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla Modifiche">❌</button>
-            `;
+        updateToolbarState() {
+            const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
+            const buttons = {
+                add: document.getElementById('addRowBtn'),
+                edit: document.getElementById('editRowBtn'),
+                del: document.getElementById('deleteRowBtn'),
+                save: document.getElementById('saveChangesBtn'),
+                cancel: document.getElementById('cancelEditBtn'),
+            };
+            const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
+
+            // Default state
+            buttons.add.style.display = 'inline-flex';
+            buttons.edit.style.display = 'inline-flex';
+            buttons.del.style.display = 'inline-flex';
+            buttons.save.style.display = 'none';
+            buttons.cancel.style.display = 'none';
+            searchGroup.style.display = 'flex';
+            
+            buttons.edit.disabled = !lastSelectedRadio;
+            buttons.del.disabled = !lastSelectedRadio;
+
+            if (isAddingNewRow) {
+                buttons.add.style.display = 'none';
+                buttons.edit.style.display = 'none';
+                buttons.del.style.display = 'none';
+                buttons.save.style.display = 'inline-flex';
+                buttons.cancel.style.display = 'inline-flex';
+                // Switch save button logic
+                buttons.save.id = 'saveNewRowBtn';
+            } else if (isEditingRow) {
+                buttons.add.style.display = 'none';
+                buttons.edit.style.display = 'none';
+                buttons.del.style.display = 'none';
+                buttons.save.style.display = 'inline-flex';
+                buttons.cancel.style.display = 'inline-flex';
+                 // Switch save button logic
+                buttons.save.id = 'saveChangesBtn';
+            }
         },
 
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
-
-            // If data is explicitly passed as empty, create the structure for the new row form
-            if (data.length === 0 && !document.querySelector('.placeholder-text')) {
-                this.dom.gridWrapper.innerHTML = '';
-                const table = document.createElement('table');
-                table.className = 'agile-table';
-                const thead = table.createTHead();
-                // ... create headers ...
-                const tbody = table.createTBody();
-                this.dom.gridWrapper.appendChild(table);
-                return;
-            }
-
-            if (data.length === 0) {
+            if (data.length === 0 && this.state.isAddingNewRow) {
+                // If adding and table is empty, still show structure
+            } else if (!data || data.length === 0) {
                  this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
                  return;
             }
-
             const table = document.createElement('table');
             table.className = 'agile-table';
             const thead = table.createTHead();
@@ -380,52 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
 
-        /**
-        * Shows a custom modal and returns a Promise that resolves with the user's choice.
-        * @param {object} options - Configuration for the modal.
-        * @param {string} options.title - The title of the modal.
-        * @param {string} options.message - The body text of the modal.
-        * @param {string} options.confirmText - Text for the confirmation button (e.g., 'OK', 'Elimina').
-        * @param {string} [options.cancelText] - Optional text for a cancel button. If provided, shows two buttons.
-        * @returns {Promise<boolean>} - Resolves true if confirmed, false if canceled.
-        */
-        showModal({ title, message, confirmText, cancelText }) {
-            return new Promise(resolve => {
-                const overlay = document.getElementById('custom-modal-overlay');
-                const modalTitle = document.getElementById('custom-modal-title');
-                const modalMessage = document.getElementById('custom-modal-message');
-                const modalButtons = document.getElementById('custom-modal-buttons');
-
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                modalButtons.innerHTML = ''; // Clear previous buttons
-
-                // Create Confirm Button
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = confirmText;
-                confirmBtn.className = 'button button--primary';
-                modalButtons.appendChild(confirmBtn);
-                confirmBtn.onclick = () => {
-                    overlay.style.display = 'none';
-                    resolve(true);
-                };
-
-                // Create Cancel Button (only if cancelText is provided)
-                if (cancelText) {
-                    const cancelBtn = document.createElement('button');
-                    cancelBtn.textContent = cancelText;
-                    cancelBtn.className = 'button'; // Default button style
-                    modalButtons.appendChild(cancelBtn);
-                    cancelBtn.onclick = () => {
-                        overlay.style.display = 'none';
-                        resolve(false);
-                    };
-                }
-
-                overlay.style.display = 'flex';
-            });
-        },
-
         handleDocumentClick(event) {
             const popup = document.querySelector('.filter-popup');
             if (!popup) return;
@@ -462,7 +463,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Errore nella chiamata API a ${endpoint}:`, error);
                 throw error;
             }
-        }
+        },
+
+        showModal({ title, message, confirmText, cancelText }) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('custom-modal-overlay');
+                const modalTitle = document.getElementById('custom-modal-title');
+                const modalMessage = document.getElementById('custom-modal-message');
+                const modalButtons = document.getElementById('custom-modal-buttons');
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalButtons.innerHTML = ''; 
+                const confirmBtn = document.createElement('button');
+                confirmBtn.textContent = confirmText;
+                confirmBtn.className = 'button button--primary';
+                modalButtons.appendChild(confirmBtn);
+                confirmBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(true);
+                };
+                if (cancelText) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = cancelText;
+                    cancelBtn.className = 'button';
+                    modalButtons.appendChild(cancelBtn);
+                    cancelBtn.onclick = () => {
+                        overlay.style.display = 'none';
+                        resolve(false);
+                    };
+                }
+                overlay.style.display = 'flex';
+            });
+        },
     };
     
     App.init();
