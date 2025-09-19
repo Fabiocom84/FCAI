@@ -209,7 +209,12 @@
 }
 .filter-popup-list { list-style: none; padding: 0; margin: 0; }
 .filter-popup-list li { padding: 4px 0; white-space: nowrap; }
-.filter-popup-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
+.filter-popup-buttons {
+    margin-top: 5px;
+    margin-bottom: 10px; /* Adds space below the buttons */
+    display: flex;
+    justify-content: space-between;
+}
 .filter-popup input[type="text"] {
     width: 100%;
     padding: 6px 8px;
