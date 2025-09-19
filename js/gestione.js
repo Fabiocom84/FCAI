@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             },
         
-        async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
+        openColumnFilterPopup(iconElement, columnKey) {
             const existingPopup = document.querySelector('.filter-popup');
             if (existingPopup) {
                 existingPopup.remove();
@@ -459,7 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
-            // Show a loading message initially
             popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
             
             document.body.appendChild(popup);
@@ -467,46 +466,45 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
-            try {
-                // --- START OF NEW LOGIC ---
-                // Call the new API to get ALL unique values
-                const tableName = this.state.currentView;
-                const uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
-                // --- END OF NEW LOGIC ---
+            // --- START OF CORRECTION ---
+            // We removed the unnecessary async wrapper and now directly call the API.
+            const tableName = this.state.currentView;
+            this.apiFetch(`/api/distinct/${tableName}/${columnKey}`)
+                .then(uniqueValues => {
+                    const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                    const listItems = uniqueValues.map(value => {
+                        const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                        return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                    }).join('');
 
-                const activeColumnFilters = this.state.activeFilters[columnKey] || [];
-                const listItems = uniqueValues.map(value => {
-                    const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
-                }).join('');
+                    // The buttons are at the top.
+                    popup.innerHTML = `
+                        <div class="filter-popup-buttons">
+                            <button class="button button--primary" id="apply-filter">Applica</button>
+                            <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                        </div>
+                        <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                        <ul class="filter-popup-list">${listItems}</ul>
+                    `;
+                    
+                    // Reposition after content is loaded
+                    popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
-                // Replace loading message with the full filter UI
-                popup.innerHTML = `
-                    <div class="filter-popup-buttons">
-                        <button class="button button--primary" id="apply-filter">Applica</button>
-                        <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                    </div>
-                    <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                    <ul class="filter-popup-list">${listItems}</ul>
-                `;
-                
-                // Reposition after content is loaded, as width may have changed
-                popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-
-                // Add live search functionality
-                const searchInput = popup.querySelector('#popup-search-input');
-                const listElements = popup.querySelectorAll('.filter-popup-list li');
-                searchInput.addEventListener('input', () => {
-                    const searchTerm = searchInput.value.toLowerCase();
-                    listElements.forEach(li => {
-                        const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
-                        li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                    // Add live search functionality
+                    const searchInput = popup.querySelector('#popup-search-input');
+                    const listElements = popup.querySelectorAll('.filter-popup-list li');
+                    searchInput.addEventListener('input', () => {
+                        const searchTerm = searchInput.value.toLowerCase();
+                        listElements.forEach(li => {
+                            const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
+                            li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                        });
                     });
+                })
+                .catch(error => {
+                    popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
                 });
-
-            } catch (error) {
-                popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
-            }
+            // --- END OF CORRECTION ---
         },
 
         handleDocumentClick(event) {
