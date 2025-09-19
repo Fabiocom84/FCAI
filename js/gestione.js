@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.state.isEditingRow = false;
             this.state.lastSelectedRadio = null;
             this.renderToolbar();
-            this.updateToolbarState();
-            this.loadAndRenderData(true);
+            // Resetta lo stato e carica la prima pagina della nuova vista
+            this.loadAndRenderData(true); 
         },
 
         /**
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!button) return;
 
             switch (button.id) {
-                case 'searchBtn': this.loadAndRenderData(false); break;
+                case 'searchBtn': this.loadAndRenderData(true); break;
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
@@ -95,36 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         /**
          * Carica i dati dal backend e avvia il rendering della tabella.
          */
-        async loadAndRenderData(isInitialLoad = false) {
+        async loadAndRenderData(isNewQuery = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            // --- START OF CORRECTION ---
-            // If this is a new search/filter (not an initial load and not a page change),
-            // reset to page 1.
-            if (!isInitialLoad) {
+            // Se è una nuova ricerca o un nuovo filtro, torna sempre alla pagina 1
+            if (isNewQuery) {
                 this.state.currentPage = 1;
             }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
             
-            // Add page number to every request
+            // Includi sempre tutti i parametri di stato attuali
             params.append('page', this.state.currentPage);
+            params.append('limit', '50');
+            params.append('sortBy', config.columns[0].key);
+            params.append('sortOrder', 'asc');
 
-            // Add search and column filters to every request
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
             
             for (const key in this.state.activeFilters) {
                 this.state.activeFilters[key].forEach(value => params.append(key, value));
             }
-            
-            // Add default sorting/limit to EVERY request to ensure consistency
-            params.append('limit', '50');
-            params.append('sortBy', config.columns[0].key);
-            params.append('sortOrder', 'asc');
-            // --- END OF CORRECTION ---
 
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
@@ -456,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', (e) => {
                     const page = parseInt(e.currentTarget.dataset.page, 10);
                     this.state.currentPage = page;
-                    this.loadAndRenderData();
+                    this.loadAndRenderData(false);
                 });
             });
         },
@@ -523,16 +517,17 @@ document.addEventListener('DOMContentLoaded', () => {
         handleDocumentClick(event) {
             const popup = document.querySelector('.filter-popup');
             if (!popup) return;
+
             const target = event.target;
             if (target.id === 'apply-filter') {
                 const columnKey = popup.dataset.column;
                 this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                this.loadAndRenderData(false);
+                this.loadAndRenderData(true); // Esegui come nuova query
                 popup.remove();
             } else if (target.id === 'clear-filter') {
                 const columnKey = popup.dataset.column;
                 delete this.state.activeFilters[columnKey];
-                this.loadAndRenderData(false);
+                this.loadAndRenderData(true); // Esegui come nuova query
                 popup.remove();
             } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
                 popup.remove();
