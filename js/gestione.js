@@ -1,4 +1,4 @@
-// js/gestione.js - Versione Completa, Corretta e Ottimizzata
+// js/gestione.js - Versione Definitiva Corretta
 
 import { API_BASE_URL } from './config.js';
 
@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
+
             switch (button.id) {
                 case 'searchBtn': this.loadAndRenderData(true); break;
                 case 'addRowBtn': this.handleAddRow(); break;
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async loadAndRenderData(isNewQuery = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
+
             if (isNewQuery) { this.state.currentPage = 1; }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
@@ -91,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
+            
             for (const key in this.state.activeFilters) {
                 this.state.activeFilters[key].forEach(value => params.append(key, value));
             }
@@ -98,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
                 const response = await this.apiFetch(endpoint);
+                
                 this.state.tableData = response.data;
                 this.renderTable();
                 this.renderPagination(response.count);
@@ -116,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 save: document.getElementById('saveBtn'),
                 cancel: document.getElementById('cancelBtn'),
             };
-            if (!buttons.add) return; 
+            if (!buttons.add) return;
 
             const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
 
@@ -289,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
+            const container = this.dom.gridWrapper;
 
             if (data.length === 0 && this.state.isAddingNewRow) {
                  const table = document.createElement('table'); table.className = 'agile-table';
@@ -296,11 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
                  const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
                  fixedHeaders.forEach(header => { const th = document.createElement('th'); th.textContent = header.text; th.title = header.title; headerRow.appendChild(th); });
                  config.columns.forEach(col => { const th = document.createElement('th'); const thContent = document.createElement('div'); thContent.className = 'column-header-content'; const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`; thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`; th.classList.toggle('filter-active', this.state.activeFilters[col.key]?.length > 0); th.appendChild(thContent); headerRow.appendChild(th); });
-                 table.createTBody(); this.dom.gridWrapper.innerHTML = ''; this.dom.gridWrapper.appendChild(table); return;
+                 table.createTBody(); container.innerHTML = ''; container.appendChild(table);
+                 return;
             }
             
             if (!data || data.length === 0) {
-                 this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
+                 container.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
                  return;
             }
             const table = document.createElement('table');
@@ -338,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.insertCell().textContent = rowData[col.key] || '';
                 });
             });
-            this.dom.gridWrapper.innerHTML = '';
-            this.dom.gridWrapper.appendChild(table);
+            container.innerHTML = '';
+            container.appendChild(table);
         },
         
         openColumnFilterPopup(iconElement, columnKey) {
