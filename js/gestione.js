@@ -99,40 +99,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            if (isInitialLoad) {
-                this.state.activeFilters = {};
+            // --- START OF CORRECTION ---
+            // If this is a new search/filter (not an initial load and not a page change),
+            // reset to page 1.
+            if (!isInitialLoad) {
                 this.state.currentPage = 1;
             }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
-
+            
             // Add page number to every request
             params.append('page', this.state.currentPage);
 
+            // Add search and column filters to every request
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
+            
             for (const key in this.state.activeFilters) {
                 this.state.activeFilters[key].forEach(value => params.append(key, value));
             }
-
-            // Add default sorting/limit if it's the initial load
-            if(isInitialLoad){
-                 params.append('limit', '50');
-                 params.append('sortBy', config.columns[0].key);
-                 params.append('sortOrder', 'asc');
-            }
+            
+            // Add default sorting/limit to EVERY request to ensure consistency
+            params.append('limit', '50');
+            params.append('sortBy', config.columns[0].key);
+            params.append('sortOrder', 'asc');
+            // --- END OF CORRECTION ---
 
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
-                const response = await this.apiFetch(endpoint); // response is now {data, count}
-
+                const response = await this.apiFetch(endpoint);
+                
                 this.state.tableData = response.data;
                 this.renderTable();
-                this.renderPagination(response.count); // Render pagination controls
+                this.renderPagination(response.count);
             } catch (error) {
                 this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
-                document.getElementById('pagination-container').innerHTML = ''; // Clear pagination on error
+                document.getElementById('pagination-container').innerHTML = '';
             }
         },
         
