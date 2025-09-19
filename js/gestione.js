@@ -66,7 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!button) return;
 
             switch (button.id) {
-                case 'searchBtn': this.loadAndRenderData(true); break;
+                // When searching, it's a new query
+                case 'searchBtn': this.loadAndRenderData(true); break; 
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            // Se è una nuova ricerca o un nuovo filtro, torna sempre alla pagina 1
+            // If it's a new search or a new filter, always reset to page 1
             if (isNewQuery) {
                 this.state.currentPage = 1;
             }
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
             
-            // Includi sempre tutti i parametri di stato attuali
+            // Always include all current state parameters in the request
             params.append('page', this.state.currentPage);
             params.append('limit', '50');
             params.append('sortBy', config.columns[0].key);
@@ -420,7 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPagination(totalItems) {
             const container = document.getElementById('pagination-container');
             if (!container) return;
-
             const pageSize = 50;
             const totalPages = Math.ceil(totalItems / pageSize);
             const currentPage = this.state.currentPage;
@@ -431,29 +431,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let paginationHTML = '';
+                paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Precedente</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+                }
+                paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Successivo &raquo;</button>`;
+                container.innerHTML = paginationHTML;
 
-            // Previous button
-            paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Precedente</button>`;
-
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-            }
-
-            // Next button
-            paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Successivo &raquo;</button>`;
-
-            container.innerHTML = paginationHTML;
-
-            // Add event listeners to the new buttons
-            container.querySelectorAll('.page-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const page = parseInt(e.currentTarget.dataset.page, 10);
-                    this.state.currentPage = page;
-                    this.loadAndRenderData(false);
+                // Correctly add event listeners for page changes
+                container.querySelectorAll('.page-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const page = parseInt(e.currentTarget.dataset.page, 10);
+                        this.state.currentPage = page;
+                        // A page click is NOT a new query, so we pass false
+                        this.loadAndRenderData(false); 
+                    });
                 });
-            });
-        },
+            },
         
         async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
             const existingPopup = document.querySelector('.filter-popup');
@@ -517,17 +511,18 @@ document.addEventListener('DOMContentLoaded', () => {
         handleDocumentClick(event) {
             const popup = document.querySelector('.filter-popup');
             if (!popup) return;
-
             const target = event.target;
             if (target.id === 'apply-filter') {
                 const columnKey = popup.dataset.column;
                 this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                this.loadAndRenderData(true); // Esegui come nuova query
+                // Applying a filter IS a new query
+                this.loadAndRenderData(true); 
                 popup.remove();
             } else if (target.id === 'clear-filter') {
                 const columnKey = popup.dataset.column;
                 delete this.state.activeFilters[columnKey];
-                this.loadAndRenderData(true); // Esegui come nuova query
+                // Clearing a filter IS a new query
+                this.loadAndRenderData(true); 
                 popup.remove();
             } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
                 popup.remove();
