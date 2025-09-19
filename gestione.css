@@ -44,6 +44,21 @@
     font-weight: 600;
 }
 
+/* Stile per il selettore della vista nell'header */
+.agile-view-body .view-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em; /* Aumenta la dimensione base del testo */
+}
+
+.agile-view-body .view-selector-container select {
+    font-size: 1em; /* Eredita la dimensione dal contenitore e la mantiene a 100% */
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
 /* 2. BARRA DEGLI STRUMENTI (TOOLBAR)
    ========================================================================== */
 .agile-view-body .agile-toolbar {
