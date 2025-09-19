@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentView: null,
             activeFilters: {},
             tableData: [],
+            currentPage: 1,
             isAddingNewRow: false,
             isEditingRow: false,
             lastSelectedRadio: null,
@@ -98,28 +99,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
+            if (isInitialLoad) {
+                this.state.activeFilters = {};
+                this.state.currentPage = 1;
+            }
+
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
 
-            if (isInitialLoad) {
-                this.state.activeFilters = {};
-                params.append('limit', '50');
-                params.append('sortBy', config.columns[0].key);
-                params.append('sortOrder', 'asc');
-            } else {
-                const searchTerm = document.getElementById('filter-search-term')?.value;
-                if (searchTerm) params.append('search', searchTerm);
-                for (const key in this.state.activeFilters) {
-                    this.state.activeFilters[key].forEach(value => params.append(key, value));
-                }
+            // Add page number to every request
+            params.append('page', this.state.currentPage);
+
+            const searchTerm = document.getElementById('filter-search-term')?.value;
+            if (searchTerm) params.append('search', searchTerm);
+            for (const key in this.state.activeFilters) {
+                this.state.activeFilters[key].forEach(value => params.append(key, value));
+            }
+
+            // Add default sorting/limit if it's the initial load
+            if(isInitialLoad){
+                 params.append('limit', '50');
+                 params.append('sortBy', config.columns[0].key);
+                 params.append('sortOrder', 'asc');
             }
 
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
-                this.state.tableData = await this.apiFetch(endpoint);
+                const response = await this.apiFetch(endpoint); // response is now {data, count}
+
+                this.state.tableData = response.data;
                 this.renderTable();
+                this.renderPagination(response.count); // Render pagination controls
             } catch (error) {
                 this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
+                document.getElementById('pagination-container').innerHTML = ''; // Clear pagination on error
             }
         },
         
@@ -134,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.state.isAddingNewRow = false;
             } else {
                 this.state.isAddingNewRow = true;
-                
+
                 const config = this.viewConfig[this.state.currentView];
                 let table = this.dom.gridWrapper.querySelector('table');
                 if (!table) {
@@ -405,6 +418,44 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             this.dom.gridWrapper.innerHTML = '';
             this.dom.gridWrapper.appendChild(table);
+        },
+
+        renderPagination(totalItems) {
+            const container = document.getElementById('pagination-container');
+            if (!container) return;
+
+            const pageSize = 50;
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const currentPage = this.state.currentPage;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // Previous button
+            paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Precedente</button>`;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+            }
+
+            // Next button
+            paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Successivo &raquo;</button>`;
+
+            container.innerHTML = paginationHTML;
+
+            // Add event listeners to the new buttons
+            container.querySelectorAll('.page-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const page = parseInt(e.currentTarget.dataset.page, 10);
+                    this.state.currentPage = page;
+                    this.loadAndRenderData();
+                });
+            });
         },
         
         openColumnFilterPopup(iconElement, columnKey) {

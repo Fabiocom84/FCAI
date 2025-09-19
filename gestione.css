@@ -271,3 +271,37 @@
     justify-content: center;
     gap: 15px;
 }
+
+/* 8. PAGINATION
+   ========================================================================== */
+.agile-view-body .pagination-container {
+    padding: 15px 25px;
+    border-top: 1px solid #dcdcdc;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.agile-view-body .page-btn {
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #007bff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.agile-view-body .page-btn:hover:not([disabled]) {
+    background-color: #e9ecef;
+}
+.agile-view-body .page-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    cursor: default;
+}
+.agile-view-body .page-btn:disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
