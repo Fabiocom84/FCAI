@@ -69,8 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
-                case 'saveChangesBtn': this.handleSaveChanges(); break;
-                case 'cancelEditBtn': this.handleCancelEdit(); break;
+                case 'saveBtn': 
+                    if (this.state.isAddingNewRow) this.handleSaveNewRow();
+                    if (this.state.isEditingRow) this.handleSaveChanges();
+                    break;
+                case 'cancelBtn': this.handleCancelEdit(); break;
             }
         },
         
@@ -287,13 +290,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderToolbar() {
             const view = this.state.currentView;
+            // Render all buttons at once. Their visibility will be controlled by CSS/JS.
             this.dom.toolbarArea.innerHTML = `
                 <div class="toolbar-group">
                     <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
                     <button class="button icon-button button--warning" id="editRowBtn" title="Modifica">✏️</button>
                     <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella">🗑️</button>
-                    <button class="button button--primary" id="saveChangesBtn" title="Salva Modifiche">💾</button>
-                    <button class="button icon-button button--danger" id="cancelEditBtn" title="Annulla">❌</button>
+                    <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
+                    <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
                 </div>
                 <div class="toolbar-group search-group">
                     <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
@@ -303,16 +307,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateToolbarState() {
             const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
+
             const buttons = {
                 add: document.getElementById('addRowBtn'),
                 edit: document.getElementById('editRowBtn'),
                 del: document.getElementById('deleteRowBtn'),
-                save: document.getElementById('saveChangesBtn'),
-                cancel: document.getElementById('cancelEditBtn'),
+                save: document.getElementById('saveBtn'),
+                cancel: document.getElementById('cancelBtn'),
             };
             const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
 
-            // Default state
+            // Default state: show main buttons, hide action buttons
             buttons.add.style.display = 'inline-flex';
             buttons.edit.style.display = 'inline-flex';
             buttons.del.style.display = 'inline-flex';
@@ -320,25 +325,29 @@ document.addEventListener('DOMContentLoaded', () => {
             buttons.cancel.style.display = 'none';
             searchGroup.style.display = 'flex';
             
-            buttons.edit.disabled = !lastSelectedRadio;
-            buttons.del.disabled = !lastSelectedRadio;
+            // Rule: Main screen -> only Add and Search are enabled
+            buttons.add.disabled = false;
+            buttons.edit.disabled = true;
+            buttons.del.disabled = true;
 
-            if (isAddingNewRow) {
+            // Rule: Row selected -> only Edit and Delete are enabled
+            if (lastSelectedRadio) {
+                buttons.add.disabled = true;
+                buttons.edit.disabled = false;
+                buttons.del.disabled = false;
+            }
+
+            // Rule: Adding or Editing -> only Save and Cancel are visible and enabled
+            if (isAddingNewRow || isEditingRow) {
                 buttons.add.style.display = 'none';
                 buttons.edit.style.display = 'none';
                 buttons.del.style.display = 'none';
+                searchGroup.style.display = 'none';
+                
                 buttons.save.style.display = 'inline-flex';
                 buttons.cancel.style.display = 'inline-flex';
-                // Switch save button logic
-                buttons.save.id = 'saveNewRowBtn';
-            } else if (isEditingRow) {
-                buttons.add.style.display = 'none';
-                buttons.edit.style.display = 'none';
-                buttons.del.style.display = 'none';
-                buttons.save.style.display = 'inline-flex';
-                buttons.cancel.style.display = 'inline-flex';
-                 // Switch save button logic
-                buttons.save.id = 'saveChangesBtn';
+                buttons.save.disabled = false;
+                buttons.cancel.disabled = false;
             }
         },
 
