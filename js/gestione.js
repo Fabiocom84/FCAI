@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_cliente'
             },
+            'ruoli': {
+                apiEndpoint: '/api/ruoli',
+                columns: [
+                    { key: 'nome_ruolo', label: 'Nome Ruolo', editable: true },
+                    { key: 'descrizione_ruolo', label: 'Descrizione', editable: true }
+                ],
+                idColumn: 'id_ruolo'
+            },
             'aziende': {
                 apiEndpoint: '/api/aziende',
                 columns: [
