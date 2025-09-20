@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_cliente'
             },
+            'aziende': {
+                apiEndpoint: '/api/aziende',
+                columns: [
+                    { key: 'ragione_sociale', label: 'Ragione Sociale', editable: true },
+                    { key: 'sede', label: 'Sede', editable: true }
+                ],
+                idColumn: 'id_azienda'
+            },
             'personale': {
                 apiEndpoint: '/api/personale',
                 columns: [
