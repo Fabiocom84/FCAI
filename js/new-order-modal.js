@@ -37,7 +37,7 @@ window.cleanupNewOrderModal = function() {
  */
 async function loadDynamicDropdowns() {
     try {
-        const response = await apiFetch('/api/commesse-init-data');
+        const responseData = await window.apiFetch('/api/commesse-init-data');
 
         // Popola tutti e tre i menu
         populateSelect(clienteSelect, response.clienti, 'ragione_sociale', 'id_cliente');
@@ -78,7 +78,7 @@ async function saveNewOrder(event) {
     const formData = new FormData(newOrderForm);
 
     try {
-        const result = await apiFetch('/api/commesse', {
+        const response = await window.apiFetch('/api/commesse', {
             method: 'POST',
             body: formData
         });
