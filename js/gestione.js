@@ -43,6 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_azienda'
             },
+            'modelli': {
+                apiEndpoint: '/api/modelli',
+                columns: [
+                    { key: 'nome_modello', label: 'Nome Modello', editable: true },
+                    { key: 'descrizione_modello', label: 'Descrizione', editable: true }
+                ],
+                idColumn: 'id_modello'
+            },
             'personale': {
                 apiEndpoint: '/api/personale',
                 columns: [
