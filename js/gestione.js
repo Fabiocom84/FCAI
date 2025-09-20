@@ -31,31 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 apiEndpoint: '/api/personale',
                 columns: [
                     { key: 'nome_cognome', label: 'Nome Cognome', editable: true, type: 'text' },
+                    { key: 'data_nascita', label: 'Data di Nascita', editable: true, type: 'date' },
                     { key: 'email', label: 'Email', editable: true, type: 'text' },
                     { key: 'telefono', label: 'Telefono', editable: true, type: 'text' },
-                    // --- COLONNE MODIFICATE ---
                     { 
                         key: 'id_ruolo_fk', 
-                        displayKey: 'ruoli.nome_ruolo', // Percorso per visualizzare il nome
                         label: 'Ruolo', 
                         editable: true, 
                         type: 'foreignKey',
-                        options: { // Istruzioni per popolare il menu
-                            apiEndpoint: '/api/ruoli',
-                            valueField: 'id_ruolo',
-                            textField: 'nome_ruolo'
+                        options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
+                        // --- NUOVO: Formattatore personalizzato per la visualizzazione ---
+                        formatter: (rowData) => {
+                            const ruolo = rowData.ruoli;
+                            return ruolo ? `${ruolo.id_ruolo}=${ruolo.nome_ruolo}` : 'N/A';
                         }
                     },
                     { 
                         key: 'id_azienda_fk', 
-                        displayKey: 'aziende.ragione_sociale',
                         label: 'Azienda', 
                         editable: true, 
                         type: 'foreignKey',
-                        options: {
-                            apiEndpoint: '/api/aziende',
-                            valueField: 'id_azienda',
-                            textField: 'ragione_sociale'
+                        options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
+                        // --- NUOVO: Formattatore personalizzato per la visualizzazione ---
+                        formatter: (rowData) => {
+                            const azienda = rowData.aziende;
+                            const sede = azienda.sede ? `+${azienda.sede}` : '';
+                            return azienda ? `${azienda.ragione_sociale}${sede}` : 'N/A';
                         }
                     },
                     { key: 'attivo', label: 'Attivo', editable: true, type: 'boolean' }
@@ -460,10 +461,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     radio.type = 'radio'; radio.name = 'rowSelector';
                     radio.value = rowData[config.idColumn]; cellSelect.appendChild(radio);
                     
-                    // --- MODIFICA QUI ---
-                    // Ora usiamo la nuova funzione per leggere i dati, anche quelli annidati
                     config.columns.forEach(col => {
-                        const cellValue = this.getPropertyByString(rowData, col.key) || '';
+                        let cellValue;
+                        // Se esiste un formattatore personalizzato, usalo
+                        if (col.formatter) {
+                            cellValue = col.formatter(rowData);
+                        } else {
+                        // Altrimenti, usa la logica standard
+                            const displayKey = col.displayKey || col.key;
+                            cellValue = this.getPropertyByString(rowData, displayKey) || '';
+                        }
                         row.insertCell().textContent = cellValue;
                     });
                 });
@@ -615,6 +622,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async createCellInput(columnConfig, currentValue = '') {
             const key = columnConfig.key;
+
+            // --- NUOVO: Caso per il tipo 'date' ---
+            if (columnConfig.type === 'date') {
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.dataset.key = key;
+                // Formatta la data per il campo input (es. da ISO a YYYY-MM-DD)
+                if (currentValue) {
+                    try {
+                        input.value = new Date(currentValue).toISOString().split('T')[0];
+                    } catch (e) {
+                        input.value = '';
+                    }
+                }
+                return input;
+            }
 
             // Caso 1: Valore Booleano
             if (columnConfig.type === 'boolean') {
