@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.state.isEditingRow = false;
             this.state.lastSelectedRadio = null;
             this.renderToolbar();
-            this.updateToolbarState();
-            this.loadAndRenderData(true);
+            // Resetta lo stato e carica la prima pagina della nuova vista
+            this.loadAndRenderData(true); 
         },
 
         /**
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!button) return;
 
             switch (button.id) {
-                case 'searchBtn': this.loadAndRenderData(false); break;
+                case 'searchBtn': this.loadAndRenderData(true); break;
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
@@ -95,36 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         /**
          * Carica i dati dal backend e avvia il rendering della tabella.
          */
-        async loadAndRenderData(isInitialLoad = false) {
+        async loadAndRenderData(isNewQuery = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            // --- START OF CORRECTION ---
-            // If this is a new search/filter (not an initial load and not a page change),
-            // reset to page 1.
-            if (!isInitialLoad) {
+            // Se è una nuova ricerca o un nuovo filtro, torna sempre alla pagina 1
+            if (isNewQuery) {
                 this.state.currentPage = 1;
             }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
             
-            // Add page number to every request
+            // Includi sempre tutti i parametri di stato attuali
             params.append('page', this.state.currentPage);
+            params.append('limit', '50');
+            params.append('sortBy', config.columns[0].key);
+            params.append('sortOrder', 'asc');
 
-            // Add search and column filters to every request
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
             
             for (const key in this.state.activeFilters) {
                 this.state.activeFilters[key].forEach(value => params.append(key, value));
             }
-            
-            // Add default sorting/limit to EVERY request to ensure consistency
-            params.append('limit', '50');
-            params.append('sortBy', config.columns[0].key);
-            params.append('sortOrder', 'asc');
-            // --- END OF CORRECTION ---
 
             try {
                 const endpoint = `${config.apiEndpoint}?${params.toString()}`;
@@ -456,61 +450,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', (e) => {
                     const page = parseInt(e.currentTarget.dataset.page, 10);
                     this.state.currentPage = page;
-                    this.loadAndRenderData();
+                    this.loadAndRenderData(false);
                 });
             });
         },
         
-        openColumnFilterPopup(iconElement, columnKey) {
+        async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
             const existingPopup = document.querySelector('.filter-popup');
             if (existingPopup) {
                 existingPopup.remove();
                 if (existingPopup.dataset.column === columnKey) return;
             }
-            const uniqueValues = [...new Set(this.state.tableData.map(item => item[columnKey]))].sort();
+
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
-            const activeColumnFilters = this.state.activeFilters[columnKey] || [];
-            const listItems = uniqueValues.map(value => {
-                const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> ${value}</label></li>`;
-            }).join('');
-            popup.innerHTML = `
-                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                <ul class="filter-popup-list">${listItems}</ul>
-                <div class="filter-popup-buttons">
-                    <button class="button button--primary" id="apply-filter">Applica</button>
-                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                </div>`;
+            // Show a loading message initially
+            popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
+            
             document.body.appendChild(popup);
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-            const searchInput = popup.querySelector('#popup-search-input');
-            const listElements = popup.querySelectorAll('.filter-popup-list li');
-            searchInput.addEventListener('input', () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                listElements.forEach(li => {
-                    const valueText = li.textContent.toLowerCase();
-                    li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+
+            try {
+                // --- START OF NEW LOGIC ---
+                // Call the new API to get ALL unique values
+                const tableName = this.state.currentView;
+                const uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                // --- END OF NEW LOGIC ---
+
+                const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                const listItems = uniqueValues.map(value => {
+                    const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                }).join('');
+
+                // Replace loading message with the full filter UI
+                popup.innerHTML = `
+                    <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                    <ul class="filter-popup-list">${listItems}</ul>
+                    <div class="filter-popup-buttons">
+                        <button class="button button--primary" id="apply-filter">Applica</button>
+                        <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                    </div>`;
+                
+                // Reposition after content is loaded, as width may have changed
+                popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+
+                // Add live search functionality
+                const searchInput = popup.querySelector('#popup-search-input');
+                const listElements = popup.querySelectorAll('.filter-popup-list li');
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    listElements.forEach(li => {
+                        const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
+                        li.style.display = valueText.includes(searchTerm) ? '' : 'none';
+                    });
                 });
-            });
+
+            } catch (error) {
+                popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
+            }
         },
 
         handleDocumentClick(event) {
             const popup = document.querySelector('.filter-popup');
             if (!popup) return;
+
             const target = event.target;
             if (target.id === 'apply-filter') {
                 const columnKey = popup.dataset.column;
                 this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                this.loadAndRenderData(false);
+                this.loadAndRenderData(true); // Esegui come nuova query
                 popup.remove();
             } else if (target.id === 'clear-filter') {
                 const columnKey = popup.dataset.column;
                 delete this.state.activeFilters[columnKey];
-                this.loadAndRenderData(false);
+                this.loadAndRenderData(true); // Esegui come nuova query
                 popup.remove();
             } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
                 popup.remove();
