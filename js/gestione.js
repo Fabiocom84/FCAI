@@ -477,38 +477,49 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
         
-        async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
+        async openColumnFilterPopup(iconElement, columnKey) {
+            // Chiude eventuali altri popup aperti
             const existingPopup = document.querySelector('.filter-popup');
             if (existingPopup) {
                 existingPopup.remove();
+                // Se si clicca sulla stessa icona, chiude il popup e non lo riapre
                 if (existingPopup.dataset.column === columnKey) return;
             }
 
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
-            // Show a loading message initially
+            // Mostra un messaggio di caricamento iniziale
             popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
             
             document.body.appendChild(popup);
+            
+            // Posiziona il popup vicino all'icona
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
             try {
-                // --- START OF NEW LOGIC ---
-                // Call the new API to get ALL unique values
+                // Chiamata API per ottenere i valori unici per la colonna
                 const tableName = this.state.currentView;
                 const uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
-                // --- END OF NEW LOGIC ---
 
                 const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                
+                // Crea la lista di checkbox
                 const listItems = uniqueValues.map(value => {
                     const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                    
+                    // --- CORREZIONE DEFINITIVA ---
+                    // Sanifica il valore per l'attributo HTML, sostituendo le virgolette (")
+                    // con la loro entità HTML (&quot;) per evitare di rompere l'HTML.
+                    const sanitizedValue = String(value).replace(/"/g, '&quot;');
+                    
+                    // Usa il valore sanificato per 'value' e quello originale per il testo visualizzato
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${sanitizedValue}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
                 }).join('');
 
-                // Replace loading message with the full filter UI
+                // Sostituisce il messaggio di caricamento con l'interfaccia completa del filtro
                 popup.innerHTML = `
                     <input type="text" id="popup-search-input" placeholder="Cerca valori...">
                     <div class="filter-popup-buttons">
@@ -517,10 +528,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <ul class="filter-popup-list">${listItems}</ul>`;
                 
-                // Reposition after content is loaded, as width may have changed
+                // Riposiziona il popup dopo che il contenuto è stato caricato,
+                // perché la sua larghezza potrebbe essere cambiata.
                 popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
-                // Add live search functionality
+                // Aggiunge la funzionalità di ricerca "live" all'interno del popup
                 const searchInput = popup.querySelector('#popup-search-input');
                 const listElements = popup.querySelectorAll('.filter-popup-list li');
                 searchInput.addEventListener('input', () => {
@@ -532,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
             } catch (error) {
+                // In caso di errore nella chiamata API, mostra un messaggio
                 popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
             }
         },
