@@ -253,17 +253,40 @@ document.addEventListener('DOMContentLoaded', () => {
          */
         handleEditRow() {
             if (!this.state.lastSelectedRadio) return;
+
+            const config = this.viewConfig[this.state.currentView];
+            const id = this.state.lastSelectedRadio.value;
+
+            // --- INIZIO LOGICA MIGLIORATA ---
+
+            // 1. Trova l'oggetto dati completo nello stato dell'app usando l'ID della riga selezionata.
+            //    Questo è più affidabile che leggere il testo dalla tabella.
+            const rowData = this.state.tableData.find(item => String(item[config.idColumn]) === String(id));
+
+            if (!rowData) {
+                console.error("Dati della riga selezionata non trovati.");
+                return;
+            }
+
             this.state.isEditingRow = true;
             const row = this.state.lastSelectedRadio.closest('tr');
             row.classList.add('editing-row');
-            const config = this.viewConfig[this.state.currentView];
+
             config.columns.forEach((col, index) => {
                 if (col.editable) {
                     const cell = row.cells[index + 2];
-                    const currentValue = cell.textContent;
-                    cell.innerHTML = `<input type="text" value="${currentValue}" data-key="${col.key}" style="width: 100%; box-sizing: border-box;">`;
+                    
+                    // 2. Prendi il valore corrente direttamente dall'oggetto dati.
+                    const currentValue = rowData[col.key] || '';
+                    
+                    // 3. Sanifica il valore per l'attributo HTML, proprio come abbiamo fatto per il filtro.
+                    const sanitizedValue = String(currentValue).replace(/"/g, '&quot;');
+                    
+                    cell.innerHTML = `<input type="text" value="${sanitizedValue}" data-key="${col.key}" style="width: 100%; box-sizing: border-box;">`;
                 }
             });
+            // --- FINE LOGICA MIGLIORATA ---
+
             this.updateToolbarState();
         },
 
