@@ -209,7 +209,11 @@
 }
 .filter-popup-list { list-style: none; padding: 0; margin: 0; }
 .filter-popup-list li { padding: 4px 0; white-space: nowrap; }
-.filter-popup-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
+.filter-popup-buttons { 
+    margin: 8px 0; /* Aggiunge spazio sopra e sotto */
+    display: flex; 
+    justify-content: space-between; 
+}
 .filter-popup input[type="text"] {
     width: 100%;
     padding: 6px 8px;

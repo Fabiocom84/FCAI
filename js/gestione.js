@@ -511,11 +511,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Replace loading message with the full filter UI
                 popup.innerHTML = `
                     <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                    <ul class="filter-popup-list">${listItems}</ul>
                     <div class="filter-popup-buttons">
                         <button class="button button--primary" id="apply-filter">Applica</button>
                         <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                    </div>`;
+                    </div>
+                    <ul class="filter-popup-list">${listItems}</ul>`;
                 
                 // Reposition after content is loaded, as width may have changed
                 popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
