@@ -28,17 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 idColumn: 'id_cliente'
             },
             'personale': {
-                    apiEndpoint: '/api/personale',
-                    columns: [
-                        { key: 'nome_cognome', label: 'Nome Cognome', editable: true },
-                        { key: 'email', label: 'Email', editable: true },
-                        { key: 'telefono', label: 'Telefono', editable: true },
-                        { key: 'attivo', label: 'Attivo', editable: true },
-                        { key: 'is_admin', label: 'Admin', editable: true },
-                        { key: 'puo_accedere', label: 'Può Accedere', editable: true }
-                    ],
-                    idColumn: 'id_personale'
-                }
+                apiEndpoint: '/api/personale',
+                columns: [
+                    { key: 'nome_cognome', label: 'Nome Cognome', editable: true },
+                    { key: 'email', label: 'Email', editable: true },
+                    { key: 'telefono', label: 'Telefono', editable: true },
+                    // Nuove colonne per i dati correlati (non modificabili in questa vista)
+                    { key: 'ruoli.nome_ruolo', label: 'Ruolo', editable: false },
+                    { key: 'aziende.ragione_sociale', label: 'Azienda', editable: false },
+                    { key: 'attivo', label: 'Attivo', editable: true }
+                ],
+                idColumn: 'id_personale'
+            }
         },
 
         /**
@@ -413,22 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            // Crea sempre la struttura base della tabella e l'intestazione
             const table = document.createElement('table');
             table.className = 'agile-table';
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
 
-            // Colonne fisse (#, ☑️)
+            // Intestazioni fisse e dinamiche (invariate)
             const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
             fixedHeaders.forEach(header => {
                 const th = document.createElement('th');
-                th.textContent = header.text;
-                th.title = header.title;
-                headerRow.appendChild(th);
+                th.textContent = header.text; th.title = header.title; headerRow.appendChild(th);
             });
-
-            // Colonne dinamiche dalla configurazione
             config.columns.forEach(col => {
                 const th = document.createElement('th');
                 const thContent = document.createElement('div');
@@ -436,42 +432,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
                 thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`;
                 th.classList.toggle('filter-active', this.state.activeFilters[col.key]?.length > 0);
-                th.appendChild(thContent);
-                headerRow.appendChild(th);
+                th.appendChild(thContent); headerRow.appendChild(th);
             });
 
             const tbody = table.createTBody();
 
-            // Ora, controlla se ci sono dati da visualizzare
             if (data.length === 0) {
-                // Se non ci sono dati, inserisci una singola riga con il messaggio di avviso
                 const noDataRow = tbody.insertRow();
                 const cell = noDataRow.insertCell();
-                // Imposta colspan per occupare l'intera larghezza della tabella
-                cell.colSpan = config.columns.length + 2; // +2 per le colonne fisse
+                cell.colSpan = config.columns.length + 2;
                 cell.textContent = 'Nessun dato trovato. Modifica i filtri per una nuova ricerca.';
-                cell.style.textAlign = 'center';
-                cell.style.padding = '20px';
-                cell.style.fontStyle = 'italic';
-                cell.style.color = '#666';
+                cell.style.textAlign = 'center'; cell.style.padding = '20px';
+                cell.style.fontStyle = 'italic'; cell.style.color = '#666';
             } else {
-                // Se ci sono dati, popola le righe come facevi prima
                 data.forEach((rowData, index) => {
                     const row = tbody.insertRow();
                     row.insertCell().textContent = index + 1;
                     const cellSelect = row.insertCell();
                     const radio = document.createElement('input');
-                    radio.type = 'radio';
-                    radio.name = 'rowSelector';
-                    radio.value = rowData[config.idColumn];
-                    cellSelect.appendChild(radio);
+                    radio.type = 'radio'; radio.name = 'rowSelector';
+                    radio.value = rowData[config.idColumn]; cellSelect.appendChild(radio);
+                    
+                    // --- MODIFICA QUI ---
+                    // Ora usiamo la nuova funzione per leggere i dati, anche quelli annidati
                     config.columns.forEach(col => {
-                        row.insertCell().textContent = rowData[col.key] || '';
+                        const cellValue = this.getPropertyByString(rowData, col.key) || '';
+                        row.insertCell().textContent = cellValue;
                     });
                 });
             }
 
-            // Infine, aggiorna il DOM
             this.dom.gridWrapper.innerHTML = '';
             this.dom.gridWrapper.appendChild(table);
         },
@@ -664,6 +654,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 overlay.style.display = 'flex';
             });
+        },
+
+        getPropertyByString(obj, path) {
+            return path.split('.').reduce((current, key) => current && current[key], obj);
         },
     };
     
