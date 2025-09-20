@@ -1,9 +1,12 @@
-// js/gestione.js - Versione Definitiva Corretta
+// js/gestione.js - Versione Completa, Corretta e Ottimizzata
 
 import { API_BASE_URL } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    /**
+     * Gestore dell'intera applicazione per la Vista Agile.
+     */
     const App = {
         dom: {},
         state: {
@@ -26,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         },
 
+        /**
+         * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
+         */
         init() {
             this.dom.viewSelector = document.getElementById('tableViewSelector');
             this.dom.toolbarArea = document.getElementById('toolbarArea');
@@ -39,22 +45,29 @@ document.addEventListener('DOMContentLoaded', () => {
             this.handleViewChange();
         },
 
+        /**
+         * Gestisce il cambio di vista dal menu a tendina.
+         */
         handleViewChange() {
             this.state.currentView = this.dom.viewSelector.value;
             this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
             this.state.lastSelectedRadio = null;
             this.renderToolbar();
-            this.updateToolbarState();
-            this.loadAndRenderData(true);
+            // Resetta lo stato e carica la prima pagina della nuova vista
+            this.loadAndRenderData(true); 
         },
 
+        /**
+         * Gestisce i click sui pulsanti della toolbar.
+         */
         handleToolbarClick(event) {
             const button = event.target.closest('button');
             if (!button) return;
 
             switch (button.id) {
-                case 'searchBtn': this.loadAndRenderData(true); break;
+                // When searching, it's a new query
+                case 'searchBtn': this.loadAndRenderData(true); break; 
                 case 'addRowBtn': this.handleAddRow(); break;
                 case 'editRowBtn': this.handleEditRow(); break;
                 case 'deleteRowBtn': this.handleDeleteRow(); break;
@@ -66,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         
+        /**
+         * Gestisce i click all'interno della griglia (selezione righe e icone filtro).
+         */
         handleTableClick(event) {
             const target = event.target;
             if (target.matches('.filter-icon')) {
@@ -77,15 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        /**
+         * Carica i dati dal backend e avvia il rendering della tabella.
+         */
         async loadAndRenderData(isNewQuery = false) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            if (isNewQuery) { this.state.currentPage = 1; }
+            // If it's a new search or a new filter, always reset to page 1
+            if (isNewQuery) {
+                this.state.currentPage = 1;
+            }
 
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
             
+            // Always include all current state parameters in the request
             params.append('page', this.state.currentPage);
             params.append('limit', '50');
             params.append('sortBy', config.columns[0].key);
@@ -107,60 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.renderPagination(response.count);
             } catch (error) {
                 this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
-                if (document.getElementById('pagination-container')) document.getElementById('pagination-container').innerHTML = '';
+                document.getElementById('pagination-container').innerHTML = '';
             }
         },
-
-        updateToolbarState() {
-            const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
-            const buttons = {
-                add: document.getElementById('addRowBtn'),
-                edit: document.getElementById('editRowBtn'),
-                del: document.getElementById('deleteRowBtn'),
-                save: document.getElementById('saveBtn'),
-                cancel: document.getElementById('cancelBtn'),
-            };
-            if (!buttons.add) return;
-
-            const searchGroup = this.dom.toolbarArea.querySelector('.search-group');
-
-            const showMainInterface = !isAddingNewRow && !isEditingRow;
-            buttons.add.style.display = showMainInterface ? 'inline-flex' : 'none';
-            buttons.edit.style.display = showMainInterface ? 'inline-flex' : 'none';
-            buttons.del.style.display = showMainInterface ? 'inline-flex' : 'none';
-            searchGroup.style.display = showMainInterface ? 'flex' : 'none';
-
-            const showActionInterface = isAddingNewRow || isEditingRow;
-            buttons.save.style.display = showActionInterface ? 'inline-flex' : 'none';
-            buttons.cancel.style.display = showActionInterface ? 'inline-flex' : 'none';
-
-            buttons.edit.disabled = !lastSelectedRadio;
-            buttons.del.disabled = !lastSelectedRadio;
-        },
-
-        renderToolbar() {
-            const view = this.state.currentView;
-            this.dom.toolbarArea.innerHTML = `
-                <div class="toolbar-group">
-                    <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
-                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica">✏️</button>
-                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella">🗑️</button>
-                    <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
-                    <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
-                </div>
-                <div class="toolbar-group search-group">
-                    <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
-                    <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
-                </div>`;
-        },
         
+        /**
+         * Aggiunge o rimuove una riga vuota per l'inserimento.
+         */
         handleAddRow() {
             const existingNewRow = document.querySelector('.new-row-form');
+
             if (existingNewRow) {
                 existingNewRow.remove();
                 this.state.isAddingNewRow = false;
             } else {
                 this.state.isAddingNewRow = true;
+
                 const config = this.viewConfig[this.state.currentView];
                 let table = this.dom.gridWrapper.querySelector('table');
                 if (!table) {
@@ -168,10 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     table = this.dom.gridWrapper.querySelector('table');
                 }
                 const tbody = table.querySelector('tbody');
+
                 const newRow = tbody.insertRow(0);
                 newRow.classList.add('new-row-form', 'selected-row');
+                
                 newRow.insertCell().textContent = '*';
                 newRow.insertCell();
+
                 config.columns.forEach(col => {
                     const cell = newRow.insertCell();
                     if (col.editable) {
@@ -185,7 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             this.updateToolbarState();
         },
-        
+
+        /**
+         * Salva i dati inseriti nella nuova riga (chiamato da handleSaveChanges).
+         */
         async handleSaveNewRow() {
             const newRow = document.querySelector('.new-row-form');
             if (!newRow) return;
@@ -208,6 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         
+        /**
+         * Gestisce la logica di selezione/deselezione di una riga.
+         */
         handleRowSelection(currentRadio) {
             document.querySelectorAll('.agile-table tbody tr').forEach(r => r.classList.remove('selected-row'));
             if (this.state.lastSelectedRadio === currentRadio) {
@@ -220,9 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
             this.updateToolbarState();
         },
 
+        /**
+         * Gestisce la cancellazione di una riga selezionata.
+         */
         async handleDeleteRow() {
             if (!this.state.lastSelectedRadio) {
-                return this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
+                this.showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
+                return;
             }
             const id = this.state.lastSelectedRadio.value;
             const rowElement = this.state.lastSelectedRadio.closest('tr');
@@ -248,6 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        /**
+         * Trasforma una riga in modalità di modifica.
+         */
         handleEditRow() {
             if (!this.state.lastSelectedRadio) return;
             this.state.isEditingRow = true;
@@ -264,6 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.updateToolbarState();
         },
 
+        /**
+         * Salva le modifiche apportate a una riga.
+         */
         async handleSaveChanges() {
             const editingRow = document.querySelector('.editing-row');
             if (!editingRow) return;
@@ -284,29 +288,95 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        /**
+         * Annulla la modalità di modifica.
+         */
         handleCancelEdit() {
             this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
             this.loadAndRenderData(true).then(() => this.updateToolbarState());
         },
+        
+        // --- Funzioni di Rendering e Utility ---
+        
+        renderToolbar() {
+            const view = this.state.currentView;
+            // Render all buttons at once. Their visibility will be controlled by CSS/JS.
+            this.dom.toolbarArea.innerHTML = `
+                <div class="toolbar-group">
+                    <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
+                    <button class="button icon-button button--warning" id="editRowBtn" title="Modifica">✏️</button>
+                    <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella">🗑️</button>
+                    <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
+                    <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
+                </div>
+                <div class="toolbar-group search-group">
+                    <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
+                    <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
+                </div>`;
+        },
+
+        updateToolbarState() {
+            const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
+
+            // Get references to all controls
+            const buttons = {
+                add: document.getElementById('addRowBtn'),
+                edit: document.getElementById('editRowBtn'),
+                del: document.getElementById('deleteRowBtn'),
+                save: document.getElementById('saveBtn'),
+                cancel: document.getElementById('cancelBtn'),
+                search: document.getElementById('searchBtn'),
+            };
+            const searchInput = document.getElementById('filter-search-term');
+
+            // --- Apply Logic Based on State ---
+
+            // Rule: Adding or Editing
+            if (isAddingNewRow || isEditingRow) {
+                buttons.save.disabled = false;
+                buttons.cancel.disabled = false;
+                
+                buttons.add.disabled = true;
+                buttons.edit.disabled = true;
+                buttons.del.disabled = true;
+                buttons.search.disabled = true;
+                searchInput.disabled = true;
+                return; // Stop here
+            }
+
+            // Rule: A row is selected
+            if (lastSelectedRadio) {
+                buttons.edit.disabled = false;
+                buttons.del.disabled = false;
+                
+                buttons.add.disabled = true; // Can't add when a row is selected
+                buttons.save.disabled = true;
+                buttons.cancel.disabled = true;
+                buttons.search.disabled = false;
+                searchInput.disabled = false;
+                return; // Stop here
+            }
+
+            // Rule: Default state (no row selected, not adding/editing)
+            buttons.add.disabled = false;
+            buttons.search.disabled = false;
+            searchInput.disabled = false;
+
+            buttons.edit.disabled = true;
+            buttons.del.disabled = true;
+            buttons.save.disabled = true;
+            buttons.cancel.disabled = true;
+        },
+
 
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
-            const container = this.dom.gridWrapper;
-
             if (data.length === 0 && this.state.isAddingNewRow) {
-                 const table = document.createElement('table'); table.className = 'agile-table';
-                 const thead = table.createTHead(); const headerRow = thead.insertRow();
-                 const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
-                 fixedHeaders.forEach(header => { const th = document.createElement('th'); th.textContent = header.text; th.title = header.title; headerRow.appendChild(th); });
-                 config.columns.forEach(col => { const th = document.createElement('th'); const thContent = document.createElement('div'); thContent.className = 'column-header-content'; const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`; thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`; th.classList.toggle('filter-active', this.state.activeFilters[col.key]?.length > 0); th.appendChild(thContent); headerRow.appendChild(th); });
-                 table.createTBody(); container.innerHTML = ''; container.appendChild(table);
-                 return;
-            }
-            
-            if (!data || data.length === 0) {
-                 container.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
+                // If adding and table is empty, still show structure
+            } else if (!data || data.length === 0) {
+                 this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
                  return;
             }
             const table = document.createElement('table');
@@ -344,51 +414,99 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.insertCell().textContent = rowData[col.key] || '';
                 });
             });
-            container.innerHTML = '';
-            container.appendChild(table);
+            this.dom.gridWrapper.innerHTML = '';
+            this.dom.gridWrapper.appendChild(table);
         },
+
+        renderPagination(totalItems) {
+            const container = document.getElementById('pagination-container');
+            if (!container) return;
+            const pageSize = 50;
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const currentPage = this.state.currentPage;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+                paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Precedente</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+                }
+                paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Successivo &raquo;</button>`;
+                container.innerHTML = paginationHTML;
+
+                // Correctly add event listeners for page changes
+                container.querySelectorAll('.page-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const page = parseInt(e.currentTarget.dataset.page, 10);
+                        this.state.currentPage = page;
+                        // A page click is NOT a new query, so we pass false
+                        this.loadAndRenderData(false); 
+                    });
+                });
+            },
         
-        openColumnFilterPopup(iconElement, columnKey) {
+        async openColumnFilterPopup(iconElement, columnKey) { // Function is now async
             const existingPopup = document.querySelector('.filter-popup');
             if (existingPopup) {
                 existingPopup.remove();
                 if (existingPopup.dataset.column === columnKey) return;
             }
+
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
             popup.dataset.column = columnKey;
+            // Show a loading message initially
             popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
+            
             document.body.appendChild(popup);
             const rect = iconElement.getBoundingClientRect();
             popup.style.top = `${rect.bottom + window.scrollY}px`;
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-            const tableName = this.state.currentView;
-            this.apiFetch(`/api/distinct/${tableName}/${columnKey}`)
-                .then(uniqueValues => {
-                    const activeColumnFilters = this.state.activeFilters[columnKey] || [];
-                    const listItems = uniqueValues.map(value => {
-                        const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                        return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
-                    }).join('');
-                    popup.innerHTML = `
-                        <div class="filter-popup-buttons">
-                            <button class="button button--primary" id="apply-filter">Applica</button>
-                            <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                        </div>
-                        <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                        <ul class="filter-popup-list">${listItems}</ul>`;
-                    popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-                    const searchInput = popup.querySelector('#popup-search-input');
-                    const listElements = popup.querySelectorAll('.filter-popup-list li');
-                    searchInput.addEventListener('input', () => {
-                        const searchTerm = searchInput.value.toLowerCase();
-                        listElements.forEach(li => {
-                            const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
-                            li.style.display = valueText.includes(searchTerm) ? '' : 'none';
-                        });
+
+            try {
+                // --- START OF NEW LOGIC ---
+                // Call the new API to get ALL unique values
+                const tableName = this.state.currentView;
+                const uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                // --- END OF NEW LOGIC ---
+
+                const activeColumnFilters = this.state.activeFilters[columnKey] || [];
+                const listItems = uniqueValues.map(value => {
+                    const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${value}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                }).join('');
+
+                // Replace loading message with the full filter UI
+                popup.innerHTML = `
+                    <div class="filter-popup-buttons">
+                        <button class="button button--primary" id="apply-filter">Applica</button>
+                        <button class="button button--secondary" id="clear-filter">Pulisci</button>
+                    </div>
+                    <input type="text" id="popup-search-input" placeholder="Cerca valori...">
+                    <ul class="filter-popup-list">${listItems}</ul>
+                `;
+                
+                // Reposition after content is loaded, as width may have changed
+                popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+
+                // Add live search functionality
+                const searchInput = popup.querySelector('#popup-search-input');
+                const listElements = popup.querySelectorAll('.filter-popup-list li');
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    listElements.forEach(li => {
+                        const valueText = li.querySelector('.filter-value').textContent.toLowerCase();
+                        li.style.display = valueText.includes(searchTerm) ? '' : 'none';
                     });
-                })
-                .catch(error => { popup.innerHTML = `<div class="error-text">Errore filtri</div>`; });
+                });
+
+            } catch (error) {
+                popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
+            }
         },
 
         handleDocumentClick(event) {
@@ -398,12 +516,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.id === 'apply-filter') {
                 const columnKey = popup.dataset.column;
                 this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                this.loadAndRenderData(true);
+                // Applying a filter IS a new query
+                this.loadAndRenderData(true); 
                 popup.remove();
             } else if (target.id === 'clear-filter') {
                 const columnKey = popup.dataset.column;
                 delete this.state.activeFilters[columnKey];
-                this.loadAndRenderData(true);
+                // Clearing a filter IS a new query
+                this.loadAndRenderData(true); 
                 popup.remove();
             } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
                 popup.remove();
