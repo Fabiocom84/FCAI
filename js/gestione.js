@@ -319,7 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
         handleCancelEdit() {
             this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
-            this.loadAndRenderData(true).then(() => this.updateToolbarState());
+            this.state.lastSelectedRadio = null;
+
+            this.loadAndRenderData(true);
         },
         
         // --- Funzioni di Rendering e Utility ---
