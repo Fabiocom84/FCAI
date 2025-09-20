@@ -15,6 +15,8 @@ const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 const dataInput = document.getElementById('newOrderData');
 const annoInput = document.getElementById('newOrderAnno');
+const voInput = document.getElementById('newOrderVO'); // Aggiunto riferimento a VO
+const commessaInput = document.getElementById('newOrderCommessa'); // Aggiunto riferimento a Commessa
 
 let clientiData = [];
 
@@ -137,19 +139,50 @@ function resetNewOrderModal() {
     if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'none';
 }
 
+function autoFormatVO(event) {
+    const input = event.target;
+    let value = input.value;
+
+    // Se l'utente sta cancellando, non fare nulla
+    if (event.inputType === 'deleteContentBackward') {
+        return;
+    }
+    // Aggiunge il trattino dopo due cifre
+    if (value.length === 2) {
+        input.value = value + '-';
+    }
+}
+
+/**
+ * Formatta automaticamente il campo Commessa (prima lettera maiuscola).
+ */
+function autoFormatCommessa(event) {
+    const input = event.target;
+    let value = input.value;
+    
+    // Se c'è almeno un carattere, rendi il primo maiuscolo
+    if (value.length > 0) {
+        input.value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+}
+
 // --- COLLEGAMENTO DEGLI EVENTI SPECIFICI DEL MODALE ---
-// Questo blocco assicura che i pulsanti di questo modale
-// siano collegati alle funzioni corrette.
 document.addEventListener('DOMContentLoaded', () => {
     if (saveNewOrderButton) {
         saveNewOrderButton.addEventListener('click', saveNewOrder);
     }
     if (closeNewOrderModalBtn) {
         closeNewOrderModalBtn.addEventListener('click', () => {
-            // Chiama la funzione globale definita in main.js
             if (window.closeNewOrderModal) {
                 window.closeNewOrderModal();
             }
         });
+    }
+    // Aggiungi i nuovi listener per la formattazione automatica
+    if (voInput) {
+        voInput.addEventListener('input', autoFormatVO);
+    }
+    if (commessaInput) {
+        commessaInput.addEventListener('input', autoFormatCommessa);
     }
 });

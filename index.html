@@ -195,7 +195,8 @@
                         <h3>VO</h3>
                     </div>
                     <input type="text" id="newOrderVO" name="vo" placeholder="es. 23-1234" 
-                           pattern="\d{2}-\d{4}" title="Il formato deve essere: 2 cifre, un trattino, 4 cifre (es. 23-1234)">
+                           pattern="\d{2}-\d{4}" title="Il formato deve essere: 2 cifre, un trattino, 4 cifre (es. 23-1234)"
+                           maxlength="7">
                 </div>
 
                 <div class="form-group">
@@ -204,7 +205,8 @@
                        <h3>Commessa</h3>
                     </div>
                     <input type="text" id="newOrderCommessa" name="commessa" placeholder="es. C1234 o M5678"
-                           pattern="[CMcm]\d{4}" title="Il formato deve essere: C o M seguita da 4 cifre (es. C1234)">
+                           pattern="[CMcm]\d{4}" title="Il formato deve essere: C o M seguita da 4 cifre (es. C1234)"
+                           maxlength="5">
                 </div>
 
                 <div class="form-group">
