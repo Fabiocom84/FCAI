@@ -1145,3 +1145,56 @@ h2 {
         padding: 5px;
     }
 }
+
+/* ================================================================== */
+/* == SISTEMA DI MODALI PERSONALIZZATO (PER CONFERME E ALERT)    == */
+/* ================================================================== */
+
+/* L'overlay per il modale di conferma.
+   Deve avere uno z-index più alto dei modali normali per apparire sopra. */
+#custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.65); /* Leggermente più scuro per dare risalto */
+    z-index: 1000; /* Un valore molto alto per essere sicuri che sia in cima a tutto */
+    
+    /* La soluzione per il centraggio: usiamo Flexbox */
+    display: flex;
+    justify-content: center; /* Centra orizzontalmente */
+    align-items: center;     /* Centra verticalmente */
+}
+
+/* Il box del modale vero e proprio */
+.custom-modal {
+    background-color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-out; /* Applica un'animazione di comparsa */
+}
+
+/* Stili per il contenuto del modale (titolo, messaggio, pulsanti) */
+.custom-modal h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.custom-modal p {
+    margin-bottom: 25px;
+    color: #555;
+    line-height: 1.6;
+    font-size: 1.05em;
+}
+
+.custom-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
