@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const azienda = rowData.aziende;
                             if (!azienda) return 'N/A';
                             // Se 'sede' non è presente, non aggiunge nulla.
-                            const sede = azienda.sede ? `+${azienda.sede}` : ''; 
+                            const sede = azienda.sede ? ` ${azienda.sede}` : ''; 
                             return `${azienda.ragione_sociale}${sede}`;
                         }
                     },
