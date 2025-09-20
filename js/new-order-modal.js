@@ -33,8 +33,11 @@ window.cleanupNewOrderModal = function() {
 async function loadDynamicData() {
     try {
         const response = await (await window.apiFetch('/api/commesse-init-data')).json();
+
+        // Salva i dati dei clienti per la ricerca
         clientiData = response.clienti || [];
         
+        // Popola la datalist dei clienti
         clienteDatalist.innerHTML = '';
         clientiData.forEach(item => {
             const option = document.createElement('option');
@@ -43,8 +46,20 @@ async function loadDynamicData() {
             clienteDatalist.appendChild(option);
         });
 
+        // Popola gli altri menu a tendina
         populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
         populateSelect(statusSelect, response.status, 'nome_status', 'id_status');
+
+        // --- IMPOSTAZIONE DELLO STATUS DI DEFAULT ---
+        // Cerca l'oggetto status che corrisponde a "In Lavorazione"
+        const statusData = response.status || [];
+        const inLavorazioneStatus = statusData.find(s => s.nome_status === 'In Lavorazione');
+        
+        // Se lo trova, imposta il suo ID come valore selezionato del menu a tendina
+        if (inLavorazioneStatus) {
+            statusSelect.value = inLavorazioneStatus.id_status;
+        }
+        // --- FINE BLOCCO AGGIUNTO ---
 
     } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
