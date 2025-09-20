@@ -383,6 +383,25 @@ h2 {
 .legend-icon img { max-width: 90%; max-height: 90%; }
 .legend-text { font-size: 0.95em; color: #555; line-height: 1.4; }
 
+/* --- Classi Modificatrici per i Colori dei Pulsanti --- */
+.button.button--primary, .custom-modal-buttons .button--primary {
+    background-color: #28a745;
+    border-color: #218838;
+    color: white;
+}
+.button.button--primary:hover, .custom-modal-buttons .button--primary:hover {
+    background-color: #218838;
+}
+
+.button.button--secondary, .custom-modal-buttons .button--secondary {
+    background-color: #007bff;
+    border-color: #0069d9;
+    color: white;
+}
+.button.button--secondary:hover, .custom-modal-buttons .button--secondary:hover {
+    background-color: #0069d9;
+}
+
 /* ============================================= */
 /* == 4. STILI PER I MODALI                   == */
 /* ============================================= */
