@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.state.isEditingRow = false;
             this.state.lastSelectedRadio = null;
             this.renderToolbar();
-            // Resetta lo stato e carica la prima pagina della nuova vista
-            this.loadAndRenderData(true); 
+            // We REMOVE the call to updateToolbarState() from here...
+            this.loadAndRenderData(true);
         },
 
         /**
@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
 
-            // Se è una nuova ricerca o un nuovo filtro, torna sempre alla pagina 1
             if (isNewQuery) {
                 this.state.currentPage = 1;
             }
@@ -107,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
             const params = new URLSearchParams();
             
-            // Includi sempre tutti i parametri di stato attuali
             params.append('page', this.state.currentPage);
             params.append('limit', '50');
             params.append('sortBy', config.columns[0].key);
@@ -129,9 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.renderPagination(response.count);
             } catch (error) {
                 this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
-                document.getElementById('pagination-container').innerHTML = '';
+                if (document.getElementById('pagination-container')) {
+                    document.getElementById('pagination-container').innerHTML = '';
+                }
+            } finally {
+                // This is the crucial change: update the button states as the very last step.
+                this.updateToolbarState();
             }
-        },
+        }
         
         /**
          * Aggiunge o rimuove una riga vuota per l'inserimento.
