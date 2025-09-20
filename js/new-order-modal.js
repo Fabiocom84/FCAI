@@ -2,23 +2,27 @@
 
 // --- Elementi DOM ---
 const newOrderModal = document.getElementById('newOrderModal');
-const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 const newOrderForm = document.getElementById('newOrderForm');
 const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
 
-// Campi Select dei menu a tendina
-const clienteSelect = document.getElementById('newOrderCliente');
+// Campi del form
+const clienteInput = document.getElementById('newOrderCliente');
+const clienteDatalist = document.getElementById('cliente-list');
+const clienteIdInput = document.getElementById('newOrderClienteId');
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 const dataInput = document.getElementById('newOrderData');
 const annoInput = document.getElementById('newOrderAnno');
 
+// Array per mantenere i dati dei clienti
+let clientiData = [];
+
 // --- Funzioni e Logica ---
 
 window.prepareNewOrderModal = async function() {
     resetNewOrderModal();
-    await loadDynamicDropdowns();
+    await loadDynamicData();
     setDefaultValues();
 };
 
@@ -26,23 +30,40 @@ window.cleanupNewOrderModal = function() {
     resetNewOrderModal();
 };
 
-async function loadDynamicDropdowns() {
+async function loadDynamicData() {
     try {
-        const response = await window.apiFetch('/api/commesse-init-data');
-        if (!response.ok) {
-            throw new Error(`Errore di rete: ${response.status}`);
-        }
-        const data = await response.json(); // Estrai il JSON dalla risposta
+        const response = await (await window.apiFetch('/api/commesse-init-data')).json();
 
-        populateSelect(clienteSelect, data.clienti, 'ragione_sociale', 'id_cliente');
-        populateSelect(modelloSelect, data.modelli, 'nome_modello', 'id_modello');
-        populateSelect(statusSelect, data.status, 'descrizione', 'id_status');
+        // Salva i dati dei clienti per la ricerca
+        clientiData = response.clienti || [];
+        
+        // Popola la datalist dei clienti
+        clienteDatalist.innerHTML = '';
+        clientiData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.ragione_sociale;
+            option.dataset.id = item.id_cliente; // Salva l'ID in un attributo data
+            clienteDatalist.appendChild(option);
+        });
+
+        // Popola gli altri menu a tendina
+        populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
+        populateSelect(statusSelect, response.status, 'nome_status', 'id_status'); // Corretto con nome_status
 
     } catch (error) {
-        console.error('Errore nel caricamento delle opzioni dropdown:', error);
-        alert('Errore nel caricamento dei dati. Assicurati che il server backend sia in esecuzione e aggiornato.');
+        console.error('Errore nel caricamento dei dati:', error);
+        alert('Errore nel caricamento dei dati. Assicurati che il server sia attivo.');
     }
 }
+
+// Aggiungi un listener per quando l'utente seleziona un cliente dalla lista
+clienteInput.addEventListener('input', () => {
+    const selectedValue = clienteInput.value;
+    const cliente = clientiData.find(c => c.ragione_sociale === selectedValue);
+    
+    // Se il valore corrisponde a un cliente, salva il suo ID nel campo nascosto
+    clienteIdInput.value = cliente ? cliente.id_cliente : '';
+});
 
 function populateSelect(selectElement, data, textField, valueField) {
     if (!selectElement) return;
@@ -69,25 +90,16 @@ async function saveNewOrder(event) {
             method: 'POST',
             body: formData
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Errore durante il salvataggio.');
-        }
+        if (!response.ok) throw new Error((await response.json()).error);
         
-        const result = await response.json();
-        console.log('Commessa salvata con successo:', result);
-        
+        console.log('Commessa salvata con successo:', await response.json());
         newOrderForm.style.display = 'none';
         if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'block';
 
-        setTimeout(() => {
-            window.closeNewOrderModal();
-        }, 2000);
+        setTimeout(() => window.closeNewOrderModal(), 2000);
         
     } catch (error) {
         alert('Errore nel salvataggio: ' + error.message);
-        console.error('Errore nel salvataggio della nuova commessa:', error);
     } finally {
         saveNewOrderButton.disabled = false;
     }
@@ -104,11 +116,8 @@ function setDefaultValues() {
 }
 
 function resetNewOrderModal() {
-    if (newOrderForm) {
-        newOrderForm.reset();
-        newOrderForm.style.display = 'block';
-    }
-    if (newOrderSuccessMessage) {
-        newOrderSuccessMessage.style.display = 'none';
-    }
+    if (newOrderForm) newOrderForm.reset();
+    if (clienteIdInput) clienteIdInput.value = '';
+    if (newOrderForm) newOrderForm.style.display = 'block';
+    if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'none';
 }

@@ -165,9 +165,10 @@
                         <img src="img/user.png" alt="Cliente">
                         <h3>Cliente</h3>
                     </div>
-                    <select id="newOrderCliente" name="cliente">
-                        <option value="" disabled selected>Seleziona un cliente</option>
-                    </select>
+                    <input type="text" id="newOrderCliente" name="cliente_text" 
+                           placeholder="Cerca e seleziona un cliente..." list="cliente-list" autocomplete="off">
+                    <datalist id="cliente-list"></datalist>
+                    <input type="hidden" id="newOrderClienteId" name="cliente">
                 </div>
         
                 <div class="form-group">
