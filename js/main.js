@@ -45,6 +45,8 @@ async function apiFetch(url, options = {}) {
     return response;
 }
 
+window.apiFetch = apiFetch;
+
 let legendInstance;
 let modalOverlay;
 
