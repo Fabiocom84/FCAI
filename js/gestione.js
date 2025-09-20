@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // This is the crucial change: update the button states as the very last step.
                 this.updateToolbarState();
             }
-        }
+        },
         
         /**
          * Aggiunge o rimuove una riga vuota per l'inserimento.
