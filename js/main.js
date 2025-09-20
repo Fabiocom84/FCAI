@@ -226,7 +226,11 @@ window.closeTrainingModal = closeTrainingModal;
 // --- FUNZIONI DI CARICAMENTO DATI (invariate) ---
 async function loadLatestEntries() {
     try {
-        const response = await apiFetch(`${API_BASE_URL}/api/latest-entries`);
+        // --- CORREZIONE QUI ---
+        // Passiamo solo la parte relativa dell'URL, non l'URL completo.
+        // La funzione apiFetch aggiungerà la base in automatico.
+        const response = await apiFetch('/api/latest-entries'); 
+        
         if (!response.ok) throw new Error(`Errore HTTP! Stato: ${response.status}`);
         const data = await response.json();
         console.log("Dati ricevuti:", data);
@@ -234,6 +238,12 @@ async function loadLatestEntries() {
     } catch (error) {
         if (error.message !== "Unauthorized") {
             console.error('Errore durante il recupero degli ultimi inserimenti:', error);
+            // Possiamo anche mostrare un modale di errore qui per l'utente
+            window.showModal({
+                title: 'Errore di Connessione',
+                message: `Impossibile caricare gli ultimi dati dal server. Controlla la connessione e riprova. Dettagli: ${error.message}`,
+                confirmText: 'OK'
+            });
         }
     }
 }
