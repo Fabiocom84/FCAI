@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
             this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
             this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
-            document.addEventListener('click', this.handleDocumentClick.bind(this), true);
+            document.addEventListener('click', this.handleDocumentClick.bind(this));
 
             this.handleViewChange();
         },
