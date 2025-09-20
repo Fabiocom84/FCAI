@@ -543,7 +543,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = event.target;
             if (target.id === 'apply-filter') {
                 const columnKey = popup.dataset.column;
-                this.state.activeFilters[columnKey] = Array.from(popup.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                // Questa versione è più esplicita per evitare possibili problemi di stato del DOM.
+                const selectedValues = [];
+                const allCheckboxes = popup.querySelectorAll('.filter-checkbox');
+
+                allCheckboxes.forEach(checkbox => {
+                    // Controlliamo la proprietà .checked direttamente, che è il metodo più affidabile.
+                    if (checkbox.checked) {
+                        selectedValues.push(checkbox.value);
+                    }
+                });
+                this.state.activeFilters[columnKey] = selectedValues;
                 this.loadAndRenderData(true); // Esegui come nuova query
                 popup.remove();
             } else if (target.id === 'clear-filter') {
