@@ -40,10 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
-                        // Mostra solo il nome del ruolo
-                        formatter: (rowData) => {
-                            return rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A';
-                        }
+                        formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A'
                     },
                     { 
                         key: 'id_azienda_fk', 
@@ -51,18 +48,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
-                        // Mostra ragione sociale + sede
                         formatter: (rowData) => {
                             const azienda = rowData.aziende;
                             if (!azienda) return 'N/A';
-                            const sede = azienda.sede ? `+${azienda.sede}` : '';
+                            // Se 'sede' non è presente, non aggiunge nulla.
+                            const sede = azienda.sede ? `+${azienda.sede}` : ''; 
                             return `${azienda.ragione_sociale}${sede}`;
                         }
                     },
-                    { key: 'attivo', label: 'Attivo', editable: true, type: 'boolean' },
-                    // --- COLONNE BOOLEANE AGGIUNTE ---
-                    { key: 'is_admin', label: 'Admin', editable: true, type: 'boolean' },
-                    { key: 'puo_accedere', label: 'Può Accedere', editable: true, type: 'boolean' }
+                    // --- FORMATTER AGGIUNTI PER I CAMPI BOOLEANI ---
+                    { 
+                        key: 'attivo', 
+                        label: 'Attivo', 
+                        editable: true, 
+                        type: 'boolean',
+                        formatter: (rowData) => rowData.attivo ? 'Vero' : 'Falso'
+                    },
+                    { 
+                        key: 'is_admin', 
+                        label: 'Admin', 
+                        editable: true, 
+                        type: 'boolean',
+                        formatter: (rowData) => rowData.is_admin ? 'Vero' : 'Falso'
+                    },
+                    { 
+                        key: 'puo_accedere', 
+                        label: 'Può Accedere', 
+                        editable: true, 
+                        type: 'boolean',
+                        formatter: (rowData) => rowData.puo_accedere ? 'Vero' : 'Falso'
+                    }
                 ],
                 idColumn: 'id_personale'
             }
