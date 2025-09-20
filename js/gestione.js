@@ -40,10 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
-                        // --- NUOVO: Formattatore personalizzato per la visualizzazione ---
+                        // Mostra solo il nome del ruolo
                         formatter: (rowData) => {
-                            const ruolo = rowData.ruoli;
-                            return ruolo ? `${ruolo.id_ruolo}=${ruolo.nome_ruolo}` : 'N/A';
+                            return rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A';
                         }
                     },
                     { 
@@ -52,14 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
-                        // --- NUOVO: Formattatore personalizzato per la visualizzazione ---
+                        // Mostra ragione sociale + sede
                         formatter: (rowData) => {
                             const azienda = rowData.aziende;
+                            if (!azienda) return 'N/A';
                             const sede = azienda.sede ? `+${azienda.sede}` : '';
-                            return azienda ? `${azienda.ragione_sociale}${sede}` : 'N/A';
+                            return `${azienda.ragione_sociale}${sede}`;
                         }
                     },
-                    { key: 'attivo', label: 'Attivo', editable: true, type: 'boolean' }
+                    { key: 'attivo', label: 'Attivo', editable: true, type: 'boolean' },
+                    // --- COLONNE BOOLEANE AGGIUNTE ---
+                    { key: 'is_admin', label: 'Admin', editable: true, type: 'boolean' },
+                    { key: 'puo_accedere', label: 'Può Accedere', editable: true, type: 'boolean' }
                 ],
                 idColumn: 'id_personale'
             }
