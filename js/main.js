@@ -22,21 +22,23 @@ function logoutUser(message) {
 
 async function apiFetch(url, options = {}) {
     const token = getAuthToken();
-    
-    // Inizializza headers, ma non impostare Content-Type di default
-    // Il browser lo imposterà automaticamente per FormData
     const headers = { ...options.headers };
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Se il body non è FormData, imposta Content-Type a JSON
     if (!(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(url, { ...options, headers });
+    // --- CORREZIONE QUI ---
+    // Costruisce l'URL completo unendo la base URL dal file di configurazione
+    // con l'endpoint specifico della chiamata (es. '/api/commesse-init-data').
+    const fullUrl = `${API_BASE_URL}${url}`;
+
+    // Usa l'URL completo nella chiamata fetch.
+    const response = await fetch(fullUrl, { ...options, headers });
 
     if (response.status === 401) {
         logoutUser("La tua sessione è scaduta o non è valida. Per favore, effettua nuovamente il login.");
