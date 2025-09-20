@@ -375,16 +375,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
             if (!config) return;
-            if (data.length === 0 && this.state.isAddingNewRow) {
-                // If adding and table is empty, still show structure
-            } else if (!data || data.length === 0) {
-                 this.dom.gridWrapper.innerHTML = `<div class="placeholder-text">Nessun dato trovato.</div>`;
-                 return;
-            }
+
+            // Crea sempre la struttura base della tabella e l'intestazione
             const table = document.createElement('table');
             table.className = 'agile-table';
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
+
+            // Colonne fisse (#, ☑️)
             const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
             fixedHeaders.forEach(header => {
                 const th = document.createElement('th');
@@ -392,6 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 th.title = header.title;
                 headerRow.appendChild(th);
             });
+
+            // Colonne dinamiche dalla configurazione
             config.columns.forEach(col => {
                 const th = document.createElement('th');
                 const thContent = document.createElement('div');
@@ -402,20 +402,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 th.appendChild(thContent);
                 headerRow.appendChild(th);
             });
+
             const tbody = table.createTBody();
-            data.forEach((rowData, index) => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = index + 1;
-                const cellSelect = row.insertCell();
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'rowSelector';
-                radio.value = rowData[config.idColumn];
-                cellSelect.appendChild(radio);
-                config.columns.forEach(col => {
-                    row.insertCell().textContent = rowData[col.key] || '';
+
+            // Ora, controlla se ci sono dati da visualizzare
+            if (data.length === 0) {
+                // Se non ci sono dati, inserisci una singola riga con il messaggio di avviso
+                const noDataRow = tbody.insertRow();
+                const cell = noDataRow.insertCell();
+                // Imposta colspan per occupare l'intera larghezza della tabella
+                cell.colSpan = config.columns.length + 2; // +2 per le colonne fisse
+                cell.textContent = 'Nessun dato trovato. Modifica i filtri per una nuova ricerca.';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.fontStyle = 'italic';
+                cell.style.color = '#666';
+            } else {
+                // Se ci sono dati, popola le righe come facevi prima
+                data.forEach((rowData, index) => {
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = index + 1;
+                    const cellSelect = row.insertCell();
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'rowSelector';
+                    radio.value = rowData[config.idColumn];
+                    cellSelect.appendChild(radio);
+                    config.columns.forEach(col => {
+                        row.insertCell().textContent = rowData[col.key] || '';
+                    });
                 });
-            });
+            }
+
+            // Infine, aggiorna il DOM
             this.dom.gridWrapper.innerHTML = '';
             this.dom.gridWrapper.appendChild(table);
         },
