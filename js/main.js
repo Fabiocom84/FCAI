@@ -55,7 +55,8 @@ let newOrderModalInstance;
 let trainingModalInstance;
 
 document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();});
+    initializeApp();
+});
 
 function initializeApp() {
     legendInstance = new Legend();
@@ -63,7 +64,6 @@ function initializeApp() {
     modalOverlay = document.getElementById('modalOverlay'); 
     window.modalOverlay = modalOverlay;
 
-    // Gestione Logout
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
         logoutButton.addEventListener('click', function(event) {
@@ -72,80 +72,64 @@ function initializeApp() {
         });
     }
 
-    // Collega i pulsanti alle funzioni di apertura
+    // Associa i pulsanti alle rispettive funzioni di apertura
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
     document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
     document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
     document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
 
-    // Gestione chiusura con click sull'overlay
     if (modalOverlay) {
         modalOverlay.addEventListener('click', () => {
             const openModal = document.querySelector('.modal[style*="display: block"]');
             if (openModal) {
                 switch (openModal.id) {
-                    case 'insertDataModal':
-                        closeInsertDataModal();
-                        break;
-                    case 'chatModal':
-                        closeChatModal();
-                        break;
-                    case 'newOrderModal':
-                        closeNewOrderModal();
-                        break;
-                    case 'trainingModal':
-                        closeTrainingModal();
-                        break;
+                    case 'insertDataModal': closeInsertDataModal(); break;
+                    case 'chatModal': closeChatModal(); break;
+                    case 'newOrderModal': closeNewOrderModal(); break;
+                    case 'trainingModal': closeTrainingModal(); break;
                 }
             }
         });
     }
 
-    // Carica gli ultimi inserimenti all'avvio
     loadLatestEntries();
 };
 
 // --- FUNZIONI DI APERTURA MODALI ---
 
 function openInsertDataModal() {
-    if (!insertDataModalInstance) {
-        insertDataModalInstance = document.getElementById('insertDataModal');
-    }
+    if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
     if (insertDataModalInstance) {
         insertDataModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
-        
-        // Chiama le funzioni specifiche dal suo file per preparare il modale
-        if (window.prepareInsertDataModal) {
-            window.prepareInsertDataModal();
-        }
+        if (window.prepareInsertDataModal) window.prepareInsertDataModal();
     }
 }
 
 function openChatModal() {
-    if (!chatModalInstance) {
-        chatModalInstance = document.getElementById('chatModal');
-    }
+    if (!chatModalInstance) chatModalInstance = document.getElementById('chatModal');
     if (chatModalInstance) {
         chatModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
 }
 
-function openNewOrderModal() {
-    if (!newOrderModalInstance) {
-        newOrderModalInstance = document.getElementById('newOrderModal');
-    }
+// --- MODIFICA QUI ---
+async function openNewOrderModal() {
+    if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
     if (newOrderModalInstance) {
         newOrderModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
+        
+        // Aggiunge la chiamata alla funzione di preparazione per caricare i dati dei dropdown
+        if (typeof window.prepareNewOrderModal === 'function') {
+            await window.prepareNewOrderModal();
+        }
     }
 }
 
 function openTrainingModal() {
-    if (!trainingModalInstance) {
-        trainingModalInstance = document.getElementById('trainingModal');
-    }
+    if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
     if (trainingModalInstance) {
         trainingModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -155,55 +139,54 @@ function openTrainingModal() {
 // --- FUNZIONI DI CHIUSURA MODALI ---
 
 function closeInsertDataModal() {
-    if (insertDataModalInstance) {
-        insertDataModalInstance.style.display = 'none';
-    }
+    if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
+    if (insertDataModalInstance) insertDataModalInstance.style.display = 'none';
     modalOverlay.style.display = 'none';
-    
-    // Chiama le funzioni specifiche dal suo file per resettare il modale
-    if (window.cleanupInsertDataModal) {
-        window.cleanupInsertDataModal();
-    }
+    if (window.cleanupInsertDataModal) window.cleanupInsertDataModal();
 }
 
 function closeChatModal() {
-    if (chatModalInstance) {
-        chatModalInstance.style.display = 'none';
-        modalOverlay.style.display = 'none';
-    }
+    if (!chatModalInstance) chatModalInstance = document.getElementById('chatModal');
+    if (chatModalInstance) chatModalInstance.style.display = 'none';
+    modalOverlay.style.display = 'none';
 }
 
+// --- MODIFICA QUI ---
 function closeNewOrderModal() {
+    if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
     if (newOrderModalInstance) {
         newOrderModalInstance.style.display = 'none';
-        modalOverlay.style.display = 'none';
+    }
+    modalOverlay.style.display = 'none';
+
+    // Aggiunge la chiamata alla funzione di pulizia per resettare il form
+    if (typeof window.cleanupNewOrderModal === 'function') {
+        window.cleanupNewOrderModal();
     }
 }
 
 function closeTrainingModal() {
-    if (trainingModalInstance) {
-        trainingModalInstance.style.display = 'none';
-        modalOverlay.style.display = 'none';
-    }
+    if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
+    if (trainingModalInstance) trainingModalInstance.style.display = 'none';
+    modalOverlay.style.display = 'none';
 }
 
-// --- ALTRE FUNZIONI ---
+// --- Rendi le funzioni di chiusura globalmente accessibili per i modali ---
+window.closeInsertDataModal = closeInsertDataModal;
+window.closeChatModal = closeChatModal;
+window.closeNewOrderModal = closeNewOrderModal;
+window.closeTrainingModal = closeTrainingModal;
 
-//---Caricamento latest entries
+// --- FUNZIONI DI CARICAMENTO DATI (invariate) ---
 async function loadLatestEntries() {
     try {
         const response = await apiFetch(`${API_BASE_URL}/api/latest-entries`);
-        if (!response.ok) {
-            throw new Error(`Errore HTTP! Stato: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`Errore HTTP! Stato: ${response.status}`);
         const data = await response.json();
         console.log("Dati ricevuti:", data);
         updateLatestEntries(data);
-
     } catch (error) {
         if (error.message !== "Unauthorized") {
-            // Gestisci solo gli errori che non sono 401 (già gestiti da apiFetch)
             console.error('Errore durante il recupero degli ultimi inserimenti:', error);
         }
     }
@@ -211,11 +194,7 @@ async function loadLatestEntries() {
 
 function updateLatestEntries(data) {
     const latestEntriesList = document.querySelector('.latest-entries ul');
-    
-    // Se l'elemento non esiste in questa pagina, esci subito dalla funzione.
-    if (!latestEntriesList) {
-        return; 
-    }
+    if (!latestEntriesList) return; 
 
     const entries = data.latest_entries; 
     latestEntriesList.innerHTML = '';

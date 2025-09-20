@@ -125,24 +125,3 @@ function resetNewOrderModal() {
         newOrderSuccessMessage.style.display = 'none';
     }
 }
-
-// --- Event Listeners ---
-document.addEventListener('DOMContentLoaded', () => {
-    const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
-    
-    if (openNewOrderModalBtn) {
-        openNewOrderModalBtn.addEventListener('click', (event) => {
-            event.preventDefault();
-            window.openNewOrderModal();
-        });
-    }
-
-    if (closeNewOrderModalBtn) {
-        // Ora questo listener si attaccherà correttamente al <span>
-        closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
-    }
-    
-    if (saveNewOrderButton) {
-        saveNewOrderButton.addEventListener('click', saveNewOrder);
-    }
-});
