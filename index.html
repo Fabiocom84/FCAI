@@ -19,7 +19,7 @@
             window.location.replace('login.html');
         }
     </script>
-    
+
 </head>
 
 <body>
@@ -155,7 +155,7 @@
                 <div class="help-button-container">
                     <button class="help-button" data-legend="chatLegend">?</button>
                 </div>
-                <span class="close-button" onclick="closeNewOrderModal()">&times;</span>
+                <span class="close-button">&times;</span>
             </div>
             </div>
         <div class="modal-body">
@@ -165,7 +165,9 @@
                         <img src="img/user.png" alt="Cliente">
                         <h3>Cliente</h3>
                     </div>
-                    <input type="text" id="newOrderCliente" name="cliente" placeholder="Nome del cliente">
+                    <select id="newOrderCliente" name="cliente">
+                        <option value="" disabled selected>Seleziona un cliente</option>
+                    </select>
                 </div>
         
                 <div class="form-group">
@@ -173,7 +175,7 @@
                         <img src="img/factory.png" alt="Impianto">
                         <h3>Impianto</h3>
                     </div>
-                    <input type="text" id="newOrderImpianto" name="impianto" placeholder="Luogo dell'impianto">
+                    <input type="text" id="newOrderImpianto" name="impianto" placeholder="Nome o riferimento dell'impianto">
                 </div>
 
                 <div class="form-group">
@@ -191,7 +193,7 @@
                         <img src="img/VO.png" alt="VO">
                         <h3>VO</h3>
                     </div>
-                    <input type="text" id="newOrderVO" name="vo" placeholder="Valore VO">
+                    <input type="text" id="newOrderVO" name="vo" placeholder="00-0000">
                 </div>
 
                 <div class="form-group">
@@ -199,7 +201,7 @@
                        <img src="img/logo.png" alt="Commessa">
                        <h3>Commessa</h3>
                     </div>
-                    <input type="text" id="newOrderCommessa" name="commessa" placeholder="Numero commessa">
+                    <input type="text" id="newOrderCommessa" name="commessa" placeholder="C0000">
                 </div>
 
                 <div class="form-group">
@@ -207,7 +209,7 @@
                         <img src="img/calendar.png" alt="Data">
                         <h3>Data</h3>
                     </div>
-                    <input type="date" id="newOrderData" name="data">
+                    <input type="date" id="newOrderData" name="Data">
                 </div>
 
                 <div class="form-group">
@@ -231,7 +233,7 @@
                         <img src="img/year.png" alt="Anno">
                         <h3>Anno</h3>
                     </div>
-                    <input type="number" id="newOrderAnno" name="anno" placeholder="Anno">
+                    <input type="number" id="newOrderAnno" name="anno" placeholder="0000">
                 </div>
 
                 <div class="form-group">

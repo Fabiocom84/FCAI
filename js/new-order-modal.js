@@ -8,7 +8,7 @@ const newOrderForm = document.getElementById('newOrderForm');
 const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
 
 // Campi Select dei menu a tendina
-const clienteSelect = document.getElementById('newOrderCliente');
+const clienteSelect = document.getElementById('newOrderCliente'); // Ora troverà il <select>
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 const dataInput = document.getElementById('newOrderData');
@@ -18,7 +18,6 @@ const annoInput = document.getElementById('newOrderAnno');
 
 /**
  * Funzione chiamata da main.js per preparare il modale.
- * Popola i menu, imposta i valori di default e resetta il form.
  */
 window.prepareNewOrderModal = async function() {
     resetNewOrderModal();
@@ -34,14 +33,13 @@ window.cleanupNewOrderModal = function() {
 };
 
 /**
- * Carica i dati per tutti i menu a tendina dal backend con una sola chiamata API.
+ * Carica i dati per tutti i menu a tendina dal backend.
  */
 async function loadDynamicDropdowns() {
     try {
-        // Chiama l'endpoint unificato che abbiamo creato nel backend
         const response = await apiFetch('/api/commesse-init-data');
 
-        // Popola i menu usando la risposta dell'API
+        // Popola tutti e tre i menu
         populateSelect(clienteSelect, response.clienti, 'ragione_sociale', 'id_cliente');
         populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
         populateSelect(statusSelect, response.status, 'descrizione', 'id_status');
@@ -54,14 +52,11 @@ async function loadDynamicDropdowns() {
 
 /**
  * Funzione generica per popolare un elemento <select>
- * @param {HTMLSelectElement} selectElement - L'elemento <select> da popolare.
- * @param {Array} data - L'array di oggetti.
- * @param {string} textField - La chiave dell'oggetto per il testo visualizzato.
- * @param {string} valueField - La chiave dell'oggetto per il valore dell'opzione.
  */
 function populateSelect(selectElement, data, textField, valueField) {
     if (!selectElement) return;
-    selectElement.innerHTML = '<option value="" disabled selected>Seleziona un\'opzione</option>';
+    // La prima opzione viene creata dinamicamente dall'HTML corretto
+    selectElement.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
     if (data && data.length > 0) {
         data.forEach(item => {
             const option = document.createElement('option');
@@ -73,7 +68,7 @@ function populateSelect(selectElement, data, textField, valueField) {
 }
 
 /**
- * Salva i dati della nuova commessa inviandoli al backend.
+ * Salva i dati della nuova commessa.
  */
 async function saveNewOrder(event) {
     event.preventDefault();
@@ -83,7 +78,6 @@ async function saveNewOrder(event) {
     const formData = new FormData(newOrderForm);
 
     try {
-        // Chiama l'endpoint corretto per la creazione della commessa
         const result = await apiFetch('/api/commesse', {
             method: 'POST',
             body: formData
@@ -95,7 +89,7 @@ async function saveNewOrder(event) {
         if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'block';
 
         setTimeout(() => {
-            window.closeNewOrderModal(); // Chiama la funzione di chiusura globale
+            window.closeNewOrderModal();
         }, 2000);
         
     } catch (error) {
@@ -107,7 +101,7 @@ async function saveNewOrder(event) {
 }
 
 /**
- * Imposta la data e l'anno correnti come valori predefiniti nel form.
+ * Imposta i valori di default nel form.
  */
 function setDefaultValues() {
     const today = new Date();
@@ -120,7 +114,7 @@ function setDefaultValues() {
 }
 
 /**
- * Resetta lo stato del modale (form, messaggi, etc.).
+ * Resetta lo stato del modale.
  */
 function resetNewOrderModal() {
     if (newOrderForm) {
@@ -139,13 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openNewOrderModalBtn) {
         openNewOrderModalBtn.addEventListener('click', (event) => {
             event.preventDefault();
-            // La preparazione del modale ora viene gestita da main.js
-            // per assicurare il corretto ordine di esecuzione.
             window.openNewOrderModal();
         });
     }
 
     if (closeNewOrderModalBtn) {
+        // Ora questo listener si attaccherà correttamente al <span>
         closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
     }
     
