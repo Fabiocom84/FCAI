@@ -2,6 +2,7 @@
 
 // --- Elementi DOM ---
 const newOrderModal = document.getElementById('newOrderModal');
+const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
 const newOrderForm = document.getElementById('newOrderForm');
 const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
@@ -15,7 +16,6 @@ const statusSelect = document.getElementById('newOrderStatus');
 const dataInput = document.getElementById('newOrderData');
 const annoInput = document.getElementById('newOrderAnno');
 
-// Array per mantenere i dati dei clienti
 let clientiData = [];
 
 // --- Funzioni e Logica ---
@@ -33,22 +33,18 @@ window.cleanupNewOrderModal = function() {
 async function loadDynamicData() {
     try {
         const response = await (await window.apiFetch('/api/commesse-init-data')).json();
-
-        // Salva i dati dei clienti per la ricerca
         clientiData = response.clienti || [];
         
-        // Popola la datalist dei clienti
         clienteDatalist.innerHTML = '';
         clientiData.forEach(item => {
             const option = document.createElement('option');
             option.value = item.ragione_sociale;
-            option.dataset.id = item.id_cliente; // Salva l'ID in un attributo data
+            option.dataset.id = item.id_cliente;
             clienteDatalist.appendChild(option);
         });
 
-        // Popola gli altri menu a tendina
         populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
-        populateSelect(statusSelect, response.status, 'nome_status', 'id_status'); // Corretto con nome_status
+        populateSelect(statusSelect, response.status, 'nome_status', 'id_status');
 
     } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
@@ -56,12 +52,9 @@ async function loadDynamicData() {
     }
 }
 
-// Aggiungi un listener per quando l'utente seleziona un cliente dalla lista
 clienteInput.addEventListener('input', () => {
     const selectedValue = clienteInput.value;
     const cliente = clientiData.find(c => c.ragione_sociale === selectedValue);
-    
-    // Se il valore corrisponde a un cliente, salva il suo ID nel campo nascosto
     clienteIdInput.value = cliente ? cliente.id_cliente : '';
 });
 
@@ -90,24 +83,17 @@ async function saveNewOrder(event) {
             method: 'POST',
             body: formData
         });
-
-        if (!response.ok) {
-            // Se il backend restituisce un errore, lo leggiamo e lo mostriamo
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Si è verificato un errore sconosciuto.');
-        }
+        if (!response.ok) throw new Error((await response.json()).error);
         
-        // Se tutto va a buon fine, mostriamo il modale di successo
         await window.showModal({
             title: 'Successo ✅',
             message: 'La nuova commessa è stata creata correttamente.',
             confirmText: 'Ottimo!'
         });
         
-        window.closeNewOrderModal(); // Chiude il modale di inserimento
+        window.closeNewOrderModal();
         
     } catch (error) {
-        // In caso di qualsiasi errore, mostriamo un modale di errore
         console.error('Errore nel salvataggio della nuova commessa:', error);
         await window.showModal({
             title: 'Errore ❗',
@@ -135,3 +121,20 @@ function resetNewOrderModal() {
     if (newOrderForm) newOrderForm.style.display = 'block';
     if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'none';
 }
+
+// --- COLLEGAMENTO DEGLI EVENTI SPECIFICI DEL MODALE ---
+// Questo blocco assicura che i pulsanti di questo modale
+// siano collegati alle funzioni corrette.
+document.addEventListener('DOMContentLoaded', () => {
+    if (saveNewOrderButton) {
+        saveNewOrderButton.addEventListener('click', saveNewOrder);
+    }
+    if (closeNewOrderModalBtn) {
+        closeNewOrderModalBtn.addEventListener('click', () => {
+            // Chiama la funzione globale definita in main.js
+            if (window.closeNewOrderModal) {
+                window.closeNewOrderModal();
+            }
+        });
+    }
+});
