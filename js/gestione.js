@@ -27,6 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_cliente'
             },
+            'personale': {
+                    apiEndpoint: '/api/personale',
+                    columns: [
+                        { key: 'nome_cognome', label: 'Nome Cognome', editable: true },
+                        { key: 'email', label: 'Email', editable: true },
+                        { key: 'telefono', label: 'Telefono', editable: true },
+                        { key: 'attivo', label: 'Attivo', editable: true },
+                        { key: 'is_admin', label: 'Admin', editable: true },
+                        { key: 'puo_accedere', label: 'Può Accedere', editable: true }
+                    ],
+                    idColumn: 'id_personale'
+                }
         },
 
         /**
