@@ -30,13 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
             'personale': {
                 apiEndpoint: '/api/personale',
                 columns: [
-                    { key: 'nome_cognome', label: 'Nome Cognome', editable: true },
-                    { key: 'email', label: 'Email', editable: true },
-                    { key: 'telefono', label: 'Telefono', editable: true },
-                    // Nuove colonne per i dati correlati (non modificabili in questa vista)
-                    { key: 'ruoli.nome_ruolo', label: 'Ruolo', editable: false },
-                    { key: 'aziende.ragione_sociale', label: 'Azienda', editable: false },
-                    { key: 'attivo', label: 'Attivo', editable: true }
+                    { key: 'nome_cognome', label: 'Nome Cognome', editable: true, type: 'text' },
+                    { key: 'email', label: 'Email', editable: true, type: 'text' },
+                    { key: 'telefono', label: 'Telefono', editable: true, type: 'text' },
+                    // --- COLONNE MODIFICATE ---
+                    { 
+                        key: 'id_ruolo_fk', 
+                        displayKey: 'ruoli.nome_ruolo', // Percorso per visualizzare il nome
+                        label: 'Ruolo', 
+                        editable: true, 
+                        type: 'foreignKey',
+                        options: { // Istruzioni per popolare il menu
+                            apiEndpoint: '/api/ruoli',
+                            valueField: 'id_ruolo',
+                            textField: 'nome_ruolo'
+                        }
+                    },
+                    { 
+                        key: 'id_azienda_fk', 
+                        displayKey: 'aziende.ragione_sociale',
+                        label: 'Azienda', 
+                        editable: true, 
+                        type: 'foreignKey',
+                        options: {
+                            apiEndpoint: '/api/aziende',
+                            valueField: 'id_azienda',
+                            textField: 'ragione_sociale'
+                        }
+                    },
+                    { key: 'attivo', label: 'Attivo', editable: true, type: 'boolean' }
                 ],
                 idColumn: 'id_personale'
             }
@@ -152,40 +174,29 @@ document.addEventListener('DOMContentLoaded', () => {
         /**
          * Aggiunge o rimuove una riga vuota per l'inserimento.
          */
-        handleAddRow() {
-            const existingNewRow = document.querySelector('.new-row-form');
+        async handleAddRow() { // <-- Ora è ASYNC
+            this.state.isAddingNewRow = true;
 
-            if (existingNewRow) {
-                existingNewRow.remove();
-                this.state.isAddingNewRow = false;
-            } else {
-                this.state.isAddingNewRow = true;
+            const config = this.viewConfig[this.state.currentView];
+            const table = this.dom.gridWrapper.querySelector('table');
+            const tbody = table.querySelector('tbody');
 
-                const config = this.viewConfig[this.state.currentView];
-                let table = this.dom.gridWrapper.querySelector('table');
-                if (!table) {
-                    this.renderTable([]); 
-                    table = this.dom.gridWrapper.querySelector('table');
+            const newRow = tbody.insertRow(0);
+            newRow.classList.add('new-row-form', 'selected-row');
+            
+            newRow.insertCell().textContent = '*';
+            newRow.insertCell();
+
+            for (const col of config.columns) { // Usiamo un ciclo for...of per gestire await
+                const cell = newRow.insertCell();
+                if (col.editable) {
+                    const inputElement = await this.createCellInput(col); // <-- USA LA NUOVA FUNZIONE
+                    inputElement.style.width = '100%';
+                    inputElement.style.boxSizing = 'border-box';
+                    cell.appendChild(inputElement);
                 }
-                const tbody = table.querySelector('tbody');
-
-                const newRow = tbody.insertRow(0);
-                newRow.classList.add('new-row-form', 'selected-row');
-                
-                newRow.insertCell().textContent = '*';
-                newRow.insertCell();
-
-                config.columns.forEach(col => {
-                    const cell = newRow.insertCell();
-                    if (col.editable) {
-                        const input = document.createElement('input');
-                        input.type = col.type || 'text';
-                        input.placeholder = col.label;
-                        input.dataset.key = col.key;
-                        cell.appendChild(input);
-                    }
-                });
             }
+            
             this.updateToolbarState();
         },
 
@@ -197,7 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!newRow) return;
             const config = this.viewConfig[this.state.currentView];
             const newObject = {};
-            newRow.querySelectorAll('input[data-key]').forEach(input => {
+            // Seleziona sia input che select
+            newRow.querySelectorAll('input[data-key], select[data-key]').forEach(input => {
                 newObject[input.dataset.key] = input.value;
             });
             if (Object.values(newObject).every(val => !val)) {
@@ -264,41 +276,35 @@ document.addEventListener('DOMContentLoaded', () => {
         /**
          * Trasforma una riga in modalità di modifica.
          */
-        handleEditRow() {
+        async handleEditRow() { // <-- Ora è ASYNC
             if (!this.state.lastSelectedRadio) return;
 
             const config = this.viewConfig[this.state.currentView];
             const id = this.state.lastSelectedRadio.value;
-
-            // --- INIZIO LOGICA MIGLIORATA ---
-
-            // 1. Trova l'oggetto dati completo nello stato dell'app usando l'ID della riga selezionata.
-            //    Questo è più affidabile che leggere il testo dalla tabella.
             const rowData = this.state.tableData.find(item => String(item[config.idColumn]) === String(id));
-
-            if (!rowData) {
-                console.error("Dati della riga selezionata non trovati.");
-                return;
-            }
+            if (!rowData) return;
 
             this.state.isEditingRow = true;
             const row = this.state.lastSelectedRadio.closest('tr');
             row.classList.add('editing-row');
 
-            config.columns.forEach((col, index) => {
+            const originalCells = Array.from(row.cells).slice(2); // Copia le celle originali
+            row.innerHTML = `<td>${row.cells[0].innerHTML}</td><td>${row.cells[1].innerHTML}</td>`; // Pulisce la riga mantenendo # e radio
+
+            for (const col of config.columns) { // Usiamo un ciclo for...of
+                const cell = row.insertCell();
                 if (col.editable) {
-                    const cell = row.cells[index + 2];
-                    
-                    // 2. Prendi il valore corrente direttamente dall'oggetto dati.
-                    const currentValue = rowData[col.key] || '';
-                    
-                    // 3. Sanifica il valore per l'attributo HTML, proprio come abbiamo fatto per il filtro.
-                    const sanitizedValue = String(currentValue).replace(/"/g, '&quot;');
-                    
-                    cell.innerHTML = `<input type="text" value="${sanitizedValue}" data-key="${col.key}" style="width: 100%; box-sizing: border-box;">`;
+                    const currentValue = rowData[col.key]; // Prende l'ID della FK
+                    const inputElement = await this.createCellInput(col, currentValue); // <-- USA LA NUOVA FUNZIONE
+                    inputElement.style.width = '100%';
+                    inputElement.style.boxSizing = 'border-box';
+                    cell.appendChild(inputElement);
+                } else {
+                     // Se non è modificabile, rimetti il valore originale
+                    const displayValue = this.getPropertyByString(rowData, col.displayKey || col.key) || '';
+                    cell.textContent = displayValue;
                 }
-            });
-            // --- FINE LOGICA MIGLIORATA ---
+            }
 
             this.updateToolbarState();
         },
@@ -311,7 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!editingRow) return;
             const config = this.viewConfig[this.state.currentView];
             const updatedData = {};
-            editingRow.querySelectorAll('input[data-key]').forEach(input => {
+            // Seleziona sia input che select
+            editingRow.querySelectorAll('input[data-key], select[data-key]').forEach(input => {
                 updatedData[input.dataset.key] = input.value;
             });
             const id = this.state.lastSelectedRadio.value;
@@ -604,6 +611,52 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
                 popup.remove();
             }
+        },
+
+        async createCellInput(columnConfig, currentValue = '') {
+            const key = columnConfig.key;
+
+            // Caso 1: Valore Booleano
+            if (columnConfig.type === 'boolean') {
+                const select = document.createElement('select');
+                select.dataset.key = key;
+                select.innerHTML = `
+                    <option value="true" ${currentValue === true ? 'selected' : ''}>Vero</option>
+                    <option value="false" ${currentValue === false || currentValue === '' ? 'selected' : ''}>Falso</option>
+                `;
+                return select;
+            }
+
+            // Caso 2: Chiave Esterna (Foreign Key)
+            if (columnConfig.type === 'foreignKey') {
+                const select = document.createElement('select');
+                select.dataset.key = key;
+                select.innerHTML = `<option value="">Caricamento...</option>`;
+
+                try {
+                    const optionsData = await this.apiFetch(columnConfig.options.apiEndpoint);
+                    select.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
+                    optionsData.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt[columnConfig.options.valueField];
+                        option.textContent = opt[columnConfig.options.textField];
+                        if (String(option.value) === String(currentValue)) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    select.innerHTML = `<option value="">Errore nel caricamento</option>`;
+                }
+                return select;
+            }
+
+            // Caso 3 (Default): Campo di Testo
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentValue;
+            input.dataset.key = key;
+            return input;
         },
         
         async apiFetch(endpoint, options = {}) {
