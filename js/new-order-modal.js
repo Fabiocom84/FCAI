@@ -90,16 +90,30 @@ async function saveNewOrder(event) {
             method: 'POST',
             body: formData
         });
-        if (!response.ok) throw new Error((await response.json()).error);
-        
-        console.log('Commessa salvata con successo:', await response.json());
-        newOrderForm.style.display = 'none';
-        if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'block';
 
-        setTimeout(() => window.closeNewOrderModal(), 2000);
+        if (!response.ok) {
+            // Se il backend restituisce un errore, lo leggiamo e lo mostriamo
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Si è verificato un errore sconosciuto.');
+        }
+        
+        // Se tutto va a buon fine, mostriamo il modale di successo
+        await window.showModal({
+            title: 'Successo ✅',
+            message: 'La nuova commessa è stata creata correttamente.',
+            confirmText: 'Ottimo!'
+        });
+        
+        window.closeNewOrderModal(); // Chiude il modale di inserimento
         
     } catch (error) {
-        alert('Errore nel salvataggio: ' + error.message);
+        // In caso di qualsiasi errore, mostriamo un modale di errore
+        console.error('Errore nel salvataggio della nuova commessa:', error);
+        await window.showModal({
+            title: 'Errore ❗',
+            message: `Impossibile salvare la commessa: ${error.message}`,
+            confirmText: 'Capito'
+        });
     } finally {
         saveNewOrderButton.disabled = false;
     }

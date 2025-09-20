@@ -49,6 +49,48 @@ async function apiFetch(url, options = {}) {
 
 window.apiFetch = apiFetch;
 
+/**
+ * Mostra un modale di dialogo personalizzato.
+ * @param {object} options - { title, message, confirmText, cancelText }
+ * @returns {Promise<boolean>} - Risolve a 'true' se confermato, 'false' se annullato.
+ */
+function showModal({ title, message, confirmText, cancelText }) {
+    return new Promise(resolve => {
+        const overlay = document.getElementById('custom-modal-overlay');
+        const modalTitle = document.getElementById('custom-modal-title');
+        const modalMessage = document.getElementById('custom-modal-message');
+        const modalButtons = document.getElementById('custom-modal-buttons');
+        
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalButtons.innerHTML = ''; // Pulisce i pulsanti precedenti
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = confirmText || 'OK';
+        confirmBtn.className = 'button button--primary';
+        modalButtons.appendChild(confirmBtn);
+        
+        confirmBtn.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(true);
+        };
+
+        if (cancelText) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = cancelText;
+            cancelBtn.className = 'button';
+            modalButtons.appendChild(cancelBtn);
+            cancelBtn.onclick = () => {
+                overlay.style.display = 'none';
+                resolve(false);
+            };
+        }
+        
+        overlay.style.display = 'flex';
+    });
+}
+window.showModal = showModal; // Rendi la funzione disponibile globalmente
+
 let legendInstance;
 let modalOverlay;
 
