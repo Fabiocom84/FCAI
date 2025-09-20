@@ -1,161 +1,128 @@
 // js/new-order-modal.js
 
-import { API_BASE_URL } from './config.js';
-
-// Elementi DOM
+// --- Elementi DOM ---
 const newOrderModal = document.getElementById('newOrderModal');
-const closeNewOrderModalBtn = newOrderModal ? newOrderModal.querySelector('.close-button') : null;
+const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
 const saveNewOrderButton = document.getElementById('saveNewOrderButton');
-const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn'); // Presumo che esista
+const newOrderForm = document.getElementById('newOrderForm');
 const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
 
-// Elementi dei dropdown
+// Campi Select dei menu a tendina
+const clienteSelect = document.getElementById('newOrderCliente');
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
+const dataInput = document.getElementById('newOrderData');
+const annoInput = document.getElementById('newOrderAnno');
 
-const backendUrl = window.BACKEND_URL;
+// --- Funzioni e Logica ---
 
-// Elementi per l'animazione di caricamento
-const loadingIndicator = document.createElement('div');
-loadingIndicator.id = 'newOrderLoadingIndicator';
-loadingIndicator.className = 'loading-indicator'; // Aggiungi una classe per lo stile CSS
-loadingIndicator.style.display = 'none';
-loadingIndicator.style.position = 'absolute';
-loadingIndicator.style.top = '50%';
-loadingIndicator.style.left = '50%';
-loadingIndicator.style.transform = 'translate(-50%, -50%)';
-loadingIndicator.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-loadingIndicator.style.padding = '20px';
-loadingIndicator.style.borderRadius = '8px';
-loadingIndicator.style.zIndex = '1000';
-loadingIndicator.style.textAlign = 'center';
+/**
+ * Funzione chiamata da main.js per preparare il modale.
+ * Popola i menu, imposta i valori di default e resetta il form.
+ */
+window.prepareNewOrderModal = async function() {
+    resetNewOrderModal();
+    await loadDynamicDropdowns();
+    setDefaultValues();
+};
 
-newOrderModal?.appendChild(loadingIndicator);
+/**
+ * Funzione chiamata da main.js per pulire il modale dopo la chiusura.
+ */
+window.cleanupNewOrderModal = function() {
+    resetNewOrderModal();
+};
 
-// Funzione unificata per mostrare/nascondere il caricamento
-// Accetta un argomento per personalizzare il messaggio
-function showLoading(message = 'Caricamento dati...') {
-    if (loadingIndicator) {
-        loadingIndicator.innerHTML = `<p>${message}</p>`;
-        loadingIndicator.style.display = 'block';
+/**
+ * Carica i dati per tutti i menu a tendina dal backend con una sola chiamata API.
+ */
+async function loadDynamicDropdowns() {
+    try {
+        // Chiama l'endpoint unificato che abbiamo creato nel backend
+        const response = await apiFetch('/api/commesse-init-data');
+
+        // Popola i menu usando la risposta dell'API
+        populateSelect(clienteSelect, response.clienti, 'ragione_sociale', 'id_cliente');
+        populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
+        populateSelect(statusSelect, response.status, 'descrizione', 'id_status');
+
+    } catch (error) {
+        console.error('Errore nel caricamento delle opzioni dropdown:', error);
+        alert('Errore nel caricamento dei dati. Riprova più tardi.');
     }
 }
 
-function hideLoading() {
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-    }
-}
-
-// Funzione per popolare un dropdown in modo generico
-function populateDropdown(selectElement, data, placeholder) {
+/**
+ * Funzione generica per popolare un elemento <select>
+ * @param {HTMLSelectElement} selectElement - L'elemento <select> da popolare.
+ * @param {Array} data - L'array di oggetti.
+ * @param {string} textField - La chiave dell'oggetto per il testo visualizzato.
+ * @param {string} valueField - La chiave dell'oggetto per il valore dell'opzione.
+ */
+function populateSelect(selectElement, data, textField, valueField) {
     if (!selectElement) return;
-    selectElement.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+    selectElement.innerHTML = '<option value="" disabled selected>Seleziona un\'opzione</option>';
     if (data && data.length > 0) {
         data.forEach(item => {
             const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
+            option.value = item[valueField];
+            option.textContent = item[textField];
             selectElement.appendChild(option);
         });
     }
 }
 
-// Funzione per caricare i dati dei dropdown dal backend
-async function loadDynamicDropdowns() {
-    showLoading('Caricamento dati...');
-    try {
-        // Usiamo Promise.all con il nostro nuovo apiFetch
-        const [modelsResponse, statusResponse] = await Promise.all([
-            apiFetch(`${window.BACKEND_URL}/api/get-modelli`),
-            apiFetch(`${window.BACKEND_URL}/api/get-all-statuses`)
-        ]);
-
-        if (!modelsResponse.ok || !statusResponse.ok) {
-            throw new Error('Errore nel recupero dei dati dei dropdown.');
-        }
-
-        const modelsData = await modelsResponse.json();
-        const statusData = await statusResponse.json();
-
-        populateDropdown(modelloSelect, modelsData.models, 'Seleziona un modello');
-        populateDropdown(statusSelect, statusData.statuses, 'Seleziona uno status');
-
-    } catch (error) {
-        if (error.message !== "Unauthorized") {
-            console.error('Errore nel caricamento delle opzioni dropdown:', error);
-        }
-    } finally {
-        hideLoading();
-    }
-}
-
+/**
+ * Salva i dati della nuova commessa inviandoli al backend.
+ */
 async function saveNewOrder(event) {
     event.preventDefault();
-    
-    if (!newOrderForm) {
-        console.error('Form non trovato');
-        return;
-    }
+    if (!newOrderForm) return;
+
+    saveNewOrderButton.disabled = true;
     const formData = new FormData(newOrderForm);
 
-    showLoading('Salvataggio in corso...');
     try {
-        // Usiamo apiFetch, che gestisce automaticamente il token per i FormData
-        const response = await apiFetch(`${window.BACKEND_URL}/api/new-order`, {
+        // Chiama l'endpoint corretto per la creazione della commessa
+        const result = await apiFetch('/api/commesse', {
             method: 'POST',
             body: formData
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Errore durante il salvataggio della commessa.');
-        }
-        
-        const result = await response.json();
         console.log('Commessa salvata con successo:', result);
         
         newOrderForm.style.display = 'none';
         if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'block';
 
         setTimeout(() => {
-            closeNewOrderModal(); // Chiama la funzione di chiusura globale
+            window.closeNewOrderModal(); // Chiama la funzione di chiusura globale
         }, 2000);
         
     } catch (error) {
-        if (error.message !== "Unauthorized") {
-            console.error('Errore nel salvataggio della nuova commessa:', error);
-            alert('Errore nel salvataggio della nuova commessa: ' + error.message);
-        }
+        alert('Errore nel salvataggio: ' + error.message);
+        console.error('Errore nel salvataggio della nuova commessa:', error);
     } finally {
-        hideLoading();
+        saveNewOrderButton.disabled = false;
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
+/**
+ * Imposta la data e l'anno correnti come valori predefiniti nel form.
+ */
+function setDefaultValues() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
     
-    if (openNewOrderModalBtn) {
-        openNewOrderModalBtn.addEventListener('click', async (event) => {
-            event.preventDefault();
-            if (newOrderModal) newOrderModal.style.display = 'block';
-            if (window.modalOverlay) window.modalOverlay.style.display = 'block';
-            await loadDynamicDropdowns();
-        });
-    }
+    if (dataInput) dataInput.value = `${year}-${month}-${day}`;
+    if (annoInput) annoInput.value = year;
+}
 
-    if (closeNewOrderModalBtn) {
-        // Usiamo la funzione di chiusura definita in main.js per coerenza
-        closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
-    }
-    
-    if (saveNewOrderButton) {
-        saveNewOrderButton.addEventListener('click', saveNewOrder);
-    }
-});
-
-// Funzione di reset chiamata da main.js quando il modale si chiude
-window.resetNewOrderModal = function() {
+/**
+ * Resetta lo stato del modale (form, messaggi, etc.).
+ */
+function resetNewOrderModal() {
     if (newOrderForm) {
         newOrderForm.reset();
         newOrderForm.style.display = 'block';
@@ -163,5 +130,26 @@ window.resetNewOrderModal = function() {
     if (newOrderSuccessMessage) {
         newOrderSuccessMessage.style.display = 'none';
     }
-    hideLoading();
-};
+}
+
+// --- Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+    const openNewOrderModalBtn = document.getElementById('openNewOrderModalBtn');
+    
+    if (openNewOrderModalBtn) {
+        openNewOrderModalBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            // La preparazione del modale ora viene gestita da main.js
+            // per assicurare il corretto ordine di esecuzione.
+            window.openNewOrderModal();
+        });
+    }
+
+    if (closeNewOrderModalBtn) {
+        closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
+    }
+    
+    if (saveNewOrderButton) {
+        saveNewOrderButton.addEventListener('click', saveNewOrder);
+    }
+});
