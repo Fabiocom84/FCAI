@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
-                        formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A'
+                        formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A',
                         filterOptions: {
                             key: 'ruoli.nome_ruolo', // La chiave da usare per il filtro
                             apiEndpoint: '/api/ruoli', // L'API da cui prendere le opzioni
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Se 'sede' non è presente, non aggiunge nulla.
                             const sede = azienda.sede ? ` ${azienda.sede}` : ''; 
                             return `${azienda.ragione_sociale}${sede}`;
-                        }
+                        },
                         filterOptions: {
                             key: 'aziende.ragione_sociale',
                             apiEndpoint: '/api/aziende',
