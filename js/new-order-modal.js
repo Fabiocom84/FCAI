@@ -8,7 +8,7 @@ const newOrderForm = document.getElementById('newOrderForm');
 const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
 
 // Campi Select dei menu a tendina
-const clienteSelect = document.getElementById('newOrderCliente'); // Ora troverà il <select>
+const clienteSelect = document.getElementById('newOrderCliente');
 const modelloSelect = document.getElementById('newOrderModello');
 const statusSelect = document.getElementById('newOrderStatus');
 const dataInput = document.getElementById('newOrderData');
@@ -16,46 +16,36 @@ const annoInput = document.getElementById('newOrderAnno');
 
 // --- Funzioni e Logica ---
 
-/**
- * Funzione chiamata da main.js per preparare il modale.
- */
 window.prepareNewOrderModal = async function() {
     resetNewOrderModal();
     await loadDynamicDropdowns();
     setDefaultValues();
 };
 
-/**
- * Funzione chiamata da main.js per pulire il modale dopo la chiusura.
- */
 window.cleanupNewOrderModal = function() {
     resetNewOrderModal();
 };
 
-/**
- * Carica i dati per tutti i menu a tendina dal backend.
- */
 async function loadDynamicDropdowns() {
     try {
-        const responseData = await window.apiFetch('/api/commesse-init-data');
+        const response = await window.apiFetch('/api/commesse-init-data');
+        if (!response.ok) {
+            throw new Error(`Errore di rete: ${response.status}`);
+        }
+        const data = await response.json(); // Estrai il JSON dalla risposta
 
-        // Popola tutti e tre i menu
-        populateSelect(clienteSelect, response.clienti, 'ragione_sociale', 'id_cliente');
-        populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
-        populateSelect(statusSelect, response.status, 'descrizione', 'id_status');
+        populateSelect(clienteSelect, data.clienti, 'ragione_sociale', 'id_cliente');
+        populateSelect(modelloSelect, data.modelli, 'nome_modello', 'id_modello');
+        populateSelect(statusSelect, data.status, 'descrizione', 'id_status');
 
     } catch (error) {
         console.error('Errore nel caricamento delle opzioni dropdown:', error);
-        alert('Errore nel caricamento dei dati. Riprova più tardi.');
+        alert('Errore nel caricamento dei dati. Assicurati che il server backend sia in esecuzione e aggiornato.');
     }
 }
 
-/**
- * Funzione generica per popolare un elemento <select>
- */
 function populateSelect(selectElement, data, textField, valueField) {
     if (!selectElement) return;
-    // La prima opzione viene creata dinamicamente dall'HTML corretto
     selectElement.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
     if (data && data.length > 0) {
         data.forEach(item => {
@@ -67,9 +57,6 @@ function populateSelect(selectElement, data, textField, valueField) {
     }
 }
 
-/**
- * Salva i dati della nuova commessa.
- */
 async function saveNewOrder(event) {
     event.preventDefault();
     if (!newOrderForm) return;
@@ -83,6 +70,12 @@ async function saveNewOrder(event) {
             body: formData
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Errore durante il salvataggio.');
+        }
+        
+        const result = await response.json();
         console.log('Commessa salvata con successo:', result);
         
         newOrderForm.style.display = 'none';
@@ -100,9 +93,6 @@ async function saveNewOrder(event) {
     }
 }
 
-/**
- * Imposta i valori di default nel form.
- */
 function setDefaultValues() {
     const today = new Date();
     const year = today.getFullYear();
@@ -113,9 +103,6 @@ function setDefaultValues() {
     if (annoInput) annoInput.value = year;
 }
 
-/**
- * Resetta lo stato del modale.
- */
 function resetNewOrderModal() {
     if (newOrderForm) {
         newOrderForm.reset();
