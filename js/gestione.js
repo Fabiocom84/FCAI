@@ -51,6 +51,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_modello'
             },
+            'registrazioni': {
+                apiEndpoint: '/api/registrazioni',
+                idColumn: 'id_registrazione',
+                columns: [
+                    { 
+                        key: 'data_creazione', 
+                        label: 'Data', 
+                        editable: true, 
+                        type: 'datetime-local',
+                        formatter: (rowData) => new Date(rowData.data_creazione).toLocaleString('it-IT'),
+                        // --- NUOVA CONFIGURAZIONE FILTRO DATA ---
+                        filterOptions: {
+                            apiEndpoint: '/api/distinct-dates/registrazioni/data_creazione',
+                            // Poiché l'API restituisce una lista semplice, non servono textField/valueField
+                        }
+                    },
+                    { 
+                        key: 'id_commessa_fk', 
+                        label: 'Commessa', 
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => {
+                            if (!rowData.commesse) return 'N/A';
+                            const cliente_nome = rowData.commesse.clienti?.ragione_sociale || 'N/D';
+                            const impianto = rowData.commesse.impianto || 'N/D';
+                            const codice = rowData.commesse.codice_commessa || 'N/D';
+                            return `${cliente_nome} | ${impianto} | ${codice}`;
+                        },
+                        options: { apiEndpoint: '/api/get-etichette', valueField: 'id', textField: 'label' },
+                        // --- NUOVA CONFIGURAZIONE FILTRO COMMESSA ---
+                        filterOptions: {
+                            key: 'commesse.id_commessa', // La chiave da usare per il filtro nel backend
+                            apiEndpoint: '/api/get-etichette', // L'API da cui prendere le opzioni
+                            valueField: 'id',        // La proprietà da usare come valore del filtro
+                            textField: 'label'       // La proprietà da mostrare nella lista
+                        }
+                    },
+                    { key: 'contenuto_testo', label: 'Testo', editable: true, type: 'textarea' },
+                    { 
+                        key: 'url_allegato', 
+                        label: 'Allegato', 
+                        editable: false,
+                        formatter: (rowData) => {
+                            if (!rowData.url_allegato) return 'Nessuno';
+                            return `<a href="${rowData.url_allegato}" target="_blank">Apri file</a>`;
+                        }
+                    }
+                ]
+            },
             'personale': {
                 apiEndpoint: '/api/personale',
                 columns: [

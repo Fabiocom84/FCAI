@@ -122,26 +122,20 @@ async function loadEtichette() {
     if (!riferimentoDropdown) return;
     
     try {
-        // Usa apiFetch, non serve più l'header Authorization manuale
-        const response = await apiFetch(`${window.BACKEND_URL}/api/get-etichette`);
+        // La chiamata API va bene, cambiamo come la processiamo
+        const response = await apiFetch(`${API_BASE_URL}/api/get-etichette`); // Assicurati che API_BASE_URL sia corretto
+        const items = await response.json();
 
-        if (!response.ok) {
-            throw new Error(`Errore nella richiesta delle etichette: ${response.status}`);
-        }
-        const data = await response.json();
-        const items = data.etichette || [];
-
-        riferimentoDropdown.innerHTML = `<option value="" disabled selected>Seleziona un riferimento</option>`;
+        riferimentoDropdown.innerHTML = `<option value="" selected>Nessuna commessa associata</option>`;
         items.forEach(item => {
             const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
+            // QUI LA MODIFICA CHIAVE:
+            option.value = item.id;       // Salviamo l'ID numerico
+            option.textContent = item.label; // Mostriamo l'etichetta leggibile
             riferimentoDropdown.appendChild(option);
         });
     } catch (error) {
-        if (error.message !== "Unauthorized") {
-            console.error('Errore nel caricamento delle etichette:', error);
-        }
+        console.error('Errore nel caricamento delle etichette:', error);
     }
 }
 
