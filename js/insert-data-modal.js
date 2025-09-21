@@ -89,9 +89,8 @@ async function saveData(event) {
     const formData = new FormData(modalForm);
 
     try {
-        // --- MODIFICA QUI ---
-        // Passiamo solo il percorso relativo. apiFetch aggiungerà la base URL.
-        const response = await apiFetch('/api/save-data', {
+        // --- FIX: Change '/api/save-data' to '/api/registrazioni' ---
+        const response = await apiFetch('/api/registrazioni', {
             method: 'POST',
             body: formData
         });
