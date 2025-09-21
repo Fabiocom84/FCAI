@@ -645,20 +645,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 let uniqueValues = [];
-                let valueKey = 'value'; // Default key for the value
-                let labelKey = 'value'; // Default key for the label
+                let valueKey = 'value';
+                let labelKey = 'value';
 
-                // Determine how to fetch and process the filter options
                 if (columnConfig.filterOptions) {
-                    const response = await this.apiFetch(columnConfig.filterOptions.apiEndpoint);
-                    const items = await response.json();
+                    // --- MODIFICA QUI ---
+                    // apiFetch ora restituisce direttamente i dati JSON, non la response.
+                    const items = await this.apiFetch(columnConfig.filterOptions.apiEndpoint);
+                    
                     valueKey = columnConfig.filterOptions.valueField || columnConfig.filterOptions.textField;
                     labelKey = columnConfig.filterOptions.textField;
                     uniqueValues = items.map(item => ({ value: item[valueKey], label: item[labelKey] }));
                 } else {
                     const tableName = this.state.currentView;
-                    const response = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
-                    const values = await response.json();
+                    // --- MODIFICA QUI ---
+                    // Anche qui, apiFetch restituisce direttamente i dati.
+                    const values = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                    
                     uniqueValues = values.map(val => ({ value: val, label: val }));
                 }
                 
@@ -678,10 +681,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <ul class="filter-popup-list">${listItems}</ul>`;
                 
-                // Reposition after content is loaded
                 popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
-                // --- START OF ADDED LOGIC ---
                 const searchInput = popup.querySelector('#popup-search-input');
                 const listElements = popup.querySelectorAll('.filter-popup-list li');
 
@@ -696,7 +697,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                 });
-                // --- END OF ADDED LOGIC ---
 
             } catch (error) {
                 popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
