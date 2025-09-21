@@ -42,7 +42,6 @@ function resetForm() {
     if (startButton) startButton.disabled = false;
     if (stopButton) stopButton.disabled = true;
     
-    // Riporta visibile il form se era nascosto dal messaggio di successo
     const formContent = insertDataModal?.querySelector('form');
     const successMessage = document.getElementById('insertDataSuccessMessage');
     if (formContent) formContent.style.display = 'block';
@@ -90,8 +89,9 @@ async function saveData(event) {
     const formData = new FormData(modalForm);
 
     try {
-        // Ora usiamo apiFetch, che gestirà il token e il tipo di contenuto
-        const response = await apiFetch(`${window.BACKEND_URL}/api/save-data`, {
+        // --- MODIFICA QUI ---
+        // Passiamo solo il percorso relativo. apiFetch aggiungerà la base URL.
+        const response = await apiFetch('/api/save-data', {
             method: 'POST',
             body: formData
         });
@@ -122,16 +122,16 @@ async function loadEtichette() {
     if (!riferimentoDropdown) return;
     
     try {
-        // La chiamata API va bene, cambiamo come la processiamo
-        const response = await apiFetch(`${API_BASE_URL}/api/get-etichette`); // Assicurati che API_BASE_URL sia corretto
+        // --- MODIFICA QUI ---
+        // Passiamo solo il percorso relativo.
+        const response = await apiFetch('/api/get-etichette');
         const items = await response.json();
 
         riferimentoDropdown.innerHTML = `<option value="" selected>Nessuna commessa associata</option>`;
         items.forEach(item => {
             const option = document.createElement('option');
-            // QUI LA MODIFICA CHIAVE:
-            option.value = item.id;       // Salviamo l'ID numerico
-            option.textContent = item.label; // Mostriamo l'etichetta leggibile
+            option.value = item.id;
+            option.textContent = item.label;
             riferimentoDropdown.appendChild(option);
         });
     } catch (error) {
@@ -153,9 +153,9 @@ async function preCheckMicrophonePermission() {
     }
 }
 
-async function startRecording(event) { // 1. Accetta l'evento
+async function startRecording(event) {
     event.preventDefault();
-    event.stopPropagation(); // 2. Ferma la propagazione dell'evento
+    event.stopPropagation();
 
     if (isTranscribing) return;
     try {
@@ -204,8 +204,9 @@ async function transcribeAudio(audioBlob) {
     formData.append('audio', audioBlob, 'recording.webm');
     
     try {
-        // Usa apiFetch, che gestirà il token e il tipo di contenuto
-        const response = await apiFetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
+        // --- MODIFICA QUI ---
+        // Passiamo solo il percorso relativo.
+        const response = await apiFetch('/api/transcribe-voice', {
             method: 'POST',
             body: formData
         });
