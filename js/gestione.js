@@ -74,10 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => {
                             if (!rowData.commesse) return 'N/A';
-                            const cliente_nome = rowData.commesse.clienti?.ragione_sociale || 'N/D';
-                            const impianto = rowData.commesse.impianto || 'N/D';
-                            const codice = rowData.commesse.codice_commessa || 'N/D';
-                            return `${cliente_nome} | ${impianto} | ${codice}`;
+                            const cliente = rowData.commesse.clienti?.ragione_sociale;
+                            const impianto = rowData.commesse.impianto;
+                            const vo = rowData.commesse.vo;
+                            const riferimento = rowData.commesse.riferimento_tecnico;
+                
+                            // Filtra le parti non definite e le unisce
+                            const parts = [cliente, impianto, vo, riferimento].filter(Boolean);
+                            return parts.join(' | ');
                         },
                         options: { apiEndpoint: '/api/get-etichette', valueField: 'id', textField: 'label' },
                         // --- NUOVA CONFIGURAZIONE FILTRO COMMESSA ---
