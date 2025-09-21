@@ -532,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
 
-            // Intestazioni fisse e dinamiche (invariate)
             const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
             fixedHeaders.forEach(header => {
                 const th = document.createElement('th');
@@ -544,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 thContent.className = 'column-header-content';
                 const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
                 thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`;
-                th.classList.toggle('filter-active', this.state.activeFilters[col.key]?.length > 0);
+                th.classList.toggle('filter-active', !!this.state.activeFilters[col.filterOptions ? col.filterOptions.key : col.key]);
                 th.appendChild(thContent); headerRow.appendChild(th);
             });
 
@@ -560,7 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 data.forEach((rowData, index) => {
                     const row = tbody.insertRow();
-                    row.insertCell().textContent = index + 1;
+                    const pageOffset = (this.state.currentPage - 1) * 50;
+                    row.insertCell().textContent = pageOffset + index + 1;
+
                     const cellSelect = row.insertCell();
                     const radio = document.createElement('input');
                     radio.type = 'radio'; radio.name = 'rowSelector';
@@ -568,15 +569,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     config.columns.forEach(col => {
                         let cellValue;
-                        // Se esiste un formattatore personalizzato, usalo
                         if (col.formatter) {
                             cellValue = col.formatter(rowData);
                         } else {
-                        // Altrimenti, usa la logica standard
                             const displayKey = col.displayKey || col.key;
                             cellValue = this.getPropertyByString(rowData, displayKey) || '';
                         }
-                        row.insertCell().textContent = cellValue;
+                        // --- FIX: Use .innerHTML instead of .textContent ---
+                        // This tells the browser to render the HTML link correctly.
+                        row.insertCell().innerHTML = cellValue;
                     });
                 });
             }
