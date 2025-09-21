@@ -183,6 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
             this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
             document.addEventListener('click', this.handleDocumentClick.bind(this));
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            const filterKey = urlParams.get('filterKey'); // e.g., 'id_commessa_fk'
+            const filterValue = urlParams.get('filterValue'); // e.g., '123'
+
+            if (viewParam) {
+                this.dom.viewSelector.value = viewParam;
+            }
+            if (filterKey && filterValue) {
+                this.state.activeFilters[filterKey] = [filterValue];
+            }
+
             this.handleViewChange();
         },
 

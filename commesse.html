@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Commesse</title>
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="commesse.css"> </head>
+<body>
+    <header class="commesse-header">
+        <h1>Gestione Commesse</h1>
+        <button id="add-commessa-btn" class="button insert-button">
+            <img src="img/plus.png" alt="Aggiungi">
+            <span>Aggiungi Nuova Commessa</span>
+        </button>
+    </header>
+
+    <div class="controls-container">
+        <div class="filter-group">
+            <strong>Stato:</strong>
+            <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
+            <button class="filter-btn" data-status="Completata">Completate</button>
+            <button class="filter-btn" data-status="">Tutte</button>
+        </div>
+        <div class="search-sort-group">
+            <input type="text" id="search-input" placeholder="Cerca per cliente, impianto, VO...">
+            <select id="sort-select">
+                <option value="data_commessa:desc">Più Recenti</option>
+                <option value="data_commessa:asc">Meno Recenti</option>
+                <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
+            </select>
+        </div>
+    </div>
+
+    <main id="commesse-grid" class="commesse-grid"></main>
+    
+    <div id="loader" class="loader" style="display: none;">Caricamento...</div>
+
+    <div id="newOrderModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuova Commessa</h2>
+                <div class="modal-header-buttons">
+                    <div class="help-button-container">
+                        <button class="help-button" data-legend="chatLegend">?</button>
+                    </div>
+                    <span class="close-button">&times;</span>
+                </div>
+                </div>
+            <div class="modal-body">
+                <form id="newOrderForm"> 
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/user.png" alt="Cliente">
+                            <h3>Cliente</h3>
+                        </div>
+                        <input type="text" id="newOrderCliente" name="cliente_text" 
+                               placeholder="Cerca e seleziona un cliente..." list="cliente-list" autocomplete="off">
+                        <datalist id="cliente-list"></datalist>
+                        <input type="hidden" id="newOrderClienteId" name="cliente">
+                    </div>
+            
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/factory.png" alt="Impianto">
+                            <h3>Impianto</h3>
+                        </div>
+                        <input type="text" id="newOrderImpianto" name="impianto" placeholder="Nome o riferimento dell'impianto">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/model.png" alt="Modello">
+                            <h3>Modello</h3>
+                        </div>
+                        <select id="newOrderModello" name="modello">
+                            <option value="" disabled selected>Seleziona un modello</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/VO.png" alt="VO">
+                            <h3>VO</h3>
+                        </div>
+                        <input type="text" id="newOrderVO" name="vo" placeholder="es. 23-1234" 
+                               pattern="\d{2}-\d{4}" title="Il formato deve essere: 2 cifre, un trattino, 4 cifre (es. 23-1234)"
+                               maxlength="7">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                           <img src="img/logo.png" alt="Commessa">
+                           <h3>Commessa</h3>
+                        </div>
+                        <input type="text" id="newOrderCommessa" name="commessa" placeholder="es. C1234 o M5678"
+                               pattern="[CMcm]\d{4}" title="Il formato deve essere: C o M seguita da 4 cifre (es. C1234)"
+                               maxlength="5">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/calendar.png" alt="Data">
+                            <h3>Data</h3>
+                        </div>
+                        <input type="date" id="newOrderData" name="Data">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/location.png" alt="Provincia">
+                            <h3>Provincia</h3>
+                        </div>
+                        <input type="text" id="newOrderProvincia" name="provincia" placeholder="Provincia">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/flag.png" alt="Paese">
+                            <h3>Paese</h3>
+                        </div>
+                        <input type="text" id="newOrderPaese" name="paese" placeholder="Paese">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/year.png" alt="Anno">
+                            <h3>Anno</h3>
+                        </div>
+                        <input type="number" id="newOrderAnno" name="anno" placeholder="0000">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/serial.png" alt="Matricola">
+                            <h3>Matricola</h3>
+                        </div>
+                        <input type="text" id="newOrderMatricola" name="matricola" placeholder="Numero di matricola">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/tag.png" alt="Status">
+                            <h3>Status</h3>
+                        </div>
+                        <select id="newOrderStatus" name="status">
+                            <option value="" disabled selected>Seleziona uno status</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/note.png" alt="Note">
+                            <h3>Note</h3>
+                        </div>
+                        <textarea id="newOrderNote" name="note" placeholder="Note aggiuntive"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-label-icon">
+                            <img src="img/image.png" alt="Immagine">
+                            <h3>Immagine</h3>
+                        </div>
+                        <input type="file" id="newOrderImmagine" name="immagine" accept="image/*">
+                    </div>
+                    
+                    <button class="save-button" id="saveNewOrderButton">Salva Nuova Commessa</button>
+                </form>
+            <div id="newOrderSuccessMessage" class="modal-message" style="display: none;">
+                    <p>✅ Nuova commessa aggiunta con successo!</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    <div id="modalOverlay" class="modal-overlay"></div>
+    <div id="newOrderLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Nuova Commessa</h3>
+        <div class="legend-item">
+            <div class="legend-text">Utilizza questo modulo per inserire dettagli di nuove commesse nel sistema.</div>
+        </div>
+    </div>
+
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/main.js"></script> <script type="module" src="js/new-order-modal.js"></script> <script type="module" src="js/commesse.js"></script> </body>
+</html>
