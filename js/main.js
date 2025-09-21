@@ -32,12 +32,7 @@ async function apiFetch(url, options = {}) {
         headers['Content-Type'] = 'application/json';
     }
 
-    // --- CORREZIONE QUI ---
-    // Costruisce l'URL completo unendo la base URL dal file di configurazione
-    // con l'endpoint specifico della chiamata (es. '/api/commesse-init-data').
     const fullUrl = `${API_BASE_URL}${url}`;
-
-    // Usa l'URL completo nella chiamata fetch.
     const response = await fetch(fullUrl, { ...options, headers });
 
     if (response.status === 401) {
@@ -49,11 +44,6 @@ async function apiFetch(url, options = {}) {
 
 window.apiFetch = apiFetch;
 
-/**
- * Mostra un modale di dialogo personalizzato.
- * @param {object} options - { title, message, confirmText, cancelText }
- * @returns {Promise<boolean>} - Risolve a 'true' se confermato, 'false' se annullato.
- */
 function showModal({ title, message, confirmText, cancelText }) {
     return new Promise(resolve => {
         const overlay = document.getElementById('custom-modal-overlay');
@@ -63,7 +53,7 @@ function showModal({ title, message, confirmText, cancelText }) {
         
         modalTitle.textContent = title;
         modalMessage.textContent = message;
-        modalButtons.innerHTML = ''; // Pulisce i pulsanti precedenti
+        modalButtons.innerHTML = '';
 
         const confirmBtn = document.createElement('button');
         confirmBtn.textContent = confirmText || 'OK';
@@ -89,12 +79,11 @@ function showModal({ title, message, confirmText, cancelText }) {
         overlay.style.display = 'flex';
     });
 }
-window.showModal = showModal; // Rendi la funzione disponibile globalmente
+window.showModal = showModal;
 
 let legendInstance;
 let modalOverlay;
 
-// Istanze dei modali
 let insertDataModalInstance; 
 let chatModalInstance;
 let newOrderModalInstance;
@@ -118,7 +107,6 @@ function initializeApp() {
         });
     }
 
-    // Associa i pulsanti alle rispettive funzioni di apertura
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
     document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
     document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
@@ -138,7 +126,7 @@ function initializeApp() {
         });
     }
 
-    loadLatestEntries();
+    // RIMOSSA la chiamata a loadLatestEntries();
 };
 
 // --- FUNZIONI DI APERTURA MODALI ---
@@ -160,14 +148,12 @@ function openChatModal() {
     }
 }
 
-// --- MODIFICA QUI ---
 async function openNewOrderModal() {
     if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
     if (newOrderModalInstance) {
         newOrderModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
         
-        // Aggiunge la chiamata alla funzione di preparazione per caricare i dati dei dropdown
         if (typeof window.prepareNewOrderModal === 'function') {
             await window.prepareNewOrderModal();
         }
@@ -197,7 +183,6 @@ function closeChatModal() {
     modalOverlay.style.display = 'none';
 }
 
-// --- MODIFICA QUI ---
 function closeNewOrderModal() {
     if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
     if (newOrderModalInstance) {
@@ -205,7 +190,6 @@ function closeNewOrderModal() {
     }
     modalOverlay.style.display = 'none';
 
-    // Aggiunge la chiamata alla funzione di pulizia per resettare il form
     if (typeof window.cleanupNewOrderModal === 'function') {
         window.cleanupNewOrderModal();
     }
@@ -217,56 +201,7 @@ function closeTrainingModal() {
     modalOverlay.style.display = 'none';
 }
 
-// --- Rendi le funzioni di chiusura globalmente accessibili per i modali ---
 window.closeInsertDataModal = closeInsertDataModal;
 window.closeChatModal = closeChatModal;
 window.closeNewOrderModal = closeNewOrderModal;
 window.closeTrainingModal = closeTrainingModal;
-
-// --- FUNZIONI DI CARICAMENTO DATI (invariate) ---
-async function loadLatestEntries() {
-    try {
-        // --- CORREZIONE QUI ---
-        // Passiamo solo la parte relativa dell'URL, non l'URL completo.
-        // La funzione apiFetch aggiungerà la base in automatico.
-        const response = await apiFetch('/api/latest-entries'); 
-        
-        if (!response.ok) throw new Error(`Errore HTTP! Stato: ${response.status}`);
-        const data = await response.json();
-        console.log("Dati ricevuti:", data);
-        updateLatestEntries(data);
-    } catch (error) {
-        if (error.message !== "Unauthorized") {
-            console.error('Errore durante il recupero degli ultimi inserimenti:', error);
-            // Possiamo anche mostrare un modale di errore qui per l'utente
-            window.showModal({
-                title: 'Errore di Connessione',
-                message: `Impossibile caricare gli ultimi dati dal server. Controlla la connessione e riprova. Dettagli: ${error.message}`,
-                confirmText: 'OK'
-            });
-        }
-    }
-}
-
-function updateLatestEntries(data) {
-    const latestEntriesList = document.querySelector('.latest-entries ul');
-    if (!latestEntriesList) return; 
-
-    const entries = data.latest_entries; 
-    latestEntriesList.innerHTML = '';
-
-    if (entries && entries.length > 0) {
-        entries.forEach(entry => {
-            const listItem = document.createElement('li');
-            listItem.style.marginBottom = '15px';
-            listItem.style.padding = '10px';
-            listItem.style.borderBottom = '1px solid #eee';
-            listItem.innerHTML = entry; 
-            latestEntriesList.appendChild(listItem);
-        });
-    } else {
-        const listItem = document.createElement('li');
-        listItem.textContent = 'Nessun inserimento recente.';
-        latestEntriesList.appendChild(listItem);
-    }
-}
