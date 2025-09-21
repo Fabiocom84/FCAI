@@ -633,8 +633,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
-            // --- LOGICA MIGLIORATA ---
-            // Usa la chiave del filtro speciale se esiste, altrimenti usa la chiave normale
             const filterKey = columnConfig.filterOptions ? columnConfig.filterOptions.key : columnConfig.key;
             popup.dataset.column = filterKey;
             
@@ -646,26 +644,30 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
             try {
-                let uniqueValues;
-                let textField = columnKey;
+                let uniqueValues = [];
+                let valueKey = 'value'; // Default key for the value
+                let labelKey = 'value'; // Default key for the label
 
-                // Se esistono opzioni di filtro speciali, usale
+                // Determine how to fetch and process the filter options
                 if (columnConfig.filterOptions) {
-                    const filterData = await this.apiFetch(columnConfig.filterOptions.apiEndpoint);
-                    textField = columnConfig.filterOptions.textField;
-                    uniqueValues = filterData.map(item => item[textField]);
+                    const response = await this.apiFetch(columnConfig.filterOptions.apiEndpoint);
+                    const items = await response.json();
+                    valueKey = columnConfig.filterOptions.valueField || columnConfig.filterOptions.textField;
+                    labelKey = columnConfig.filterOptions.textField;
+                    uniqueValues = items.map(item => ({ value: item[valueKey], label: item[labelKey] }));
                 } else {
-                // Altrimenti, usa la logica standard
                     const tableName = this.state.currentView;
-                    uniqueValues = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                    const response = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
+                    const values = await response.json();
+                    uniqueValues = values.map(val => ({ value: val, label: val }));
                 }
                 
                 const activeColumnFilters = this.state.activeFilters[filterKey] || [];
                 
-                const listItems = uniqueValues.map(value => {
-                    const isChecked = activeColumnFilters.includes(String(value)) ? 'checked' : '';
-                    const sanitizedValue = String(value).replace(/"/g, '&quot;');
-                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${sanitizedValue}" ${isChecked}> <span class="filter-value">${value}</span></label></li>`;
+                const listItems = uniqueValues.map(item => {
+                    const isChecked = activeColumnFilters.includes(String(item.value)) ? 'checked' : '';
+                    const sanitizedValue = String(item.value).replace(/"/g, '&quot;');
+                    return `<li><label><input type="checkbox" class="filter-checkbox" value="${sanitizedValue}" ${isChecked}> <span class="filter-value">${item.label}</span></label></li>`;
                 }).join('');
 
                 popup.innerHTML = `
@@ -676,11 +678,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <ul class="filter-popup-list">${listItems}</ul>`;
                 
+                // Reposition after content is loaded
                 popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
+                // --- START OF ADDED LOGIC ---
                 const searchInput = popup.querySelector('#popup-search-input');
                 const listElements = popup.querySelectorAll('.filter-popup-list li');
-                searchInput.addEventListener('input', () => { /* ... logica di ricerca invariata ... */ });
+
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    listElements.forEach(li => {
+                        const label = li.querySelector('.filter-value').textContent.toLowerCase();
+                        if (label.includes(searchTerm)) {
+                            li.style.display = '';
+                        } else {
+                            li.style.display = 'none';
+                        }
+                    });
+                });
+                // --- END OF ADDED LOGIC ---
 
             } catch (error) {
                 popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
