@@ -51,6 +51,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 idColumn: 'id_modello'
             },
+            'commesse': {
+                apiEndpoint: '/api/commesse',
+                idColumn: 'id_commessa',
+                columns: [
+                    { key: 'codice_commessa', label: 'Codice', editable: true },
+                    { 
+                        key: 'id_cliente_fk', 
+                        label: 'Cliente', 
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.clienti?.ragione_sociale || 'N/A',
+                        options: { apiEndpoint: '/api/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
+                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/clienti', textField: 'ragione_sociale' }
+                    },
+                    { key: 'impianto', label: 'Impianto', editable: true },
+                    { 
+                        key: 'id_status_fk', 
+                        label: 'Stato', 
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.status_commessa?.nome_status || 'N/A',
+                        options: { apiEndpoint: '/api/status_commessa', valueField: 'id_status', textField: 'nome_status' },
+                        filterOptions: { key: 'status_commessa.nome_status', apiEndpoint: '/api/status_commessa', textField: 'nome_status' }
+                    },
+                    { key: 'data_commessa', label: 'Data', editable: true, type: 'date' },
+                    { key: 'vo', label: 'VO', editable: true },
+                    { key: 'riferimento_tecnico', label: 'Rif. Tecnico', editable: true }
+                ]
+            },
             'registrazioni': {
                 apiEndpoint: '/api/registrazioni',
                 idColumn: 'id_registrazione',
