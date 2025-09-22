@@ -577,9 +577,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         updateToolbarState() {
-            const { isAddingNewRow, isEditingRow, lastSelectedRadio } = this.state;
+            // --- FIX: Add 'currentView' to the list of variables from the state ---
+            const { isAddingNewRow, isEditingRow, lastSelectedRadio, currentView } = this.state;
 
-            // Get references to all controls
             const buttons = {
                 add: document.getElementById('addRowBtn'),
                 edit: document.getElementById('editRowBtn'),
@@ -590,19 +590,19 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const searchInput = document.getElementById('filter-search-term');
 
-            // --- Apply Logic Based on State ---
+            // Check if buttons exist before proceeding
+            if (!buttons.add) return;
 
             // Rule: Adding or Editing
             if (isAddingNewRow || isEditingRow) {
                 buttons.save.disabled = false;
                 buttons.cancel.disabled = false;
-                
                 buttons.add.disabled = true;
                 buttons.edit.disabled = true;
                 buttons.del.disabled = true;
                 buttons.search.disabled = true;
                 searchInput.disabled = true;
-                return; // Stop here
+                return;
             }
 
             // Rule: A row is selected
@@ -625,8 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 buttons.cancel.disabled = true;
             }
 
-            // --- NEW RULE FOR 'COMMESSE' VIEW ---
-            // This rule runs at the end and overrides the default state if necessary.
+            // New rule for 'commesse' view
             if (currentView === 'commesse') {
                 buttons.add.disabled = true;
             }
