@@ -58,15 +58,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     { 
                         key: 'id_cliente_fk', 
                         label: 'Cliente', 
-                        //...
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.clienti?.ragione_sociale || 'N/A',
+                        options: { apiEndpoint: '/api/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
+                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/clienti', textField: 'ragione_sociale' }
                     },
-                    { key: 'impianto', label: 'Impianto', editable: true },
+                    { 
+                        key: 'impianto', 
+                        label: 'Impianto', 
+                        editable: true, 
+                        filterOptions: { key: 'impianto' }
+                    },
                     { 
                         key: 'id_status_fk', 
                         label: 'Stato', 
-                        //...
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.status_commessa?.nome_status || 'N/A',
+                        options: { apiEndpoint: '/api/status_commessa', valueField: 'id_status', textField: 'nome_status' },
+                        filterOptions: { key: 'status_commessa.nome_status', apiEndpoint: '/api/status_commessa', textField: 'nome_status' }
                     },
-                    { key: 'data_commessa', label: 'Data', editable: true, type: 'date' },
+                    { 
+                        key: 'data_commessa', 
+                        label: 'Data', 
+                        editable: true, 
+                        type: 'date' 
+                    },
                     { 
                         key: 'vo', 
                         label: 'VO', 
@@ -86,19 +104,43 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
                         options: { apiEndpoint: '/api/modelli', valueField: 'id_modello', textField: 'nome_modello' },
-                        // --- FILTRO ABILITATO ---
                         filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/modelli', textField: 'nome_modello' }
                     },
-                    { key: 'provincia', label: 'Provincia', editable: true },
-                    { key: 'paese', label: 'Paese', editable: true },
-                    { key: 'anno', label: 'Anno', editable: true },
-                    { key: 'matricola', label: 'Matricola', editable: true },
+                    { 
+                        key: 'provincia', 
+                        label: 'Provincia', 
+                        editable: true 
+                    },
+                    { 
+                        key: 'paese', 
+                        label: 'Paese', 
+                        editable: true 
+                    },
+                    { 
+                        key: 'anno', 
+                        label: 'Anno', 
+                        editable: true 
+                    },
+                    { 
+                        key: 'matricola', 
+                        label: 'Matricola', 
+                        editable: true 
+                    },
                     { 
                         key: 'immagine', 
                         label: 'Immagine', 
-                        //...
+                        editable: false,
+                        formatter: (rowData) => {
+                            if (!rowData.immagine) return 'No';
+                            return `<a href="${rowData.immagine}" target="_blank">Apri</a>`;
+                        }
                     },
-                    { key: 'note', label: 'Note', editable: true, type: 'textarea' }
+                    { 
+                        key: 'note', 
+                        label: 'Note', 
+                        editable: true, 
+                        type: 'textarea' 
+                    }
                 ]
             },
             'registrazioni': {
