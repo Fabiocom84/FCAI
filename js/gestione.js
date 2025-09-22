@@ -61,8 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true,
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.clienti?.ragione_sociale || 'N/A',
-                        options: { apiEndpoint: '/api/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
-                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/clienti', textField: 'ragione_sociale' }
+                        options: { apiEndpoint: '/api/simple/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
+                        // --- FIX: Use the new simple API for filters ---
+                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/simple/clienti', textField: 'ragione_sociale' }
                     },
                     { 
                         key: 'impianto', 
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: 'Data', 
                         editable: true, 
                         type: 'date',
-                        // --- FIX: Added a formatter to display the date ---
+                        // --- FIX: Ensure the formatter is present ---
                         formatter: (rowData) => rowData.data_commessa ? new Date(rowData.data_commessa).toLocaleDateString('it-IT') : ''
                     },
                     { 
@@ -111,25 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true,
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
-                        options: { apiEndpoint: '/api/modelli', valueField: 'id_modello', textField: 'nome_modello' },
-                        // --- FIX: Ensured filterOptions are correctly configured ---
-                        filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/modelli', textField: 'nome_modello' }
+                        options: { apiEndpoint: '/api/simple/modelli', valueField: 'id_modello', textField: 'nome_modello' },
+                        // --- FIX: Use the new simple API for filters ---
+                        filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/simple/modelli', textField: 'nome_modello' }
                     },
-                    { 
-                        key: 'provincia', 
-                        label: 'Provincia', 
-                        editable: true 
-                    },
-                    { 
-                        key: 'paese', 
-                        label: 'Paese', 
-                        editable: true 
-                    },
-                    { 
-                        key: 'matricola', 
-                        label: 'Matricola', 
-                        editable: true 
-                    },
+                    { key: 'provincia', label: 'Provincia', editable: true },
+                    { key: 'paese', label: 'Paese', editable: true },
+                    { key: 'matricola', label: 'Matricola', editable: true },
                     { 
                         key: 'immagine', 
                         label: 'Immagine', 
@@ -139,12 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             return `<a href="${rowData.immagine}" target="_blank">Apri</a>`;
                         }
                     },
-                    { 
-                        key: 'note', 
-                        label: 'Note', 
-                        editable: true, 
-                        type: 'textarea' 
-                    }
+                    { key: 'note', label: 'Note', editable: true, type: 'textarea' }
                 ]
             },
             'registrazioni': {
