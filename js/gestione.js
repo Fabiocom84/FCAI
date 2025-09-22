@@ -83,13 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         key: 'data_commessa', 
                         label: 'Data', 
                         editable: true, 
-                        type: 'date' 
+                        type: 'date',
+                        // --- FIX: Added a formatter to display the date ---
+                        formatter: (rowData) => rowData.data_commessa ? new Date(rowData.data_commessa).toLocaleDateString('it-IT') : ''
                     },
                     { 
                         key: 'anno', 
                         label: 'Anno', 
                         editable: true,
-                        // --- Aggiungi questa riga per abilitare il filtro ---
                         filterOptions: { key: 'anno' }
                     },
                     { 
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
                         options: { apiEndpoint: '/api/modelli', valueField: 'id_modello', textField: 'nome_modello' },
+                        // --- FIX: Ensured filterOptions are correctly configured ---
                         filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/modelli', textField: 'nome_modello' }
                     },
                     { 
@@ -121,11 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     { 
                         key: 'paese', 
                         label: 'Paese', 
-                        editable: true 
-                    },
-                    { 
-                        key: 'anno', 
-                        label: 'Anno', 
                         editable: true 
                     },
                     { 
