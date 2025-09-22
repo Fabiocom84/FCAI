@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const popup = document.createElement('div');
             popup.className = 'filter-popup';
-            const filterKey = columnConfig.filterOptions ? columnConfig.filterOptions.key : columnConfig.key;
+            const filterKey = columnConfig.filterOptions?.key || columnConfig.key;
             popup.dataset.column = filterKey;
             
             popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
@@ -759,21 +759,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 let valueKey = 'value';
                 let labelKey = 'value';
 
-                if (columnConfig.filterOptions) {
-                    // --- MODIFICA QUI ---
-                    // apiFetch ora restituisce direttamente i dati JSON, non la response.
+                // --- FIX: Check specifically for an apiEndpoint before fetching ---
+                if (columnConfig.filterOptions && columnConfig.filterOptions.apiEndpoint) {
                     const items = await this.apiFetch(columnConfig.filterOptions.apiEndpoint);
-                    
                     valueKey = columnConfig.filterOptions.valueField || columnConfig.filterOptions.textField;
                     labelKey = columnConfig.filterOptions.textField;
                     uniqueValues = items.map(item => ({ value: item[valueKey], label: item[labelKey] }));
                 } else {
+                    // This is now the fallback for simple filters (like booleans) and standard text filters.
                     const tableName = this.state.currentView;
-                    // --- MODIFICA QUI ---
-                    // Anche qui, apiFetch restituisce direttamente i dati.
                     const values = await this.apiFetch(`/api/distinct/${tableName}/${columnKey}`);
-                    
-                    uniqueValues = values.map(val => ({ value: val, label: val }));
+                    const labelFormatter = columnConfig.filterOptions?.formatter || ((val) => val);
+                    uniqueValues = values.map(val => ({ value: val, label: labelFormatter(val) }));
                 }
                 
                 const activeColumnFilters = this.state.activeFilters[filterKey] || [];
