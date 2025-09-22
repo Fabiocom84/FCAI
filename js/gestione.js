@@ -609,26 +609,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (lastSelectedRadio) {
                 buttons.edit.disabled = false;
                 buttons.del.disabled = false;
-                
-                buttons.add.disabled = true; // Can't add when a row is selected
+                buttons.add.disabled = true;
                 buttons.save.disabled = true;
                 buttons.cancel.disabled = true;
                 buttons.search.disabled = false;
                 searchInput.disabled = false;
-                return; // Stop here
+            } else {
+                // Rule: Default state (no row selected, not adding/editing)
+                buttons.add.disabled = false;
+                buttons.search.disabled = false;
+                searchInput.disabled = false;
+                buttons.edit.disabled = true;
+                buttons.del.disabled = true;
+                buttons.save.disabled = true;
+                buttons.cancel.disabled = true;
             }
 
-            // Rule: Default state (no row selected, not adding/editing)
-            buttons.add.disabled = false;
-            buttons.search.disabled = false;
-            searchInput.disabled = false;
-
-            buttons.edit.disabled = true;
-            buttons.del.disabled = true;
-            buttons.save.disabled = true;
-            buttons.cancel.disabled = true;
+            // --- NEW RULE FOR 'COMMESSE' VIEW ---
+            // This rule runs at the end and overrides the default state if necessary.
+            if (currentView === 'commesse') {
+                buttons.add.disabled = true;
+            }
         },
-
 
         renderTable(data = this.state.tableData) {
             const config = this.viewConfig[this.state.currentView];
