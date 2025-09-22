@@ -55,43 +55,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 apiEndpoint: '/api/commesse',
                 idColumn: 'id_commessa',
                 columns: [
-                    // La colonna 'codice_commessa' è stata rimossa come richiesto.
                     { 
                         key: 'id_cliente_fk', 
                         label: 'Cliente', 
-                        editable: true,
-                        type: 'foreignKey',
-                        formatter: (rowData) => rowData.clienti?.ragione_sociale || 'N/A',
-                        options: { apiEndpoint: '/api/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
-                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/clienti', textField: 'ragione_sociale' }
+                        //...
                     },
                     { key: 'impianto', label: 'Impianto', editable: true },
                     { 
                         key: 'id_status_fk', 
                         label: 'Stato', 
-                        editable: true,
-                        type: 'foreignKey',
-                        formatter: (rowData) => rowData.status_commessa?.nome_status || 'N/A',
-                        options: { apiEndpoint: '/api/status_commessa', valueField: 'id_status', textField: 'nome_status' },
-                        // Aggiunto filterOptions per lo stato
-                        filterOptions: { key: 'status_commessa.nome_status', apiEndpoint: '/api/status_commessa', textField: 'nome_status' }
+                        //...
                     },
                     { key: 'data_commessa', label: 'Data', editable: true, type: 'date' },
                     { 
                         key: 'vo', 
                         label: 'VO', 
                         editable: true,
-                        // Aggiunto filterOptions per VO
                         filterOptions: { key: 'vo' }
                     },
                     { 
                         key: 'riferimento_tecnico', 
                         label: 'Rif. Tecnico', 
                         editable: true,
-                        // Aggiunto filterOptions per Riferimento Tecnico
                         filterOptions: { key: 'riferimento_tecnico' }
                     },
-                    // --- NUOVE COLONNE AGGIUNTE ---
                     {
                         key: 'id_modello_fk',
                         label: 'Modello',
@@ -99,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
                         options: { apiEndpoint: '/api/modelli', valueField: 'id_modello', textField: 'nome_modello' },
+                        // --- FILTRO ABILITATO ---
                         filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/modelli', textField: 'nome_modello' }
                     },
                     { key: 'provincia', label: 'Provincia', editable: true },
@@ -108,11 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     { 
                         key: 'immagine', 
                         label: 'Immagine', 
-                        editable: false,
-                        formatter: (rowData) => {
-                            if (!rowData.immagine) return 'No';
-                            return `<a href="${rowData.immagine}" target="_blank">Apri</a>`;
-                        }
+                        //...
                     },
                     { key: 'note', label: 'Note', editable: true, type: 'textarea' }
                 ]
@@ -172,11 +156,18 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             'personale': {
                 apiEndpoint: '/api/personale',
+                idColumn: 'id_personale',
                 columns: [
-                    { key: 'nome_cognome', label: 'Nome Cognome', editable: true, type: 'text' },
-                    { key: 'data_nascita', label: 'Data di Nascita', editable: true, type: 'date' },
-                    { key: 'email', label: 'Email', editable: true, type: 'text' },
-                    { key: 'telefono', label: 'Telefono', editable: true, type: 'text' },
+                    { key: 'nome_cognome', label: 'Nome Cognome', editable: true, type: 'text', filterOptions: { key: 'nome_cognome' } },
+                    // --- COLONNA DATA DI NASCITA AGGIUNTA E FORMATTATA ---
+                    { 
+                        key: 'data_nascita', 
+                        label: 'Data di Nascita', 
+                        editable: true, 
+                        type: 'date',
+                        formatter: (rowData) => rowData.data_nascita ? new Date(rowData.data_nascita).toLocaleDateString('it-IT') : ''
+                    },
+                    { key: 'email', label: 'Email', editable: true, type: 'text', filterOptions: { key: 'email' } },
                     { 
                         key: 'id_ruolo_fk', 
                         label: 'Ruolo', 
@@ -184,11 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
                         formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A',
-                        filterOptions: {
-                            key: 'ruoli.nome_ruolo', // La chiave da usare per il filtro
-                            apiEndpoint: '/api/ruoli', // L'API da cui prendere le opzioni
-                            textField: 'nome_ruolo'    // La proprietà da mostrare nella lista
-                        }
+                        // --- FILTRO ABILITATO ---
+                        filterOptions: { key: 'ruoli.nome_ruolo', apiEndpoint: '/api/ruoli', textField: 'nome_ruolo' }
                     },
                     { 
                         key: 'id_azienda_fk', 
@@ -196,45 +184,39 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
-                        formatter: (rowData) => {
-                            const azienda = rowData.aziende;
-                            if (!azienda) return 'N/A';
-                            // Se 'sede' non è presente, non aggiunge nulla.
-                            const sede = azienda.sede ? ` ${azienda.sede}` : ''; 
-                            return `${azienda.ragione_sociale}${sede}`;
-                        },
-                        filterOptions: {
-                            key: 'aziende.ragione_sociale',
-                            apiEndpoint: '/api/aziende',
-                            textField: 'ragione_sociale'
-                        }
+                        formatter: (rowData) => rowData.aziende?.ragione_sociale || 'N/A',
+                        // --- FILTRO ABILITATO ---
+                        filterOptions: { key: 'aziende.ragione_sociale', apiEndpoint: '/api/aziende', textField: 'ragione_sociale' }
                     },
-                    // --- FORMATTER AGGIUNTI PER I CAMPI BOOLEANI ---
                     { 
                         key: 'attivo', 
                         label: 'Attivo', 
                         editable: true, 
                         type: 'boolean',
-                        formatter: (rowData) => rowData.attivo ? 'Vero' : 'Falso'
+                        formatter: (rowData) => rowData.attivo ? 'Sì' : 'No',
+                        // --- FILTRO ABILITATO ---
+                        filterOptions: { key: 'attivo', formatter: (val) => val ? 'Sì' : 'No' }
                     },
                     { 
                         key: 'is_admin', 
                         label: 'Admin', 
                         editable: true, 
                         type: 'boolean',
-                        formatter: (rowData) => rowData.is_admin ? 'Vero' : 'Falso'
+                        formatter: (rowData) => rowData.is_admin ? 'Sì' : 'No',
+                        // --- FILTRO ABILITATO ---
+                        filterOptions: { key: 'is_admin', formatter: (val) => val ? 'Sì' : 'No' }
                     },
                     { 
                         key: 'puo_accedere', 
                         label: 'Può Accedere', 
                         editable: true, 
                         type: 'boolean',
-                        formatter: (rowData) => rowData.puo_accedere ? 'Vero' : 'Falso'
+                        formatter: (rowData) => rowData.puo_accedere ? 'Sì' : 'No',
+                        // --- FILTRO ABILITATO ---
+                        filterOptions: { key: 'puo_accedere', formatter: (val) => val ? 'Sì' : 'No' }
                     }
-                ],
-                idColumn: 'id_personale'
-            }
-        },
+                ]
+            },
 
         /**
          * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
