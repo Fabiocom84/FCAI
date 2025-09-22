@@ -86,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'date' 
                     },
                     { 
+                        key: 'anno', 
+                        label: 'Anno', 
+                        editable: true,
+                        // --- Aggiungi questa riga per abilitare il filtro ---
+                        filterOptions: { key: 'anno' }
+                    },
+                    { 
                         key: 'vo', 
                         label: 'VO', 
                         editable: true,
