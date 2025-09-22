@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 apiEndpoint: '/api/commesse',
                 idColumn: 'id_commessa',
                 columns: [
-                    { key: 'codice_commessa', label: 'Codice', editable: true },
+                    // La colonna 'codice_commessa' è stata rimossa come richiesto.
                     { 
                         key: 'id_cliente_fk', 
                         label: 'Cliente', 
@@ -73,11 +73,48 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.status_commessa?.nome_status || 'N/A',
                         options: { apiEndpoint: '/api/status_commessa', valueField: 'id_status', textField: 'nome_status' },
+                        // Aggiunto filterOptions per lo stato
                         filterOptions: { key: 'status_commessa.nome_status', apiEndpoint: '/api/status_commessa', textField: 'nome_status' }
                     },
                     { key: 'data_commessa', label: 'Data', editable: true, type: 'date' },
-                    { key: 'vo', label: 'VO', editable: true },
-                    { key: 'riferimento_tecnico', label: 'Rif. Tecnico', editable: true }
+                    { 
+                        key: 'vo', 
+                        label: 'VO', 
+                        editable: true,
+                        // Aggiunto filterOptions per VO
+                        filterOptions: { key: 'vo' }
+                    },
+                    { 
+                        key: 'riferimento_tecnico', 
+                        label: 'Rif. Tecnico', 
+                        editable: true,
+                        // Aggiunto filterOptions per Riferimento Tecnico
+                        filterOptions: { key: 'riferimento_tecnico' }
+                    },
+                    // --- NUOVE COLONNE AGGIUNTE ---
+                    {
+                        key: 'id_modello_fk',
+                        label: 'Modello',
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
+                        options: { apiEndpoint: '/api/modelli', valueField: 'id_modello', textField: 'nome_modello' },
+                        filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/modelli', textField: 'nome_modello' }
+                    },
+                    { key: 'provincia', label: 'Provincia', editable: true },
+                    { key: 'paese', label: 'Paese', editable: true },
+                    { key: 'anno', label: 'Anno', editable: true },
+                    { key: 'matricola', label: 'Matricola', editable: true },
+                    { 
+                        key: 'immagine', 
+                        label: 'Immagine', 
+                        editable: false,
+                        formatter: (rowData) => {
+                            if (!rowData.immagine) return 'No';
+                            return `<a href="${rowData.immagine}" target="_blank">Apri</a>`;
+                        }
+                    },
+                    { key: 'note', label: 'Note', editable: true, type: 'textarea' }
                 ]
             },
             'registrazioni': {
