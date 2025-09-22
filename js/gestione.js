@@ -259,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 ]
             },
+        },
 
         /**
          * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
@@ -954,4 +955,4 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     App.init();
-};
+});
