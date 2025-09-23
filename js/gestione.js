@@ -381,8 +381,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             params.append('page', this.state.currentPage);
             params.append('limit', '50');
-            params.append('sortBy', config.columns[0].key);
-            params.append('sortOrder', 'asc');
+            
+            // --- FIX: Use sorting values from the state ---
+            // Use the state's sortBy/sortOrder, or a safe default on the first load.
+            params.append('sortBy', this.state.sortBy || config.columns[0].key);
+            params.append('sortOrder', this.state.sortOrder || 'asc');
+            // --- END OF FIX ---
 
             const searchTerm = document.getElementById('filter-search-term')?.value;
             if (searchTerm) params.append('search', searchTerm);
@@ -404,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('pagination-container').innerHTML = '';
                 }
             } finally {
-                // This is the crucial change: update the button states as the very last step.
                 this.updateToolbarState();
             }
         },
