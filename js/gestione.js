@@ -708,21 +708,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             config.columns.forEach(col => {
                 const th = document.createElement('th');
-                // Make the header clickable for sorting
                 th.dataset.sortable = true;
                 th.dataset.columnKey = col.key;
                 
                 const thContent = document.createElement('div');
                 thContent.className = 'column-header-content';
                 
-                // --- CHANGE #1: Add sorting indicator (up/down arrow) ---
                 let sortIndicator = '';
                 if (this.state.sortBy === col.key) {
                     sortIndicator = this.state.sortOrder === 'asc' ? ' 🔼' : ' 🔽';
                 }
                 
-                // --- CHANGE #2: Use a funnel icon for the filter ---
-                const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">&#128292;</span>`; // Funnel character
+                // --- FIX: Use an <img> tag for the filter icon ---
+                const filterIcon = `<img src="img/filter.png" class="filter-icon" data-column-key="${col.key}" alt="Filtro">`;
 
                 thContent.innerHTML = `<span>${col.label}${sortIndicator}</span>${filterIcon}`;
                 th.classList.toggle('filter-active', !!this.state.activeFilters[col.filterOptions?.key || col.key]);
