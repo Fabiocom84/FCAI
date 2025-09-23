@@ -219,11 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/simple/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
-                        formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A',
+                        formatter: (rowData) => rowData.ruoli?.nome_ruolo || 'N/A',
                         // --- FIX: Point the filter to the correct simple API ---
                         filterOptions: { 
                             key: 'id_ruolo_fk',
-                            apiEndpoint: '/api/simple/ruoli', // Use the simple endpoint
+                            apiEndpoint: '/api/simple/ruoli', 
                             valueField: 'id_ruolo', 
                             textField: 'nome_ruolo' 
                         }
@@ -233,18 +233,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: 'Azienda', 
                         editable: true, 
                         type: 'foreignKey',
-                        options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
+                        // --- FIX: Use new simple endpoint for editing options ---
+                        options: { apiEndpoint: '/api/simple/aziende', valueField: 'id_azienda', textField: 'ragione_sociale_sede' },
                         // --- FIX: Update formatter to show "Ragione Sociale - Sede" ---
                         formatter: (rowData) => {
                             if (!rowData.aziende) return 'N/A';
                             const parts = [rowData.aziende.ragione_sociale, rowData.aziende.sede].filter(Boolean);
                             return parts.join(' - ');
                         },
+                        // --- FIX: Point the filter to the correct simple API ---
                         filterOptions: { 
                             key: 'id_azienda_fk',
-                            apiEndpoint: '/api/aziende', 
+                            apiEndpoint: '/api/simple/aziende', 
                             valueField: 'id_azienda', 
-                            textField: 'ragione_sociale' 
+                            textField: 'ragione_sociale_sede' 
                         }
                     },
                     { 
