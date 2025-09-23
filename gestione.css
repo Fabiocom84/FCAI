@@ -231,6 +231,25 @@
     margin-bottom: 8px;
     box-sizing: border-box;
 }
+/* Stile base per l'icona del filtro (imbuto) */
+.filter-icon {
+    cursor: pointer;
+    font-size: 0.8em;
+    padding: 2px 4px;
+    border-radius: 3px;
+    color: #6c757d; /* Grigio neutro per l'icona non attiva */
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.filter-icon:hover {
+    background-color: #dcdcdc;
+}
+
+/* Stile per l'icona quando un filtro per quella colonna è ATTIVO */
+.agile-table thead th.filter-active .filter-icon {
+    color: #007bff; /* Blu, per indicare che il filtro è attivo */
+    font-weight: bold;
+}
 
 /* 6. ALTRI COMPONENTI
    ========================================================================== */
