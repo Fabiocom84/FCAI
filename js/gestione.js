@@ -71,6 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     },
                     { 
+                        key: 'impianto', 
+                        label: 'Impianto', 
+                        editable: true, 
+                        filterOptions: { key: 'impianto' }
+                    },
+                    { 
                         key: 'id_status_fk', 
                         label: 'Stato', 
                         editable: true,
