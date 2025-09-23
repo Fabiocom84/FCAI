@@ -313,8 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
             this.state.isAddingNewRow = false;
             this.state.isEditingRow = false;
             this.state.lastSelectedRadio = null;
+
+            // --- FIX: Resetta lo stato di ordinamento quando si cambia vista ---
+            this.state.sortBy = null;
+            this.state.sortOrder = null;
+            // --- FINE FIX ---
+
             this.renderToolbar();
-            // We REMOVE the call to updateToolbarState() from here...
             this.loadAndRenderData(true);
         },
 
@@ -344,21 +349,31 @@ document.addEventListener('DOMContentLoaded', () => {
         handleTableClick(event) {
             const target = event.target;
             
-            // Check for a click on a filter icon
             const filterIcon = target.closest('.filter-icon');
             if (filterIcon) {
-                this.openColumnFilterPopup(filterIcon, filterIcon.dataset.columnKey);
-                return; // Stop further actions
+                const columnKey = filterIcon.dataset.columnKey;
+                const existingPopup = document.querySelector('.filter-popup');
+
+                // --- NEW: Toggle Logic ---
+                // If a popup for this exact column is already open, close it and stop.
+                if (existingPopup && existingPopup.dataset.column === columnKey) {
+                    existingPopup.remove();
+                    return;
+                }
+                // --- END: Toggle Logic ---
+
+                // If no popup was open for this column, open a new one.
+                this.openColumnFilterPopup(filterIcon, columnKey);
+                return;
             }
 
-            // Check for a click on a sortable header
+            // Logic for sorting and row selection remains unchanged
             const header = target.closest('th[data-sortable="true"]');
             if (header) {
                 this.handleHeaderClick(header.dataset.columnKey);
                 return;
             }
 
-            // Check for a click on a row selector
             const radio = target.closest('input[name="rowSelector"]');
             if (radio) {
                 this.handleRowSelection(radio);
