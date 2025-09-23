@@ -224,28 +224,48 @@ h2 {
     color: inherit;
 }
 
-/* Colori e hover per i pulsanti principali */
-.insert-button { background-color: #28a745; }
-.insert-button:hover { background-color: #218838; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+/* --- Gruppo: Inserimento Dati (Verdi/Azzurri) --- */
+.insert-data-button { background-color: #2ecc71; }
+.insert-data-button:hover { background-color: #27ae60; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.chat-button { background-color: #ffc107; }
-.chat-button:hover { background-color: #e0a800; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.insert-hours-button { background-color: #1abc9c; }
+.insert-hours-button:hover { background-color: #16a085; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.new-order-button { background-color: #6f42c1; }
-.new-order-button:hover { background-color: #5a3597; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.insert-orders-button { background-color: #e67e22; }
+.insert-orders-button:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.search-button { background-color: #dc3545; }
-.search-button:hover { background-color: #c82333; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.attendance-button { background-color: #3498db; }
+.attendance-button:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Stile per il pulsante placeholder */
+/* --- Gruppo: Visualizzazione e Analisi (Viola/Blu Scuro) --- */
+.commesse-button { background-color: #9b59b6; }
+.commesse-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.agile-view-button { background-color: #34495e; }
+.agile-view-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.orders-view-button { background-color: #2980b9; }
+.orders-view-button:hover { background-color: #226b99; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.dashboard-button { background-color: #8e44ad; }
+.dashboard-button:hover { background-color: #7b3a96; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+/* --- Gruppo: Strumenti AI (Giallo/Arancione) --- */
+.chat-ai-button { background-color: #f1c40f; }
+.chat-ai-button:hover { background-color: #f39c12; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+.training-button { background-color: #e74c3c; }
+.training-button:hover { background-color: #c0392b; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+/* --- Gruppo: Placeholder/Inattivi (Grigio) --- */
 .placeholder-button { 
-    background-color: #bdc3c7; /* Un grigio neutro */
-    cursor: default; /* Il cursore non cambia, indicando che non è cliccabile */
+    background-color: #95a5a6;
+    cursor: default;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
 }
 .placeholder-button:hover { 
-    background-color: #bdc3c7; /* Mantiene lo stesso colore anche in hover */
-    transform: none; /* Rimuove l'effetto di sollevamento */
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1); /* Ombra di base, senza animazione */
+    background-color: #95a5a6;
+    transform: none; /* No lift effect for placeholders */
 }
 
 /* --- Pulsanti secondari (logout, training, aiuto) --- */
