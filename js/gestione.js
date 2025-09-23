@@ -205,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 idColumn: 'id_personale',
                 columns: [
                     { key: 'nome_cognome', label: 'Nome Cognome', editable: true, type: 'text', filterOptions: { key: 'nome_cognome' } },
-                    // --- COLONNA DATA DI NASCITA AGGIUNTA E FORMATTATA ---
                     { 
                         key: 'data_nascita', 
                         label: 'Data di Nascita', 
@@ -219,10 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: 'Ruolo', 
                         editable: true, 
                         type: 'foreignKey',
-                        options: { apiEndpoint: '/api/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
+                        options: { apiEndpoint: '/api/simple/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
                         formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A',
-                        // --- FILTRO ABILITATO ---
-                        filterOptions: { key: 'ruoli.nome_ruolo', apiEndpoint: '/api/ruoli', textField: 'nome_ruolo' }
+                        // --- FIX: Use the new simple API for the filter ---
+                        filterOptions: { 
+                            key: 'id_ruolo_fk',
+                            apiEndpoint: '/api/simple/ruoli', 
+                            valueField: 'id_ruolo', 
+                            textField: 'nome_ruolo' 
+                        }
                     },
                     { 
                         key: 'id_azienda_fk', 
@@ -230,9 +234,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/aziende', valueField: 'id_azienda', textField: 'ragione_sociale' },
-                        formatter: (rowData) => rowData.aziende?.ragione_sociale || 'N/A',
-                        // --- FILTRO ABILITATO ---
-                        filterOptions: { key: 'aziende.ragione_sociale', apiEndpoint: '/api/aziende', textField: 'ragione_sociale' }
+                        // --- FIX: Update formatter to show "Ragione Sociale - Sede" ---
+                        formatter: (rowData) => {
+                            if (!rowData.aziende) return 'N/A';
+                            const parts = [rowData.aziende.ragione_sociale, rowData.aziende.sede].filter(Boolean);
+                            return parts.join(' - ');
+                        },
+                        filterOptions: { 
+                            key: 'id_azienda_fk',
+                            apiEndpoint: '/api/aziende', 
+                            valueField: 'id_azienda', 
+                            textField: 'ragione_sociale' 
+                        }
                     },
                     { 
                         key: 'attivo', 
@@ -240,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'boolean',
                         formatter: (rowData) => rowData.attivo ? 'Sì' : 'No',
-                        // --- FILTRO ABILITATO ---
                         filterOptions: { key: 'attivo', formatter: (val) => val ? 'Sì' : 'No' }
                     },
                     { 
@@ -249,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'boolean',
                         formatter: (rowData) => rowData.is_admin ? 'Sì' : 'No',
-                        // --- FILTRO ABILITATO ---
                         filterOptions: { key: 'is_admin', formatter: (val) => val ? 'Sì' : 'No' }
                     },
                     { 
@@ -258,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true, 
                         type: 'boolean',
                         formatter: (rowData) => rowData.puo_accedere ? 'Sì' : 'No',
-                        // --- FILTRO ABILITATO ---
                         filterOptions: { key: 'puo_accedere', formatter: (val) => val ? 'Sì' : 'No' }
                     }
                 ]
