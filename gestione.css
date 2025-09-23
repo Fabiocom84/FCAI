@@ -193,6 +193,14 @@
 .agile-view-body .filter-icon:hover { background-color: #dcdcdc; }
 .agile-view-body .filter-icon.active { color: #007bff; font-weight: bold; }
 
+.agile-table thead th[data-sortable="true"] {
+    cursor: pointer;
+    user-select: none; /* Prevents text selection when clicking */
+}
+.agile-table thead th[data-sortable="true"]:hover {
+    background-color: #e2e6ea;
+}
+
 /* 5. POPUP FILTRI
    ========================================================================== */
 .filter-popup {

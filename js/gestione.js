@@ -343,12 +343,25 @@ document.addEventListener('DOMContentLoaded', () => {
          */
         handleTableClick(event) {
             const target = event.target;
-            if (target.matches('.filter-icon')) {
-                const columnKey = target.dataset.columnKey;
-                this.openColumnFilterPopup(target, columnKey);
+            
+            // Check for a click on a filter icon
+            const filterIcon = target.closest('.filter-icon');
+            if (filterIcon) {
+                this.openColumnFilterPopup(filterIcon, filterIcon.dataset.columnKey);
+                return; // Stop further actions
             }
-            if (target.matches('input[name="rowSelector"]')) {
-                this.handleRowSelection(target);
+
+            // Check for a click on a sortable header
+            const header = target.closest('th[data-sortable="true"]');
+            if (header) {
+                this.handleHeaderClick(header.dataset.columnKey);
+                return;
+            }
+
+            // Check for a click on a row selector
+            const radio = target.closest('input[name="rowSelector"]');
+            if (radio) {
+                this.handleRowSelection(radio);
             }
         },
 
@@ -464,6 +477,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.state.lastSelectedRadio = currentRadio;
             }
             this.updateToolbarState();
+        },
+
+        handleHeaderClick(columnKey) {
+            let newSortOrder = 'asc';
+            
+            // If we're already sorting by this column, reverse the order
+            if (this.state.sortBy === columnKey) {
+                newSortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+
+            this.state.sortBy = columnKey;
+            this.state.sortOrder = newSortOrder;
+
+            // Fetch the newly sorted data from the backend
+            this.loadAndRenderData(true);
         },
 
         /**
@@ -655,16 +683,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
             fixedHeaders.forEach(header => {
                 const th = document.createElement('th');
-                th.textContent = header.text; th.title = header.title; headerRow.appendChild(th);
+                th.textContent = header.text;
+                th.title = header.title;
+                headerRow.appendChild(th);
             });
+
             config.columns.forEach(col => {
                 const th = document.createElement('th');
+                // Make the header clickable for sorting
+                th.dataset.sortable = true;
+                th.dataset.columnKey = col.key;
+                
                 const thContent = document.createElement('div');
                 thContent.className = 'column-header-content';
-                const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">🔽</span>`;
-                thContent.innerHTML = `<span>${col.label}</span>${filterIcon}`;
-                th.classList.toggle('filter-active', !!this.state.activeFilters[col.filterOptions ? col.filterOptions.key : col.key]);
-                th.appendChild(thContent); headerRow.appendChild(th);
+                
+                // --- CHANGE #1: Add sorting indicator (up/down arrow) ---
+                let sortIndicator = '';
+                if (this.state.sortBy === col.key) {
+                    sortIndicator = this.state.sortOrder === 'asc' ? ' 🔼' : ' 🔽';
+                }
+                
+                // --- CHANGE #2: Use a funnel icon for the filter ---
+                const filterIcon = `<span class="filter-icon" data-column-key="${col.key}">&#128292;</span>`; // Funnel character
+
+                thContent.innerHTML = `<span>${col.label}${sortIndicator}</span>${filterIcon}`;
+                th.classList.toggle('filter-active', !!this.state.activeFilters[col.filterOptions?.key || col.key]);
+                th.appendChild(thContent);
+                headerRow.appendChild(th);
             });
 
             const tbody = table.createTBody();
