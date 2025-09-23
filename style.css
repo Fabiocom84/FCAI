@@ -237,6 +237,17 @@ h2 {
 .search-button { background-color: #dc3545; }
 .search-button:hover { background-color: #c82333; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
+/* Stile per il pulsante placeholder */
+.placeholder-button { 
+    background-color: #bdc3c7; /* Un grigio neutro */
+    cursor: default; /* Il cursore non cambia, indicando che non è cliccabile */
+}
+.placeholder-button:hover { 
+    background-color: #bdc3c7; /* Mantiene lo stesso colore anche in hover */
+    transform: none; /* Rimuove l'effetto di sollevamento */
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1); /* Ombra di base, senza animazione */
+}
+
 /* --- Pulsanti secondari (logout, training, aiuto) --- */
 
 .logout-button-horizontal {
