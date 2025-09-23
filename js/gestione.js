@@ -62,14 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.clienti?.ragione_sociale || 'N/A',
                         options: { apiEndpoint: '/api/simple/clienti', valueField: 'id_cliente', textField: 'ragione_sociale' },
-                        // --- FIX: Use the new simple API for filters ---
-                        filterOptions: { key: 'clienti.ragione_sociale', apiEndpoint: '/api/simple/clienti', textField: 'ragione_sociale' }
-                    },
-                    { 
-                        key: 'impianto', 
-                        label: 'Impianto', 
-                        editable: true, 
-                        filterOptions: { key: 'impianto' }
+                        // --- FIX: Tell the filter to use the ID ---
+                        filterOptions: { 
+                            key: 'id_cliente_fk', // Use the ID column for filtering
+                            apiEndpoint: '/api/simple/clienti', 
+                            valueField: 'id_cliente', // The value of the checkbox
+                            textField: 'ragione_sociale' // The text shown to the user
+                        }
                     },
                     { 
                         key: 'id_status_fk', 
@@ -77,16 +76,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         editable: true,
                         type: 'foreignKey',
                         formatter: (rowData) => rowData.status_commessa?.nome_status || 'N/A',
-                        options: { apiEndpoint: '/api/status_commessa', valueField: 'id_status', textField: 'nome_status' },
-                        filterOptions: { key: 'status_commessa.nome_status', apiEndpoint: '/api/status_commessa', textField: 'nome_status' }
+                        options: { apiEndpoint: '/api/simple/status_commessa', valueField: 'id_status', textField: 'nome_status' },
+                        // --- FIX: Tell the filter to use the ID ---
+                        filterOptions: { 
+                            key: 'id_status_fk',
+                            apiEndpoint: '/api/simple/status_commessa', 
+                            valueField: 'id_status', 
+                            textField: 'nome_status' 
+                        }
+                    },
+                    {
+                        key: 'id_modello_fk',
+                        label: 'Modello',
+                        editable: true,
+                        type: 'foreignKey',
+                        formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
+                        options: { apiEndpoint: '/api/simple/modelli', valueField: 'id_modello', textField: 'nome_modello' },
+                        // --- FIX: Tell the filter to use the ID ---
+                        filterOptions: { 
+                            key: 'id_modello_fk',
+                            apiEndpoint: '/api/simple/modelli', 
+                            valueField: 'id_modello', 
+                            textField: 'nome_modello' 
+                        }
                     },
                     { 
                         key: 'data_commessa', 
                         label: 'Data', 
                         editable: true, 
                         type: 'date',
-                        // --- FIX: Ensure the formatter is present ---
-                        formatter: (rowData) => rowData.data_commessa ? new Date(rowData.data_commessa).toLocaleDateString('it-IT') : ''
+                        formatter: (rowData) => rowData.data_commessa ? new Date(rowData.data_commessa).toLocaleDateString('it-IT') : '',
+                        filterOptions: { key: 'data_commessa' }
                     },
                     { 
                         key: 'anno', 
@@ -105,16 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: 'Rif. Tecnico', 
                         editable: true,
                         filterOptions: { key: 'riferimento_tecnico' }
-                    },
-                    {
-                        key: 'id_modello_fk',
-                        label: 'Modello',
-                        editable: true,
-                        type: 'foreignKey',
-                        formatter: (rowData) => rowData.modelli?.nome_modello || 'N/A',
-                        options: { apiEndpoint: '/api/simple/modelli', valueField: 'id_modello', textField: 'nome_modello' },
-                        // --- FIX: Use the new simple API for filters ---
-                        filterOptions: { key: 'modelli.nome_modello', apiEndpoint: '/api/simple/modelli', textField: 'nome_modello' }
                     },
                     { key: 'provincia', label: 'Provincia', editable: true },
                     { key: 'paese', label: 'Paese', editable: true },
