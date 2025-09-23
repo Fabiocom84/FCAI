@@ -220,10 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         type: 'foreignKey',
                         options: { apiEndpoint: '/api/simple/ruoli', valueField: 'id_ruolo', textField: 'nome_ruolo' },
                         formatter: (rowData) => rowData.ruoli ? rowData.ruoli.nome_ruolo : 'N/A',
-                        // --- FIX: Use the new simple API for the filter ---
+                        // --- FIX: Point the filter to the correct simple API ---
                         filterOptions: { 
                             key: 'id_ruolo_fk',
-                            apiEndpoint: '/api/simple/ruoli', 
+                            apiEndpoint: '/api/simple/ruoli', // Use the simple endpoint
                             valueField: 'id_ruolo', 
                             textField: 'nome_ruolo' 
                         }
