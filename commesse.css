@@ -1,222 +1,88 @@
 /* =================================================== */
-/* == Stili Definitivi per la Pagina Commesse       == */
+/* == Stili Definitivi per la Pagina Commesse (v3)  == */
 /* =================================================== */
 
 .commesse-page body {
-    background-color: #f4f7f9;
+    background-color: #f4f7f-9;
     font-family: 'Roboto', sans-serif;
     margin: 0;
 }
 
-/* --- Layout Contenitori Principali --- */
-/* Regola unificata per la larghezza e il centraggio */
-#commesse-page-header,
-#commesse-page-controls,
-#commesse-grid {
-    max-width: 1800px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 30px;
-    padding-right: 30px;
+/* --- CONTENITORE PRINCIPALE --- */
+/* Questa è la regola chiave: un contenitore principale che definisce la larghezza
+   e centra tutto il contenuto della pagina. */
+.page-container {
+    width: 100%;
+    max-width: 1920px; /* Aumenta la larghezza massima per sfruttare schermi grandi */
+    margin: 0 auto;
+    padding: 0 30px;
     box-sizing: border-box;
 }
 
 /* --- Header e Controlli --- */
-#commesse-page-header {
+.commesse-header {
     background-color: #4a5568;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding: 15px 0;
 }
-#commesse-page-header h1 {
+.commesse-header h1 {
     margin: 0;
     font-size: 1.4em;
     color: white;
 }
-
-/* Stile specifico e potente per il pulsante "Aggiungi" */
-#commesse-page-header .button {
-    background-color: #28a745;
-    color: white;
-    padding: 8px 16px;
-    font-size: 0.9em;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-direction: row;
-    min-height: unset; /* Annulla stili generici */
-}
-#commesse-page-header .button:hover {
-    background-color: #218838;
-}
-#commesse-page-header .button img {
-    width: 16px;
-    height: 16px;
-    margin-bottom: 0;
-}
-
-#commesse-page-controls {
+.controls-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
     background-color: #f8f9fa;
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding: 15px 0;
+    border-top: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0;
 }
-#commesse-page-controls .filter-btn {
-    padding: 8px 15px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    cursor: pointer;
-    border-radius: 20px;
-    font-weight: 500;
-    font-size: 0.9em;
-}
-#commesse-page-controls .filter-btn.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-#commesse-page-controls #search-input,
-#commesse-page-controls #sort-select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 0.9em;
-}
 
-/* --- Griglia Card Responsive --- */
-#commesse-grid {
+/* --- Griglia Card Responsive CORRETTA --- */
+.commesse-grid {
     display: grid;
+    /* Questa regola crea colonne flessibili con una larghezza minima di 350px,
+       riempiendo lo spazio disponibile e andando a capo automaticamente. */
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 25px;
     padding-top: 30px;
     padding-bottom: 30px;
 }
 
-/* --- Stili Card Verticale --- */
-#commesse-grid .commesse-card {
+/* --- Stili Card (ora funzioneranno correttamente all'interno della griglia) --- */
+.commesse-card {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s, box-shadow 0.2s;
 }
-#commesse-grid .commesse-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-#commesse-grid .card-image {
+.card-image {
     width: 100%;
     height: 280px;
     background-color: #e9ecef;
     background-size: cover;
     background-position: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     color: #6c757d;
 }
 
-#commesse-grid .card-details {
-    padding: 20px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-#commesse-grid .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-}
-#commesse-grid .card-header h3 {
-    margin: 0;
-    font-size: 1.2em;
-    color: #343a40;
-}
-#commesse-grid .status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: bold;
-    color: white;
-    flex-shrink: 0;
-    margin-left: 10px;
-}
-#commesse-grid .status-in-lavorazione { background-color: #28a745; }
-#commesse-grid .status-completata { background-color: #007bff; }
-#commesse-grid .status-chiuso { background-color: #6c757d; }
-#commesse-grid .status-default { background-color: #6c757d; }
-
-#commesse-grid .card-info p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #495057;
-    line-height: 1.5;
-}
-#commesse-grid .card-info strong {
-    color: #212529;
-}
-
-#commesse-grid .registrazioni-section {
-    margin-top: auto;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
-}
-#commesse-grid .registrazioni-section a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-#commesse-grid .registrazioni-section a:hover {
-    text-decoration: underline;
-}
-
-#commesse-grid .card-actions {
-    display: flex;
-    gap: 10px;
-    padding: 0 20px 20px;
-}
-#commesse-grid .card-actions .button {
-    padding: 6px 12px;
-    font-size: 0.8em;
-    flex-grow: 1;
-    min-height: unset;
-    flex-direction: row;
-    gap: 6px;
-}
-#commesse-grid .card-actions .button--warning {
-    background-color: #ffc107;
-    color: #212529;
-}
-#commesse-grid .card-actions .button--warning:hover {
-    background-color: #e0a800;
-}
-#commesse-grid .card-actions .button--danger {
-    background-color: #dc3545;
-    color: white;
-}
-#commesse-grid .card-actions .button--danger:hover {
-    background-color: #c82333;
-}
-
-/* --- Elementi di Servizio (Loader, Messaggi) --- */
-#commesse-grid .loader,
-#commesse-grid .error-text {
-    text-align: center;
-    padding: 40px;
-    font-size: 1.2em;
-    color: #6c757d;
-    grid-column: 1 / -1; /* Assicura che occupi tutta la larghezza della griglia */
-}
+.card-details { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.card-header h3 { margin: 0; font-size: 1.2em; color: #343a40; }
+.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: bold; color: white; flex-shrink: 0; margin-left: 10px; }
+.status-in-lavorazione { background-color: #28a745; }
+.status-completata { background-color: #007bff; }
+.status-chiuso { background-color: #6c757d; }
+.card-info p { margin: 5px 0; font-size: 0.9em; color: #495057; line-height: 1.5; }
+.card-info strong { color: #212529; }
+.registrazioni-section { margin-top: auto; padding-top: 15px; border-top: 1px solid #f0f0f0; }
+.registrazioni-section a { color: #007bff; text-decoration: none; font-weight: bold; }
+.card-actions { display: flex; gap: 10px; padding: 0 20px 20px; }
