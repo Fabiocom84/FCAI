@@ -4,39 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Commesse</title>
-    <link rel="stylesheet" href="style.css">      <link rel="stylesheet" href="commesse.css">  </head>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="commesse.css">
+</head>
 <body class="commesse-page">
 
-    <div class="page-container">
-        <header id="commesse-page-header" class="commesse-header">
-            <h1>Gestione Commesse</h1>
-            <button id="add-commessa-btn" class="button">
-                <img src="img/plus.png" alt="Aggiungi">
-                <span>Aggiungi Nuova Commessa</span>
-            </button>
-        </header>
+    <header id="commesse-page-header">
+        <h1>Gestione Commesse</h1>
+        <button id="add-commessa-btn" class="button">
+            <img src="img/plus.png" alt="Aggiungi">
+            <span>Aggiungi Nuova Commessa</span>
+        </button>
+    </header>
 
-        <div id="commesse-page-controls" class="controls-container">
-            <div class="filter-group">
-                <strong>Stato:</strong>
-                <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
-                <button class="filter-btn" data-status="Completata">Completate</button>
-                <button class="filter-btn" data-status="Chiuso">Chiuse</button>
-                <button class="filter-btn" data-status="">Tutte</button>
-            </div>
-            <div class="search-sort-group">
-                <input type="text" id="search-input" placeholder="Cerca per cliente, impianto, VO...">
-                <select id="sort-select">
-                    <option value="data_commessa:desc">Più Recenti</option>
-                    <option value="data_commessa:asc">Meno Recenti</option>
-                    <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
-                </select>
-            </div>
+    <div id="commesse-page-controls">
+        <div class="filter-group">
+            <strong>Stato:</strong>
+            <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
+            <button class="filter-btn" data-status="Completata">Completate</button>
+            <button class="filter-btn" data-status="Chiuso">Chiuse</button>
+            <button class="filter-btn" data-status="">Tutte</button>
         </div>
-
-        <main id="commesse-grid" class="commesse-grid"></main>
+        <div class="search-sort-group">
+            <input type="text" id="search-input" placeholder="Cerca...">
+            <select id="sort-select">
+                <option value="data_commessa:desc">Più Recenti</option>
+                <option value="data_commessa:asc">Meno Recenti</option>
+                <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
+            </select>
+        </div>
     </div>
-    
+
+    <main id="commesse-grid"></main>
+
     <div id="loader" class="loader" style="display: none;">Caricamento...</div>
 
     <div id="newOrderModal" class="modal" style="display: none;">
