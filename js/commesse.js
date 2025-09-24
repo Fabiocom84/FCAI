@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // --- FIX: Add event listeners for the action buttons ---
+            // --- FIX: Add the missing event listeners for the action buttons ---
             const deleteBtn = card.querySelector('[data-action="delete"]');
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', (e) => {
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editBtn) {
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.handleEdit(editBtn.dataset.id); // We will build this function next
+                    this.handleEdit(editBtn.dataset.id);
                 });
             }
 
