@@ -6,30 +6,32 @@
     <title>Vista Commesse</title>
     <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="commesse.css"> </head>
 <body class="commesse-page">
-    <header class="commesse-header">
-        <h1>Gestione Commesse</h1>
-        <button id="add-commessa-btn" class="button insert-button">
-            <img src="img/plus.png" alt="Aggiungi">
-            <span>Aggiungi Nuova Commessa</span>
-        </button>
-    </header>
+    <div class="page-header-container">
+        <header class="commesse-header">
+            <h1>Gestione Commesse</h1>
+            <button id="add-commessa-btn" class="button insert-button">
+                <img src="img/plus.png" alt="Aggiungi">
+                <span>Aggiungi Nuova Commessa</span>
+            </button>
+        </header>
 
-    <div class="controls-container">
-        <div class="filter-group">
-            <strong>Stato:</strong>
-            <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
-            <button class="filter-btn" data-status="Completata">Completate</button>
-            <button class="filter-btn" data-status="">Tutte</button>
+        <div class="controls-container">
+            <div class="filter-group">
+                <strong>Stato:</strong>
+                <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
+                <button class="filter-btn" data-status="Completata">Completate</button>
+                <button class="filter-btn" data-status="">Tutte</button>
+            </div>
+            <div class="search-sort-group">
+                <input type="text" id="search-input" placeholder="Cerca per cliente, impianto, VO...">
+                <select id="sort-select">
+                    <option value="data_commessa:desc">Più Recenti</option>
+                    <option value="data_commessa:asc">Meno Recenti</option>
+                    <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
+                </select>
+            </div>
         </div>
-        <div class="search-sort-group">
-            <input type="text" id="search-input" placeholder="Cerca per cliente, impianto, VO...">
-            <select id="sort-select">
-                <option value="data_commessa:desc">Più Recenti</option>
-                <option value="data_commessa:asc">Meno Recenti</option>
-                <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
-            </select>
-        </div>
-    </div>
+    </div>  
 
     <main id="commesse-grid" class="commesse-grid"></main>
     

@@ -6,6 +6,35 @@
     margin: 0;
 }
 
+.page-header-container {
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.commesse-page .commesse-header,
+.commesse-page .controls-container {
+    /* Rimuoviamo padding e bordi individuali per centraliizzarli */
+    padding-left: 0;
+    padding-right: 0;
+    border-bottom: none; 
+    
+    /* Applichiamo una larghezza massima e centriamo */
+    max-width: 1600px; /* O la larghezza che preferisci */
+    margin: 0 auto;
+    padding: 15px 30px;
+}
+
+.commesse-page .commesse-header {
+    /* Stile scuro per l'header del titolo */
+    background-color: #4a5568;
+}
+
+.commesse-page .controls-container {
+    /* Stile chiaro per la barra dei filtri */
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
 /* Header della pagina */
 .commesse-page .commesse-header {
     padding: 15px 30px;

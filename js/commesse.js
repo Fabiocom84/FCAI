@@ -106,10 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'commesse-card';
 
             const statusClass = `status-${commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default'}`;
+            const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
 
             const registrazioniSummary = commessa.registrazioni.length > 0
                 ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
-                   | <a href="gestione.html?view=registrazioni&filter_id_commessa_fk=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
+                   | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
                 : `<p><strong>Registrazioni:</strong> 0</p>`;
 
             card.innerHTML = `
@@ -122,8 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
                     </div>
                     <div class="card-info">
-                        <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'}</p>
-                        <p><strong>VO:</strong> ${commessa.vo || 'N/D'} | <strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+                        <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
+                        <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
+                        <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
+                        <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+                        <p><strong>Data:</strong> ${formattedDate}</p>
+                        <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
                     </div>
                     <div class="registrazioni-section">
                         ${registrazioniSummary}
