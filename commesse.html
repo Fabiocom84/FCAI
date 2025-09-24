@@ -9,132 +9,45 @@
 </head>
 <body class="commesse-page">
 
-    <header id="commesse-page-header">
-        <h1>Gestione Commesse</h1>
-        <button id="add-commessa-btn" class="button">
-            <img src="img/plus.png" alt="Aggiungi">
-            <span>Aggiungi Nuova Commessa</span>
-        </button>
-    </header>
+    <div class="page-wrapper">
+        <header class="commesse-header">
+            <h1>Gestione Commesse</h1>
+            <button id="add-commessa-btn" class="button">
+                <span>+ Aggiungi</span>
+            </button>
+        </header>
 
-    <div id="commesse-page-controls">
-        <div class="filter-group">
-            <strong>Stato:</strong>
-            <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
-            <button class="filter-btn" data-status="Completata">Completate</button>
-            <button class="filter-btn" data-status="Chiuso">Chiuse</button>
-            <button class="filter-btn" data-status="">Tutte</button>
+        <div class="controls-container">
+            <div class="filter-group">
+                <strong>Stato:</strong>
+                <button class="filter-btn active" data-status="In Lavorazione">In Lavorazione</button>
+                <button class="filter-btn" data-status="Completata">Completate</button>
+                <button class="filter-btn" data-status="Chiuso">Chiuse</button>
+                <button class="filter-btn" data-status="">Tutte</button>
+            </div>
+            <div class="search-sort-group">
+                <input type="text" id="search-input" placeholder="Cerca...">
+                <select id="sort-select">
+                    <option value="data_commessa:desc">Più Recenti</option>
+                    <option value="data_commessa:asc">Meno Recenti</option>
+                </select>
+            </div>
         </div>
-        <div class="search-sort-group">
-            <input type="text" id="search-input" placeholder="Cerca...">
-            <select id="sort-select">
-                <option value="data_commessa:desc">Più Recenti</option>
-                <option value="data_commessa:asc">Meno Recenti</option>
-                <option value="clienti.ragione_sociale:asc">Cliente (A-Z)</option>
-            </select>
-        </div>
+
+        <main id="commesse-grid" class="commesse-grid"></main>
+
+        <div id="loader" class="loader" style="display: none;">Caricamento...</div>
     </div>
-
-    <main id="commesse-grid"></main>
-
-    <div id="loader" class="loader" style="display: none;">Caricamento...</div>
 
     <div id="newOrderModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nuova Commessa</h2>
-                <div class="modal-header-buttons">
-                    <div class="help-button-container">
-                        <button class="help-button" data-legend="newOrderLegend">?</button>
-                    </div>
-                    <span class="close-button">&times;</span>
-                </div>
-            </div>
-            <div class="modal-body">
-                <form id="newOrderForm">
-                    <div class="form-group">
-                        <label for="cliente-select">Cliente</label>
-                        <select id="cliente-select" name="cliente" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="impianto-input">Impianto</label>
-                        <input type="text" id="impianto-input" name="impianto">
-                    </div>
-                    <div class="form-group">
-                        <label for="modello-select">Modello</label>
-                        <select id="modello-select" name="modello"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="vo-input">VO (Rif. Offerta)</label>
-                        <input type="text" id="vo-input" name="vo">
-                    </div>
-                     <div class="form-group">
-                        <label for="riferimento-tecnico-input">Riferimento Tecnico</label>
-                        <input type="text" id="riferimento-tecnico-input" name="riferimento_tecnico">
-                    </div>
-                    <div class="form-group">
-                        <label for="data-input">Data</label>
-                        <input type="date" id="data-input" name="data_commessa">
-                    </div>
-                     <div class="form-group form-group-inline">
-                        <div>
-                            <label for="provincia-input">Provincia</label>
-                            <input type="text" id="provincia-input" name="provincia">
-                        </div>
-                        <div>
-                            <label for="paese-input">Paese</label>
-                            <input type="text" id="paese-input" name="paese">
-                        </div>
-                    </div>
-                    <div class="form-group form-group-inline">
-                        <div>
-                             <label for="anno-input">Anno</label>
-                            <input type="number" id="anno-input" name="anno">
-                        </div>
-                        <div>
-                            <label for="matricola-input">Matricola</label>
-                            <input type="text" id="matricola-input" name="matricola">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="status-select">Stato</label>
-                        <select id="status-select" name="id_status_fk"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="note-textarea">Note</label>
-                        <textarea id="note-textarea" name="note" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="immagine-upload">Immagine</label>
-                        <input type="file" id="immagine-upload" name="immagine" accept="image/*">
-                    </div>
-                </form>
-                 <button id="saveOrderBtn" class="save-button">Salva Commessa</button>
-            </div>
         </div>
-    </div>
-    
     <div id="modalOverlay" class="modal-overlay"></div>
-
     <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
-        <div id="custom-modal" class="custom-modal">
-            <h2 id="custom-modal-title"></h2>
-            <p id="custom-modal-message"></p>
-            <div id="custom-modal-buttons" class="custom-modal-buttons"></div>
         </div>
-    </div>
-
-    <div id="newOrderLegend" class="legend" style="display: none;">
-        <h3>Aiuto - Nuova Commessa</h3>
-        <div class="legend-item">
-            <div class="legend-text">Utilizza questo modulo per inserire dettagli di nuove commesse nel sistema.</div>
-        </div>
-    </div>
 
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/new-order-modal.js"></script>
     <script type="module" src="js/commesse.js"></script>
-
 </body>
 </html>
