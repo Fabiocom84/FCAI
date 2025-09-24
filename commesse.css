@@ -1,53 +1,112 @@
-body {
+/* Stili specifici per la pagina di gestione commesse */
+
+.commesse-page body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     margin: 0;
 }
 
-.commesse-header, .controls-container {
+/* Header della pagina */
+.commesse-page .commesse-header {
     padding: 15px 30px;
-    background-color: #fff;
+    background-color: #4a5568; /* Header scuro come in Vista Agile */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.commesse-page .commesse-header h1 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    color: white; /* Assicura che il titolo sia bianco */
+}
+
+/* Stile specifico per il pulsante "Aggiungi" nell'header */
+.commesse-page .commesse-header .button {
+    background-color: #28a745; /* Verde primario */
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    /* Annulla gli stili flexbox del .button generico */
+    flex-direction: row;
+    min-height: unset;
+}
+.commesse-page .commesse-header .button:hover {
+    background-color: #218838;
+}
+.commesse-page .commesse-header .button img {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 0;
+}
+
+
+/* Contenitore dei controlli (filtri, ricerca, ordinamento) */
+.commesse-page .controls-container {
+    padding: 15px 30px;
+    background-color: #f8f9fa;
     border-bottom: 1px solid #e0e0e0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-.controls-container {
     flex-wrap: wrap;
     gap: 20px;
 }
-.filter-group, .search-sort-group {
+
+.commesse-page .filter-group,
+.commesse-page .search-sort-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-.filter-btn {
+
+/* Pulsanti filtro stato */
+.commesse-page .filter-btn {
     padding: 8px 15px;
     border: 1px solid #ccc;
-    background-color: #f0f0f0;
+    background-color: #fff;
     cursor: pointer;
     border-radius: 20px;
     font-weight: 500;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
 }
-.filter-btn.active {
+.commesse-page .filter-btn:hover {
+    background-color: #e9ecef;
+}
+.commesse-page .filter-btn.active {
     background-color: #007bff;
     color: white;
     border-color: #007bff;
 }
-#search-input, #sort-select {
+
+/* Campi di ricerca e ordinamento */
+.commesse-page #search-input,
+.commesse-page #sort-select {
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-size: 0.9em;
 }
 
-.commesse-grid {
+/* Griglia delle card (invariata) */
+.commesse-page .commesse-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 25px;
     padding: 30px;
 }
 
-.commesse-card {
+/* Stili per le card (invariati) */
+.commesse-page .commesse-card {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -56,12 +115,12 @@ body {
     flex-direction: column;
     transition: transform 0.2s, box-shadow 0.2s;
 }
-.commesse-card:hover {
+.commesse-page .commesse-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
-.card-image {
+.commesse-page .card-image {
     width: 100%;
     height: 200px;
     background-color: #e9ecef;
@@ -73,60 +132,86 @@ body {
     align-items: center;
     color: #6c757d;
 }
-.card-details {
+.commesse-page .card-details {
     padding: 20px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
-.card-header {
+.commesse-page .card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 15px;
 }
-.card-header h3 {
+.commesse-page .card-header h3 {
     margin: 0;
     font-size: 1.2em;
     color: #343a40;
 }
-.status-badge {
+.commesse-page .status-badge {
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.8em;
     font-weight: bold;
     color: white;
+    flex-shrink: 0;
+    margin-left: 10px;
 }
-.status-in-lavorazione { background-color: #28a745; }
-.status-completata { background-color: #007bff; }
-.status-default { background-color: #6c757d; }
+.commesse-page .status-in-lavorazione { background-color: #28a745; }
+.commesse-page .status-completata { background-color: #007bff; }
+.commesse-page .status-chiuso { background-color: #6c757d; }
+.commesse-page .status-default { background-color: #6c757d; }
 
-.card-info p {
+.commesse-page .card-info p {
     margin: 5px 0;
     font-size: 0.9em;
     color: #495057;
 }
-.card-info strong {
+.commesse-page .card-info strong {
     color: #212529;
 }
 
-.registrazioni-section {
+.commesse-page .registrazioni-section {
     margin-top: auto;
     padding-top: 15px;
     border-top: 1px solid #f0f0f0;
 }
-.registrazioni-section a {
+.commesse-page .registrazioni-section a {
     color: #007bff;
     text-decoration: none;
     font-weight: bold;
 }
 
-.card-actions {
+.commesse-page .card-actions {
     display: flex;
     gap: 10px;
     padding: 0 20px 20px;
 }
-.loader {
+/* Stile specifico per i pulsanti di azione sulla card */
+.commesse-page .card-actions .button {
+    padding: 6px 12px;
+    font-size: 0.8em;
+    flex-grow: 1;
+    min-height: unset;
+    flex-direction: row;
+}
+.commesse-page .card-actions .button--warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+.commesse-page .card-actions .button--warning:hover {
+    background-color: #e0a800;
+}
+.commesse-page .card-actions .button--danger {
+    background-color: #dc3545;
+}
+.commesse-page .card-actions .button--danger:hover {
+    background-color: #c82333;
+}
+
+
+.commesse-page .loader {
     text-align: center;
     padding: 40px;
     font-size: 1.5em;
