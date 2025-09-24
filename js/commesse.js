@@ -105,7 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'commesse-card';
 
-            const statusClass = `status-${commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default'}`;
+            const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
+            card.classList.add(`status-bg-${statusName}`);
+
+            const statusClass = `status-${statusName}`;
             const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
 
             const registrazioniSummary = commessa.registrazioni.length > 0
