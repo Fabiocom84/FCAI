@@ -1,188 +1,99 @@
-// js/new-order-modal.js
+import { API_BASE_URL } from './config.js';
 
-// --- Elementi DOM ---
-const newOrderModal = document.getElementById('newOrderModal');
-const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
-const saveNewOrderButton = document.getElementById('saveNewOrderButton');
-const newOrderForm = document.getElementById('newOrderForm');
-const newOrderSuccessMessage = document.getElementById('newOrderSuccessMessage');
+// --- FIX: Move all DOM element selections inside the event listener ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- Elementi DOM ---
+    const newOrderModal = document.getElementById('newOrderModal');
+    const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
+    const newOrderForm = document.getElementById('newOrderForm');
+    const saveOrderBtn = document.getElementById('saveOrderBtn');
+    
+    // Dropdowns
+    const clienteSelect = document.getElementById('cliente-select');
+    const modelloSelect = document.getElementById('modello-select');
+    const statusSelect = document.getElementById('status-select');
 
-// Campi del form
-const clienteInput = document.getElementById('newOrderCliente');
-const clienteDatalist = document.getElementById('cliente-list');
-const clienteIdInput = document.getElementById('newOrderClienteId');
-const modelloSelect = document.getElementById('newOrderModello');
-const statusSelect = document.getElementById('newOrderStatus');
-const dataInput = document.getElementById('newOrderData');
-const annoInput = document.getElementById('newOrderAnno');
-const voInput = document.getElementById('newOrderVO'); // Aggiunto riferimento a VO
-const commessaInput = document.getElementById('newOrderCommessa'); // Aggiunto riferimento a Commessa
-
-let clientiData = [];
-
-// --- Funzioni e Logica ---
-
-window.prepareNewOrderModal = async function() {
-    resetNewOrderModal();
-    await loadDynamicData();
-    setDefaultValues();
-};
-
-window.cleanupNewOrderModal = function() {
-    resetNewOrderModal();
-};
-
-async function loadDynamicData() {
-    try {
-        const response = await (await window.apiFetch('/api/commesse-init-data')).json();
-
-        // Salva i dati dei clienti per la ricerca
-        clientiData = response.clienti || [];
-        
-        // Popola la datalist dei clienti
-        clienteDatalist.innerHTML = '';
-        clientiData.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.ragione_sociale;
-            option.dataset.id = item.id_cliente;
-            clienteDatalist.appendChild(option);
-        });
-
-        // Popola gli altri menu a tendina
-        populateSelect(modelloSelect, response.modelli, 'nome_modello', 'id_modello');
-        populateSelect(statusSelect, response.status, 'nome_status', 'id_status');
-
-        // --- IMPOSTAZIONE DELLO STATUS DI DEFAULT ---
-        // Cerca l'oggetto status che corrisponde a "In Lavorazione"
-        const statusData = response.status || [];
-        const inLavorazioneStatus = statusData.find(s => s.nome_status === 'In Lavorazione');
-        
-        // Se lo trova, imposta il suo ID come valore selezionato del menu a tendina
-        if (inLavorazioneStatus) {
-            statusSelect.value = inLavorazioneStatus.id_status;
-        }
-        // --- FINE BLOCCO AGGIUNTO ---
-
-    } catch (error) {
-        console.error('Errore nel caricamento dei dati:', error);
-        alert('Errore nel caricamento dei dati. Assicurati che il server sia attivo.');
+    if (closeNewOrderModalBtn) {
+        closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
     }
-}
+    if (saveOrderBtn) {
+        saveOrderBtn.addEventListener('click', saveOrder);
+    }
 
-clienteInput.addEventListener('input', () => {
-    const selectedValue = clienteInput.value;
-    const cliente = clientiData.find(c => c.ragione_sociale === selectedValue);
-    clienteIdInput.value = cliente ? cliente.id_cliente : '';
-});
+    // Funzione chiamata da main.js per preparare il modale all'apertura
+    window.prepareNewOrderModal = async function() {
+        if (!newOrderModal) return;
+        
+        // Svuota i menu a tendina per evitare duplicati
+        clienteSelect.innerHTML = '<option>Caricamento...</option>';
+        modelloSelect.innerHTML = '<option>Caricamento...</option>';
+        statusSelect.innerHTML = '<option>Caricamento...</option>';
+        
+        try {
+            const [clientiRes, modelliRes, statusRes] = await Promise.all([
+                window.apiFetch('/api/simple/clienti'),
+                window.apiFetch('/api/simple/modelli'),
+                window.apiFetch('/api/simple/status_commessa')
+            ]);
 
-function populateSelect(selectElement, data, textField, valueField) {
-    if (!selectElement) return;
-    selectElement.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
-    if (data && data.length > 0) {
-        data.forEach(item => {
+            const clienti = await clientiRes.json();
+            const modelli = await modelliRes.json();
+            const status = await statusRes.json();
+
+            populateSelect(clienteSelect, clienti, 'id_cliente', 'ragione_sociale', 'Seleziona un cliente');
+            populateSelect(modelloSelect, modelli, 'id_modello', 'nome_modello', 'Seleziona un modello');
+            populateSelect(statusSelect, status, 'id_status', 'nome_status', 'Seleziona uno stato');
+
+        } catch (error) {
+            console.error("Errore nel caricamento dati per il modale:", error);
+            clienteSelect.innerHTML = '<option>Errore</option>';
+            modelloSelect.innerHTML = '<option>Errore</option>';
+            statusSelect.innerHTML = '<option>Errore</option>';
+        }
+    };
+
+    // Funzione chiamata da main.js per pulire il modale alla chiusura
+    window.cleanupNewOrderModal = function() {
+        if (newOrderForm) newOrderForm.reset();
+    };
+
+    function populateSelect(selectElement, items, valueField, textField, placeholder) {
+        selectElement.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+        items.forEach(item => {
             const option = document.createElement('option');
             option.value = item[valueField];
             option.textContent = item[textField];
             selectElement.appendChild(option);
         });
     }
-}
 
-async function saveNewOrder(event) {
-    event.preventDefault();
-    if (!newOrderForm) return;
+    async function saveOrder(event) {
+        event.preventDefault();
+        saveOrderBtn.disabled = true;
 
-    saveNewOrderButton.disabled = true;
-    const formData = new FormData(newOrderForm);
+        const formData = new FormData(newOrderForm);
 
-    try {
-        const response = await window.apiFetch('/api/commesse', {
-            method: 'POST',
-            body: formData
-        });
-        if (!response.ok) throw new Error((await response.json()).error);
-        
-        await window.showModal({
-            title: 'Successo ✅',
-            message: 'La nuova commessa è stata creata correttamente.',
-            confirmText: 'Ottimo!'
-        });
-        
-        window.closeNewOrderModal();
-        
-    } catch (error) {
-        console.error('Errore nel salvataggio della nuova commessa:', error);
-        await window.showModal({
-            title: 'Errore ❗',
-            message: `Impossibile salvare la commessa: ${error.message}`,
-            confirmText: 'Capito'
-        });
-    } finally {
-        saveNewOrderButton.disabled = false;
-    }
-}
+        try {
+            const response = await window.apiFetch('/api/commesse', {
+                method: 'POST',
+                body: formData
+            });
 
-function setDefaultValues() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    
-    if (dataInput) dataInput.value = `${year}-${month}-${day}`;
-    if (annoInput) annoInput.value = year;
-}
-
-function resetNewOrderModal() {
-    if (newOrderForm) newOrderForm.reset();
-    if (clienteIdInput) clienteIdInput.value = '';
-    if (newOrderForm) newOrderForm.style.display = 'block';
-    if (newOrderSuccessMessage) newOrderSuccessMessage.style.display = 'none';
-}
-
-function autoFormatVO(event) {
-    const input = event.target;
-    let value = input.value;
-
-    // Se l'utente sta cancellando, non fare nulla
-    if (event.inputType === 'deleteContentBackward') {
-        return;
-    }
-    // Aggiunge il trattino dopo due cifre
-    if (value.length === 2) {
-        input.value = value + '-';
-    }
-}
-
-/**
- * Formatta automaticamente il campo Commessa (prima lettera maiuscola).
- */
-function autoFormatCommessa(event) {
-    const input = event.target;
-    let value = input.value;
-    
-    // Se c'è almeno un carattere, rendi il primo maiuscolo
-    if (value.length > 0) {
-        input.value = value.charAt(0).toUpperCase() + value.slice(1);
-    }
-}
-
-// --- COLLEGAMENTO DEGLI EVENTI SPECIFICI DEL MODALE ---
-document.addEventListener('DOMContentLoaded', () => {
-    if (saveNewOrderButton) {
-        saveNewOrderButton.addEventListener('click', saveNewOrder);
-    }
-    if (closeNewOrderModalBtn) {
-        closeNewOrderModalBtn.addEventListener('click', () => {
-            if (window.closeNewOrderModal) {
-                window.closeNewOrderModal();
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore sconosciuto.');
             }
-        });
-    }
-    // Aggiungi i nuovi listener per la formattazione automatica
-    if (voInput) {
-        voInput.addEventListener('input', autoFormatVO);
-    }
-    if (commessaInput) {
-        commessaInput.addEventListener('input', autoFormatCommessa);
+            
+            alert('Commessa creata con successo!');
+            window.closeNewOrderModal();
+            // Opzionale: ricarica le card nella vista commesse se la funzione esiste
+            if (window.refreshCommesseView) window.refreshCommesseView();
+
+        } catch (error) {
+            alert('Errore nella creazione della commessa: ' + error.message);
+        } finally {
+            saveOrderBtn.disabled = false;
+        }
     }
 });
