@@ -113,32 +113,36 @@ document.addEventListener('DOMContentLoaded', () => {
                    | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
                 : `<p><strong>Registrazioni:</strong> 0</p>`;
 
+            // --- NEW HTML STRUCTURE FOR HORIZONTAL LAYOUT ---
             card.innerHTML = `
-                <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
-                    ${!commessa.immagine ? 'Nessuna Immagine' : ''}
+                <div class="card-image-container">
+                    <img src="${commessa.immagine || 'img/placeholder.png'}" alt="Anteprima Commessa">
                 </div>
-                <div class="card-details">
-                    <div class="card-header">
-                        <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
-                        <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                <div class="card-content-wrapper">
+                    <div class="card-details">
+                        <div class="card-header">
+                            <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
+                            <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                        </div>
+                        <div class="card-info">
+                            <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
+                            <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
+                            <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
+                            <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+                            <p><strong>Data:</strong> ${formattedDate}</p>
+                            <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
+                        </div>
+                        <div class="registrazioni-section">
+                            ${registrazioniSummary}
+                        </div>
                     </div>
-                    <div class="card-info">
-                        <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
-                        <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
-                        <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                        <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
-                        <p><strong>Data:</strong> ${formattedDate}</p>
-                        <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
+                    <div class="card-actions">
+                        <button class="button button--warning" data-id="${commessa.id_commessa}">✏️ Modifica</button>
+                        <button class="button button--danger" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
                     </div>
-                    <div class="registrazioni-section">
-                        ${registrazioniSummary}
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="button button--warning" data-id="${commessa.id_commessa}">✏️ Modifica</button>
-                    <button class="button button--danger" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
                 </div>
             `;
+            
             // Add event listeners for edit/delete here
             return card;
         },
