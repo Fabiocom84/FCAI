@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
                    | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
                 : `<p><strong>Registrazioni:</strong> 0</p>`;
 
-            // --- HTML structure for the VERTICAL card ---
             card.innerHTML = `
                 <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
                     ${!commessa.immagine ? 'Nessuna Immagine' : ''}
@@ -130,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
                         <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
                         <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                        <p><strong>Rif. Tecnico:</strong> ${commessa.rif_tecnico || 'N/D'}</p>
+                        <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
                         <p><strong>Data:</strong> ${formattedDate}</p>
                         <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
                     </div>
@@ -139,12 +138,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="button button--warning" data-id="${commessa.id_commessa}">✏️ Modifica</button>
-                    <button class="button button--danger" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
+                    <button class="button button--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
+                    <button class="button button--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
                 </div>
             `;
-            
-            // Add event listeners for edit/delete here
+
+            // --- FIX: Add event listeners for the action buttons ---
+            const deleteBtn = card.querySelector('[data-action="delete"]');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevents other clicks from firing
+                    this.handleDelete(deleteBtn.dataset.id);
+                });
+            }
+
+            const editBtn = card.querySelector('[data-action="edit"]');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleEdit(editBtn.dataset.id); // We will build this function next
+                });
+            }
+
             return card;
         },
 
@@ -153,6 +168,41 @@ document.addEventListener('DOMContentLoaded', () => {
             clickedBtn.classList.add('active');
             this.state.activeStatus = clickedBtn.dataset.status;
             this.fetchCommesse(true);
+        },
+
+        async handleDelete(commessaId) {
+            const isConfirmed = await window.showModal({
+                title: 'Conferma Eliminazione',
+                message: `Sei sicuro di voler eliminare questa commessa? L'azione è irreversibile.`,
+                confirmText: 'Elimina',
+                cancelText: 'Annulla'
+            });
+
+            if (isConfirmed) {
+                try {
+                    const response = await window.apiFetch(`/api/commesse/${commessaId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Errore del server');
+                    }
+                    
+                    // Remove the card from the view without a full reload
+                    const cardToRemove = this.dom.grid.querySelector(`[data-id="${commessaId}"]`).closest('.commesse-card');
+                    if (cardToRemove) {
+                        cardToRemove.remove();
+                    }
+                    
+                } catch (error) {
+                    window.showModal({
+                        title: 'Errore',
+                        message: `Impossibile eliminare la commessa: ${error.message}`,
+                        confirmText: 'OK'
+                    });
+                }
+            }
         },
 
         handleSort() {
