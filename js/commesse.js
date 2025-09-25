@@ -3,16 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     const App = {
-        dom: {
-            grid: document.getElementById('commesse-grid'),
-            loader: document.getElementById('loader'),
-            statusFilters: document.querySelectorAll('.filter-btn'),
-            searchInput: document.getElementById('search-input'),
-            sortSelect: document.getElementById('sort-select'),
-            addBtn: document.getElementById('add-commessa-btn'),
-        },
         state: {
-            commesse: [],
             currentPage: 1,
             totalCount: 0,
             isLoading: false,
@@ -37,12 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         addEventListeners() {
-            // --- FIX IS HERE ---
-            // This correctly adds the click listener to the "Aggiungi" button
+            // Event listener for the "Aggiungi Nuova Commessa" button
             this.dom.addBtn.addEventListener('click', () => {
                 if (window.openNewOrderModal) window.openNewOrderModal();
             });
-            // --- END FIX ---
 
             this.dom.statusFilters.forEach(btn => {
                 btn.addEventListener('click', () => this.handleStatusFilter(btn));
@@ -86,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isDeepSearch) {
                 params.append('deep_search', 'true');
             }
-            
+
             try {
                 const response = await window.apiFetch(`/api/commesse-view?${params.toString()}`);
                 const data = await response.json();
@@ -221,6 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        handleEdit(commessaId) {
+            // Placeholder for edit functionality
+            console.log("Edit requested for commessa ID:", commessaId);
+            alert("La funzione di modifica non è ancora implementata.");
+        },
+
         handleSort() {
             const [sortBy, sortOrder] = this.dom.sortSelect.value.split(':');
             this.state.sortBy = sortBy;
@@ -240,4 +235,5 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     App.init();
+    window.refreshCommesseView = () => App.fetchCommesse(true);
 });
