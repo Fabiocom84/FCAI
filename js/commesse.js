@@ -23,33 +23,42 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         init() {
+            this.dom = {
+                grid: document.getElementById('commesse-grid'),
+                loader: document.getElementById('loader'),
+                statusFilters: document.querySelectorAll('.filter-btn'),
+                searchInput: document.getElementById('search-input'),
+                sortSelect: document.getElementById('sort-select'),
+                addBtn: document.getElementById('add-commessa-btn'),
+            };
+
             this.addEventListeners();
-            this.fetchCommesse(true); // Initial load with default filters
-            
-            // Setup for the "Nuova Commessa" modal
-            this.dom.addBtn.addEventListener('click', () => {
-                if (window.openNewOrderModal) window.openNewOrderModal();
-            });
+            this.fetchCommesse(true);
         },
         
         addEventListeners() {
+            // --- FIX IS HERE ---
+            // This correctly adds the click listener to the "Aggiungi" button
+            this.dom.addBtn.addEventListener('click', () => {
+                if (window.openNewOrderModal) window.openNewOrderModal();
+            });
+            // --- END FIX ---
+
             this.dom.statusFilters.forEach(btn => {
                 btn.addEventListener('click', () => this.handleStatusFilter(btn));
             });
             
-            // Debounced search
             let searchTimeout;
             this.dom.searchInput.addEventListener('input', () => {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     this.state.searchTerm = this.dom.searchInput.value;
                     this.fetchCommesse(true);
-                }, 500); // 500ms delay
+                }, 500);
             });
 
             this.dom.sortSelect.addEventListener('change', () => this.handleSort());
             
-            // Infinite scroll / lazy loading
             window.addEventListener('scroll', () => this.handleScroll());
         },
 
@@ -62,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             this.dom.loader.style.display = 'block';
 
+            const deepSearchCheckbox = document.getElementById('deep-search-checkbox');
+            const isDeepSearch = deepSearchCheckbox.checked;
+
             const params = new URLSearchParams({
                 page: this.state.currentPage,
                 limit: 20,
@@ -71,6 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sortOrder: this.state.sortOrder,
             });
 
+            if (isDeepSearch) {
+                params.append('deep_search', 'true');
+            }
+            
             try {
                 const response = await window.apiFetch(`/api/commesse-view?${params.toString()}`);
                 const data = await response.json();
