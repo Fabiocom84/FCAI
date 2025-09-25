@@ -33,6 +33,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.openNewOrderModal) window.openNewOrderModal();
             });
 
+            // Event listener for the main grid to handle clicks on Edit/Delete buttons
+            this.dom.grid.addEventListener('click', (e) => {
+                const button = e.target.closest('button[data-action]');
+                if (!button) return;
+
+                const action = button.dataset.action;
+                const id = button.dataset.id;
+
+                if (action === 'delete') {
+                    this.handleDelete(id);
+                }
+                if (action === 'edit') {
+                    this.handleEdit(id);
+                }
+            });
+
             this.dom.statusFilters.forEach(btn => {
                 btn.addEventListener('click', () => this.handleStatusFilter(btn));
             });
