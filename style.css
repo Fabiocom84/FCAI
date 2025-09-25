@@ -1432,3 +1432,17 @@ h2 {
     height: 20px;
     filter: invert(1); /* Rende l'icona bianca */
 }
+
+/* Stile per la versione compatta dell'area di upload */
+.custom-file-upload.compact {
+    padding: 10px; /* Riduce lo spazio interno */
+    flex-direction: row; /* Mette icona e testo in riga */
+    justify-content: flex-start;
+    gap: 15px;
+    border-style: solid; /* Usa una linea solida invece che tratteggiata */
+}
+
+.custom-file-upload.compact .custom-file-upload-icon {
+    font-size: 1.5em; /* Rimpicciolisce l'icona */
+    margin-bottom: 0;
+}
