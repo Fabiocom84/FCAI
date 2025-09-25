@@ -86,7 +86,6 @@ let modalOverlay;
 
 let insertDataModalInstance; 
 let chatModalInstance;
-let newOrderModalInstance;
 let trainingModalInstance;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -108,8 +107,7 @@ function initializeApp() {
     }
 
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
-    document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);
-    document.getElementById('openNewOrderModalBtn')?.addEventListener('click', openNewOrderModal);
+    document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);   
     document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
 
     if (modalOverlay) {
@@ -119,7 +117,6 @@ function initializeApp() {
                 switch (openModal.id) {
                     case 'insertDataModal': closeInsertDataModal(); break;
                     case 'chatModal': closeChatModal(); break;
-                    case 'newOrderModal': closeNewOrderModal(); break;
                     case 'trainingModal': closeTrainingModal(); break;
                 }
             }
@@ -148,18 +145,6 @@ function openChatModal() {
     }
 }
 
-async function openNewOrderModal() {
-    if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
-    if (newOrderModalInstance) {
-        newOrderModalInstance.style.display = 'block';
-        modalOverlay.style.display = 'block';
-        
-        if (typeof window.prepareNewOrderModal === 'function') {
-            await window.prepareNewOrderModal();
-        }
-    }
-}
-
 function openTrainingModal() {
     if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
     if (trainingModalInstance) {
@@ -183,18 +168,6 @@ function closeChatModal() {
     modalOverlay.style.display = 'none';
 }
 
-function closeNewOrderModal() {
-    if (!newOrderModalInstance) newOrderModalInstance = document.getElementById('newOrderModal');
-    if (newOrderModalInstance) {
-        newOrderModalInstance.style.display = 'none';
-    }
-    modalOverlay.style.display = 'none';
-
-    if (typeof window.cleanupNewOrderModal === 'function') {
-        window.cleanupNewOrderModal();
-    }
-}
-
 function closeTrainingModal() {
     if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
     if (trainingModalInstance) trainingModalInstance.style.display = 'none';
@@ -203,5 +176,4 @@ function closeTrainingModal() {
 
 window.closeInsertDataModal = closeInsertDataModal;
 window.closeChatModal = closeChatModal;
-window.closeNewOrderModal = closeNewOrderModal;
 window.closeTrainingModal = closeTrainingModal;
