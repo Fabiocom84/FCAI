@@ -21,9 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput: document.getElementById('search-input'),
                 sortSelect: document.getElementById('sort-select'),
                 addBtn: document.getElementById('add-commessa-btn'),
-                // --- NUOVO: Aggiungiamo il modale e l'overlay ---
                 newOrderModal: document.getElementById('newOrderModal'),
-                modalOverlay: document.getElementById('modalOverlay')
+                modalOverlay: document.getElementById('modalOverlay'),
+                // --- FIX: Find the close button inside the modal ---
+                closeNewOrderModalBtn: document.querySelector('#newOrderModal .close-button')
             };
 
             this.addEventListeners();
@@ -31,27 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         addEventListeners() {
-            // --- MODIFICATO: Chiama la funzione locale, non globale ---
             this.dom.addBtn.addEventListener('click', () => this.openNewOrderModal());
-
-            // Aggiungiamo un listener per chiudere il modale cliccando sull'overlay
             this.dom.modalOverlay.addEventListener('click', () => this.closeNewOrderModal());
-
-            // Event listener for the main grid to handle clicks on Edit/Delete buttons
-            this.dom.grid.addEventListener('click', (e) => {
-                const button = e.target.closest('button[data-action]');
-                if (!button) return;
-
-                const action = button.dataset.action;
-                const id = button.dataset.id;
-
-                if (action === 'delete') {
-                    this.handleDelete(id);
-                }
-                if (action === 'edit') {
-                    this.handleEdit(id);
-                }
-            });
+            
+            // --- FIX: Add the event listener for the close button ---
+            if (this.dom.closeNewOrderModalBtn) {
+                this.dom.closeNewOrderModalBtn.addEventListener('click', () => this.closeNewOrderModal());
+            }
 
             this.dom.statusFilters.forEach(btn => {
                 btn.addEventListener('click', () => this.handleStatusFilter(btn));
