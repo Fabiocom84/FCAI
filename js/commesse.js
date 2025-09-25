@@ -14,8 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         init() {
-            // --- THIS BLOCK WAS MISSING ---
-            // This code finds all the necessary HTML elements on the page.
             this.dom = {
                 grid: document.getElementById('commesse-grid'),
                 loader: document.getElementById('loader'),
@@ -23,18 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput: document.getElementById('search-input'),
                 sortSelect: document.getElementById('sort-select'),
                 addBtn: document.getElementById('add-commessa-btn'),
+                // --- NUOVO: Aggiungiamo il modale e l'overlay ---
+                newOrderModal: document.getElementById('newOrderModal'),
+                modalOverlay: document.getElementById('modalOverlay')
             };
-            // --- END OF MISSING BLOCK ---
 
             this.addEventListeners();
-            this.fetchCommesse(true); // Initial load
+            this.fetchCommesse(true);
         },
         
         addEventListeners() {
-            // Event listener for the "Aggiungi Nuova Commessa" button
-            this.dom.addBtn.addEventListener('click', () => {
-                if (window.openNewOrderModal) window.openNewOrderModal();
-            });
+            // --- MODIFICATO: Chiama la funzione locale, non globale ---
+            this.dom.addBtn.addEventListener('click', () => this.openNewOrderModal());
+
+            // Aggiungiamo un listener per chiudere il modale cliccando sull'overlay
+            this.dom.modalOverlay.addEventListener('click', () => this.closeNewOrderModal());
 
             // Event listener for the main grid to handle clicks on Edit/Delete buttons
             this.dom.grid.addEventListener('click', (e) => {
@@ -70,6 +71,29 @@ document.addEventListener('DOMContentLoaded', () => {
             window.addEventListener('scroll', () => this.handleScroll());
         },
 
+        // --- NUOVA FUNZIONE: Spostata da main.js ---
+        async openNewOrderModal() {
+            if (this.dom.newOrderModal) {
+                this.dom.newOrderModal.style.display = 'block';
+                this.dom.modalOverlay.style.display = 'block';
+                // Prepara i dati per il modale (es. popola i dropdown)
+                if (typeof window.prepareNewOrderModal === 'function') {
+                    await window.prepareNewOrderModal();
+                }
+            }
+        },
+
+        // --- NUOVA FUNZIONE: Spostata da main.js ---
+        closeNewOrderModal() {
+            if (this.dom.newOrderModal) {
+                this.dom.newOrderModal.style.display = 'none';
+            }
+            this.dom.modalOverlay.style.display = 'none';
+            if (typeof window.cleanupNewOrderModal === 'function') {
+                window.cleanupNewOrderModal();
+            }
+        },
+        
         async fetchCommesse(isNewQuery = false) {
             if (this.state.isLoading) return;
             this.state.isLoading = true;
