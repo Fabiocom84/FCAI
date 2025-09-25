@@ -1248,3 +1248,187 @@ h2 {
     justify-content: center;
     gap: 15px;
 }
+
+/* ================================================================== */
+/* == COMPONENTI MODALI MODERNI (Stile Riutilizzabile)           == */
+/* ================================================================== */
+
+/* Migliora il body del modale per un layout più pulito */
+.modal-body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Footer del modale */
+.modal-footer {
+    padding: 10px 0 0 0;
+    margin-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* --- Struttura delle Sezioni Interne --- */
+.form-section {
+    padding: 15px 0;
+    /* Usa un bordo inferiore per separare le sezioni in modo leggero */
+    border-bottom: 1px solid #f0f0f0;
+}
+/* Rimuovi il bordo dall'ultima sezione per un look più pulito */
+.form-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.form-section-header img {
+    width: 24px;
+    height: 24px;
+    opacity: 0.7;
+}
+
+.form-section-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #333;
+}
+
+/* --- Stili per Elementi Form Moderni --- */
+
+/* Input File Personalizzato */
+.custom-file-upload {
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+.custom-file-upload:hover {
+    border-color: #2A76B8;
+    background-color: #f8faff;
+}
+.custom-file-upload-icon {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+.file-name {
+    font-size: 0.95em;
+    color: #555;
+    font-weight: 500;
+}
+
+/* Controlli Vocali Moderni */
+.recording-status {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 12px;
+    min-height: 1.2em; /* Evita scatti nel layout al cambio di testo */
+}
+
+.voice-controls-modern {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+.voice-controls-modern button {
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    background-color: white;
+    color: #333;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.voice-controls-modern button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #aaa;
+}
+.voice-controls-modern button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.voice-controls-modern img {
+    width: 18px;
+    height: 18px;
+}
+
+/* Stile specifico per il pulsante "Avvia" */
+.voice-controls-modern #startButton {
+    border-color: #28a745;
+    color: #28a745;
+}
+.voice-controls-modern #startButton:hover:not(:disabled) {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Stile specifico per il pulsante "Ferma" */
+.voice-controls-modern #stopButton {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+.voice-controls-modern #stopButton:hover:not(:disabled) {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Unifica lo stile di Textarea e Select */
+.form-section textarea,
+.form-section select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
+    color: #333333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 5px;
+}
+.form-section textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+.form-section select {
+    margin-top: 10px;
+}
+.form-section textarea:focus,
+.form-section select:focus {
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
+    outline: none;
+}
+
+/* Migliora il pulsante "Salva" principale */
+.modal-footer .save-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #2A76B8; /* Usa il colore primario del brand */
+}
+.modal-footer .save-button:hover {
+    background-color: #1a5c96;
+}
+.modal-footer .save-button img {
+    width: 20px;
+    height: 20px;
+    filter: invert(1); /* Rende l'icona bianca */
+}

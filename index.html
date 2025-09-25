@@ -84,57 +84,75 @@
         </div>
     </div> 
 
-    <div id="insertDataModal" class="modal" style="display: none;">
+    <div class="modal" id="insertDataModal">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h2>Inserisci Dati</h2>
                 <div class="modal-header-buttons">
-                <div class="help-button-container">
-                    <button class="help-button" data-legend="chatLegend">?</button>
+                    <button class="help-button" id="insertDataHelpBtn">?</button>
                 </div>
-                <span class="close-button">&times;</span>
+                <h2>INSERISCI DATI</h2>
+                <div class="modal-header-buttons">
+                    <button class="close-button">&times;</button>
+                </div>
             </div>
-            </div>
+
             <div class="modal-body">
                 <form id="insertDataForm">
-                    <div class="form-group">
-                        <div class="input-label-icon">
-                            <img src="img/file.png" alt="Carica File">
+
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/file.png" alt="Upload Icon">
                             <h3>Carica File</h3>
                         </div>
-                        <input type="file" id="fileUpload" name="fileUpload">
+                        <label for="fileUpload" class="custom-file-upload">
+                            <span class="custom-file-upload-icon">&#128193;</span>
+                            <span class="file-name">Seleziona un file...</span>
+                        </label>
+                        <input type="file" id="fileUpload" name="fileUpload" hidden>
                     </div>
 
-                    <div class="form-group">
-                        <div class="input-label-icon">
-                            <img src="img/voice.png" alt="Registra Vocale">
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/mic.png" alt="Mic Icon">
                             <h3>Registra Vocale</h3>
                         </div>
-                        <div class="voice-controls">
-                            <button id="startButton" type="button" disabled><img src="img/play.png" alt="Avvia"> Avvia Registrazione</button>
-                            <button id="stopButton" type="button" disabled><img src="img/stop.png" alt="Ferma"> Ferma Registrazione</button>
+                        <p id="recordingStatus" class="recording-status">Pronto per registrare</p>
+                        <div class="voice-controls-modern">
+                            <button id="startButton">
+                                <img src="img/play.png" alt="Start">
+                                <span>Avvia</span>
+                            </button>
+                            <button id="stopButton" disabled>
+                                <img src="img/stop.png" alt="Stop">
+                                <span>Ferma</span>
+                            </button>
                         </div>
-                        <p id="recordingStatus">Premi "Avvia Registrazione" per iniziare.</p>
-                        <textarea id="voiceTranscription" name="transcription" placeholder="Testo da salvare..."></textarea>
                     </div>
 
-                    <div class="form-group">
-                        <div class="input-label-icon">
-                            <img src="img/tag.png" alt="Riferimento">
-                            <h3>Riferimento</h3>
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/chat.png" alt="Edit Icon">
+                            <h3>Testo e Riferimento</h3>
                         </div>
-                        <select id="riferimentoDropdown" name="riferimento">
-                            <option value="" disabled selected>Seleziona un riferimento</option>
-                        </select>
+                        <textarea id="voiceTranscription" name="transcription" placeholder="La trascrizione della registrazione o il testo del file appariranno qui..."></textarea>
+                        <select id="riferimentoDropdown" name="riferimentoId">
+                            <option value="" selected>Nessuna commessa associata</option>
+                            </select>
                     </div>
+
                 </form>
+            </div>
 
-                <button class="save-button" id="saveDataButton">Salva Dati</button>
+            <div class="modal-footer">
+                <button class="save-button" type="submit" form="insertDataForm">
+                    <img src="img/save.png" alt="Save Icon">
+                    <span>Salva Dati</span>
+                </button>
+            </div>
 
-                <div id="insertDataSuccessMessage" class="modal-message" style="display: none;">
-                    <h3>Dati salvati con successo! ✅</h3>
-                    <p>Il modale si chiuderà automaticamente.</p>
-                </div>
+            <div id="insertDataSuccessMessage" style="display: none; text-align: center;">
+                 <h4>Dati salvati con successo! ✅</h4>
             </div>
         </div>
     </div>
