@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         init() {
+            // --- THIS BLOCK WAS MISSING ---
+            // This code finds all the necessary HTML elements on the page.
             this.dom = {
                 grid: document.getElementById('commesse-grid'),
                 loader: document.getElementById('loader'),
@@ -22,9 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sortSelect: document.getElementById('sort-select'),
                 addBtn: document.getElementById('add-commessa-btn'),
             };
+            // --- END OF MISSING BLOCK ---
 
             this.addEventListeners();
-            this.fetchCommesse(true);
+            this.fetchCommesse(true); // Initial load
         },
         
         addEventListeners() {
