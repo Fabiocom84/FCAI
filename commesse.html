@@ -44,72 +44,73 @@
         <div id="loader" class="loader" style="display: none;">Caricamento...</div>
     </div>
 
-    <div id="newOrderModal" class="modal" style="display: none;">
+    <div class="modal" id="newOrderModal">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h2>Nuova Commessa</h2>
-                <span class="close-button">&times;</span>
+                <div class="modal-header-buttons">
+                    <button class="help-button" id="newOrderHelpBtn">?</button>
+                </div>
+                <h2>NUOVA COMMESSA</h2>
+                <div class="modal-header-buttons">
+                    <button class="close-button">&times;</button>
+                </div>
             </div>
+
             <div class="modal-body">
                 <form id="newOrderForm">
-                    <div class="form-group">
-                        <label for="cliente-select">Cliente</label>
-                        <select id="cliente-select" name="id_cliente_fk" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="impianto-input">Impianto</label>
-                        <input type="text" id="impianto-input" name="impianto">
-                    </div>
-                    <div class="form-group">
-                        <label for="modello-select">Modello</label>
-                        <select id="modello-select" name="id_modello_fk"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="vo-input">VO (Rif. Offerta)</label>
-                        <input type="text" id="vo-input" name="vo">
-                    </div>
-                    <div class="form-group">
-                        <label for="riferimento-tecnico-input">Riferimento Tecnico</label>
-                        <input type="text" id="riferimento-tecnico-input" name="riferimento_tecnico">
-                    </div>
-                    <div class="form-group">
-                        <label for="data-input">Data</label>
-                        <input type="date" id="data-input" name="data_commessa">
-                    </div>
-                    <div class="form-group form-group-inline">
-                        <div>
-                            <label for="provincia-input">Provincia</label>
-                            <input type="text" id="provincia-input" name="provincia">
+
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/icons/edit.png" alt="Edit Icon">
+                            <h3>Dati Principali</h3>
                         </div>
-                        <div>
-                            <label for="paese-input">Paese</label>
-                            <input type="text" id="paese-input" name="paese">
+                        <input type="text" id="nome-commessa" name="nome_commessa" placeholder="Nome Commessa / Impianto *" required>
+                        <select id="cliente-select" name="id_cliente" required>
+                            <option value="" disabled selected>Seleziona un cliente *</option>
+                        </select>
+                        <select id="modello-select" name="id_modello" required>
+                            <option value="" disabled selected>Seleziona un modello *</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/icons/info.png" alt="Info Icon">
+                            <h3>Riferimenti e Dettagli</h3>
                         </div>
+                        <input type="text" id="vo-offerta" name="vo_offerta" placeholder="VO (Rif. Offerta)">
+                        <input type="text" id="riferimento-tecnico" name="riferimento_tecnico" placeholder="Riferimento Tecnico">
+                        <textarea id="descrizione-commessa" name="descrizione" placeholder="Aggiungi una breve descrizione (opzionale)..."></textarea>
                     </div>
-                    <div class="form-group form-group-inline">
-                        <div>
-                             <label for="anno-input">Anno</label>
-                            <input type="number" id="anno-input" name="anno">
+
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/icons/settings.png" alt="Settings Icon">
+                            <h3>Stato e Immagine</h3>
                         </div>
-                        <div>
-                            <label for="matricola-input">Matricola</label>
-                            <input type="text" id="matricola-input" name="matricola">
-                        </div>
+                        <select id="status-select" name="id_status" required>
+                            <option value="" disabled selected>Seleziona uno stato *</option>
+                        </select>
+                        <label for="immagineCommessa" class="custom-file-upload compact">
+                            <span class="custom-file-upload-icon">&#128247;</span>
+                            <span class="file-name">Carica un'immagine...</span>
+                        </label>
+                        <input type="file" id="immagineCommessa" name="immagine" hidden accept="image/*">
                     </div>
-                    <div class="form-group">
-                        <label for="status-select">Stato</label>
-                        <select id="status-select" name="id_status_fk"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="note-textarea">Note</label>
-                        <textarea id="note-textarea" name="note" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="immagine-upload">Immagine</label>
-                        <input type="file" id="immagine-upload" name="immagine" accept="image/*">
-                    </div>
+
                 </form>
-                 <button id="saveOrderBtn" class="save-button">Salva Commessa</button>
+            </div>
+
+            <div class="modal-footer">
+                <button id="saveOrderBtn" class="save-button" type="submit" form="newOrderForm">
+                    <img src="img/icons/save.png" alt="Save Icon">
+                    <span>Crea Commessa</span>
+                </button>
+            </div>
+
+            <div id="newOrderSuccessMessage" style="display: none; text-align: center;">
+                 <h4>Commessa creata con successo! ✅</h4>
             </div>
         </div>
     </div>
