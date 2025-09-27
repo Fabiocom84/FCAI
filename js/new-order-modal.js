@@ -18,8 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Input per la formattazione automatica
     const voInput = document.getElementById('vo-offerta');
     const rifTecnicoInput = document.getElementById('riferimento-tecnico');
+    
+    // --- NUOVO: Input per l'anno ---
+    const annoInput = document.getElementById('anno-commessa');
 
-    // --- NUOVO: Elementi per il feedback dell'upload ---
+    // Elementi per il feedback dell'upload
     const immagineInput = document.getElementById('immagineCommessa');
     const fileNameDisplay = newOrderModal?.querySelector('label[for="immagineCommessa"] .file-name');
 
@@ -38,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rifTecnicoInput.addEventListener('input', formatRifTecnico);
     }
 
-    // --- NUOVO: Feedback per upload immagine ---
     if (immagineInput) {
         immagineInput.addEventListener('change', handleImageUpload);
     }
@@ -46,7 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funzione chiamata da main.js per preparare il modale all'apertura
     window.prepareNewOrderModal = async function() {
         if (!newOrderModal) return;
+
+        // --- AGGIUNTO: Imposta l'anno corrente di default ---
+        if (annoInput) {
+            annoInput.value = new Date().getFullYear();
+        }
         
+        // Svuota i menu a tendina
         clienteSelect.innerHTML = '<option>Caricamento...</option>';
         modelloSelect.innerHTML = '<option>Caricamento...</option>';
         statusSelect.innerHTML = '<option>Caricamento...</option>';
@@ -79,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funzione chiamata da main.js per pulire il modale alla chiusura
     window.cleanupNewOrderModal = function() {
         if (newOrderForm) newOrderForm.reset();
-        // Ripristina il testo del nome file
         if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
     };
 
@@ -119,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         event.target.value = firstChar + otherChars.substring(0, 4);
     }
     
-    // --- NUOVO: Funzione per gestire il nome del file ---
     function handleImageUpload(event) {
         const file = event.target.files[0];
         if (file && fileNameDisplay) {
@@ -134,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(saveOrderBtn) saveOrderBtn.disabled = true;
 
         const formData = new FormData(newOrderForm);
+        if (!formData.get('anno')) {
+            formData.set('anno', new Date().getFullYear());
+        }
 
         try {
             const response = await window.apiFetch('/api/commesse', {
@@ -146,12 +155,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore sconosciuto.');
             }
             
-            alert('Commessa creata con successo!');
-            window.closeNewOrderModal();
+            // MODIFICATO: Usa la funzione globale showCustomModal
+            await window.showModal({
+                title: 'Successo',
+                message: 'Commessa creata con successo!',
+                confirmText: 'Ok'
+            });
+
+            // Chiude il modale e aggiorna la vista DOPO che l'utente ha premuto "Ok"
+            if (window.closeNewOrderModal) window.closeNewOrderModal();
             if (window.refreshCommesseView) window.refreshCommesseView();
 
         } catch (error) {
-            alert('Errore nella creazione della commessa: ' + error.message);
+            // MODIFICATO: Usa la funzione globale showCustomModal anche per l'errore
+            await window.showModal({
+                title: 'Errore',
+                message: `Errore nella creazione della commessa: ${error.message}`,
+                confirmText: 'Chiudi'
+            });
         } finally {
             if(saveOrderBtn) saveOrderBtn.disabled = false;
         }
