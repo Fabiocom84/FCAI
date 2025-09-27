@@ -177,3 +177,69 @@ function closeTrainingModal() {
 window.closeInsertDataModal = closeInsertDataModal;
 window.closeChatModal = closeChatModal;
 window.closeTrainingModal = closeTrainingModal;
+
+// Variabili globali per il nuovo modale di feedback
+let feedbackModal, feedbackOverlay, countdownInterval, closeTimeout, parentModalToClose;
+
+function showSuccessFeedbackModal(title, message, parentModalId) {
+    if (!feedbackModal) {
+        feedbackModal = document.getElementById('success-feedback-modal');
+        feedbackOverlay = document.getElementById('modalOverlay'); // Riutilizziamo l'overlay esistente
+    }
+
+    // Popola il modale con i dati corretti
+    feedbackModal.querySelector('#feedback-modal-title').textContent = title;
+    feedbackModal.querySelector('#feedback-modal-message').textContent = message;
+    
+    // Memorizza quale modale chiudere dopo
+    parentModalToClose = document.getElementById(parentModalId);
+
+    // Mostra il modale
+    feedbackModal.style.display = 'block';
+    feedbackOverlay.style.display = 'block';
+
+    let seconds = 5; // Durata del countdown
+    const countdownElement = feedbackModal.querySelector('#feedback-modal-countdown');
+    countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
+
+    // Avvia il countdown visivo
+    countdownInterval = setInterval(() => {
+        seconds--;
+        countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+
+    // Imposta la chiusura automatica
+    closeTimeout = setTimeout(closeSuccessFeedbackModal, 5000);
+
+    // Aggiungi event listener ai pulsanti di chiusura
+    feedbackModal.querySelector('#feedback-modal-close-btn').onclick = closeSuccessFeedbackModal;
+    feedbackModal.querySelector('[data-close-feedback]').onclick = closeSuccessFeedbackModal;
+}
+
+function closeSuccessFeedbackModal() {
+    // Pulisci i timer per evitare esecuzioni multiple
+    clearInterval(countdownInterval);
+    clearTimeout(closeTimeout);
+
+    // Nascondi il modale di feedback
+    if (feedbackModal) feedbackModal.style.display = 'none';
+    if (feedbackOverlay) feedbackOverlay.style.display = 'none';
+
+    // Chiudi il modale genitore (es. newOrderModal)
+    if (parentModalToClose) {
+        // Usiamo la funzione di chiusura globale se esiste, altrimenti lo nascondiamo
+        const closeFunctionName = `close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`;
+        if (window[closeFunctionName]) {
+            window[closeFunctionName]();
+        } else {
+            parentModalToClose.style.display = 'none';
+        }
+    }
+}
+
+// Rendi le funzioni disponibili globalmente
+window.showSuccessFeedbackModal = showSuccessFeedbackModal;
+window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;

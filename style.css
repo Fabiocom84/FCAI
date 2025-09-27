@@ -1503,3 +1503,32 @@ h2 {
     flex-direction: column;
     gap: 15px; /* <-- QUESTA è la regola chiave: imposta uno spazio di 15px tra ogni elemento */
 }
+
+/* Aggiungi queste regole in style.css */
+
+.feedback-body {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.feedback-body h3 {
+    font-size: 1.4em;
+    color: #28a745; /* Verde per il successo */
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Aggiunge la spunta verde dopo il messaggio */
+.feedback-body h3::after {
+    content: '✅';
+    font-size: 1.2em;
+}
+
+.feedback-body p {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin: 0;
+}

@@ -155,19 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore sconosciuto.');
             }
             
-            // MODIFICATO: Usa la funzione globale showCustomModal
-            await window.showModal({
-                title: 'Successo',
-                message: 'Commessa creata con successo!',
-                confirmText: 'Ok'
-            });
-
-            // Chiude il modale e aggiorna la vista DOPO che l'utente ha premuto "Ok"
-            if (window.closeNewOrderModal) window.closeNewOrderModal();
+            // --- NUOVA LOGICA DI SUCCESSO ---
+            // Chiama il nostro nuovo modale di feedback
+            window.showSuccessFeedbackModal(
+                'NUOVA COMMESSA',                      // Titolo
+                'Dati salvati con successo!',        // Messaggio
+                'newOrderModal'                      // ID del modale da chiudere dopo
+            );
+            
             if (window.refreshCommesseView) window.refreshCommesseView();
 
         } catch (error) {
-            // MODIFICATO: Usa la funzione globale showCustomModal anche per l'errore
+            // Usa il vecchio modale per gli errori
             await window.showModal({
                 title: 'Errore',
                 message: `Errore nella creazione della commessa: ${error.message}`,
