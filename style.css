@@ -1545,3 +1545,16 @@ h2 {
     padding: 10px 30px;  /* Padding ridotto */
     font-size: 1em;      /* Font ridotto */
 }
+
+.custom-modal-buttons .button {
+    /* Annulla gli stili dei pulsanti grandi della dashboard */
+    width: auto;
+    flex-basis: auto;
+    min-height: unset;
+    max-width: none;
+    flex-direction: row;
+    
+    /* Imposta nuove dimensioni più piccole */
+    padding: 10px 25px;
+    font-size: 0.9em;
+}
