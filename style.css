@@ -1591,3 +1591,34 @@ h2 {
 .custom-modal-buttons .button:not(.button--primary):hover {
     background-color: #d35400; /* Un arancione leggermente più scuro */
 }
+
+/* =================================================== */
+/* ==   Stili Hover Omogenei per i Pulsanti         == */
+/* =================================================== */
+
+/* 1. Applica una transizione fluida a tutti i pulsanti della pagina */
+.commesse-header .button,
+.card-actions .button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* 2. Effetto hover per il pulsante "Aggiungi" (Verde) */
+.commesse-header .button:hover {
+    background-color: #218838; /* Verde più scuro */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* 3. Effetto hover per il pulsante "Modifica" (Giallo/Arancione) */
+.card-actions .button--warning:hover {
+    background-color: #e0a800; /* Giallo/Arancione più scuro */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* 4. Effetto hover per il pulsante "Elimina" (Rosso) */
+.card-actions .button--danger:hover {
+    background-color: #c82333; /* Rosso più scuro */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
