@@ -137,6 +137,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveOrder(event) {
         event.preventDefault();
+
+        // --- 1. VALIDAZIONE PREVENTIVA ---
+        // Controlliamo se tutti i campi 'required' del modulo sono stati compilati.
+        if (!newOrderForm.checkValidity()) {
+            // Se non lo sono, mostriamo l'avviso del browser sul campo mancante
+            newOrderForm.reportValidity();
+            return; // Interrompiamo l'esecuzione
+        }
+
         if(saveOrderBtn) saveOrderBtn.disabled = true;
 
         const formData = new FormData(newOrderForm);
@@ -152,24 +161,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                // L'errore viene lanciato qui e catturato dal blocco 'catch'
                 throw new Error(errorData.error || 'Errore sconosciuto.');
             }
             
-            // --- NUOVA LOGICA DI SUCCESSO ---
-            // Chiama il nostro nuovo modale di feedback
+            // La logica di successo rimane invariata
             window.showSuccessFeedbackModal(
-                'NUOVA COMMESSA',                      // Titolo
-                'Dati salvati con successo!',        // Messaggio
-                'newOrderModal'                      // ID del modale da chiudere dopo
+                'NUOVA COMMESSA',
+                'Dati salvati con successo!',
+                'newOrderModal'
             );
             
             if (window.refreshCommesseView) window.refreshCommesseView();
 
         } catch (error) {
-            // Usa il vecchio modale per gli errori
+            // --- 2. TRADUZIONE DEL MESSAGGIO DI ERRORE ---
+            let userFriendlyMessage = `Si è verificato un errore imprevisto. Dettagli: ${error.message}`;
+
+            // Controlliamo se l'errore è quello specifico dei campi obbligatori
+            if (error.message && error.message.includes('violates not-null constraint')) {
+                if (error.message.includes('id_cliente_fk')) {
+                    userFriendlyMessage = 'È necessario selezionare un cliente. Il campo è obbligatorio.';
+                } else if (error.message.includes('id_modello_fk')) {
+                    userFriendlyMessage = 'È necessario selezionare un modello. Il campo è obbligatorio.';
+                } else {
+                    userFriendlyMessage = 'Assicurati di aver compilato tutti i campi obbligatori contrassegnati con (*).';
+                }
+            }
+            
+            // Mostriamo il messaggio "tradotto" all'utente
             await window.showModal({
-                title: 'Errore',
-                message: `Errore nella creazione della commessa: ${error.message}`,
+                title: 'Attenzione',
+                message: userFriendlyMessage,
                 confirmText: 'Chiudi'
             });
         } finally {

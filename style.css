@@ -1532,3 +1532,16 @@ h2 {
     font-size: 0.9em;
     margin: 0;
 }
+
+/* Centra il pulsante nel footer del modale di feedback */
+#success-feedback-modal .modal-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* Riduce la dimensione del pulsante 'OK' solo in questo modale */
+#success-feedback-modal .save-button {
+    width: auto;         /* Larghezza automatica */
+    padding: 10px 30px;  /* Padding ridotto */
+    font-size: 1em;      /* Font ridotto */
+}

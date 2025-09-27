@@ -184,37 +184,35 @@ let feedbackModal, feedbackOverlay, countdownInterval, closeTimeout, parentModal
 function showSuccessFeedbackModal(title, message, parentModalId) {
     if (!feedbackModal) {
         feedbackModal = document.getElementById('success-feedback-modal');
-        feedbackOverlay = document.getElementById('modalOverlay'); // Riutilizziamo l'overlay esistente
+        feedbackOverlay = document.getElementById('modalOverlay');
     }
 
-    // Popola il modale con i dati corretti
     feedbackModal.querySelector('#feedback-modal-title').textContent = title;
     feedbackModal.querySelector('#feedback-modal-message').textContent = message;
-    
-    // Memorizza quale modale chiudere dopo
     parentModalToClose = document.getElementById(parentModalId);
 
-    // Mostra il modale
     feedbackModal.style.display = 'block';
     feedbackOverlay.style.display = 'block';
 
-    let seconds = 5; // Durata del countdown
+    // MODIFICATO: Durata ridotta a 2 secondi
+    let seconds = 2; 
     const countdownElement = feedbackModal.querySelector('#feedback-modal-countdown');
     countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
 
-    // Avvia il countdown visivo
     countdownInterval = setInterval(() => {
         seconds--;
-        countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
-        if (seconds <= 0) {
+        if (seconds > 0) {
+            countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
+        } else {
+            // Nascondi il countdown quando arriva a zero
+            countdownElement.textContent = ''; 
             clearInterval(countdownInterval);
         }
     }, 1000);
 
-    // Imposta la chiusura automatica
-    closeTimeout = setTimeout(closeSuccessFeedbackModal, 5000);
+    // MODIFICATO: Timeout impostato a 2000ms (2 secondi)
+    closeTimeout = setTimeout(closeSuccessFeedbackModal, 2000);
 
-    // Aggiungi event listener ai pulsanti di chiusura
     feedbackModal.querySelector('#feedback-modal-close-btn').onclick = closeSuccessFeedbackModal;
     feedbackModal.querySelector('[data-close-feedback]').onclick = closeSuccessFeedbackModal;
 }
