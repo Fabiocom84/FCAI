@@ -30,7 +30,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const immagineInput = document.getElementById('immagineCommessa');
     const fileNameDisplay = newOrderModal?.querySelector('label[for="immagineCommessa"] .file-name');
 
+    // --- FUNZIONI GLOBALI DI APERTURA/CHIUSURA ---
+
+    window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
+        editingCommessaId = isEditMode ? commessaId : null;
+
+        if (newOrderModal) newOrderModal.style.display = 'block';
+        if (modalOverlay) modalOverlay.style.display = 'block';
+
+        await window.prepareNewOrderModal();
+
+        if (isEditMode) {
+            // Modalità MODIFICA
+            if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
+            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
+            try {
+                const response = await window.apiFetch(`/api/commessa/${commessaId}`);
+                if (!response.ok) throw new Error('Dati commessa non trovati.');
+                const data = await response.json();
+                populateForm(data);
+            } catch (error) {
+                console.error('Errore nel caricamento dati per modifica:', error);
+                window.showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
+            }
+        } else {
+            // Modalità CREAZIONE
+            window.cleanupNewOrderModal(); // Resetta il form e i valori di default
+        }
+    };
+
+    window.closeNewOrderModal = () => {
+        if (newOrderModal) newOrderModal.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
+        window.cleanupNewOrderModal();
+    };
+
     // --- 3. EVENT LISTENERS ---
+    // Aggiunge l'evento al pulsante 'X' di chiusura
+    const closeBtn = newOrderModal?.querySelector('.close-button');
+    if (closeBtn) closeBtn.addEventListener('click', window.closeNewOrderModal);
+    if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
+    
     if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', () => window.closeNewOrderModal());
     if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
     if (voInput) voInput.addEventListener('input', formatVO);
@@ -92,15 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pulisce il modale alla chiusura e lo resetta per una nuova creazione
     window.cleanupNewOrderModal = function() {
-        if (newOrderForm) newOrderForm.reset();
-        editingCommessaId = null; // Fondamentale per resettare lo stato
+            if (newOrderForm) newOrderForm.reset();
+            editingCommessaId = null;
 
-        if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-        if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-        if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
-        if (annoInput) annoInput.value = new Date().getFullYear();
-        setDefaultStatus();
-    };
+            if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
+            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
+            if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
+            if (annoInput) annoInput.value = new Date().getFullYear();
+            setDefaultStatus();
+        };
     
     // --- 5. FUNZIONI DI UTILITY INTERNE ---
 

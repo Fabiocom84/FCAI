@@ -21,25 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput: document.getElementById('search-input'),
                 sortSelect: document.getElementById('sort-select'),
                 addBtn: document.getElementById('add-commessa-btn'),
-                newOrderModal: document.getElementById('newOrderModal'),
-                modalOverlay: document.getElementById('modalOverlay'),
-                // --- FIX: Find the close button inside the modal ---
-                closeNewOrderModalBtn: document.querySelector('#newOrderModal .close-button')
             };
-
             this.addEventListeners();
             this.fetchCommesse(true);
         },
         
         addEventListeners() {
-            this.dom.addBtn.addEventListener('click', () => this.openNewOrderModal());
-            this.dom.modalOverlay.addEventListener('click', () => this.closeNewOrderModal());
-            
-            // --- FIX: Add the event listener for the close button ---
-            if (this.dom.closeNewOrderModalBtn) {
-                this.dom.closeNewOrderModalBtn.addEventListener('click', () => this.closeNewOrderModal());
-            }
+            // Unico listener per il pulsante Aggiungi, che chiama la funzione globale
+            this.dom.addBtn.addEventListener('click', () => {
+                if (typeof window.openNewOrderModal === 'function') {
+                    window.openNewOrderModal(false); // false = non è in modalità modifica
+                } else {
+                    console.error('Funzione openNewOrderModal non trovata.');
+                }
+            });
 
+            // Altri listeners (invariati)
             this.dom.statusFilters.forEach(btn => {
                 btn.addEventListener('click', () => this.handleStatusFilter(btn));
             });
@@ -54,33 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             this.dom.sortSelect.addEventListener('change', () => this.handleSort());
-            
             window.addEventListener('scroll', () => this.handleScroll());
         },
 
-        // --- NUOVA FUNZIONE: Spostata da main.js ---
-        async openNewOrderModal() {
-            if (this.dom.newOrderModal) {
-                this.dom.newOrderModal.style.display = 'block';
-                this.dom.modalOverlay.style.display = 'block';
-                // Prepara i dati per il modale (es. popola i dropdown)
-                if (typeof window.prepareNewOrderModal === 'function') {
-                    await window.prepareNewOrderModal();
-                }
-            }
-        },
-
-        // --- NUOVA FUNZIONE: Spostata da main.js ---
-        closeNewOrderModal() {
-            if (this.dom.newOrderModal) {
-                this.dom.newOrderModal.style.display = 'none';
-            }
-            this.dom.modalOverlay.style.display = 'none';
-            if (typeof window.cleanupNewOrderModal === 'function') {
-                window.cleanupNewOrderModal();
-            }
-        },
-        
         async fetchCommesse(isNewQuery = false) {
             if (this.state.isLoading) return;
             this.state.isLoading = true;
@@ -244,11 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         handleEdit(commessaId) {
-            // Chiama la funzione globale definita in new-order-modal.js per aprire il modale
-            if (typeof window.openNewOrderModalForEdit === 'function') {
-                window.openNewOrderModalForEdit(commessaId);
+            if (typeof window.openNewOrderModal === 'function') {
+                window.openNewOrderModal(true, commessaId); // true = è in modalità modifica
             } else {
-                console.error('La funzione openNewOrderModalForEdit non è stata trovata.');
+                console.error('La funzione openNewOrderModal non è stata trovata.');
                 alert('Errore: la funzionalità di modifica non è disponibile.');
             }
         },

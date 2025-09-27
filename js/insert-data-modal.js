@@ -87,30 +87,45 @@ async function saveData(event) {
         return;
     }
     const formData = new FormData(modalForm);
+    
+    // Assicura che la trascrizione sia inclusa se il campo non è vuoto
+    if (voiceTranscription && voiceTranscription.value) {
+        formData.set('transcription', voiceTranscription.value);
+    }
+    
+    // Rinomina il campo del dropdown per coerenza con il backend
+    if (formData.has('riferimentoId')) {
+        formData.set('id_commessa_fk', formData.get('riferimentoId'));
+        formData.delete('riferimentoId');
+    }
 
     try {
-        // --- FIX: Change '/api/save-data' to '/api/registrazioni' ---
-        const response = await apiFetch('/api/registrazioni', {
+        const response = await window.apiFetch('/api/registrazioni', {
             method: 'POST',
             body: formData
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Errore durante il salvataggio dei dati.');
+            throw new Error(errorData.error || 'Errore durante il salvataggio dei dati.');
         }
 
-        console.log('Dati salvati con successo!');
-        const successMessage = document.getElementById('insertDataSuccessMessage');
-        if (modalForm && successMessage) {
-            modalForm.style.display = 'none';
-            successMessage.style.display = 'block';
-            setTimeout(() => { window.closeInsertDataModal(); }, 2000);
-        }
+        // --- MODIFICATO: Usa il nuovo modale di feedback per il successo ---
+        window.showSuccessFeedbackModal(
+            'INSERISCI DATI',
+            'Dati salvati con successo!',
+            'insertDataModal' // ID del modale genitore da chiudere
+        );
+
     } catch (error) {
         if (error.message !== "Unauthorized") {
             console.error('Errore nel salvataggio dei dati:', error);
-            alert('Errore nel salvataggio dei dati: ' + error.message);
+            // --- MODIFICATO: Usa il modale custom per l'errore ---
+            await window.showModal({
+                title: 'Errore nel Salvataggio',
+                message: `Salvataggio fallito: ${error.message}`,
+                confirmText: 'Chiudi'
+            });
         }
     } finally {
         if (saveButton) saveButton.disabled = false;
