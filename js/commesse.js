@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createCard(commessa) {
             const card = document.createElement('div');
             card.className = 'commesse-card';
+            card.dataset.commessaId = commessa.id_commessa; // Aggiungiamo l'ID qui per trovarlo facilmente
 
             const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
             card.classList.add(`status-bg-${statusName}`);
@@ -178,11 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // --- FIX: Add the missing event listeners for the action buttons ---
+            // --- INIZIO BLOCCO MANCANTE ---
+            // Questo codice trova i pulsanti appena creati e aggiunge gli event listener
             const deleteBtn = card.querySelector('[data-action="delete"]');
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevents other clicks from firing
+                    e.stopPropagation(); // Impedisce che il click si propaghi ad altri elementi
                     this.handleDelete(deleteBtn.dataset.id);
                 });
             }
@@ -194,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.handleEdit(editBtn.dataset.id);
                 });
             }
+            // --- FINE BLOCCO MANCANTE ---
 
             return card;
         },
