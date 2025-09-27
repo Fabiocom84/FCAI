@@ -1558,3 +1558,21 @@ h2 {
     padding: 10px 25px;
     font-size: 0.9em;
 }
+
+#success-feedback-modal .modal-content {
+    padding: 20px 25px 15px 25px; /* Riduci il padding verticale (sopra e sotto) */
+}
+
+#success-feedback-modal .modal-header {
+    margin-bottom: 15px; /* Spazio sotto il titolo */
+}
+
+#success-feedback-modal .feedback-body {
+    padding: 5px 0; /* Riduci drasticamente il padding del corpo del messaggio */
+}
+
+#success-feedback-modal .modal-footer {
+    margin-top: 20px; /* Aumenta leggermente lo spazio prima del pulsante per equilibrio */
+    padding-top: 0;
+    border-top: none; /* Rimuovi la linea separatrice che non è necessaria qui */
+}
