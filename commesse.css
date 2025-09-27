@@ -178,6 +178,7 @@
     padding: 8px 12px;
     font-size: 0.9em;
     flex-direction: row;
+    cursor: pointer;
 }
 .card-actions .button--warning { background-color: #ffc107; color: #212529;}
 .card-actions .button--danger { background-color: #dc3545; color: white;}
