@@ -1580,3 +1580,14 @@ h2 {
 #success-feedback-modal {
     max-width: 450px; 
 }
+
+.custom-modal-buttons .button:not(.button--primary) {
+    background-color: #e67e22; /* Un arancione spento/caldo */
+    color: white;
+    border: none;
+}
+
+/* Aggiunge un effetto al passaggio del mouse */
+.custom-modal-buttons .button:not(.button--primary):hover {
+    background-color: #d35400; /* Un arancione leggermente più scuro */
+}
