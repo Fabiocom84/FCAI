@@ -15,9 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelloSelect = document.getElementById('modello-select');
     const statusSelect = document.getElementById('status-select');
 
-    // --- NUOVO: Input per la formattazione automatica ---
+    // Input per la formattazione automatica
     const voInput = document.getElementById('vo-offerta');
     const rifTecnicoInput = document.getElementById('riferimento-tecnico');
+
+    // --- NUOVO: Elementi per il feedback dell'upload ---
+    const immagineInput = document.getElementById('immagineCommessa');
+    const fileNameDisplay = newOrderModal?.querySelector('label[for="immagineCommessa"] .file-name');
 
     // --- Event Listeners ---
     if (closeNewOrderModalBtn) {
@@ -27,19 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
         saveOrderBtn.addEventListener('click', saveOrder);
     }
     
-    // --- NUOVO: Event listeners per la formattazione automatica ---
     if (voInput) {
         voInput.addEventListener('input', formatVO);
     }
     if (rifTecnicoInput) {
         rifTecnicoInput.addEventListener('input', formatRifTecnico);
     }
+
+    // --- NUOVO: Feedback per upload immagine ---
+    if (immagineInput) {
+        immagineInput.addEventListener('change', handleImageUpload);
+    }
     
     // Funzione chiamata da main.js per preparare il modale all'apertura
     window.prepareNewOrderModal = async function() {
         if (!newOrderModal) return;
         
-        // Svuota i menu a tendina
         clienteSelect.innerHTML = '<option>Caricamento...</option>';
         modelloSelect.innerHTML = '<option>Caricamento...</option>';
         statusSelect.innerHTML = '<option>Caricamento...</option>';
@@ -59,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(modelloSelect, modelli, 'id_modello', 'nome_modello', 'Seleziona un modello');
             populateSelect(statusSelect, status, 'id_status', 'nome_status', 'Seleziona uno stato');
             
-            // --- NUOVO: Imposta "In Lavorazione" come default ---
             setDefaultStatus();
 
         } catch (error) {
@@ -73,6 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funzione chiamata da main.js per pulire il modale alla chiusura
     window.cleanupNewOrderModal = function() {
         if (newOrderForm) newOrderForm.reset();
+        // Ripristina il testo del nome file
+        if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
     };
 
     function populateSelect(selectElement, items, valueField, textField, placeholder) {
@@ -85,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- NUOVO: Funzione per impostare lo stato di default ---
     function setDefaultStatus() {
         const statusOptions = statusSelect.options;
         for (let i = 0; i < statusOptions.length; i++) {
@@ -96,9 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- NUOVO: Funzioni per la formattazione dei campi ---
     function formatVO(event) {
-        let value = event.target.value.replace(/\D/g, ''); // Rimuovi tutto tranne i numeri
+        let value = event.target.value.replace(/\D/g, '');
         if (value.length > 2) {
             value = value.substring(0, 2) + '-' + value.substring(2, 6);
         }
@@ -108,17 +114,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatRifTecnico(event) {
         let value = event.target.value;
         if (value.length === 0) return;
-
         let firstChar = value.charAt(0).toUpperCase().replace(/[^A-Z]/, '');
-        let otherChars = value.substring(1).replace(/\D/g, ''); // Solo numeri
-        
+        let otherChars = value.substring(1).replace(/\D/g, '');
         event.target.value = firstChar + otherChars.substring(0, 4);
     }
     
-    // Funzione di salvataggio (invariata)
+    // --- NUOVO: Funzione per gestire il nome del file ---
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file && fileNameDisplay) {
+            fileNameDisplay.textContent = file.name;
+        } else if (fileNameDisplay) {
+            fileNameDisplay.textContent = 'Carica un\'immagine...';
+        }
+    }
+
     async function saveOrder(event) {
         event.preventDefault();
-        saveOrderBtn.disabled = true;
+        if(saveOrderBtn) saveOrderBtn.disabled = true;
 
         const formData = new FormData(newOrderForm);
 
@@ -140,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             alert('Errore nella creazione della commessa: ' + error.message);
         } finally {
-            saveOrderBtn.disabled = false;
+            if(saveOrderBtn) saveOrderBtn.disabled = false;
         }
     }
 });
