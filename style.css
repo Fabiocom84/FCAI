@@ -1478,3 +1478,20 @@ h2 {
     grid-template-columns: repeat(2, 1fr); /* Due colonne di larghezza uguale */
     gap: 15px; /* Spazio tra i campi */
 }
+
+/* NUOVO: Griglia per affiancare i campi di testo */
+.fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Due colonne di uguale larghezza */
+    gap: 15px; /* Spazio tra le colonne */
+}
+
+/* MODIFICA: Rende in grassetto il testo inserito dall'utente */
+.form-section input[type="text"],
+.form-section input[type="number"] {
+    font-size: 1.05em;
+    font-weight: 700; /* Aumentato per un grassetto più marcato */
+    color: #333;
+    border: 1px solid #b0b0b0;
+    height: 45px;
+}

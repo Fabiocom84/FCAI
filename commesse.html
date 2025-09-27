@@ -58,15 +58,17 @@
 
                     <div class="form-section">
                         <div class="form-section-header"><img src="img/icons/edit.png" alt="Edit Icon"><h3>Dati Principali</h3></div>
-                        <input type="text" id="nome-commessa" name="nome_commessa" placeholder="Nome Commessa / Impianto *" required>
+                        <input type="text" id="nome-commessa" name="nome_commessa" placeholder="Nome Impianto *" required>
                         <select id="cliente-select" name="id_cliente" required><option value="" disabled selected>Seleziona un cliente *</option></select>
                         <select id="modello-select" name="id_modello" required><option value="" disabled selected>Seleziona un modello *</option></select>
                     </div>
 
                     <div class="form-section">
                         <div class="form-section-header"><img src="img/icons/info.png" alt="Info Icon"><h3>Riferimenti e Dettagli</h3></div>
-                        <input type="text" id="vo-offerta" name="vo_offerta" placeholder="VO (Rif. Offerta) *" required maxlength="7">
-                        <input type="text" id="riferimento-tecnico" name="riferimento_tecnico" placeholder="Riferimento Tecnico" maxlength="5">
+                        <div class="fields-grid">
+                            <input type="text" id="vo-offerta" name="vo_offerta" placeholder="Ordine Vendita: 00-0000 *" required maxlength="7">
+                            <input type="text" id="riferimento-tecnico" name="riferimento_tecnico" placeholder="Rif. Tecnico: C0000" maxlength="5">
+                        </div>
                         <textarea id="descrizione-commessa" name="descrizione" placeholder="Descrizione (opzionale)..."></textarea>
                     </div>
 
@@ -91,10 +93,7 @@
             </div>
 
             <div class="modal-footer">
-                <button id="saveOrderBtn" class="save-button" type="submit" form="newOrderForm">
-                    <img src="img/icons/save.png" alt="Save Icon">
-                    <span>Crea Commessa</span>
-                </button>
+                <button id="saveOrderBtn" class="save-button" type="submit" form="newOrderForm"><img src="img/icons/save.png" alt="Save Icon"><span>Crea Commessa</span></button>
             </div>
         </div>
     </div>
