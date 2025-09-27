@@ -1399,14 +1399,13 @@ h2 {
     font-family: 'Roboto', sans-serif;
     color: #333333;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    margin-top: 5px;
 }
+
 .form-section textarea {
     min-height: 120px;
     resize: vertical;
 }
 .form-section select {
-    margin-top: 10px;
 }
 .form-section textarea:focus,
 .form-section select:focus {
@@ -1456,6 +1455,7 @@ h2 {
     height: 45px;
     width: 100%;
     box-sizing: border-box;
+    padding: 0 15px;
 }
 
 /* Aumenta la dimensione del testo del placeholder per coerenza */
@@ -1496,4 +1496,10 @@ h2 {
     color: #333;
     border: 1px solid #b0b0b0;
     height: 45px;
+}
+
+.form-fields-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* <-- QUESTA è la regola chiave: imposta uno spazio di 15px tra ogni elemento */
 }
