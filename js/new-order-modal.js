@@ -1,6 +1,7 @@
+// js/new-order-modal.js
+
 import { API_BASE_URL } from './config.js';
 
-// --- FIX: Move all DOM element selections inside the event listener ---
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- Elementi DOM ---
@@ -14,18 +15,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelloSelect = document.getElementById('modello-select');
     const statusSelect = document.getElementById('status-select');
 
+    // --- NUOVO: Input per la formattazione automatica ---
+    const voInput = document.getElementById('vo-offerta');
+    const rifTecnicoInput = document.getElementById('riferimento-tecnico');
+
+    // --- Event Listeners ---
     if (closeNewOrderModalBtn) {
         closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
     }
     if (saveOrderBtn) {
         saveOrderBtn.addEventListener('click', saveOrder);
     }
-
+    
+    // --- NUOVO: Event listeners per la formattazione automatica ---
+    if (voInput) {
+        voInput.addEventListener('input', formatVO);
+    }
+    if (rifTecnicoInput) {
+        rifTecnicoInput.addEventListener('input', formatRifTecnico);
+    }
+    
     // Funzione chiamata da main.js per preparare il modale all'apertura
     window.prepareNewOrderModal = async function() {
         if (!newOrderModal) return;
         
-        // Svuota i menu a tendina per evitare duplicati
+        // Svuota i menu a tendina
         clienteSelect.innerHTML = '<option>Caricamento...</option>';
         modelloSelect.innerHTML = '<option>Caricamento...</option>';
         statusSelect.innerHTML = '<option>Caricamento...</option>';
@@ -44,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(clienteSelect, clienti, 'id_cliente', 'ragione_sociale', 'Seleziona un cliente');
             populateSelect(modelloSelect, modelli, 'id_modello', 'nome_modello', 'Seleziona un modello');
             populateSelect(statusSelect, status, 'id_status', 'nome_status', 'Seleziona uno stato');
+            
+            // --- NUOVO: Imposta "In Lavorazione" come default ---
+            setDefaultStatus();
 
         } catch (error) {
             console.error("Errore nel caricamento dati per il modale:", error);
@@ -67,7 +84,38 @@ document.addEventListener('DOMContentLoaded', () => {
             selectElement.appendChild(option);
         });
     }
+    
+    // --- NUOVO: Funzione per impostare lo stato di default ---
+    function setDefaultStatus() {
+        const statusOptions = statusSelect.options;
+        for (let i = 0; i < statusOptions.length; i++) {
+            if (statusOptions[i].textContent.toLowerCase() === 'in lavorazione') {
+                statusSelect.value = statusOptions[i].value;
+                break;
+            }
+        }
+    }
 
+    // --- NUOVO: Funzioni per la formattazione dei campi ---
+    function formatVO(event) {
+        let value = event.target.value.replace(/\D/g, ''); // Rimuovi tutto tranne i numeri
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '-' + value.substring(2, 6);
+        }
+        event.target.value = value;
+    }
+
+    function formatRifTecnico(event) {
+        let value = event.target.value;
+        if (value.length === 0) return;
+
+        let firstChar = value.charAt(0).toUpperCase().replace(/[^A-Z]/, '');
+        let otherChars = value.substring(1).replace(/\D/g, ''); // Solo numeri
+        
+        event.target.value = firstChar + otherChars.substring(0, 4);
+    }
+    
+    // Funzione di salvataggio (invariata)
     async function saveOrder(event) {
         event.preventDefault();
         saveOrderBtn.disabled = true;
@@ -87,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             alert('Commessa creata con successo!');
             window.closeNewOrderModal();
-            // Opzionale: ricarica le card nella vista commesse se la funzione esiste
             if (window.refreshCommesseView) window.refreshCommesseView();
 
         } catch (error) {

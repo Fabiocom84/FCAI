@@ -1445,3 +1445,36 @@ h2 {
     font-size: 1.5em; /* Rimpicciolisce l'icona */
     margin-bottom: 0;
 }
+
+/* Rende i campi di testo più visibili e con un font più grande */
+.form-section input[type="text"],
+.form-section input[type="number"] {
+    font-size: 1.05em; /* Aumenta la dimensione del testo interno */
+    font-weight: 500;
+    color: #333;
+    border: 1px solid #b0b0b0; /* Bordo leggermente più scuro */
+    height: 45px; /* Altezza uniforme */
+}
+
+/* Aumenta la dimensione del testo del placeholder per coerenza */
+.form-section input[type="text"]::placeholder,
+.form-section input[type="number"]::placeholder {
+    font-size: 1em; /* Assicura che il placeholder abbia la stessa dimensione */
+    font-weight: 400;
+    color: #999;
+}
+
+/* Riduce drasticamente l'altezza della textarea per la descrizione */
+.form-section textarea#descrizione-commessa {
+    min-height: 45px; /* Altezza minima di una riga */
+    height: 45px;     /* Altezza fissa */
+    resize: none;     /* Impedisce il ridimensionamento manuale */
+    overflow: auto;   /* Mostra la scrollbar se il testo è più lungo */
+}
+
+/* NUOVO: Stile per la griglia dei campi aggiuntivi */
+.additional-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Due colonne di larghezza uguale */
+    gap: 15px; /* Spazio tra i campi */
+}
