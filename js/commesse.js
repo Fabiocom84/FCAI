@@ -241,9 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         handleEdit(commessaId) {
-            // Placeholder for edit functionality
-            console.log("Edit requested for commessa ID:", commessaId);
-            alert("La funzione di modifica non è ancora implementata.");
+            // Chiama la funzione globale definita in new-order-modal.js per aprire il modale
+            if (typeof window.openNewOrderModalForEdit === 'function') {
+                window.openNewOrderModalForEdit(commessaId);
+            } else {
+                console.error('La funzione openNewOrderModalForEdit non è stata trovata.');
+                alert('Errore: la funzionalità di modifica non è disponibile.');
+            }
         },
 
         handleSort() {
