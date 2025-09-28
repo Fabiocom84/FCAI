@@ -22,29 +22,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth`, {
+            // 1. PRIMA CHIAMATA: AUTENTICAZIONE
+            const authResponse = await fetch(`${API_BASE_URL}/api/auth`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
+            const authData = await authResponse.json();
+            if (!authResponse.ok) {
+                throw new Error(authData.error || 'Credenziali non valide.');
+            }
+            
+            // Salva subito la sessione (che contiene il token)
+            const session = authData.session;
+            localStorage.setItem('authToken', JSON.stringify(session));
 
-            if (response.ok) {
-                // Login riuscito, salva TUTTI i dati ricevuti
-                localStorage.setItem('authToken', JSON.stringify(data.session));
-                localStorage.setItem('currentUserProfile', JSON.stringify(data.user_profile));
-                window.location.href = 'index.html'; 
-            }  else {
-                // Mostra l'errore restituito dal backend (es. "Credenziali non valide")
-                errorMessage.textContent = data.error || 'Si è verificato un errore.';
+            // 2. SECONDA CHIAMATA: RECUPERO PROFILO (autenticata con il token)
+            const profileResponse = await fetch(`${API_BASE_URL}/api/me`, {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
+
+            const profileData = await profileResponse.json();
+            if (!profileResponse.ok) {
+                throw new Error(profileData.error || 'Impossibile recuperare il profilo utente.');
             }
 
+            // 3. SALVA IL PROFILO E REINDIRIZZA
+            localStorage.setItem('currentUserProfile', JSON.stringify(profileData));
+            window.location.href = 'index.html';
+
         } catch (error) {
-            console.error("Errore durante la comunicazione con il server:", error);
-            errorMessage.textContent = 'Impossibile connettersi al server. Riprova più tardi.';
+            console.error("Errore durante il processo di login:", error);
+            errorMessage.textContent = error.message;
+            // Pulisci il token se qualcosa è andato storto
+            localStorage.removeItem('authToken');
         }
     }
 
