@@ -2,7 +2,7 @@
 
 import { API_BASE_URL } from './config.js';
 
-// Funzioni globali accessibili da altri file
+// Funzioni globali che saranno definite dopo il caricamento del DOM
 window.prepareInsertDataModal = async () => {};
 window.cleanupInsertDataModal = () => {};
 
@@ -39,13 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
         stopRecording();
     };
     
-    // --- Event listeners ---
+    // Event listeners
     if (closeInsertDataModalBtn) closeInsertDataModalBtn.addEventListener('click', () => window.closeInsertDataModal());
     if (saveButton) saveButton.addEventListener('click', saveData);
     if (fileUploadInput) fileUploadInput.addEventListener('change', handleFileUpload);
     if (startButton) startButton.addEventListener('click', startRecording);
     if (stopButton) stopButton.addEventListener('click', stopRecording);
-
 
     function resetForm() {
         if (voiceTranscription) voiceTranscription.value = '';
@@ -137,21 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
     async function startRecording(event) {
         event.preventDefault();
         event.stopPropagation();
-
         if (isTranscribing) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true
-                }
+                audio: { echoCancellation: true, noiseSuppression: true }
             });
+
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                console.log("Stato della traccia audio:", audioTracks[0].readyState);
+                console.log("Traccia audio abilitata:", audioTracks[0].enabled);
+            } else {
+                console.log("Nessuna traccia audio trovata nello stream.");
+            }
+
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
-
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
+            mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
             mediaRecorder.onstop = onStop;
 
             mediaRecorder.start();
@@ -160,14 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (stopButton) stopButton.disabled = false;
         } catch (error) {
             console.error("Errore nell'accesso al microfono:", error);
-            if (recordingStatus) recordingStatus.textContent = "Errore: Microfono non accessibile.";
         }
     }
 
     function stopRecording() {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
-            if (recordingStatus) recordingStatus.textContent = "Elaborazione trascrizione...";
+            if (recordingStatus) recordingStatus.textContent = "Elaborazione...";
             if (startButton) startButton.disabled = false;
             if (stopButton) stopButton.disabled = true;
         }
@@ -175,32 +175,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onStop() {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        console.log(`Dimensione del file audio registrato (Blob): ${audioBlob.size} bytes`);
         audioChunks = [];
 
-        // --- INIZIO CODICE DI DEBUG ---
-        // Questo blocco crea un lettore audio per farti ascoltare la registrazione
-        console.log("Audio registrato. Creazione del lettore per il debug...");
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = new Audio(audioUrl);
-        audioElement.controls = true;
-        audioElement.style.position = 'fixed'; // Lo rende visibile in fondo
-        audioElement.style.bottom = '10px';
-        audioElement.style.left = '10px';
-        audioElement.style.zIndex = '10000'; // Lo mette sopra a tutto
-        
-        // Rimuove eventuali player vecchi prima di aggiungerne uno nuovo
-        const oldPlayer = document.getElementById('debug-audio-player');
-        if (oldPlayer) {
-            oldPlayer.remove();
+        if (audioBlob.size > 100) {
+            transcribeAudio(audioBlob);
+        } else {
+            if (recordingStatus) recordingStatus.textContent = "Registrazione vuota, nessun dato inviato.";
+            isTranscribing = false;
         }
-        audioElement.id = 'debug-audio-player';
-
-        document.body.appendChild(audioElement); 
-        console.log("Lettore audio di debug aggiunto in fondo alla pagina a sinistra.");
-        // --- FINE CODICE DI DEBUG ---
-
-        // La trascrizione parte normalmente
-        transcribeAudio(audioBlob);
     }
 
     async function transcribeAudio(audioBlob) {
