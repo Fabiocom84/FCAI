@@ -92,12 +92,6 @@ async function saveData(event) {
     if (voiceTranscription && voiceTranscription.value) {
         formData.set('transcription', voiceTranscription.value);
     }
-    
-    // Rinomina il campo del dropdown per coerenza con il backend
-    if (formData.has('riferimentoId')) {
-        formData.set('id_commessa_fk', formData.get('riferimentoId'));
-        formData.delete('riferimentoId');
-    }
 
     try {
         const response = await window.apiFetch('/api/registrazioni', {
