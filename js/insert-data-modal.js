@@ -176,6 +176,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function onStop() {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         audioChunks = [];
+
+        // --- INIZIO CODICE DI DEBUG ---
+        // Questo blocco crea un lettore audio per farti ascoltare la registrazione
+        console.log("Audio registrato. Creazione del lettore per il debug...");
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioElement = new Audio(audioUrl);
+        audioElement.controls = true;
+        audioElement.style.position = 'fixed'; // Lo rende visibile in fondo
+        audioElement.style.bottom = '10px';
+        audioElement.style.left = '10px';
+        audioElement.style.zIndex = '10000'; // Lo mette sopra a tutto
+        
+        // Rimuove eventuali player vecchi prima di aggiungerne uno nuovo
+        const oldPlayer = document.getElementById('debug-audio-player');
+        if (oldPlayer) {
+            oldPlayer.remove();
+        }
+        audioElement.id = 'debug-audio-player';
+
+        document.body.appendChild(audioElement); 
+        console.log("Lettore audio di debug aggiunto in fondo alla pagina a sinistra.");
+        // --- FINE CODICE DI DEBUG ---
+
+        // La trascrizione parte normalmente
         transcribeAudio(audioBlob);
     }
 
