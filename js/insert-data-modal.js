@@ -2,79 +2,67 @@
 
 import { API_BASE_URL } from './config.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+// Funzioni globali accessibili da altri file
+window.prepareInsertDataModal = async () => {};
+window.cleanupInsertDataModal = () => {};
 
+document.addEventListener('DOMContentLoaded', () => {
+    
     // Elementi DOM
     const insertDataModal = document.getElementById('insertDataModal');
-    const closeInsertDataModalBtn = insertDataModal?.querySelector('.close-button');
-    const saveButton = insertDataModal?.querySelector('.save-button');
-    const fileUploadInput = insertDataModal?.querySelector('#fileUpload');
-    const fileNameDisplay = insertDataModal?.querySelector('.file-name');
-    const startButton = insertDataModal?.querySelector('#startButton');
-    const stopButton = insertDataModal?.querySelector('#stopButton');
-    const recordingStatus = insertDataModal?.querySelector('#recordingStatus');
-    const voiceTranscription = insertDataModal?.querySelector('#voiceTranscription');
-    const riferimentoDropdown = insertDataModal?.querySelector('#riferimentoDropdown');
+    if (!insertDataModal) return; 
+
+    const closeInsertDataModalBtn = insertDataModal.querySelector('.close-button');
+    const saveButton = insertDataModal.querySelector('.save-button');
+    const fileUploadInput = insertDataModal.querySelector('#fileUpload');
+    const fileNameDisplay = insertDataModal.querySelector('.file-name');
+    const startButton = insertDataModal.querySelector('#startButton');
+    const stopButton = insertDataModal.querySelector('#stopButton');
+    const recordingStatus = insertDataModal.querySelector('#recordingStatus');
+    const voiceTranscription = insertDataModal.querySelector('#voiceTranscription');
+    const riferimentoDropdown = insertDataModal.querySelector('#riferimentoDropdown');
+    const modalForm = insertDataModal.querySelector('form');
 
     // Variabili per la registrazione
     let mediaRecorder = null;
     let audioChunks = [];
     let isTranscribing = false;
 
-    // Funzione chiamata da main.js per preparare il modale all'apertura
+    // Ridefinizione delle funzioni globali con accesso al DOM
     window.prepareInsertDataModal = async function() {
         await preCheckMicrophonePermission();
         await loadEtichette();
-        console.log('Modale Inserisci Dati preparato.');
     };
 
-    // Funzione chiamata da main.js per pulire il modale alla chiusura
     window.cleanupInsertDataModal = function() {
         resetForm();
-        stopRecording(); // Assicura che ogni registrazione in corso venga fermata
-        console.log('Modale Inserisci Dati resettato.');
+        stopRecording();
     };
+    
+    // --- Event listeners ---
+    if (closeInsertDataModalBtn) closeInsertDataModalBtn.addEventListener('click', () => window.closeInsertDataModal());
+    if (saveButton) saveButton.addEventListener('click', saveData);
+    if (fileUploadInput) fileUploadInput.addEventListener('change', handleFileUpload);
+    if (startButton) startButton.addEventListener('click', startRecording);
+    if (stopButton) stopButton.addEventListener('click', stopRecording);
+
 
     function resetForm() {
         if (voiceTranscription) voiceTranscription.value = '';
         if (riferimentoDropdown) riferimentoDropdown.value = '';
-        if (fileNameDisplay) fileNameDisplay.textContent = 'Nessun file selezionato';
+        if (fileNameDisplay) fileNameDisplay.textContent = 'Seleziona un file...';
         if (fileUploadInput) fileUploadInput.value = '';
         if (recordingStatus) recordingStatus.textContent = 'Pronto per registrare';
         if (startButton) startButton.disabled = false;
         if (stopButton) stopButton.disabled = true;
-    
-        const formContent = insertDataModal?.querySelector('form');
-        const successMessage = document.getElementById('insertDataSuccessMessage');
-        if (formContent) formContent.style.display = 'block';
-        if (successMessage) successMessage.style.display = 'none';
     }
-
-    // Event listeners specifici del modale
-    document.addEventListener('DOMContentLoaded', () => {
-        if (closeInsertDataModalBtn) {
-            closeInsertDataModalBtn.addEventListener('click', window.closeInsertDataModal);
-        }
-        if (saveButton) {
-            saveButton.addEventListener('click', saveData);
-        }
-        if (fileUploadInput) {
-            fileUploadInput.addEventListener('change', handleFileUpload);
-        }
-        if (startButton) {
-            startButton.addEventListener('click', startRecording);
-        }
-        if (stopButton) {
-            stopButton.addEventListener('click', stopRecording);
-        }
-    });
 
     function handleFileUpload(event) {
         const file = event.target.files[0];
-        if (file) {
-            if (fileNameDisplay) fileNameDisplay.textContent = file.name;
-        } else {
-            if (fileNameDisplay) fileNameDisplay.textContent = 'Nessun file selezionato';
+        if (file && fileNameDisplay) {
+            fileNameDisplay.textContent = file.name;
+        } else if (fileNameDisplay) {
+            fileNameDisplay.textContent = 'Seleziona un file...';
         }
     }
 
@@ -82,20 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         if (saveButton) saveButton.disabled = true;
 
-        const modalForm = insertDataModal?.querySelector('form');
-        if (!modalForm) {
-            console.error('Form non trovato');
-            if (saveButton) saveButton.disabled = false;
-            return;
-        }
         const formData = new FormData(modalForm);
-    
-        // Assicura che la trascrizione sia inclusa se il campo non è vuoto
+        
         if (voiceTranscription && voiceTranscription.value) {
-            formData.set('transcription', voiceTranscription.value);
+            formData.set('contenuto_testo', voiceTranscription.value);
         }
 
         try {
+            // CORRETTO: Aggiunto window. prima di apiFetch
             const response = await window.apiFetch('/api/registrazioni', {
                 method: 'POST',
                 body: formData
@@ -103,26 +85,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Errore durante il salvataggio dei dati.');
+                throw new Error(errorData.error || 'Errore durante il salvataggio.');
             }
 
-            // --- MODIFICATO: Usa il nuovo modale di feedback per il successo ---
-            window.showSuccessFeedbackModal(
-                'INSERISCI DATI',
-                'Dati salvati con successo!',
-                'insertDataModal' // ID del modale genitore da chiudere
-            );
+            window.showSuccessFeedbackModal('INSERISCI DATI', 'Dati salvati con successo!', 'insertDataModal');
 
         } catch (error) {
-            if (error.message !== "Unauthorized") {
-                console.error('Errore nel salvataggio dei dati:', error);
-                // --- MODIFICATO: Usa il modale custom per l'errore ---
-                await window.showModal({
-                    title: 'Errore nel Salvataggio',
-                    message: `Salvataggio fallito: ${error.message}`,
-                    confirmText: 'Chiudi'
-                });
-            }
+            await window.showModal({
+                title: 'ERRORE NEL SALVATAGGIO',
+                message: `Salvataggio fallito: ${error.message}`,
+                confirmText: 'Chiudi'
+            });
         } finally {
             if (saveButton) saveButton.disabled = false;
         }
@@ -130,13 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadEtichette() {
         if (!riferimentoDropdown) return;
-    
         try {
-            // --- MODIFICA QUI ---
-            // Passiamo solo il percorso relativo.
-            const response = await apiFetch('/api/get-etichette');
+            // CORRETTO: Aggiunto window. prima di apiFetch
+            const response = await window.apiFetch('/api/get-etichette');
             const items = await response.json();
-
+    
             riferimentoDropdown.innerHTML = `<option value="" selected>Nessuna commessa associata</option>`;
             items.forEach(item => {
                 const option = document.createElement('option');
@@ -206,35 +177,29 @@ document.addEventListener('DOMContentLoaded', () => {
     async function transcribeAudio(audioBlob) {
         isTranscribing = true;
         if (recordingStatus) recordingStatus.textContent = "Trascrizione in corso...";
-        if (!audioBlob || audioBlob.size === 0) {
-            isTranscribing = false; return;
-        }
+        if (!audioBlob || audioBlob.size === 0) { isTranscribing = false; return; }
         
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
         
         try {
-            // --- MODIFICA QUI ---
-            // Passiamo solo il percorso relativo.
-            const response = await apiFetch('/api/transcribe-voice', {
+            // CORRETTO: Aggiunto window. prima di apiFetch
+            const response = await window.apiFetch('/api/transcribe-voice', {
                 method: 'POST',
                 body: formData
             });
 
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error || 'Errore sconosciuto nella trascrizione.');
-            }
+            if (!response.ok) throw new Error(data.error || 'Errore sconosciuto.');
+            
             if (voiceTranscription) voiceTranscription.value = data.transcription || '';
-            if (recordingStatus) recordingStatus.textContent = data.transcription ? "Trascrizione completata." : "Nessuna trascrizione ricevuta.";
+            if (recordingStatus) recordingStatus.textContent = "Trascrizione completata.";
             
         } catch (error) {
-            if (error.message !== "Unauthorized") {
-                console.error("Errore durante la trascrizione:", error);
-                if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
-            }
+            console.error("Errore durante la trascrizione:", error);
+            if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
         } finally {
             isTranscribing = false;
         }
     }
-}
+});
