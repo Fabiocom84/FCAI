@@ -5,7 +5,18 @@ import { supabase } from './supabase-client.js';
 import Legend from './legend.js';
 
 function getAuthToken() {
-    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const sessionString = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (!sessionString) {
+        return null;
+    }
+    try {
+        const session = JSON.parse(sessionString);
+        // Estrai il token di accesso vero e proprio dall'oggetto sessione
+        return session.access_token; 
+    } catch (e) {
+        console.error("Errore nel parsing del token di sessione:", e);
+        return null;
+    }
 }
 
 function logoutUser(message) {
