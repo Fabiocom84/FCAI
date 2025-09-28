@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Cambia l'icona in base alla visibilità
         if (type === 'text') {
-            togglePasswordBtn.src = 'img/eye-off.png'; // Cambia con l'icona dell'occhio barrato
+            togglePasswordBtn.src = 'img/eye.png'; // Cambia con l'icona dell'occhio barrato
             togglePasswordBtn.alt = 'Nascondi password';
         } else {
             togglePasswordBtn.src = 'img/eye.png'; // Cambia con l'icona dell'occhio aperto
