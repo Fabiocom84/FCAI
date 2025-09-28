@@ -1622,3 +1622,24 @@ h2 {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
+
+/* Stili per il pulsante "occhio" nel campo password */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px; /* Distanza dal bordo destro */
+    cursor: pointer;
+    width: 20px; /* Dimensione dell'icona */
+    height: auto;
+    opacity: 0.6;
+}

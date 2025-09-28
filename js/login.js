@@ -9,6 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const passwordInput = document.getElementById('loginPassword');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+
+    togglePasswordBtn.addEventListener('click', () => {
+        // Controlla il tipo di input attuale
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Cambia l'icona in base alla visibilità
+        if (type === 'text') {
+            togglePasswordBtn.src = 'img/eye-off.png'; // Cambia con l'icona dell'occhio barrato
+            togglePasswordBtn.alt = 'Nascondi password';
+        } else {
+            togglePasswordBtn.src = 'img/eye.png'; // Cambia con l'icona dell'occhio aperto
+            togglePasswordBtn.alt = 'Mostra password';
+        }
+    });
+
     async function handleLogin(event) {
         event.preventDefault();
         errorMessage.textContent = '';
