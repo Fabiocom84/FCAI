@@ -1677,7 +1677,8 @@ h2 {
     text-align: center;
     opacity: 1;
     color: #999;
-    font-weight: 400; /* FIX: Forza il font-weight a 'normal' */
+    font-weight: 400; /* FIX: Assicura che il testo non sia in grassetto */
+    padding-top: 2px; /* FIX: Aggiunge un piccolo spazio sopra per centrare meglio il testo */
 }
 
 /* 4. Lista delle opzioni (invariata) */
