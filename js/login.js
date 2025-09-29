@@ -1,3 +1,5 @@
+// js/login.js
+
 import { API_BASE_URL } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,34 +15,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const togglePasswordBtn = document.getElementById('togglePassword');
 
     togglePasswordBtn.addEventListener('click', () => {
-        // Controlla il tipo di input attuale
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-
-        // Cambia l'icona in base alla visibilità
-        if (type === 'text') {
-            togglePasswordBtn.src = 'img/eye.png'; // Cambia con l'icona dell'occhio barrato
-            togglePasswordBtn.alt = 'Nascondi password';
-        } else {
-            togglePasswordBtn.src = 'img/eye.png'; // Cambia con l'icona dell'occhio aperto
-            togglePasswordBtn.alt = 'Mostra password';
-        }
+        // Cambia l'icona in base alla visibilità (logica semplificata)
+        togglePasswordBtn.src = type === 'text' ? 'img/eye-off.png' : 'img/eye.png'; // Assicurati di avere l'immagine eye-off.png
+        togglePasswordBtn.alt = type === 'text' ? 'Nascondi password' : 'Mostra password';
     });
 
     async function handleLogin(event) {
         event.preventDefault();
         errorMessage.textContent = '';
+        errorMessage.style.display = 'none';
 
         const email = loginForm.email.value;
         const password = loginForm.password.value;
+        
+        // --- INIZIO MODIFICA CHIAVE ---
+        const rememberMe = document.getElementById('rememberMe').checked;
+        // Selezioniamo dove salvare i dati: localStorage per "ricordami", sessionStorage altrimenti.
+        const storage = rememberMe ? localStorage : sessionStorage;
+        // --- FINE MODIFICA CHIAVE ---
 
         if (!email || !password) {
             errorMessage.textContent = 'Inserire sia email che password.';
+            errorMessage.style.display = 'block';
             return;
         }
 
         try {
-            // 1. PRIMA CHIAMATA: AUTENTICAZIONE
+            // 1. AUTENTICAZIONE
             const authResponse = await fetch(`${API_BASE_URL}/api/auth`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -52,11 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(authData.error || 'Credenziali non valide.');
             }
             
-            // Salva subito la sessione (che contiene il token)
-            const session = authData.session;
-            localStorage.setItem('authToken', JSON.stringify(session));
-
-            // 2. SECONDA CHIAMATA: RECUPERO PROFILO (autenticata con il token)
+            // La sessione è l'intero oggetto restituito, che contiene il token
+            const session = authData; 
+            
+            // 2. RECUPERO PROFILO (autenticato con il token appena ottenuto)
             const profileResponse = await fetch(`${API_BASE_URL}/api/me`, {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
@@ -68,15 +70,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(profileData.error || 'Impossibile recuperare il profilo utente.');
             }
 
-            // 3. SALVA IL PROFILO E REINDIRIZZA
-            localStorage.setItem('currentUserProfile', JSON.stringify(profileData));
+            // --- MODIFICA CHIAVE: SALVATAGGIO ROBUSTO ---
+            // Pulisci entrambi gli storage per evitare conflitti
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Salva sessione e profilo nello storage corretto (localStorage o sessionStorage)
+            storage.setItem('authToken', JSON.stringify(session));
+            storage.setItem('currentUserProfile', JSON.stringify(profileData));
+            
+            // 3. REINDIRIZZAMENTO
             window.location.href = 'index.html';
 
         } catch (error) {
             console.error("Errore durante il processo di login:", error);
             errorMessage.textContent = error.message;
-            // Pulisci il token se qualcosa è andato storto
-            localStorage.removeItem('authToken');
+            errorMessage.style.display = 'block';
+            // Pulisci tutto in caso di errore
+            localStorage.clear();
+            sessionStorage.clear();
         }
     }
 
