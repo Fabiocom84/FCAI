@@ -1645,53 +1645,61 @@ h2 {
 }
 
 /* ================================================================== */
-/* == Stile Avanzato per Dropdown Ricercabile (Choices.js) v2.0    == */
+/* == Stile Avanzato per Dropdown Ricercabile (Choices.js) v2.1    == */
 /* ================================================================== */
 
-/* 1. Contenitore principale: replichiamo altezza e bordi degli altri input */
+/* 1. Contenitore principale: altezza e bordi corretti */
 .choices__inner {
-    min-height: 45px; /* Forza l'altezza minima */
-    height: 45px;     /* Forza l'altezza fissa */
+    min-height: 45px;
+    height: 45px;
     background-color: #fff;
-    border: 1px solid #b0b0b0; /* Bordo identico agli input di testo */
-    border-radius: 8px;        /* Raggio identico agli altri campi */
-    padding: 0;                /* Annulliamo il padding di default per un controllo preciso */
-    display: flex;             /* Abilita flexbox per il centraggio verticale */
-    align-items: center;       /* Centra verticalmente il contenuto */
-    font-size: 1.05em;         /* Imposta la stessa dimensione del font degli input */
+    border: 1px solid #b0b0b0;
+    border-radius: 8px;
+    padding: 1px 15px; /* Leggero padding per migliorare l'allineamento verticale */
+    display: flex;
+    align-items: center;
+    font-size: 1.05em;
+    box-sizing: border-box; /* Assicura che il padding non alteri l'altezza */
 }
 
-/* 2. Stile per l'elemento visibile quando un'opzione è stata selezionata */
+/* 2. Testo dell'elemento selezionato: centrato e in grassetto */
 .choices__list--single .choices__item {
-    width: 100%;               /* L'elemento occupa tutto lo spazio disponibile */
-    text-align: center;        /* Centra il testo orizzontalmente */
-    font-weight: 700;          /* Rende il testo in grassetto come negli altri input */
-    padding-right: 20px;       /* Aggiunge spazio a destra per non sovrapporsi alla 'x' */
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    /* Aumenta lo spazio a destra per non sovrapporsi alla freccia */
+    padding-right: 30px; 
 }
 
-/* 3. Stile per il placeholder (es. "Cerca o seleziona...") */
+/* 3. Placeholder: centrato e NON in grassetto */
 .choices__placeholder {
-    width: 100%;               /* Occupa tutta la larghezza */
-    text-align: center;        /* Centra il testo del placeholder */
-    opacity: 1;                /* Assicura che sia ben visibile */
-    color: #999;              /* Colore standard per i placeholder */
-    font-weight: 400;          /* Testo del placeholder non in grassetto */
+    width: 100%;
+    text-align: center;
+    opacity: 1;
+    color: #999;
+    font-weight: 400; /* FIX: Forza il font-weight a 'normal' */
 }
 
-/* 4. Stile per la lista delle opzioni che appare al click */
+/* 4. Lista delle opzioni (invariata) */
 .choices__list--dropdown {
-    border-radius: 8px; /* Applica il raggio anche al menu a tendina */
+    border-radius: 8px;
     border: 1px solid #b0b0b0;
 }
-
-/* 5. Stile per ogni singola opzione nella lista */
 .choices__list--dropdown .choices__item--choice {
-    font-size: 1em;           /* Dimensione del font standard per le opzioni */
-    padding: 10px 15px;       /* Spaziatura interna per una buona leggibilità */
+    font-size: 1em;
+    padding: 10px 15px;
 }
 
-/* 6. Stile per lo stato "focus", quando l'utente clicca sul campo */
+/* 5. Stato "focus" (invariato) */
 .choices.is-focused .choices__inner {
     border-color: #2A76B8;
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); /* Effetto focus identico agli altri campi */
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
+}
+
+/* 6. FIX: Sposta la freccia a discesa all'interno del bordo */
+.choices[data-type*="select-one"] .choices__inner::after {
+    right: 15px; /* Sposta la freccia di 15px dal bordo destro */
+    margin-top: -6px; /* Centra verticalmente la freccia in modo più preciso */
+    border-width: 5px; /* Rende la freccia leggermente più piccola */
+    border-color: #555 transparent transparent transparent; /* Colore più scuro e visibile */
 }
