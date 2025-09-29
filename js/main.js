@@ -111,22 +111,23 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
 });
 
+// Funzione di inizializzazione principale
 function initializeApp(user) {
     console.log("Applicazione inizializzata per l'utente:", user.email);
 
+    // 1. Inizializza le variabili principali
     legendInstance = new Legend();
-    window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); 
-    window.modalOverlay = modalOverlay;
+    insertDataModalInstance = document.getElementById('insertDataModal');
+    chatModalInstance = document.getElementById('chatModal');
+    trainingModalInstance = document.getElementById('trainingModal');
 
-    const logoutButton = document.getElementById('logoutBtn');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', async (event) => {
-            event.preventDefault();
-            await supabase.auth.signOut();
-            logoutUser();
-        });
-    }
+    // 2. Collega gli eventi ai pulsanti
+    document.getElementById('logoutBtn')?.addEventListener('click', async (event) => {
+        event.preventDefault();
+        await supabase.auth.signOut();
+        logoutUser();
+    });
 
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
     document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);   
@@ -144,10 +145,26 @@ function initializeApp(user) {
             }
         });
     }
+
+    // --- MODIFICA CHIAVE ---
+    // 3. Rendi le funzioni globali SOLO DOPO che tutto è stato inizializzato
+    window.legendInstance = legendInstance;
+    window.modalOverlay = modalOverlay;
+    
+    window.openInsertDataModal = openInsertDataModal;
+    window.openChatModal = openChatModal;
+    window.openTrainingModal = openTrainingModal;
+
+    window.closeInsertDataModal = closeInsertDataModal;
+    window.closeChatModal = closeChatModal;
+    window.closeTrainingModal = closeTrainingModal;
+    
+    window.showSuccessFeedbackModal = showSuccessFeedbackModal;
+    window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;
 }
 
+// Funzioni di gestione dei modali (la loro definizione non cambia)
 function openInsertDataModal() {
-    if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
     if (insertDataModalInstance) {
         insertDataModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -156,7 +173,6 @@ function openInsertDataModal() {
 }
 
 function openChatModal() {
-    if (!chatModalInstance) chatModalInstance = document.getElementById('chatModal');
     if (chatModalInstance) {
         chatModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -164,7 +180,6 @@ function openChatModal() {
 }
 
 function openTrainingModal() {
-    if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
     if (trainingModalInstance) {
         trainingModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -172,31 +187,22 @@ function openTrainingModal() {
 }
 
 function closeInsertDataModal() {
-    if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
     if (insertDataModalInstance) insertDataModalInstance.style.display = 'none';
-    modalOverlay.style.display = 'none';
+    if (modalOverlay) modalOverlay.style.display = 'none';
     if (window.cleanupInsertDataModal) window.cleanupInsertDataModal();
 }
 
 function closeChatModal() {
-    if (!chatModalInstance) chatModalInstance = document.getElementById('chatModal');
     if (chatModalInstance) chatModalInstance.style.display = 'none';
-    modalOverlay.style.display = 'none';
+    if (modalOverlay) modalOverlay.style.display = 'none';
 }
 
 function closeTrainingModal() {
-    if (!trainingModalInstance) trainingModalInstance = document.getElementById('trainingModal');
     if (trainingModalInstance) trainingModalInstance.style.display = 'none';
-    modalOverlay.style.display = 'none';
+    if (modalOverlay) modalOverlay.style.display = 'none';
 }
 
-window.closeInsertDataModal = closeInsertDataModal;
-window.closeChatModal = closeChatModal;
-window.closeTrainingModal = closeTrainingModal;
-window.openInsertDataModal = openInsertDataModal;
-window.openChatModal = openChatModal;
-window.openTrainingModal = openTrainingModal;
-
+// Funzioni per il modale di feedback (la loro definizione non cambia)
 let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
 
 function showSuccessFeedbackModal(title, message, parentModalId) {
@@ -217,12 +223,8 @@ function showSuccessFeedbackModal(title, message, parentModalId) {
 
     countdownInterval = setInterval(() => {
         seconds--;
-        if (seconds > 0) {
-            countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
-        } else {
-            countdownElement.textContent = ''; 
-            clearInterval(countdownInterval);
-        }
+        countdownElement.textContent = seconds > 0 ? `Questo messaggio si chiuderà tra ${seconds} secondi...` : '';
+        if (seconds <= 0) clearInterval(countdownInterval);
     }, 1000);
 
     closeTimeout = setTimeout(closeSuccessFeedbackModal, 2000);
@@ -236,7 +238,7 @@ function closeSuccessFeedbackModal() {
     clearTimeout(closeTimeout);
 
     if (feedbackModal) feedbackModal.style.display = 'none';
-    
+
     if (parentModalToClose) {
         const closeFunctionName = `close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`;
         if (window[closeFunctionName]) {
@@ -249,6 +251,3 @@ function closeSuccessFeedbackModal() {
         if (modalOverlay) modalOverlay.style.display = 'none';
     }
 }
-
-window.showSuccessFeedbackModal = showSuccessFeedbackModal;
-window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;
