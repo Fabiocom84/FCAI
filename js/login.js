@@ -29,12 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const email = loginForm.email.value;
         const password = loginForm.password.value;
-        
-        // --- INIZIO MODIFICA CHIAVE ---
         const rememberMe = document.getElementById('rememberMe').checked;
-        // Selezioniamo dove salvare i dati: localStorage per "ricordami", sessionStorage altrimenti.
         const storage = rememberMe ? localStorage : sessionStorage;
-        // --- FINE MODIFICA CHIAVE ---
 
         if (!email || !password) {
             errorMessage.textContent = 'Inserire sia email che password.';
@@ -54,11 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!authResponse.ok) {
                 throw new Error(authData.error || 'Credenziali non valide.');
             }
-            
-            // La sessione è l'intero oggetto restituito, che contiene il token
-            const session = authData; 
-            
-            // 2. RECUPERO PROFILO (autenticato con il token appena ottenuto)
+
+            // --- INIZIO MODIFICA CHIAVE ---
+            // Estraiamo l'oggetto 'session' annidato dalla risposta del backend.
+            const session = authData.session;
+            if (!session || !session.access_token) {
+                throw new Error("La risposta di autenticazione non contiene una sessione valida.");
+            }
+            // --- FINE MODIFICA CHIAVE ---
+
+            // 2. RECUPERO PROFILO
             const profileResponse = await fetch(`${API_BASE_URL}/api/me`, {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
@@ -70,23 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(profileData.error || 'Impossibile recuperare il profilo utente.');
             }
 
-            // --- MODIFICA CHIAVE: SALVATAGGIO ROBUSTO ---
-            // Pulisci entrambi gli storage per evitare conflitti
+            // 3. SALVATAGGIO E REINDIRIZZAMENTO
             localStorage.clear();
             sessionStorage.clear();
 
-            // Salva sessione e profilo nello storage corretto (localStorage o sessionStorage)
-            storage.setItem('authToken', JSON.stringify(session));
+            storage.setItem('authToken', JSON.stringify(session)); // Ora salviamo l'oggetto corretto
             storage.setItem('currentUserProfile', JSON.stringify(profileData));
             
-            // 3. REINDIRIZZAMENTO
             window.location.href = 'index.html';
 
         } catch (error) {
             console.error("Errore durante il processo di login:", error);
             errorMessage.textContent = error.message;
             errorMessage.style.display = 'block';
-            // Pulisci tutto in caso di errore
             localStorage.clear();
             sessionStorage.clear();
         }
