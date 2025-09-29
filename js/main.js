@@ -99,11 +99,27 @@ let insertDataModalInstance;
 let chatModalInstance;
 let trainingModalInstance;
 
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+let appInitialized = false;
+
+// Attendiamo che Supabase ci dia notizie sulla sessione
+supabase.auth.onAuthStateChange((event, session) => {
+    // Ci interessano due eventi:
+    // 'INITIAL_SESSION': La prima volta che la pagina carica e trova una sessione salvata.
+    // 'SIGNED_IN': Quando l'utente ha appena effettuato il login.
+    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
+        console.log("Supabase ha confermato una sessione valida. Avvio l'applicazione...");
+        appInitialized = true; // Impostiamo il flag
+        initializeApp(session.user); // Avviamo la nostra app
+    } else if (event === 'SIGNED_OUT') {
+        // Se l'utente si disconnette, ricarichiamo per sicurezza
+        appInitialized = false;
+        window.location.href = 'login.html';
+    }
 });
 
-function initializeApp() {
+function initializeApp(user) {
+    console.log("Applicazione inizializzata per l'utente:", user.email);
+
     legendInstance = new Legend();
     window.legendInstance = legendInstance;
     modalOverlay = document.getElementById('modalOverlay'); 
@@ -111,9 +127,10 @@ function initializeApp() {
 
     const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
-        logoutButton.addEventListener('click', function(event) {
-            event.preventDefault(); 
-            logoutUser();
+        logoutButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await supabase.auth.signOut(); // Usiamo il metodo di Supabase per il logout
+            logoutUser(); // La nostra vecchia funzione per pulire e reindirizzare
         });
     }
 
@@ -133,9 +150,8 @@ function initializeApp() {
             }
         });
     }
+}
 
-    // RIMOSSA la chiamata a loadLatestEntries();
-};
 
 // --- FUNZIONI DI APERTURA MODALI ---
 
