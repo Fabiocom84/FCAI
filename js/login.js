@@ -1,6 +1,8 @@
 // js/login.js
 
-import { API_BASE_URL } from './config.js';
+// NOTA: Non importiamo più API_BASE_URL perché non chiameremo il nostro backend.
+// Importiamo direttamente il client Supabase.
+import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
@@ -17,8 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     togglePasswordBtn.addEventListener('click', () => {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        // Cambia l'icona in base alla visibilità (logica semplificata)
-        togglePasswordBtn.src = type === 'text' ? 'img/eye-off.png' : 'img/eye.png'; // Assicurati di avere l'immagine eye-off.png
+        togglePasswordBtn.src = type === 'text' ? 'img/eye-off.png' : 'img/eye.png';
         togglePasswordBtn.alt = type === 'text' ? 'Nascondi password' : 'Mostra password';
     });
 
@@ -29,8 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const email = loginForm.email.value;
         const password = loginForm.password.value;
-        const rememberMe = document.getElementById('rememberMe').checked;
-        const storage = rememberMe ? localStorage : sessionStorage;
 
         if (!email || !password) {
             errorMessage.textContent = 'Inserire sia email che password.';
@@ -39,51 +38,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // 1. AUTENTICAZIONE
-            const authResponse = await fetch(`${API_BASE_URL}/api/auth`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const authData = await authResponse.json();
-            if (!authResponse.ok) {
-                throw new Error(authData.error || 'Credenziali non valide.');
-            }
-
             // --- INIZIO MODIFICA CHIAVE ---
-            // Estraiamo l'oggetto 'session' annidato dalla risposta del backend.
-            const session = authData.session;
-            if (!session || !session.access_token) {
-                throw new Error("La risposta di autenticazione non contiene una sessione valida.");
-            }
-            // --- FINE MODIFICA CHIAVE ---
-
-            // 2. RECUPERO PROFILO
-            const profileResponse = await fetch(`${API_BASE_URL}/api/me`, {
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
+            // Usiamo il metodo di login del client Supabase direttamente qui nel frontend.
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
             });
 
-            const profileData = await profileResponse.json();
-            if (!profileResponse.ok) {
-                throw new Error(profileData.error || 'Impossibile recuperare il profilo utente.');
+            // Se Supabase restituisce un errore (es. credenziali errate), lo mostriamo.
+            if (error) {
+                throw new Error(error.message || 'Credenziali non valide.');
             }
 
-            // 3. SALVATAGGIO E REINDIRIZZAMENTO
-            localStorage.clear();
-            sessionStorage.clear();
-
-            storage.setItem('authToken', JSON.stringify(session)); // Ora salviamo l'oggetto corretto
-            storage.setItem('currentUserProfile', JSON.stringify(profileData));
+            // Se il login ha successo, Supabase salva automaticamente la sessione
+            // nel modo corretto. Non dobbiamo fare più nulla manualmente.
             
+            // L'evento 'onAuthStateChange' in main.js verrà attivato automaticamente.
+            
+            // Ora recuperiamo il profilo utente per salvarlo (opzionale ma utile)
+            const { data: profileData, error: profileError } = await supabase
+                .from('personale')
+                .select('*')
+                .eq('id_auth_user', data.user.id)
+                .single();
+
+            if (profileError) {
+                throw new Error("Login riuscito, ma impossibile recuperare il profilo utente.");
+            }
+
+            // Salviamo il profilo per un accesso rapido, come prima.
+            // La checkbox "rememberMe" non è più necessaria perché il client Supabase
+            // gestisce la persistenza della sessione in modo predefinito.
+            localStorage.setItem('currentUserProfile', JSON.stringify(profileData));
+
+            // Ora possiamo reindirizzare alla pagina principale.
             window.location.href = 'index.html';
+            // --- FINE MODIFICA CHIAVE ---
 
         } catch (error) {
             console.error("Errore durante il processo di login:", error);
             errorMessage.textContent = error.message;
             errorMessage.style.display = 'block';
+            // Puliamo lo storage in caso di errore per sicurezza.
             localStorage.clear();
             sessionStorage.clear();
         }
