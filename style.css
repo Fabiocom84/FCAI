@@ -1643,3 +1643,55 @@ h2 {
     height: auto;
     opacity: 0.6;
 }
+
+/* ================================================================== */
+/* == Stile Avanzato per Dropdown Ricercabile (Choices.js) v2.0    == */
+/* ================================================================== */
+
+/* 1. Contenitore principale: replichiamo altezza e bordi degli altri input */
+.choices__inner {
+    min-height: 45px; /* Forza l'altezza minima */
+    height: 45px;     /* Forza l'altezza fissa */
+    background-color: #fff;
+    border: 1px solid #b0b0b0; /* Bordo identico agli input di testo */
+    border-radius: 8px;        /* Raggio identico agli altri campi */
+    padding: 0;                /* Annulliamo il padding di default per un controllo preciso */
+    display: flex;             /* Abilita flexbox per il centraggio verticale */
+    align-items: center;       /* Centra verticalmente il contenuto */
+    font-size: 1.05em;         /* Imposta la stessa dimensione del font degli input */
+}
+
+/* 2. Stile per l'elemento visibile quando un'opzione è stata selezionata */
+.choices__list--single .choices__item {
+    width: 100%;               /* L'elemento occupa tutto lo spazio disponibile */
+    text-align: center;        /* Centra il testo orizzontalmente */
+    font-weight: 700;          /* Rende il testo in grassetto come negli altri input */
+    padding-right: 20px;       /* Aggiunge spazio a destra per non sovrapporsi alla 'x' */
+}
+
+/* 3. Stile per il placeholder (es. "Cerca o seleziona...") */
+.choices__placeholder {
+    width: 100%;               /* Occupa tutta la larghezza */
+    text-align: center;        /* Centra il testo del placeholder */
+    opacity: 1;                /* Assicura che sia ben visibile */
+    color: #999;              /* Colore standard per i placeholder */
+    font-weight: 400;          /* Testo del placeholder non in grassetto */
+}
+
+/* 4. Stile per la lista delle opzioni che appare al click */
+.choices__list--dropdown {
+    border-radius: 8px; /* Applica il raggio anche al menu a tendina */
+    border: 1px solid #b0b0b0;
+}
+
+/* 5. Stile per ogni singola opzione nella lista */
+.choices__list--dropdown .choices__item--choice {
+    font-size: 1em;           /* Dimensione del font standard per le opzioni */
+    padding: 10px 15px;       /* Spaziatura interna per una buona leggibilità */
+}
+
+/* 6. Stile per lo stato "focus", quando l'utente clicca sul campo */
+.choices.is-focused .choices__inner {
+    border-color: #2A76B8;
+    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); /* Effetto focus identico agli altri campi */
+}
