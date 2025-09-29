@@ -1645,7 +1645,7 @@ h2 {
 }
 
 /* ================================================================== */
-/* == Stile Avanzato per Dropdown Ricercabile (Choices.js) v2.1    == */
+/* == Stile Avanzato per Dropdown Ricercabile (Choices.js) v2.2 FINAL == */
 /* ================================================================== */
 
 /* 1. Contenitore principale: altezza e bordi corretti */
@@ -1655,30 +1655,30 @@ h2 {
     background-color: #fff;
     border: 1px solid #b0b0b0;
     border-radius: 8px;
-    padding: 1px 15px; /* Leggero padding per migliorare l'allineamento verticale */
+    padding: 1px 15px; 
     display: flex;
     align-items: center;
     font-size: 1.05em;
-    box-sizing: border-box; /* Assicura che il padding non alteri l'altezza */
+    box-sizing: border-box; 
 }
 
-/* 2. Testo dell'elemento selezionato: centrato e in grassetto */
-.choices__list--single .choices__item {
+/* 2. Testo dell'elemento selezionato: grassetto SOLO SE non è un placeholder */
+.choices__list--single .choices__item:not([data-placeholder]) {
     width: 100%;
     text-align: center;
-    font-weight: 700;
-    /* Aumenta lo spazio a destra per non sovrapporsi alla freccia */
+    font-weight: 700; /* Applica il grassetto */
     padding-right: 30px; 
 }
 
 /* 3. Placeholder: centrato e NON in grassetto */
-.choices__placeholder {
+.choices__placeholder, 
+.choices__item[data-placeholder] {
     width: 100%;
     text-align: center;
     opacity: 1;
     color: #999;
-    font-weight: 400; /* FIX: Assicura che il testo non sia in grassetto */
-    padding-top: 2px; /* FIX: Aggiunge un piccolo spazio sopra per centrare meglio il testo */
+    font-weight: 400 !important; /* FIX: Usiamo !important per forzare la regola e chiudere il problema */
+    padding-top: 4px;
 }
 
 /* 4. Lista delle opzioni (invariata) */
@@ -1697,10 +1697,10 @@ h2 {
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
 }
 
-/* 6. FIX: Sposta la freccia a discesa all'interno del bordo */
+/* 6. Freccia a discesa (invariata) */
 .choices[data-type*="select-one"] .choices__inner::after {
-    right: 15px; /* Sposta la freccia di 15px dal bordo destro */
-    margin-top: -6px; /* Centra verticalmente la freccia in modo più preciso */
-    border-width: 5px; /* Rende la freccia leggermente più piccola */
-    border-color: #555 transparent transparent transparent; /* Colore più scuro e visibile */
+    right: 15px;
+    margin-top: -6px;
+    border-width: 5px;
+    border-color: #555 transparent transparent transparent;
 }
