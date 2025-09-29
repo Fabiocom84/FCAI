@@ -193,6 +193,9 @@ function closeTrainingModal() {
 window.closeInsertDataModal = closeInsertDataModal;
 window.closeChatModal = closeChatModal;
 window.closeTrainingModal = closeTrainingModal;
+window.openInsertDataModal = openInsertDataModal;
+window.openChatModal = openChatModal;
+window.openTrainingModal = openTrainingModal;
 
 let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
 
