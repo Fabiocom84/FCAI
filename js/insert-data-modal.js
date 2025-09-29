@@ -23,6 +23,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const riferimentoDropdown = insertDataModal.querySelector('#riferimentoDropdown');
     const modalForm = insertDataModal.querySelector('form');
 
+    // Variabile per contenere l'istanza di Choices.js
+    let choicesInstance = null;
+    
+    // Inizializza Choices.js sull'elemento select
+    function initializeChoices() {
+        if (riferimentoDropdown && !choicesInstance) {
+            choicesInstance = new Choices(riferimentoDropdown, {
+                searchEnabled: true,
+                placeholder: true,
+                placeholderValue: 'Cerca o seleziona una commessa...',
+                itemSelectText: 'Seleziona',
+                removeItemButton: true, // Aggiunge una 'x' per deselezionare
+                allowHTML: false,
+                searchPlaceholderValue: 'Digita per filtrare...',
+            });
+        }
+    }
+    initializeChoices();
+
     // Variabili per la registrazione
     let mediaRecorder = null;
     let audioChunks = [];
@@ -54,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recordingStatus) recordingStatus.textContent = 'Pronto per registrare';
         if (startButton) startButton.disabled = false;
         if (stopButton) stopButton.disabled = true;
+        // --- MODIFICA: Metodo corretto per resettare Choices.js ---
+        if (choicesInstance) {
+            choicesInstance.clearStore();
+            // Aggiungiamo un'opzione placeholder di default
+            choicesInstance.setChoices([{ value: '', label: 'Nessuna commessa associata', selected: true }]);
+        }
     }
 
     function handleFileUpload(event) {
@@ -101,21 +126,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadEtichette() {
-        if (!riferimentoDropdown) return;
+        // --- MODIFICA: La funzione ora popola il menu usando l'API di Choices.js ---
+        if (!choicesInstance) return;
+        
         try {
-            // CORRETTO: Aggiunto window. prima di apiFetch
             const response = await window.apiFetch('/api/get-etichette');
             const items = await response.json();
-    
-            riferimentoDropdown.innerHTML = `<option value="" selected>Nessuna commessa associata</option>`;
-            items.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.id;
-                option.textContent = item.label;
-                riferimentoDropdown.appendChild(option);
+            
+            // Pulisce le opzioni esistenti
+            choicesInstance.clearStore();
+
+            // Mappa i dati nel formato richiesto da Choices.js: { value, label }
+            const options = items.map(item => ({
+                value: item.id,
+                label: item.label
+            }));
+            
+            // Aggiunge l'opzione di default "Nessuna commessa" all'inizio dell'array
+            options.unshift({ 
+                value: '', 
+                label: 'Nessuna commessa associata', 
+                selected: true 
             });
+
+            // Imposta le nuove opzioni nel menu
+            choicesInstance.setChoices(options, 'value', 'label', false);
+
         } catch (error) {
             console.error('Errore nel caricamento delle etichette:', error);
+            // Gestisci l'errore anche nell'interfaccia se necessario
+            choicesInstance.clearStore();
+            choicesInstance.disable();
         }
     }
 
