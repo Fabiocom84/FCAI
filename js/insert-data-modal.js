@@ -31,12 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (riferimentoDropdown && !choicesInstance) {
             choicesInstance = new Choices(riferimentoDropdown, {
                 searchEnabled: true,
-                placeholder: true,
-                placeholderValue: 'Cerca o seleziona una commessa...',
+                removeItemButton: true,
                 itemSelectText: 'Seleziona',
-                removeItemButton: true, // Aggiunge una 'x' per deselezionare
                 allowHTML: false,
                 searchPlaceholderValue: 'Digita per filtrare...',
+                
+                // MODIFICA CHIAVE N.1: Definiamo qui il vero placeholder
+                placeholder: true,
+                placeholderValue: 'Nessuna commessa associata', 
             });
         }
     }
@@ -67,17 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetForm() {
         if (voiceTranscription) voiceTranscription.value = '';
-        if (riferimentoDropdown) riferimentoDropdown.value = '';
         if (fileNameDisplay) fileNameDisplay.textContent = 'Seleziona un file...';
         if (fileUploadInput) fileUploadInput.value = '';
         if (recordingStatus) recordingStatus.textContent = 'Pronto per registrare';
         if (startButton) startButton.disabled = false;
         if (stopButton) stopButton.disabled = true;
-        // --- MODIFICA: Metodo corretto per resettare Choices.js ---
+
+        // MODIFICA CHIAVE N.2: Metodo corretto per resettare il campo
         if (choicesInstance) {
-            choicesInstance.clearStore();
-            // Aggiungiamo un'opzione placeholder di default
-            choicesInstance.setChoices([{ value: '', label: 'Nessuna commessa associata', selected: true }]);
+            // Rimuove la selezione attuale e fa riapparire il placeholder
+            choicesInstance.clearInput();
+            choicesInstance.removeItem(choicesInstance.getValue(true));
         }
     }
 
@@ -126,35 +128,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadEtichette() {
-        // --- MODIFICA: La funzione ora popola il menu usando l'API di Choices.js ---
         if (!choicesInstance) return;
         
         try {
             const response = await window.apiFetch('/api/get-etichette');
             const items = await response.json();
             
-            // Pulisce le opzioni esistenti
-            choicesInstance.clearStore();
+            choicesInstance.clearStore(); // Pulisce tutte le opzioni prima di caricarne di nuove
 
-            // Mappa i dati nel formato richiesto da Choices.js: { value, label }
             const options = items.map(item => ({
                 value: item.id,
                 label: item.label
             }));
             
-            // Aggiunge l'opzione di default "Nessuna commessa" all'inizio dell'array
-            options.unshift({ 
-                value: '', 
-                label: 'Nessuna commessa associata', 
-                selected: true 
-            });
+            // MODIFICA CHIAVE N.3: NON aggiungiamo più il placeholder alla lista delle opzioni!
+            // La libreria lo gestirà automaticamente grazie all'impostazione 'placeholderValue'.
 
-            // Imposta le nuove opzioni nel menu
             choicesInstance.setChoices(options, 'value', 'label', false);
 
         } catch (error) {
             console.error('Errore nel caricamento delle etichette:', error);
-            // Gestisci l'errore anche nell'interfaccia se necessario
             choicesInstance.clearStore();
             choicesInstance.disable();
         }
