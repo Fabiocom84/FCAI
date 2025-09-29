@@ -11,7 +11,6 @@ function getAuthToken() {
     }
     try {
         const session = JSON.parse(sessionString);
-        // Estrai il token di accesso vero e proprio dall'oggetto sessione
         return session.access_token; 
     } catch (e) {
         console.error("Errore nel parsing del token di sessione:", e);
@@ -101,17 +100,12 @@ let trainingModalInstance;
 
 let appInitialized = false;
 
-// Attendiamo che Supabase ci dia notizie sulla sessione
 supabase.auth.onAuthStateChange((event, session) => {
-    // Ci interessano due eventi:
-    // 'INITIAL_SESSION': La prima volta che la pagina carica e trova una sessione salvata.
-    // 'SIGNED_IN': Quando l'utente ha appena effettuato il login.
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
         console.log("Supabase ha confermato una sessione valida. Avvio l'applicazione...");
-        appInitialized = true; // Impostiamo il flag
-        initializeApp(session.user); // Avviamo la nostra app
+        appInitialized = true;
+        initializeApp(session.user);
     } else if (event === 'SIGNED_OUT') {
-        // Se l'utente si disconnette, ricarichiamo per sicurezza
         appInitialized = false;
         window.location.href = 'login.html';
     }
@@ -129,8 +123,8 @@ function initializeApp(user) {
     if (logoutButton) {
         logoutButton.addEventListener('click', async (event) => {
             event.preventDefault();
-            await supabase.auth.signOut(); // Usiamo il metodo di Supabase per il logout
-            logoutUser(); // La nostra vecchia funzione per pulire e reindirizzare
+            await supabase.auth.signOut();
+            logoutUser();
         });
     }
 
@@ -151,9 +145,6 @@ function initializeApp(user) {
         });
     }
 }
-
-
-// --- FUNZIONI DI APERTURA MODALI ---
 
 function openInsertDataModal() {
     if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
@@ -180,8 +171,6 @@ function openTrainingModal() {
     }
 }
 
-// --- FUNZIONI DI CHIUSURA MODALI ---
-
 function closeInsertDataModal() {
     if (!insertDataModalInstance) insertDataModalInstance = document.getElementById('insertDataModal');
     if (insertDataModalInstance) insertDataModalInstance.style.display = 'none';
@@ -205,13 +194,11 @@ window.closeInsertDataModal = closeInsertDataModal;
 window.closeChatModal = closeChatModal;
 window.closeTrainingModal = closeTrainingModal;
 
-// Variabili globali per il nuovo modale di feedback
-let feedbackModal, feedbackOverlay, countdownInterval, closeTimeout, parentModalToClose;
+let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
 
 function showSuccessFeedbackModal(title, message, parentModalId) {
     if (!feedbackModal) {
         feedbackModal = document.getElementById('success-feedback-modal');
-        feedbackOverlay = document.getElementById('modalOverlay');
     }
 
     feedbackModal.querySelector('#feedback-modal-title').textContent = title;
@@ -219,9 +206,8 @@ function showSuccessFeedbackModal(title, message, parentModalId) {
     parentModalToClose = document.getElementById(parentModalId);
 
     feedbackModal.style.display = 'block';
-    feedbackOverlay.style.display = 'block';
+    if (modalOverlay) modalOverlay.style.display = 'block';
 
-    // MODIFICATO: Durata ridotta a 2 secondi
     let seconds = 2; 
     const countdownElement = feedbackModal.querySelector('#feedback-modal-countdown');
     countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
@@ -231,13 +217,11 @@ function showSuccessFeedbackModal(title, message, parentModalId) {
         if (seconds > 0) {
             countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
         } else {
-            // Nascondi il countdown quando arriva a zero
             countdownElement.textContent = ''; 
             clearInterval(countdownInterval);
         }
     }, 1000);
 
-    // MODIFICATO: Timeout impostato a 2000ms (2 secondi)
     closeTimeout = setTimeout(closeSuccessFeedbackModal, 2000);
 
     feedbackModal.querySelector('#feedback-modal-close-btn').onclick = closeSuccessFeedbackModal;
@@ -245,26 +229,23 @@ function showSuccessFeedbackModal(title, message, parentModalId) {
 }
 
 function closeSuccessFeedbackModal() {
-    // Pulisci i timer per evitare esecuzioni multiple
     clearInterval(countdownInterval);
     clearTimeout(closeTimeout);
 
-    // Nascondi il modale di feedback
     if (feedbackModal) feedbackModal.style.display = 'none';
-    if (feedbackOverlay) feedbackOverlay.style.display = 'none';
-
-    // Chiudi il modale genitore (es. newOrderModal)
+    
     if (parentModalToClose) {
-        // Usiamo la funzione di chiusura globale se esiste, altrimenti lo nascondiamo
         const closeFunctionName = `close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`;
         if (window[closeFunctionName]) {
             window[closeFunctionName]();
         } else {
             parentModalToClose.style.display = 'none';
+            if (modalOverlay) modalOverlay.style.display = 'none';
         }
+    } else {
+        if (modalOverlay) modalOverlay.style.display = 'none';
     }
 }
 
-// Rendi le funzioni disponibili globalmente
 window.showSuccessFeedbackModal = showSuccessFeedbackModal;
 window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;
