@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 allowHTML: false,
                 searchPlaceholderValue: 'Digita per filtrare...',
                 
-                // MODIFICA CHIAVE N.1: Definiamo qui il vero placeholder
                 placeholder: true,
                 placeholderValue: 'Nessuna commessa associata', 
             });
@@ -75,9 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (startButton) startButton.disabled = false;
         if (stopButton) stopButton.disabled = true;
 
-        // MODIFICA CHIAVE N.2: Metodo corretto per resettare il campo
         if (choicesInstance) {
-            // Rimuove la selezione attuale e fa riapparire il placeholder
             choicesInstance.clearInput();
             choicesInstance.removeItem(choicesInstance.getValue(true));
         }
@@ -103,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // CORRETTO: Aggiunto window. prima di apiFetch
             const response = await window.apiFetch('/api/registrazioni', {
                 method: 'POST',
                 body: formData
@@ -134,16 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await window.apiFetch('/api/get-etichette');
             const items = await response.json();
             
-            choicesInstance.clearStore(); // Pulisce tutte le opzioni prima di caricarne di nuove
+            choicesInstance.clearStore();
 
             const options = items.map(item => ({
                 value: item.id,
                 label: item.label
             }));
             
-            // MODIFICA CHIAVE N.3: NON aggiungiamo più il placeholder alla lista delle opzioni!
-            // La libreria lo gestirà automaticamente grazie all'impostazione 'placeholderValue'.
-
             choicesInstance.setChoices(options, 'value', 'label', false);
 
         } catch (error) {
@@ -229,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('audio', audioBlob, 'recording.webm');
         
         try {
-            // CORRETTO: Aggiunto window. prima di apiFetch
             const response = await window.apiFetch('/api/transcribe-voice', {
                 method: 'POST',
                 body: formData
