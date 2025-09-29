@@ -101,13 +101,24 @@ let trainingModalInstance;
 let appInitialized = false;
 
 supabase.auth.onAuthStateChange((event, session) => {
+    // Aggiungiamo un log per vedere SEMPRE cosa succede
+    console.log(`[AUTH STATE CHANGE] Evento ricevuto: ${event}, Sessione:`, session);
+
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
-        console.log("Supabase ha confermato una sessione valida. Avvio l'applicazione...");
+        console.log("CONDIZIONE SODDISFATTA: Supabase ha confermato una sessione valida. Avvio l'applicazione...");
         appInitialized = true;
         initializeApp(session.user);
     } else if (event === 'SIGNED_OUT') {
+        console.log("EVENTO SIGNED_OUT: L'utente si è disconnesso, reindirizzamento al login.");
         appInitialized = false;
         window.location.href = 'login.html';
+    } else {
+        // QUESTO BLOCCO CI DIRA' PERCHE' L'APP NON PARTE
+        console.error("CONDIZIONE NON SODDISFATTA: L'app non verrà inizializzata.", {
+            evento: event,
+            sessione_esiste: !!session, // sarà true o false
+            app_gia_inizializzata: appInitialized
+        });
     }
 });
 
