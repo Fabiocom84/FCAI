@@ -10,16 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <link rel="stylesheet" href="style-v2.css">
 
-    <script>
-        const userProfile = localStorage.getItem('currentUserProfile');
-        const authToken = localStorage.getItem('authToken');
-
-        // Se uno dei due manca, reindirizza subito al login
-        if (!userProfile || !authToken) {
-            // Usiamo replace() così l'utente non può tornare indietro con il tasto "back"
-            window.location.replace('login.html');
-        }
-    </script>
+    <script type="module" src="js/auth-guard.js"></script>
 
 </head>
 
