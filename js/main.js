@@ -123,21 +123,43 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 // Funzione di inizializzazione principale
-function initializeApp(user) {
+async function initializeApp(user) { // Aggiungiamo 'async' perché ora faremo una chiamata di rete
     console.log("Applicazione inizializzata per l'utente:", user.email);
 
-    // 1. Inizializza le variabili principali
+    // --- NUOVO BLOCCO: RECUPERO E SALVATAGGIO DEL PROFILO ---
+    try {
+        const { data: profileData, error: profileError } = await supabase
+            .from('personale')
+            .select('*')
+            .eq('id_auth_user', user.id)
+            .single();
+
+        if (profileError) {
+            // Se non troviamo il profilo, l'app funziona lo stesso ma avvisiamo in console.
+            console.warn("Profilo utente non trovato nella tabella 'personale'.", profileError);
+        } else {
+            // Se lo troviamo, lo salviamo per un accesso rapido da altre parti dell'app.
+            localStorage.setItem('currentUserProfile', JSON.stringify(profileData));
+            console.log("Profilo utente caricato e salvato:", profileData);
+        }
+    } catch (e) {
+        console.error("Errore imprevisto durante il recupero del profilo:", e);
+    }
+    // --- FINE NUOVO BLOCCO ---
+
+    // 1. Inizializza le variabili principali (codice invariato)
     legendInstance = new Legend();
     modalOverlay = document.getElementById('modalOverlay'); 
     insertDataModalInstance = document.getElementById('insertDataModal');
     chatModalInstance = document.getElementById('chatModal');
     trainingModalInstance = document.getElementById('trainingModal');
 
-    // 2. Collega gli eventi ai pulsanti
+    // 2. Collega gli eventi ai pulsanti (codice invariato)
     document.getElementById('logoutBtn')?.addEventListener('click', async (event) => {
         event.preventDefault();
+        localStorage.removeItem('currentUserProfile'); // Rimuoviamo il profilo al logout
         await supabase.auth.signOut();
-        logoutUser();
+        // onAuthStateChange gestirà il reindirizzamento
     });
 
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
