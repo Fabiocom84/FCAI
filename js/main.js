@@ -88,40 +88,31 @@ async function initializeApp(user) {
     console.log("Fase 1: Inizializzazione per l'utente:", user.email);
 
     try {
-        // --- INIZIO MODIFICA PER TEST ---
-        console.log("--- TEST: Sto saltando la chiamata al database e uso un profilo finto. ---");
-        
-        // Commentiamo la chiamata REALE al database
-        /*
+        // Chiamata CRITICA: recuperiamo il profilo dell'utente dalla tabella 'personale'.
+        // Questa è la chiamata che ora dovrebbe funzionare grazie alla policy RLS.
         const { data: profile, error } = await supabase
             .from('personale')
-            .select('*') 
-            .eq('id_auth_user', user.id)
-            .single();
+            .select('*') // Seleziona tutte le colonne del profilo
+            .eq('id_auth_user', user.id) // La chiave di join è l'ID utente di Supabase
+            .single(); // Ci aspettiamo un solo risultato
 
+        // Se c'è un errore (es. la policy blocca) o il profilo non esiste, fermati.
         if (error || !profile) {
-            throw new Error("Profilo utente non trovato o illeggibile. Impossibile procedere.");
+            console.error("ERRORE durante la chiamata a Supabase:", error);
+            throw new Error("Profilo utente non trovato o illeggibile. Controlla le policy RLS sulla tabella 'personale'.");
         }
-        */
 
-        // Creiamo un profilo "falso" per il test.
-        // Mettiamo is_admin: true per assicurarci di vedere tutti i pulsanti.
-        const profile = { 
-            nome_cognome: "Utente di Test", 
-            is_admin: true 
-        };
-        // --- FINE MODIFICA PER TEST ---
-
-
-        // Il resto della funzione rimane invariato
+        // SUCCESSO: Salviamo l'utente e il suo profilo.
         window.currentUser = { ...user, profile };
         console.log("Fase 2: Profilo utente caricato con successo:", window.currentUser);
 
+        // Ora che abbiamo il profilo, possiamo avviare l'interfaccia utente.
         setupUI();
 
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
         alert("Si è verificato un errore critico nel caricamento del tuo profilo. Verrai disconnesso per sicurezza.");
+        // Forziamo il logout per evitare che l'utente usi l'app in uno stato inconsistente.
         await supabase.auth.signOut();
     }
 }
