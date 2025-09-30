@@ -1,19 +1,14 @@
 // js/insert-data-modal.js
 
-import { API_BASE_URL } from './config.js';
-
-// Funzioni globali che saranno definite dopo il caricamento del DOM
-window.prepareInsertDataModal = async () => {};
-window.cleanupInsertDataModal = () => {};
-
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Elementi DOM
     const insertDataModal = document.getElementById('insertDataModal');
     if (!insertDataModal) return; 
 
-    const closeInsertDataModalBtn = insertDataModal.querySelector('.close-button');
+    // Elementi DOM
+    const modalForm = insertDataModal.querySelector('form');
     const saveButton = insertDataModal.querySelector('.save-button');
+    const saveButtonText = saveButton.querySelector('span');
     const fileUploadInput = insertDataModal.querySelector('#fileUpload');
     const fileNameDisplay = insertDataModal.querySelector('.file-name');
     const startButton = insertDataModal.querySelector('#startButton');
@@ -21,83 +16,105 @@ document.addEventListener('DOMContentLoaded', () => {
     const recordingStatus = insertDataModal.querySelector('#recordingStatus');
     const voiceTranscription = insertDataModal.querySelector('#voiceTranscription');
     const riferimentoDropdown = insertDataModal.querySelector('#riferimentoDropdown');
-    const modalForm = insertDataModal.querySelector('form');
+    const closeInsertDataModalBtn = insertDataModal.querySelector('.close-button');
 
-    // Variabile per contenere l'istanza di Choices.js
+    // Variabili di stato
     let choicesInstance = null;
-    
-    // Inizializza Choices.js sull'elemento select
-    function initializeChoices() {
-        if (riferimentoDropdown && !choicesInstance) {
-            choicesInstance = new Choices(riferimentoDropdown, {
-                searchEnabled: true,
-                removeItemButton: true,
-                itemSelectText: 'Seleziona',
-                allowHTML: false,
-                searchPlaceholderValue: 'Digita per filtrare...',
-                
-                placeholder: true,
-                placeholderValue: 'Nessuna commessa associata', 
-            });
-        }
-    }
-    initializeChoices();
-
-    // Variabili per la registrazione
     let mediaRecorder = null;
     let audioChunks = [];
-    let isTranscribing = false;
+    let isBusy = false; // Stato unico per bloccare le operazioni asincrone
 
-    // Ridefinizione delle funzioni globali con accesso al DOM
-    window.prepareInsertDataModal = async function() {
+    // --- FUNZIONI DI INIZIALIZZAZIONE E PULIZIA ---
+
+    // Espone le funzioni per essere chiamate da main.js quando il modale viene aperto/chiuso
+    window.prepareInsertDataModal = async () => {
         await preCheckMicrophonePermission();
         await loadEtichette();
     };
 
-    window.cleanupInsertDataModal = function() {
+    window.cleanupInsertDataModal = () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
         resetForm();
-        stopRecording();
     };
     
-    // Event listeners
-    if (closeInsertDataModalBtn) closeInsertDataModalBtn.addEventListener('click', () => window.closeInsertDataModal());
-    if (saveButton) saveButton.addEventListener('click', saveData);
-    if (fileUploadInput) fileUploadInput.addEventListener('change', handleFileUpload);
-    if (startButton) startButton.addEventListener('click', startRecording);
-    if (stopButton) stopButton.addEventListener('click', stopRecording);
+    // Inizializza la libreria Choices.js per la select delle commesse
+    function initializeChoices() {
+        if (riferimentoDropdown) {
+            choicesInstance = new Choices(riferimentoDropdown, {
+                searchEnabled: true,
+                removeItemButton: true,
+                itemSelectText: 'Seleziona',
+                searchPlaceholderValue: 'Digita per filtrare...',
+                placeholder: true,
+                placeholderValue: 'Nessuna commessa associata',
+            });
+        }
+    }
 
+    // Resetta completamente lo stato del form
     function resetForm() {
-        if (voiceTranscription) voiceTranscription.value = '';
-        if (fileNameDisplay) fileNameDisplay.textContent = 'Seleziona un file...';
-        if (fileUploadInput) fileUploadInput.value = '';
-        if (recordingStatus) recordingStatus.textContent = 'Pronto per registrare';
-        if (startButton) startButton.disabled = false;
-        if (stopButton) stopButton.disabled = true;
-
+        modalForm.reset();
+        fileNameDisplay.textContent = 'Seleziona un file...';
+        recordingStatus.textContent = 'Pronto per registrare';
+        startButton.disabled = false;
+        stopButton.disabled = true;
         if (choicesInstance) {
+            choicesInstance.clearStore();
             choicesInstance.clearInput();
-            choicesInstance.removeItem(choicesInstance.getValue(true));
         }
     }
 
-    function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file && fileNameDisplay) {
-            fileNameDisplay.textContent = file.name;
-        } else if (fileNameDisplay) {
-            fileNameDisplay.textContent = 'Seleziona un file...';
+    // --- GESTIONE DEGLI EVENTI ---
+
+    closeInsertDataModalBtn.addEventListener('click', () => window.closeInsertDataModal());
+    saveButton.addEventListener('click', saveData);
+    fileUploadInput.addEventListener('change', handleFileUpload);
+    startButton.addEventListener('click', startRecording);
+    stopButton.addEventListener('click', stopRecording);
+    
+    // --- LOGICA PRINCIPALE ---
+
+    // Carica le commesse (etichette) dal backend
+    async function loadEtichette() {
+        if (!choicesInstance) return;
+        
+        try {
+            const response = await window.apiFetch('/api/get-etichette');
+            if (!response.ok) throw new Error('Errore di rete nel caricamento delle commesse.');
+            
+            const items = await response.json();
+            
+            const options = items.map(item => ({
+                value: item.id,
+                label: item.label
+            }));
+            
+            choicesInstance.setChoices(options, 'value', 'label', false);
+            choicesInstance.enable();
+
+        } catch (error) {
+            console.error('Errore nel caricamento delle etichette:', error);
+            choicesInstance.clearStore();
+            choicesInstance.disable();
         }
     }
 
+    // Salva i dati della registrazione
     async function saveData(event) {
         event.preventDefault();
-        if (saveButton) saveButton.disabled = true;
+        if (isBusy) return;
+
+        isBusy = true;
+        const originalButtonText = saveButtonText.textContent;
+        saveButton.disabled = true;
+        saveButtonText.textContent = 'Salvataggio...';
 
         const formData = new FormData(modalForm);
-        
-        if (voiceTranscription && voiceTranscription.value) {
-            formData.set('contenuto_testo', voiceTranscription.value);
-        }
+        // Assicura che anche il testo in textarea sia aggiunto se presente
+        formData.set('contenuto_testo', voiceTranscription.value);
+        // Il campo 'riferimento' con l'ID della commessa viene già preso da FormData
 
         try {
             const response = await window.apiFetch('/api/registrazioni', {
@@ -119,104 +136,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmText: 'Chiudi'
             });
         } finally {
-            if (saveButton) saveButton.disabled = false;
+            isBusy = false;
+            saveButton.disabled = false;
+            saveButtonText.textContent = originalButtonText;
         }
     }
 
-    async function loadEtichette() {
-        if (!choicesInstance) return;
-        
-        try {
-            const response = await window.apiFetch('/api/get-etichette');
-            const items = await response.json();
-            
-            choicesInstance.clearStore();
+    // --- LOGICA DI REGISTRAZIONE AUDIO ---
 
-            const options = items.map(item => ({
-                value: item.id,
-                label: item.label
-            }));
-            
-            choicesInstance.setChoices(options, 'value', 'label', false);
-
-        } catch (error) {
-            console.error('Errore nel caricamento delle etichette:', error);
-            choicesInstance.clearStore();
-            choicesInstance.disable();
-        }
-    }
-
+    // Controlla il permesso del microfono all'apertura del modale
     async function preCheckMicrophonePermission() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             stream.getTracks().forEach(track => track.stop());
-            console.log("Permesso microfono concesso.");
-            if (recordingStatus) recordingStatus.textContent = "Pronto per registrare.";
-            if (startButton) startButton.disabled = false;
+            recordingStatus.textContent = "Pronto per registrare.";
+            startButton.disabled = false;
         } catch (error) {
-            console.error("Permesso microfono negato:", error);
-            if (recordingStatus) recordingStatus.textContent = "Permesso microfono negato.";
-            if (startButton) startButton.disabled = true;
+            recordingStatus.textContent = "Permesso microfono negato.";
+            startButton.disabled = true;
         }
     }
 
     async function startRecording(event) {
         event.preventDefault();
-        event.stopPropagation();
-        if (isTranscribing) return;
+        if (isBusy) return;
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true }
-            });
-
-            const audioTracks = stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-                console.log("Stato della traccia audio:", audioTracks[0].readyState);
-                console.log("Traccia audio abilitata:", audioTracks[0].enabled);
-            } else {
-                console.log("Nessuna traccia audio trovata nello stream.");
-            }
-
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
-            mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
-            mediaRecorder.onstop = onStop;
+
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                audioChunks = [];
+                if (audioBlob.size > 100) { // Evita blob vuoti
+                    transcribeAudio(audioBlob);
+                } else {
+                    recordingStatus.textContent = "Registrazione troppo breve.";
+                    isBusy = false;
+                }
+            };
 
             mediaRecorder.start();
-            if (recordingStatus) recordingStatus.textContent = "Registrazione in corso...";
-            if (startButton) startButton.disabled = true;
-            if (stopButton) stopButton.disabled = false;
+            recordingStatus.textContent = "Registrazione in corso...";
+            startButton.disabled = true;
+            stopButton.disabled = false;
         } catch (error) {
+            recordingStatus.textContent = "Errore microfono.";
             console.error("Errore nell'accesso al microfono:", error);
         }
     }
 
     function stopRecording() {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
+            isBusy = true; // L'operazione di trascrizione è impegnativa
+            recordingStatus.textContent = "Elaborazione...";
             mediaRecorder.stop();
-            if (recordingStatus) recordingStatus.textContent = "Elaborazione...";
-            if (startButton) startButton.disabled = false;
-            if (stopButton) stopButton.disabled = true;
         }
-    }
-
-    function onStop() {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        console.log(`Dimensione del file audio registrato (Blob): ${audioBlob.size} bytes`);
-        audioChunks = [];
-
-        if (audioBlob.size > 100) {
-            transcribeAudio(audioBlob);
-        } else {
-            if (recordingStatus) recordingStatus.textContent = "Registrazione vuota, nessun dato inviato.";
-            isTranscribing = false;
-        }
+        startButton.disabled = false;
+        stopButton.disabled = true;
     }
 
     async function transcribeAudio(audioBlob) {
-        isTranscribing = true;
-        if (recordingStatus) recordingStatus.textContent = "Trascrizione in corso...";
-        if (!audioBlob || audioBlob.size === 0) { isTranscribing = false; return; }
+        recordingStatus.textContent = "Trascrizione in corso...";
         
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');
@@ -228,16 +211,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Errore sconosciuto.');
+            if (!response.ok) throw new Error(data.error || 'Trascrizione fallita.');
             
-            if (voiceTranscription) voiceTranscription.value = data.transcription || '';
-            if (recordingStatus) recordingStatus.textContent = "Trascrizione completata.";
+            voiceTranscription.value = data.transcription || '';
+            recordingStatus.textContent = "Trascrizione completata.";
             
         } catch (error) {
             console.error("Errore durante la trascrizione:", error);
-            if (recordingStatus) recordingStatus.textContent = `Errore: ${error.message}`;
+            recordingStatus.textContent = `Errore: ${error.message}`;
         } finally {
-            isTranscribing = false;
+            isBusy = false; // Libera lo stato solo alla fine
         }
     }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        fileNameDisplay.textContent = file ? file.name : 'Seleziona un file...';
+    }
+
+    // --- INIZIALIZZAZIONE ---
+    initializeChoices();
 });

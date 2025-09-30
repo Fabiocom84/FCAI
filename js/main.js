@@ -10,6 +10,48 @@ let appInitialized = false;
 // Sarà accessibile da altri script come `window.currentUser`.
 window.currentUser = null;
 
+// --- NUOVA FUNZIONE APIFETCH SICURA ---
+/**
+ * Esegue una chiamata fetch sicura verso il backend, includendo automaticamente
+ * il token di autenticazione di Supabase.
+ * @param {string} url - L'endpoint dell'API da chiamare (es. '/api/registrazioni').
+ * @param {object} options - Le opzioni standard della funzione fetch (method, body, etc.).
+ * @returns {Promise<Response>} La risposta dalla fetch.
+ */
+async function apiFetch(url, options = {}) {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+        console.error("Sessione non valida o scaduta. Rilevato da apiFetch.");
+        // Se la sessione scade, il listener onAuthStateChange gestirà il redirect.
+        // Forziamo un logout per sicurezza.
+        await supabase.auth.signOut();
+        throw new Error("La tua sessione non è valida. Effettua nuovamente il login.");
+    }
+
+    const headers = { ...options.headers };
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+
+    // Non impostare Content-Type se il body è FormData, il browser lo fa automaticamente.
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    // Qui puoi inserire l'URL base del tuo backend se diverso dall'origine
+    // const fullUrl = `https://tuo-backend.com${url}`;
+    const response = await fetch(url, { ...options, headers });
+
+    // Se il backend restituisce 401, la sessione potrebbe essere scaduta lato server.
+    if (response.status === 401) {
+        await supabase.auth.signOut();
+    }
+
+    return response;
+}
+// Rendiamo la funzione disponibile globalmente
+window.apiFetch = apiFetch;
+
+
 // Il listener `onAuthStateChange` è l'UNICO punto di ingresso dell'applicazione.
 // Gestisce login, logout e il caricamento della sessione iniziale.
 supabase.auth.onAuthStateChange(async (event, session) => {
