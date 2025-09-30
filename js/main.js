@@ -1,5 +1,6 @@
 // js/main.js
 
+import { API_BASE_URL } from './config.js';
 import { supabase } from './supabase-client.js';
 import Legend from './legend.js';
 
@@ -23,8 +24,6 @@ async function apiFetch(url, options = {}) {
 
     if (sessionError || !session) {
         console.error("Sessione non valida o scaduta. Rilevato da apiFetch.");
-        // Se la sessione scade, il listener onAuthStateChange gestirà il redirect.
-        // Forziamo un logout per sicurezza.
         await supabase.auth.signOut();
         throw new Error("La tua sessione non è valida. Effettua nuovamente il login.");
     }
@@ -32,23 +31,24 @@ async function apiFetch(url, options = {}) {
     const headers = { ...options.headers };
     headers['Authorization'] = `Bearer ${session.access_token}`;
 
-    // Non impostare Content-Type se il body è FormData, il browser lo fa automaticamente.
     if (!(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     }
 
-    // Qui puoi inserire l'URL base del tuo backend se diverso dall'origine
-    // const fullUrl = `https://tuo-backend.com${url}`;
-    const response = await fetch(url, { ...options, headers });
+    // --- MODIFICA CHIAVE QUI ---
+    // Combiniamo l'URL base dal config con l'endpoint specifico della chiamata
+    const fullUrl = `${API_BASE_URL}${url}`;
+    
+    // Usiamo fullUrl per la chiamata fetch
+    const response = await fetch(fullUrl, { ...options, headers });
+    // -------------------------
 
-    // Se il backend restituisce 401, la sessione potrebbe essere scaduta lato server.
     if (response.status === 401) {
         await supabase.auth.signOut();
     }
 
     return response;
 }
-// Rendiamo la funzione disponibile globalmente
 window.apiFetch = apiFetch;
 
 
