@@ -1,167 +1,120 @@
 // js/main.js
 
-import { API_BASE_URL } from './config.js';
 import { supabase } from './supabase-client.js';
 import Legend from './legend.js';
 
-function getAuthToken() {
-    const sessionString = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    if (!sessionString) {
-        return null;
-    }
-    try {
-        const session = JSON.parse(sessionString);
-        return session.access_token; 
-    } catch (e) {
-        console.error("Errore nel parsing del token di sessione:", e);
-        return null;
-    }
-}
-
-function logoutUser(message) {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
-    
-    if (message) {
-        alert(message);
-    }
-    
-    console.log('Token rimosso. Reindirizzamento a login.html...');
-    window.location.href = 'login.html'; 
-}
-
-async function apiFetch(url, options = {}) {
-    const token = getAuthToken();
-    const headers = { ...options.headers };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    const fullUrl = `${API_BASE_URL}${url}`;
-    const response = await fetch(fullUrl, { ...options, headers });
-
-    if (response.status === 401) {
-        logoutUser("La tua sessione è scaduta o non è valida. Per favore, effettua nuovamente il login.");
-        throw new Error("Unauthorized"); 
-    }
-    return response;
-}
-
-window.apiFetch = apiFetch;
-
-function showModal({ title, message, confirmText, cancelText }) {
-    return new Promise(resolve => {
-        const overlay = document.getElementById('custom-modal-overlay');
-        const modalTitle = document.getElementById('custom-modal-title');
-        const modalMessage = document.getElementById('custom-modal-message');
-        const modalButtons = document.getElementById('custom-modal-buttons');
-        
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalButtons.innerHTML = '';
-
-        const confirmBtn = document.createElement('button');
-        confirmBtn.textContent = confirmText || 'OK';
-        confirmBtn.className = 'button button--primary';
-        modalButtons.appendChild(confirmBtn);
-        
-        confirmBtn.onclick = () => {
-            overlay.style.display = 'none';
-            resolve(true);
-        };
-
-        if (cancelText) {
-            const cancelBtn = document.createElement('button');
-            cancelBtn.textContent = cancelText;
-            cancelBtn.className = 'button';
-            modalButtons.appendChild(cancelBtn);
-            cancelBtn.onclick = () => {
-                overlay.style.display = 'none';
-                resolve(false);
-            };
-        }
-        
-        overlay.style.display = 'flex';
-    });
-}
-window.showModal = showModal;
-
-let legendInstance;
-let modalOverlay;
-
-let insertDataModalInstance; 
-let chatModalInstance;
-let trainingModalInstance;
-
+// Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
 let appInitialized = false;
 
-supabase.auth.onAuthStateChange((event, session) => {
-    // Aggiungiamo un log per vedere SEMPRE cosa succede
-    console.log(`[AUTH STATE CHANGE] Evento ricevuto: ${event}, Sessione:`, session);
+// Oggetto globale che conterrà i dati dell'utente e il suo profilo una volta loggato.
+// Sarà accessibile da altri script come `window.currentUser`.
+window.currentUser = null;
 
+// Il listener `onAuthStateChange` è l'UNICO punto di ingresso dell'applicazione.
+// Gestisce login, logout e il caricamento della sessione iniziale.
+supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log(`[AUTH STATE CHANGE] Evento: ${event}`, session);
+
+    // CASO 1: L'utente è loggato (nuovo login o sessione esistente) e l'app non è ancora partita.
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
-        console.log("CONDIZIONE SODDISFATTA: Supabase ha confermato una sessione valida. Avvio l'applicazione...");
-        appInitialized = true;
-        initializeApp(session.user);
-    } else if (event === 'SIGNED_OUT') {
-        console.log("EVENTO SIGNED_OUT: L'utente si è disconnesso, reindirizzamento al login.");
+        appInitialized = true; // Blocchiamo future inizializzazioni
+        await initializeApp(session.user); // Avviamo l'inizializzazione sicura
+    } 
+    // CASO 2: L'utente si è disconnesso.
+    else if (event === 'SIGNED_OUT') {
         appInitialized = false;
+        window.currentUser = null;
+        localStorage.removeItem('currentUserProfile'); // Pulizia extra per sicurezza
+        // Il reindirizzamento avviene qui, in un unico posto affidabile.
         window.location.href = 'login.html';
-    } else {
-        // QUESTO BLOCCO CI DIRA' PERCHE' L'APP NON PARTE
-        console.error("CONDIZIONE NON SODDISFATTA: L'app non verrà inizializzata.", {
-            evento: event,
-            sessione_esiste: !!session, // sarà true o false
-            app_gia_inizializzata: appInitialized
-        });
+    }
+    // CASO 3 (DEBUG): L'app non parte, logghiamo il perché.
+    else if (!session && (event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
+        console.log("Nessuna sessione valida trovata. L'utente deve effettuare il login.");
+        window.location.href = 'login.html';
     }
 });
 
-// Funzione di inizializzazione principale
-async function initializeApp(user) { // Aggiungiamo 'async' perché ora faremo una chiamata di rete
-    console.log("Applicazione inizializzata per l'utente:", user.email);
 
-    // --- NUOVO BLOCCO: RECUPERO E SALVATAGGIO DEL PROFILO ---
+/**
+ * Funzione di inizializzazione principale e sicura.
+ * Viene eseguita SOLO DOPO che onAuthStateChange ha confermato una sessione valida.
+ * Il suo scopo è caricare i dati essenziali dell'utente (profilo e ruolo).
+ * @param {object} user - L'oggetto utente fornito da Supabase.
+ */
+async function initializeApp(user) {
+    console.log("Fase 1: Inizializzazione per l'utente:", user.email);
+
     try {
-        const { data: profileData, error: profileError } = await supabase
+        // Chiamata CRITICA: recuperiamo il profilo dell'utente dalla tabella 'personale'.
+        // Questo include il suo ruolo e altri dettagli necessari all'app.
+        const { data: profile, error } = await supabase
             .from('personale')
-            .select('*')
-            .eq('id_auth_user', user.id)
-            .single();
+            .select('*') // Seleziona tutte le colonne del profilo
+            .eq('id_auth_user', user.id) // La chiave di join è l'ID utente di Supabase
+            .single(); // Ci aspettiamo un solo risultato
 
-        if (profileError) {
-            // Se non troviamo il profilo, l'app funziona lo stesso ma avvisiamo in console.
-            console.warn("Profilo utente non trovato nella tabella 'personale'.", profileError);
-        } else {
-            // Se lo troviamo, lo salviamo per un accesso rapido da altre parti dell'app.
-            localStorage.setItem('currentUserProfile', JSON.stringify(profileData));
-            console.log("Profilo utente caricato e salvato:", profileData);
+        // Se c'è un errore o il profilo non esiste, è una condizione critica.
+        if (error || !profile) {
+            throw new Error("Profilo utente non trovato o illeggibile. Impossibile procedere.");
         }
-    } catch (e) {
-        console.error("Errore imprevisto durante il recupero del profilo:", e);
+
+        // SUCCESSO: Salviamo l'utente e il suo profilo in un unico oggetto globale.
+        // Questo oggetto sarà la nostra "fonte di verità" per i permessi.
+        window.currentUser = { ...user, profile };
+        console.log("Fase 2: Profilo utente caricato con successo:", window.currentUser);
+
+        // Ora che abbiamo il profilo, possiamo avviare l'interfaccia utente.
+        setupUI();
+
+    } catch (error) {
+        console.error("ERRORE CRITICO in initializeApp:", error.message);
+        alert("Si è verificato un errore critico nel caricamento del tuo profilo. Verrai disconnesso per sicurezza.");
+        // Forziamo il logout per evitare che l'utente usi l'app in uno stato inconsistente.
+        await supabase.auth.signOut();
     }
-    // --- FINE NUOVO BLOCCO ---
+}
 
-    // 1. Inizializza le variabili principali (codice invariato)
-    legendInstance = new Legend();
-    modalOverlay = document.getElementById('modalOverlay'); 
-    insertDataModalInstance = document.getElementById('insertDataModal');
-    chatModalInstance = document.getElementById('chatModal');
-    trainingModalInstance = document.getElementById('trainingModal');
 
-    // 2. Collega gli eventi ai pulsanti (codice invariato)
+/**
+ * Imposta tutti gli elementi dell'interfaccia utente.
+ * Viene eseguita SOLO DOPO che initializeApp ha caricato con successo il profilo utente.
+ * Questo garantisce che qualsiasi logica sui permessi funzionerà correttamente.
+ */
+function setupUI() {
+    console.log("Fase 3: Avvio del setup dell'interfaccia utente.");
+
+    // Esempio di gestione permessi: nascondiamo un pulsante se l'utente non è admin.
+    // Assumiamo che nel tuo profilo ci sia una colonna booleana 'is_admin' o una colonna 'ruolo'.
+    const isAdmin = window.currentUser?.profile?.is_admin === true; // Adatta 'is_admin' al nome della tua colonna
+    const trainingButton = document.getElementById('openTrainingModalBtn');
+    
+    if (trainingButton && !isAdmin) {
+        console.log("Permessi: l'utente non è admin, nascondo il pulsante 'Addestramento'.");
+        trainingButton.style.display = 'none';
+    }
+    
+    // -----------------------------------------------------------------------------
+    // Inizializzazione di tutti i componenti e gli event listener dell'interfaccia.
+    // Questo codice è in gran parte quello che avevi prima.
+    // -----------------------------------------------------------------------------
+    
+    const legendInstance = new Legend();
+    const modalOverlay = document.getElementById('modalOverlay'); 
+    const insertDataModalInstance = document.getElementById('insertDataModal');
+    const chatModalInstance = document.getElementById('chatModal');
+    const trainingModalInstance = document.getElementById('trainingModal');
+
+    // Logout Button
     document.getElementById('logoutBtn')?.addEventListener('click', async (event) => {
         event.preventDefault();
-        localStorage.removeItem('currentUserProfile'); // Rimuoviamo il profilo al logout
+        // Svuotiamo l'oggetto utente prima di chiamare il logout.
+        window.currentUser = null; 
         await supabase.auth.signOut();
-        // onAuthStateChange gestirà il reindirizzamento
+        // Il reindirizzamento verrà gestito dal listener onAuthStateChange.
     });
 
+    // Modal Buttons
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
     document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);   
     document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
@@ -179,8 +132,7 @@ async function initializeApp(user) { // Aggiungiamo 'async' perché ora faremo u
         });
     }
 
-    // --- MODIFICA CHIAVE ---
-    // 3. Rendi le funzioni globali SOLO DOPO che tutto è stato inizializzato
+    // Rendiamo le funzioni e le istanze accessibili globalmente se necessario da altri script.
     window.legendInstance = legendInstance;
     window.modalOverlay = modalOverlay;
     
@@ -194,10 +146,19 @@ async function initializeApp(user) { // Aggiungiamo 'async' perché ora faremo u
     
     window.showSuccessFeedbackModal = showSuccessFeedbackModal;
     window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;
+
+    console.log("Fase 4: Interfaccia utente pronta e operativa.");
 }
 
-// Funzioni di gestione dei modali (la loro definizione non cambia)
+
+// ---------------------------------------------------------------------------
+// FUNZIONI HELPER (Gestione Modali)
+// La loro logica interna non cambia.
+// ---------------------------------------------------------------------------
+
 function openInsertDataModal() {
+    const insertDataModalInstance = document.getElementById('insertDataModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (insertDataModalInstance) {
         insertDataModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -206,6 +167,8 @@ function openInsertDataModal() {
 }
 
 function openChatModal() {
+    const chatModalInstance = document.getElementById('chatModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (chatModalInstance) {
         chatModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -213,6 +176,8 @@ function openChatModal() {
 }
 
 function openTrainingModal() {
+    const trainingModalInstance = document.getElementById('trainingModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (trainingModalInstance) {
         trainingModalInstance.style.display = 'block';
         modalOverlay.style.display = 'block';
@@ -220,22 +185,29 @@ function openTrainingModal() {
 }
 
 function closeInsertDataModal() {
+    const insertDataModalInstance = document.getElementById('insertDataModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (insertDataModalInstance) insertDataModalInstance.style.display = 'none';
     if (modalOverlay) modalOverlay.style.display = 'none';
     if (window.cleanupInsertDataModal) window.cleanupInsertDataModal();
 }
 
 function closeChatModal() {
+    const chatModalInstance = document.getElementById('chatModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (chatModalInstance) chatModalInstance.style.display = 'none';
     if (modalOverlay) modalOverlay.style.display = 'none';
 }
 
 function closeTrainingModal() {
+    const trainingModalInstance = document.getElementById('trainingModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     if (trainingModalInstance) trainingModalInstance.style.display = 'none';
     if (modalOverlay) modalOverlay.style.display = 'none';
 }
 
-// Funzioni per il modale di feedback (la loro definizione non cambia)
+
+// --- Funzioni per il modale di feedback (invariate) ---
 let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
 
 function showSuccessFeedbackModal(title, message, parentModalId) {
@@ -247,6 +219,7 @@ function showSuccessFeedbackModal(title, message, parentModalId) {
     feedbackModal.querySelector('#feedback-modal-message').textContent = message;
     parentModalToClose = document.getElementById(parentModalId);
 
+    const modalOverlay = document.getElementById('modalOverlay');
     feedbackModal.style.display = 'block';
     if (modalOverlay) modalOverlay.style.display = 'block';
 
@@ -271,6 +244,8 @@ function closeSuccessFeedbackModal() {
     clearTimeout(closeTimeout);
 
     if (feedbackModal) feedbackModal.style.display = 'none';
+
+    const modalOverlay = document.getElementById('modalOverlay');
 
     if (parentModalToClose) {
         const closeFunctionName = `close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`;
