@@ -1,7 +1,6 @@
 // js/main.js
 
 import { API_BASE_URL } from './config.js';
-import Legend from './legend.js';
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import Legend from './legend.js';
