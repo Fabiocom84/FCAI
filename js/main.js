@@ -58,7 +58,7 @@ window.apiFetch = apiFetch;
 
 // Il listener `onAuthStateChange` è l'UNICO punto di ingresso dell'applicazione.
 // Gestisce login, logout e il caricamento della sessione iniziale.
-supabase.auth.onAuthStateChange(async (event, session) => {
+/*supabase.auth.onAuthStateChange(async (event, session) => {
     console.log(`[AUTH STATE CHANGE] Evento: ${event}`, session);
 
     // CASO 1: L'utente è loggato (nuovo login o sessione esistente) e l'app non è ancora partita.
@@ -80,9 +80,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         window.location.href = 'login.html';
     }
 });
+*/
 
 
-/*
 // Avviamo l'app non appena la pagina è pronta, simulando un utente loggato.
 document.addEventListener('DOMContentLoaded', () => {
     console.warn("ATTENZIONE: Avvio in modalità di sviluppo con utente statico.");
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Avvia l'applicazione con questo utente.
     initializeApp(staticUser);
 });
-*/
+
 
 /**
  * Funzione di inizializzazione principale e sicura.
