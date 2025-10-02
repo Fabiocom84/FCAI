@@ -6,7 +6,7 @@ import { supabase } from './supabase-client.js';
 
 import Legend from './legend.js';
 
-window.supabase = supabase;
+//window.supabase = supabase;
 
 // Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
 let appInitialized = false;
@@ -58,7 +58,7 @@ window.apiFetch = apiFetch;
 
 // Il listener `onAuthStateChange` è l'UNICO punto di ingresso dell'applicazione.
 // Gestisce login, logout e il caricamento della sessione iniziale.
-supabase.auth.onAuthStateChange(async (event, session) => {
+/*supabase.auth.onAuthStateChange(async (event, session) => {
     console.log(`[AUTH STATE CHANGE] Evento: ${event}`, session);
 
     // CASO 1: L'utente è loggato (nuovo login o sessione esistente) e l'app non è ancora partita.
@@ -80,7 +80,21 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         window.location.href = 'login.html';
     }
 });
+*/
 
+// Avviamo l'app non appena la pagina è pronta, simulando un utente loggato.
+document.addEventListener('DOMContentLoaded', () => {
+    console.warn("ATTENZIONE: Avvio in modalità di sviluppo con utente statico.");
+
+    // Crea un oggetto "utente" finto.
+    const staticUser = {
+        id: '0c668089-22f8-421a-bb48-dc7ca0f9042e', // <-- IMPORTANTE!
+        email: 'fcomazzetto@apispa.net'
+    };
+
+    // Avvia l'applicazione con questo utente.
+    initializeApp(staticUser);
+});
 
 /**
  * Funzione di inizializzazione principale e sicura.
