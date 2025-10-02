@@ -4,8 +4,6 @@ import { API_BASE_URL } from './config.js';
 
 import { supabase } from './supabase-client.js';
 
-import Legend from './legend.js';
-
 // Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
 let appInitialized = false;
 
