@@ -6,6 +6,8 @@ import { supabase } from './supabase-client.js';
 
 import Legend from './legend.js';
 
+window.supabase = supabase;
+
 // Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
 let appInitialized = false;
 
