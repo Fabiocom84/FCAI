@@ -1,8 +1,23 @@
 // js/main.js
 
 import { API_BASE_URL } from './config.js';
-import { supabase } from './supabase-client.js';
 import Legend from './legend.js';
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import Legend from './legend.js';
+
+// --- INIZIALIZZAZIONE FORZATA PER TEST ---
+const supabaseUrl = 'https://mqfhsiezsorpdnskcsgw.supabase.co';
+// Usa la chiave ANON CORRETTA presa dalla tua dashboard
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZmhzaWV6c29ycGRuc2tjc2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MjY3NTgsImV4cCI6MjA3MzEwMjc1OH0.JImF22KAyhAVDdVTvDWF3nwv2CyQIt8aiT66IghSFqI';
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+});
 
 // Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
 let appInitialized = false;
