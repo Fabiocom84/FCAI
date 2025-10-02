@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     togglePasswordBtn?.addEventListener('click', () => {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        togglePasswordBtn.src = type === 'text' ? 'img/eye-off.png' : 'img/eye.png';
+        togglePasswordBtn.src = type === 'text' ? 'img/eye.png' : 'img/eye.png';
     });
 
     async function handleLogin(event) {
