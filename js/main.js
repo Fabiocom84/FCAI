@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase-client.js';
 import { apiFetch } from './api-client.js'; // Importiamo la funzione condivisa
+import Legend from './legend.js';
 
 // Variabili di stato
 let appInitialized = false;
@@ -38,8 +39,8 @@ async function initializeApp(user) {
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
         alert("Errore nel caricamento del profilo. Verrai disconnesso.");
-        //await supabase.auth.signOut();
-        //window.location.href = 'login.html';
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
     }
 }
 
