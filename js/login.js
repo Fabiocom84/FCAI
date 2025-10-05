@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Credenziali non valide');
 
-            // SALVA SIA LA CHIAVE CHE IL PROFILO
-            localStorage.setItem('custom_session_token', data.custom_token);
-            localStorage.setItem('user_profile', JSON.stringify(data.profile)); // Il profilo viene salvato come testo
+            // Salviamo il token standard e il profilo
+            localStorage.setItem('session_token', data.token);
+            localStorage.setItem('user_profile', JSON.stringify(data.profile));
                     
             window.location.href = 'index.html';
 

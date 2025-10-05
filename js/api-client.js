@@ -27,9 +27,10 @@ export async function publicApiFetch(url, options = {}) {
 export async function apiFetch(url, options = {}) {
     const headers = { ...options.headers };
 
-    const token = localStorage.getItem('custom_session_token');
+    const token = localStorage.getItem('session_token');
     if (token) {
-        headers['X-Custom-Auth'] = token; // Usa l'header personalizzato
+        // Ora usiamo l'header standard 'Authorization'
+        headers['Authorization'] = `Bearer ${token}`;
     } else {
         // Se non c'è il token, reindirizza al login
         console.error("apiFetch: Token di sessione personalizzato non trovato. Reindirizzo al login.");
