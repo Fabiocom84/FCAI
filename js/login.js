@@ -2,6 +2,8 @@
 
 import { supabase } from './supabase-client.js';
 
+import { apiFetch } from './api-client.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');

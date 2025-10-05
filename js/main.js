@@ -6,6 +6,8 @@ import { supabase } from './supabase-client.js';
 
 import Legend from './legend.js';
 
+import { apiFetch } from './api-client.js';
+
 //window.supabase = supabase;
 
 // Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
@@ -22,37 +24,8 @@ window.currentUser = null;
  * @param {string} url - L'endpoint dell'API da chiamare (es. '/api/registrazioni').
  * @param {object} options - Le opzioni standard della funzione fetch (method, body, etc.).
  * @returns {Promise<Response>} La risposta dalla fetch.
- */
-async function apiFetch(url, options = {}) {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+*/
 
-    if (sessionError || !session) {
-        console.error("Sessione non valida o scaduta. Rilevato da apiFetch.");
-        await supabase.auth.signOut();
-        throw new Error("La tua sessione non è valida. Effettua nuovamente il login.");
-    }
-
-    const headers = { ...options.headers };
-    headers['Authorization'] = `Bearer ${session.access_token}`;
-
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    // --- MODIFICA CHIAVE QUI ---
-    // Combiniamo l'URL base dal config con l'endpoint specifico della chiamata
-    const fullUrl = `${API_BASE_URL}${url}`;
-    
-    // Usiamo fullUrl per la chiamata fetch
-    const response = await fetch(fullUrl, { ...options, headers });
-    // -------------------------
-
-    if (response.status === 401) {
-        await supabase.auth.signOut();
-    }
-
-    return response;
-}
 window.apiFetch = apiFetch;
 
 
