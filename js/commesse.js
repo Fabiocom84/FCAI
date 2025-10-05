@@ -1,7 +1,6 @@
 // js/commesse.js
 
 import { apiFetch } from './api-client.js';
-import { authReady } from './auth-guard.js';
 
 const App = {
     state: {
@@ -244,10 +243,10 @@ const App = {
     }
 };
 
-authReady.then((session) => {
-    console.log('Promessa di autenticazione mantenuta. Avvio App Commesse per l-utente:', session.user.email);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Pagina pronta e guardia passata. Avvio App Commesse.');
     App.init();
 });
 
 // Rendiamo la funzione di refresh disponibile globalmente
-window.refreshCommesseView = () => App.fetchCommesse(true);
+window.refreshComesseView = () => App.fetchComesse(true);

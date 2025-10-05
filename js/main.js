@@ -4,7 +4,7 @@ import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
 
 let appInitialized = false;
-window.currentUserProfile = null; // Salveremo il profilo utente qui
+window.currentUserProfile = null;
 
 // La guardia ha già fatto il suo lavoro. Partiamo appena la pagina è pronta.
 document.addEventListener('DOMContentLoaded', () => {

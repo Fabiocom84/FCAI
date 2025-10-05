@@ -1,6 +1,7 @@
 // js/insert-data-modal.js
 
 import { apiFetch } from './api-client.js';
+import { showModal } from './shared-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -70,7 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- GESTIONE DEGLI EVENTI ---
 
-    closeInsertDataModalBtn.addEventListener('click', () => window.closeInsertDataModal());
+    closeInsertDataModalBtn.addEventListener('click', () => {
+        if(window.closeInsertDataModal) window.closeInsertDataModal();
+    });
     saveButton.addEventListener('click', saveData);
     fileUploadInput.addEventListener('change', handleFileUpload);
     startButton.addEventListener('click', startRecording);
@@ -129,10 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore durante il salvataggio.');
             }
 
-            window.showSuccessFeedbackModal('INSERISCI DATI', 'Dati salvati con successo!', 'insertDataModal');
+            if (window.showSuccessFeedbackModal) {
+                window.showSuccessFeedbackModal('INSERISCI DATI', 'Dati salvati con successo!', 'insertDataModal');
+            }
 
         } catch (error) {
-            await window.showModal({
+            await showModal({
                 title: 'ERRORE NEL SALVATAGGIO',
                 message: `Salvataggio fallito: ${error.message}`,
                 confirmText: 'Chiudi'
