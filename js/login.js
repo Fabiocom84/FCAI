@@ -2,7 +2,7 @@
 
 import { supabase } from './supabase-client.js';
 
-import { apiFetch } from './api-client.js';
+import { publicApiFetch } from './api-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // 1. Chiamiamo il nostro backend per fare da assistente al login
-            const response = await apiFetch('/api/assistente-login', {
+            const response = await publicApiFetch('/api/assistente-login', {
                 method: 'POST',
                 body: JSON.stringify({ email: email, password: password }),
                 isPublic: true

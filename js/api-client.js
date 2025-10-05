@@ -1,15 +1,35 @@
-// js/api-client.js (Versione Finale)
+// js/api-client.js (Versione Finale Definitiva)
 
 import { API_BASE_URL } from './config.js';
 
+/**
+ * Funzione per le chiamate API PUBBLICHE (es. login).
+ * Non controlla la sessione e non invia token.
+ */
+export async function publicApiFetch(url, options = {}) {
+    const headers = { ...options.headers };
+
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const response = await fetch(fullUrl, { ...options, headers });
+
+    return response;
+}
+
+
+/**
+ * Funzione per le chiamate API PRIVATE (autenticate).
+ * Controlla che esista una sessione e invia il token.
+ */
 export async function apiFetch(url, options = {}) {
     const headers = { ...options.headers };
 
-    // Usa il "testimone" (la sessione) che la guardia ha già verificato e salvato.
     if (window.currentSession && window.currentSession.access_token) {
         headers['Authorization'] = `Bearer ${window.currentSession.access_token}`;
     } else {
-        // Questo errore non dovrebbe mai accadere, ma è una sicurezza in più.
         throw new Error("Chiamata API fallita: la sessione non è stata inizializzata correttamente.");
     }
 
