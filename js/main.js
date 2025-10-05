@@ -1,49 +1,41 @@
-// js/main.js - Logica Esclusiva per index.html
+// js/main.js (Versione Definitiva)
 
-import { supabase } from './supabase-client.js';
-import { apiFetch } from './api-client.js'; // Importiamo la funzione condivisa
+import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
-import { authReady } from './auth-guard.js';
 
-// Variabili di stato
 let appInitialized = false;
-window.currentUser = null;
+window.currentUserProfile = null; // Salveremo il profilo utente qui
 
-authReady.then(session => {
-    if (!window.appInitialized) {
-        window.appInitialized = true;
-        initializeApp(session.user);
+// La guardia ha già fatto il suo lavoro. Partiamo appena la pagina è pronta.
+document.addEventListener('DOMContentLoaded', () => {
+    if (!appInitialized) {
+        appInitialized = true;
+        initializeApp();
     }
 });
 
-// Inizializzazione dell'app: recupera il profilo e avvia l'UI
-async function initializeApp(user) {
-    console.log("Fase 1: Inizializzazione per l'utente:", user.email);
+async function initializeApp() {
+    console.log("Fase 1: Inizializzazione basata su token personalizzato.");
     try {
-        // NON facciamo più un secondo getSession(). Usiamo la sessione che
-        // auth-guard.js ha già verificato e salvato in window.currentSession.
-        const session = window.currentSession;
-        if (!session) throw new Error("La sessione non è stata correttamente inizializzata dalla guardia.");
+        // Chiamiamo il nostro backend per chiederci "chi siamo".
+        // apiFetch includerà automaticamente la nostra "chiave del valletto".
+        const response = await apiFetch('/api/me');
+        const profile = await response.json();
 
-        // Usiamo il token dalla sessione già verificata per il nostro workaround.
-        const response = await fetch(
-            `${supabase.supabaseUrl}/rest/v1/personale?select=*&id_auth_user=eq.${user.id}`, 
-            { headers: { 'apikey': supabase.supabaseKey, 'Authorization': `Bearer ${session.access_token}` } }
-        );
-        const profiles = await response.json();
-        if (!response.ok || !profiles || profiles.length === 0) throw new Error("Profilo utente non trovato.");
-        
-        const profile = profiles[0];
-        window.currentUser = { ...user, profile };
-        console.log("Fase 2: Profilo utente caricato con successo.");
+        if (!response.ok) {
+            throw new Error(profile.message || "Impossibile recuperare il profilo utente.");
+        }
+
+        // Salviamo il profilo per usarlo in tutta l'app
+        window.currentUserProfile = profile;
+        console.log("Fase 2: Profilo utente caricato con successo:", profile);
         setupUI();
 
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
-        alert("Errore nel caricamento del profilo. Verrai disconnesso.");
-        
-        // Riattiviamo il logout di sicurezza
-        await supabase.auth.signOut();
+        alert("La tua sessione non è valida o è scaduta. Verrai disconnesso.");
+        // Se il profilo non viene caricato, la chiave è rotta. La cancelliamo e torniamo al login.
+        localStorage.removeItem('custom_session_token');
         window.location.href = 'login.html';
     }
 }
@@ -57,34 +49,24 @@ async function initializeApp(user) {
 function setupUI() {
     console.log("Fase 3: Avvio del setup dell'interfaccia utente.");
 
-    // Esempio di gestione permessi: nascondiamo un pulsante se l'utente non è admin.
-    // Assumiamo che nel tuo profilo ci sia una colonna booleana 'is_admin' o una colonna 'ruolo'.
-    const isAdmin = window.currentUser?.profile?.is_admin === true; // Adatta 'is_admin' al nome della tua colonna
-    const trainingButton = document.getElementById('openTrainingModalBtn');
-    
-    if (trainingButton && !isAdmin) {
-        console.log("Permessi: l'utente non è admin, nascondo il pulsante 'Addestramento'.");
-        trainingButton.style.display = 'none';
-    }
-    
-    // -----------------------------------------------------------------------------
-    // Inizializzazione di tutti i componenti e gli event listener dell'interfaccia.
-    // Questo codice è in gran parte quello che avevi prima.
-    // -----------------------------------------------------------------------------
-    
     const legendInstance = new Legend();
     const modalOverlay = document.getElementById('modalOverlay'); 
     const insertDataModalInstance = document.getElementById('insertDataModal');
     const chatModalInstance = document.getElementById('chatModal');
     const trainingModalInstance = document.getElementById('trainingModal');
 
-    // Logout Button
-    document.getElementById('logoutBtn')?.addEventListener('click', async (event) => {
+    // Ora i controlli sui permessi usano il nostro profilo salvato.
+    const isAdmin = window.currentUserProfile?.is_admin === true;
+    const trainingButton = document.getElementById('openTrainingModalBtn');
+    if (trainingButton && !isAdmin) {
+        trainingButton.style.display = 'none';
+    }
+
+    // Il logout ora deve cancellare la nostra chiave.
+    document.getElementById('logoutBtn')?.addEventListener('click', (event) => {
         event.preventDefault();
-        // Svuotiamo l'oggetto utente prima di chiamare il logout.
-        window.currentUser = null; 
-        await supabase.auth.signOut();
-        // Il reindirizzamento verrà gestito dal listener onAuthStateChange.
+        localStorage.removeItem('custom_session_token');
+        window.location.href = 'login.html';
     });
 
     // Modal Buttons
