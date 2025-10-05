@@ -8,11 +8,11 @@ import Legend from './legend.js';
 let appInitialized = false;
 window.currentUser = null;
 
-window.authReady.then(user => {
+window.authReady.then(session => {
     // La guardia ha già verificato l'utente, possiamo partire subito.
     if (!window.appInitialized) {
         window.appInitialized = true;
-        initializeApp(user);
+        initializeApp(session.user);
     }
 });
 
