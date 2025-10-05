@@ -1,19 +1,22 @@
-// js/api-client.js (Versione Definitiva)
+// js/api-client.js (Versione Definitiva e Corretta)
 
 import { API_BASE_URL } from './config.js';
+import { supabase } from './supabase-client.js';
 
 export async function apiFetch(url, options = {}) {
-    const headers = { ...options.headers };
+    // Chiediamo a Supabase la sessione PIU' RECENTE disponibile, un attimo prima della chiamata.
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    // Ora non chiediamo più la sessione, la leggiamo dalla variabile globale
-    // che auth-guard.js ha preparato per noi.
-    if (window.currentSession && window.currentSession.access_token) {
-        headers['Authorization'] = `Bearer ${window.currentSession.access_token}`;
-    } else {
-        // Se per qualche motivo la sessione non c'è, lanciamo un errore.
-        // Questo non dovrebbe succedere grazie alla guardia.
-        throw new Error("Impossibile effettuare la chiamata API: sessione non trovata.");
+    // Se, anche chiedendo ora, non c'è una sessione valida, allora l'utente non è loggato.
+    if (sessionError || !session) {
+        console.error("apiFetch: Tentativo di chiamata API senza una sessione valida.");
+        // Reindirizziamo al login per sicurezza
+        window.location.replace('login.html');
+        throw new Error("Sessione non valida o scaduta.");
     }
+
+    const headers = { ...options.headers };
+    headers['Authorization'] = `Bearer ${session.access_token}`;
 
     if (!(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
