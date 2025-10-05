@@ -11,22 +11,31 @@ import { supabase } from './supabase-client.js';
  * @returns {Promise<Response>} La risposta dalla fetch.
  */
 export async function apiFetch(url, options = {}) {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-    if (sessionError || !session) {
-        console.error("Sessione non valida o scaduta. Rilevato da apiFetch.");
-        // Non facciamo il signOut qui per evitare loop, lo gestirà chi chiama la funzione.
-        throw new Error("La tua sessione non è valida. Effettua nuovamente il login.");
-    }
-
+    // Estraiamo la nostra nuova opzione. Di default, le chiamate sono private.
+    const isPublic = options.isPublic || false;
+    
     const headers = { ...options.headers };
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+
+    // Se la chiamata NON è pubblica, eseguiamo i controlli di sicurezza
+    if (!isPublic) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+            console.error("Sessione non valida o scaduta. Rilevato da apiFetch.");
+            throw new Error("La tua sessione non è valida. Effettua nuovamente il login.");
+        }
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
 
     if (!(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     }
 
     const fullUrl = `${API_BASE_URL}${url}`;
+    
+    // Rimuoviamo la nostra opzione custom prima di fare la chiamata fetch
+    delete options.isPublic;
+    
     const response = await fetch(fullUrl, { ...options, headers });
 
     if (response.status === 401) {

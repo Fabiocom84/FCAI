@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Chiamiamo il nostro backend per fare da assistente al login
             const response = await apiFetch('/api/assistente-login', {
                 method: 'POST',
-                body: JSON.stringify({ email: email, password: password })
+                body: JSON.stringify({ email: email, password: password }),
+                isPublic: true
             });
 
             const sessionData = await response.json();
