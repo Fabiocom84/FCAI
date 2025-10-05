@@ -1,7 +1,5 @@
 // js/login.js
 
-import { supabase } from './supabase-client.js';
-
 import { publicApiFetch } from './api-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,24 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 isPublic: true
             });
 
-            const sessionData = await response.json();
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
 
-            // 2. Se il backend ci dà un errore, lo mostriamo
-            if (!response.ok) {
-                throw new Error(sessionData.error || 'Credenziali non valide.');
-            }
-
-            // 3. Se il backend ci dà i token, li usiamo per impostare la sessione
-            const { error } = await supabase.auth.setSession({
-                access_token: sessionData.access_token,
-                refresh_token: sessionData.refresh_token,
-            });
-
-            if (error) {
-                throw new Error('Errore nell\'impostare la sessione nel browser.');
-            }
-            
-            // 4. Se tutto è andato bene, andiamo alla pagina principale
+            // SALVA la nostra chiave del valletto nel localStorage
+            localStorage.setItem('custom_session_token', data.custom_token);
+                    
             window.location.href = 'index.html';
 
         } catch (error) {

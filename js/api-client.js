@@ -1,14 +1,40 @@
-// js/api-client.js (Versione Definitiva)
+// js/api-client.js (Versione Finale Completa)
+
 import { API_BASE_URL } from './config.js';
 
+/**
+ * Funzione per le chiamate API PUBBLICHE (es. login).
+ * Non controlla la sessione e non invia token.
+ */
+export async function publicApiFetch(url, options = {}) {
+    const headers = { ...options.headers };
+
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const response = await fetch(fullUrl, { ...options, headers });
+
+    return response;
+}
+
+
+/**
+ * Funzione per le chiamate API PRIVATE (autenticate).
+ * Controlla che esista il nostro token personalizzato e lo invia.
+ */
 export async function apiFetch(url, options = {}) {
     const headers = { ...options.headers };
 
-    // Usa la sessione che la guardia ha già verificato. Niente più controlli qui.
-    if (window.currentSession && window.currentSession.access_token) {
-        headers['Authorization'] = `Bearer ${window.currentSession.access_token}`;
+    const token = localStorage.getItem('custom_session_token');
+    if (token) {
+        headers['X-Custom-Auth'] = token; // Usa l'header personalizzato
     } else {
-        throw new Error("Chiamata API fallita: la sessione non è stata inizializzata correttamente da auth-guard.");
+        // Se non c'è il token, reindirizza al login
+        console.error("apiFetch: Token di sessione personalizzato non trovato. Reindirizzo al login.");
+        window.location.replace('login.html');
+        throw new Error("Token di sessione personalizzato non trovato.");
     }
 
     if (!(options.body instanceof FormData)) {
@@ -18,10 +44,11 @@ export async function apiFetch(url, options = {}) {
     const fullUrl = `${API_BASE_URL}${url}`;
     const response = await fetch(fullUrl, { ...options, headers });
 
-    // Se otteniamo un 401, significa che il token è davvero scaduto.
-    // L'utente verrà reindirizzato al login al prossimo caricamento pagina.
     if (response.status === 401) {
-        console.error("Il backend ha restituito 401. Il token potrebbe essere definitivamente scaduto.");
+        console.error("Il backend ha restituito 401. Il token personalizzato potrebbe essere scaduto o non valido.");
+        // In caso di token non valido, cancelliamo quello vecchio e forziamo un nuovo login
+        localStorage.removeItem('custom_session_token');
+        window.location.replace('login.html');
     }
     
     return response;
