@@ -21,17 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.style.display = 'none';
         const email = loginForm.email.value;
         const password = loginForm.password.value;
+
         try {
             const response = await publicApiFetch('/api/assistente-login', {
                 method: 'POST',
                 body: JSON.stringify({ email: email, password: password })
             });
+
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Credenziali non valide');
 
-            // NON salviamo più qui. Passiamo il token nell'URL.
-            // localStorage.setItem('custom_session_token', data.custom_token);
-            window.location.replace(`index.html#token=${data.custom_token}`);
+            // SALVA SIA LA CHIAVE CHE IL PROFILO
+            localStorage.setItem('custom_session_token', data.custom_token);
+            localStorage.setItem('user_profile', JSON.stringify(data.profile)); // Il profilo viene salvato come testo
+                    
+            window.location.href = 'index.html';
 
         } catch (error) {
             errorMessage.textContent = error.message;

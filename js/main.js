@@ -15,18 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
-    console.log("Fase 1: Inizializzazione basata su token personalizzato.");
+    console.log("Fase 1: Inizializzazione basata su profilo locale.");
     try {
-        // Chiamiamo il nostro backend per chiederci "chi siamo".
-        // apiFetch includerà automaticamente la nostra "chiave del valletto".
-        const response = await apiFetch('/api/me');
-        const profile = await response.json();
-
-        if (!response.ok) {
-            throw new Error(profile.message || "Impossibile recuperare il profilo utente.");
+        // LEGGE IL PROFILO DIRETTAMENTE DALLO STORAGE
+        const profileString = localStorage.getItem('user_profile');
+        if (!profileString) {
+            throw new Error("Profilo utente non trovato nella sessione locale.");
         }
-
-        // Salviamo il profilo per usarlo in tutta l'app
+        
+        const profile = JSON.parse(profileString);
         window.currentUserProfile = profile;
         console.log("Fase 2: Profilo utente caricato con successo:", profile);
         setupUI();
@@ -34,8 +31,8 @@ async function initializeApp() {
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
         alert("La tua sessione non è valida o è scaduta. Verrai disconnesso.");
-        // Se il profilo non viene caricato, la chiave è rotta. La cancelliamo e torniamo al login.
         localStorage.removeItem('custom_session_token');
+        localStorage.removeItem('user_profile');
         window.location.href = 'login.html';
     }
 }
