@@ -1,5 +1,7 @@
 // js/insert-data-modal.js
 
+import { apiFetch } from './api-client.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     
     const insertDataModal = document.getElementById('insertDataModal');
@@ -81,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!choicesInstance) return;
         
         try {
-            const response = await window.apiFetch('/api/get-etichette');
+            const response = await apiFetch('/api/get-etichette');
             if (!response.ok) throw new Error('Errore di rete nel caricamento delle commesse.');
             
             const items = await response.json();
@@ -117,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Il campo 'riferimento' con l'ID della commessa viene già preso da FormData
 
         try {
-            const response = await window.apiFetch('/api/registrazioni', {
+            const response = await apiFetch('/api/registrazioni', {
                 method: 'POST',
                 body: formData
             });
@@ -205,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('audio', audioBlob, 'recording.webm');
         
         try {
-            const response = await window.apiFetch('/api/transcribe-voice', {
+            const response = await apiFetch('/api/transcribe-voice', {
                 method: 'POST',
                 body: formData
             });
