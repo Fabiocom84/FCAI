@@ -20,16 +20,18 @@ authReady.then(session => {
 async function initializeApp(user) {
     console.log("Fase 1: Inizializzazione per l'utente:", user.email);
     try {
-        // WORKAROUND per il bug di Supabase: usiamo fetch manuale
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error("Sessione non trovata per il recupero del profilo.");
+        // NON facciamo più un secondo getSession(). Usiamo la sessione che
+        // auth-guard.js ha già verificato e salvato in window.currentSession.
+        const session = window.currentSession;
+        if (!session) throw new Error("La sessione non è stata correttamente inizializzata dalla guardia.");
 
+        // Usiamo il token dalla sessione già verificata per il nostro workaround.
         const response = await fetch(
             `${supabase.supabaseUrl}/rest/v1/personale?select=*&id_auth_user=eq.${user.id}`, 
             { headers: { 'apikey': supabase.supabaseKey, 'Authorization': `Bearer ${session.access_token}` } }
         );
         const profiles = await response.json();
-        if (!response.ok || !profiles || profiles.length === 0) throw new Error("Profilo non trovato.");
+        if (!response.ok || !profiles || profiles.length === 0) throw new Error("Profilo utente non trovato.");
         
         const profile = profiles[0];
         window.currentUser = { ...user, profile };
@@ -39,8 +41,10 @@ async function initializeApp(user) {
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
         alert("Errore nel caricamento del profilo. Verrai disconnesso.");
-        //await supabase.auth.signOut();
-        //window.location.href = 'login.html';
+        
+        // Riattiviamo il logout di sicurezza
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
     }
 }
 
