@@ -1,4 +1,4 @@
-// js/auth-guard.js (Versione Definitiva e Corretta)
+// js/auth-guard.js (Versione Definitiva)
 
 import { supabase } from './supabase-client.js';
 
@@ -8,7 +8,7 @@ window.authReady = new Promise(resolve => {
 
         if (session) {
             console.log("AuthGuard: Sessione valida trovata. L'applicazione può partire.");
-            resolve(session.user); // Manteniamo la promessa per avviare gli script delle pagine
+            resolve(session.user); // Manteniamo la promessa per avviare gli script
         } else {
             console.log("AuthGuard: Nessuna sessione trovata. Reindirizzamento al login.");
             window.location.replace('login.html');
