@@ -1,111 +1,45 @@
-// js/main.js
-
-import { API_BASE_URL } from './config.js';
+// js/main.js - Logica Esclusiva per index.html
 
 import { supabase } from './supabase-client.js';
+import { apiFetch } from './api-client.js'; // Importiamo la funzione condivisa
 
-import Legend from './legend.js';
-
-import { apiFetch } from './api-client.js';
-
-//window.supabase = supabase;
-
-// Variabile di stato per assicurarsi che l'app venga inizializzata una sola volta.
+// Variabili di stato
 let appInitialized = false;
-
-// Oggetto globale che conterrà i dati dell'utente e il suo profilo una volta loggato.
-// Sarà accessibile da altri script come `window.currentUser`.
 window.currentUser = null;
 
-// --- NUOVA FUNZIONE APIFETCH SICURA ---
-/**
- * Esegue una chiamata fetch sicura verso il backend, includendo automaticamente
- * il token di autenticazione di Supabase.
- * @param {string} url - L'endpoint dell'API da chiamare (es. '/api/registrazioni').
- * @param {object} options - Le opzioni standard della funzione fetch (method, body, etc.).
- * @returns {Promise<Response>} La risposta dalla fetch.
-*/
-
-window.apiFetch = apiFetch;
-
-
-// Il listener `onAuthStateChange` è l'UNICO punto di ingresso dell'applicazione.
-// Gestisce login, logout e il caricamento della sessione iniziale.
+// Gestione dell'autenticazione per la pagina principale
 supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log(`[AUTH STATE CHANGE] Evento: ${event}`, session);
-
-    // CASO 1: L'utente è loggato (nuovo login o sessione esistente) e l'app non è ancora partita.
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
-        appInitialized = true; // Blocchiamo future inizializzazioni
-        await initializeApp(session.user); // Avviamo l'inizializzazione sicura
+        appInitialized = true;
+        await initializeApp(session.user);
     } 
-    // CASO 2: L'utente si è disconnesso.
-    else if (event === 'SIGNED_OUT') {
-        appInitialized = false;
-        window.currentUser = null;
-        localStorage.removeItem('currentUserProfile'); // Pulizia extra per sicurezza
-        // Il reindirizzamento avviene qui, in un unico posto affidabile.
-        window.location.href = 'login.html';
-    }
-    // CASO 3 (DEBUG): L'app non parte, logghiamo il perché.
-    else if (!session && (event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
-        console.log("Nessuna sessione valida trovata. L'utente deve effettuare il login.");
-        window.location.href = 'login.html';
-    }
 });
 
-/*
-// Avviamo l'app non appena la pagina è pronta, simulando un utente loggato.
-document.addEventListener('DOMContentLoaded', () => {
-    console.warn("ATTENZIONE: Avvio in modalità di sviluppo con utente statico.");
-
-    // Crea un oggetto "utente" finto.
-    const staticUser = {
-        id: '0c668089-22f8-421a-bb48-dc7ca0f9042e', // <-- IMPORTANTE!
-        email: 'fcomazzetto@apispa.net'
-    };
-
-    // Avvia l'applicazione con questo utente.
-    initializeApp(staticUser);
-});
-*/
-
-/**
- * Funzione di inizializzazione principale e sicura.
- * Viene eseguita SOLO DOPO che onAuthStateChange ha confermato una sessione valida.
- * Il suo scopo è caricare i dati essenziali dell'utente (profilo e ruolo).
- * @param {object} user - L'oggetto utente fornito da Supabase.
- */
+// Inizializzazione dell'app: recupera il profilo e avvia l'UI
 async function initializeApp(user) {
     console.log("Fase 1: Inizializzazione per l'utente:", user.email);
-
     try {
-        // Chiamata CRITICA: recuperiamo il profilo dell'utente dalla tabella 'personale'.
-        // Questa è la chiamata che ora dovrebbe funzionare grazie alla policy RLS.
-        const { data: profile, error } = await supabase
-            .from('personale')
-            .select('*') // Seleziona tutte le colonne del profilo
-            .eq('id_auth_user', user.id) // La chiave di join è l'ID utente di Supabase
-            .single(); // Ci aspettiamo un solo risultato
+        // WORKAROUND per il bug di Supabase: usiamo fetch manuale
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Sessione non trovata per il recupero del profilo.");
 
-        // Se c'è un errore (es. la policy blocca) o il profilo non esiste, fermati.
-        if (error || !profile) {
-            console.error("ERRORE durante la chiamata a Supabase:", error);
-            throw new Error("Profilo utente non trovato o illeggibile. Controlla le policy RLS sulla tabella 'personale'.");
-        }
-
-        // SUCCESSO: Salviamo l'utente e il suo profilo.
+        const response = await fetch(
+            `${supabase.supabaseUrl}/rest/v1/personale?select=*&id_auth_user=eq.${user.id}`, 
+            { headers: { 'apikey': supabase.supabaseKey, 'Authorization': `Bearer ${session.access_token}` } }
+        );
+        const profiles = await response.json();
+        if (!response.ok || !profiles || profiles.length === 0) throw new Error("Profilo non trovato.");
+        
+        const profile = profiles[0];
         window.currentUser = { ...user, profile };
-        console.log("Fase 2: Profilo utente caricato con successo:", window.currentUser);
-
-        // Ora che abbiamo il profilo, possiamo avviare l'interfaccia utente.
+        console.log("Fase 2: Profilo utente caricato con successo.");
         setupUI();
 
     } catch (error) {
         console.error("ERRORE CRITICO in initializeApp:", error.message);
-        alert("Si è verificato un errore critico nel caricamento del tuo profilo. Verrai disconnesso per sicurezza.");
-        // Forziamo il logout per evitare che l'utente usi l'app in uno stato inconsistente.
+        alert("Errore nel caricamento del profilo. Verrai disconnesso.");
         await supabase.auth.signOut();
+        window.location.href = 'login.html';
     }
 }
 

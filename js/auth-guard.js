@@ -1,43 +1,39 @@
-// js/auth-guard.js
+// js/auth-guard.js (Versione Definitiva)
 
 import { supabase } from './supabase-client.js';
 
-// Funzione di controllo più robusta
-async function checkAuthWithPatience() {
-    // Il client Supabase ha bisogno di un momento per processare il token
-    // che arriva nell'URL da un magic link.
-    // Attendiamo l'evento 'INITIAL_SESSION' che ci dice quando ha finito.
+async function verifyAuth() {
+    // 1. Controlla se esiste già una sessione valida.
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Se troviamo subito una sessione (utente già loggato), tutto ok.
     if (session) {
-        console.log("Sessione valida trovata immediatamente dalla guardia:", session.user.email);
-        return;
+        console.log("AuthGuard: Sessione valida trovata.", session.user.email);
+        return; // L'utente è loggato, la guardia ha finito il suo lavoro.
     }
 
-    // Se non c'è una sessione, potrebbe essere in arrivo dal magic link.
-    // Diamo al client un'ultima possibilità aspettando l'evento SIGNED_IN.
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        // Se arriva l'evento di login, l'utente è dentro.
-        // Possiamo smettere di ascoltare e considerare il controllo superato.
-        if (event === 'SIGNED_IN') {
-            console.log("Sessione creata con successo dal magic link/redirect.");
-            authListener.subscription.unsubscribe();
+    // 2. Se non c'è sessione, controlla se siamo appena arrivati da un link speciale (login, magic link, etc.)
+    // La funzione handleSessionFromUrl() rileva il token nell'URL, crea la sessione e lo rimuove dall'URL.
+    try {
+        const { error } = await supabase.auth.handleRedirectReturn();
+        if (!error) {
+             // Se non ci sono errori, significa che la sessione potrebbe essere stata appena creata.
+             // Facciamo un ultimo controllo.
+             const { data: { session: newSession } } = await supabase.auth.getSession();
+             if (newSession) {
+                 console.log("AuthGuard: Sessione creata con successo dal redirect.");
+                 // Ricarichiamo la pagina per assicurarci che l'app parta con lo stato corretto.
+                 window.location.replace(window.location.pathname);
+                 return;
+             }
         }
-    });
+    } catch (e) {
+        // Ignoriamo errori se non c'è nulla da processare, è normale.
+    }
 
-    // Per sicurezza, se dopo un breve periodo non è successo nulla,
-    // significa che non c'era una sessione valida né un magic link.
-    // Solo a questo punto reindirizziamo al login.
-    setTimeout(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                console.log("Nessuna sessione trovata dopo l'attesa, reindirizzamento al login...");
-                window.location.replace('login.html');
-            }
-        });
-    }, 1000); // Aspettiamo 1 secondo
+    // 3. Se dopo tutti i controlli non c'è ancora una sessione, l'utente non è autorizzato.
+    console.log("AuthGuard: Nessuna sessione valida. Reindirizzamento al login.");
+    window.location.replace('login.html');
 }
 
-// Esegui il nuovo controllo.
-checkAuthWithPatience();
+// Eseguiamo il controllo non appena lo script viene caricato.
+verifyAuth();
