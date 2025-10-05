@@ -3,13 +3,13 @@
 import { supabase } from './supabase-client.js';
 import { apiFetch } from './api-client.js'; // Importiamo la funzione condivisa
 import Legend from './legend.js';
+import { authReady } from './auth-guard.js';
 
 // Variabili di stato
 let appInitialized = false;
 window.currentUser = null;
 
-window.authReady.then(session => {
-    // La guardia ha già verificato l'utente, possiamo partire subito.
+authReady.then(session => {
     if (!window.appInitialized) {
         window.appInitialized = true;
         initializeApp(session.user);

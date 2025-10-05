@@ -1,6 +1,7 @@
 // js/commesse.js
 
 import { apiFetch } from './api-client.js';
+import { authReady } from './auth-guard.js';
 
 const App = {
     state: {
@@ -243,7 +244,7 @@ const App = {
     }
 };
 
-window.authReady.then((session) => {
+authReady.then((session) => {
     console.log('Promessa di autenticazione mantenuta. Avvio App Commesse per l-utente:', session.user.email);
     App.init();
 });
