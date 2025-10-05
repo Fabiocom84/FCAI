@@ -21,22 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.style.display = 'none';
         const email = loginForm.email.value;
         const password = loginForm.password.value;
-
         try {
-            // 1. Chiamiamo il nostro backend per fare da assistente al login
             const response = await publicApiFetch('/api/assistente-login', {
                 method: 'POST',
-                body: JSON.stringify({ email: email, password: password }),
-                isPublic: true
+                body: JSON.stringify({ email: email, password: password })
             });
-
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
+            if (!response.ok) throw new Error(data.error || 'Credenziali non valide');
 
-            // SALVA la nostra chiave del valletto nel localStorage
-            localStorage.setItem('custom_session_token', data.custom_token);
-                    
-            window.location.href = 'index.html';
+            // NON salviamo più qui. Passiamo il token nell'URL.
+            // localStorage.setItem('custom_session_token', data.custom_token);
+            window.location.replace(`index.html#token=${data.custom_token}`);
 
         } catch (error) {
             errorMessage.textContent = error.message;
