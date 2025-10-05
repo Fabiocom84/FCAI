@@ -7,12 +7,12 @@ import { apiFetch } from './api-client.js'; // Importiamo la funzione condivisa
 let appInitialized = false;
 window.currentUser = null;
 
-// Gestione dell'autenticazione per la pagina principale
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session && !appInitialized) {
-        appInitialized = true;
-        await initializeApp(session.user);
-    } 
+window.authReady.then(user => {
+    // La guardia ha già verificato l'utente, possiamo partire subito.
+    if (!window.appInitialized) {
+        window.appInitialized = true;
+        initializeApp(user);
+    }
 });
 
 // Inizializzazione dell'app: recupera il profilo e avvia l'UI

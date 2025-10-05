@@ -241,10 +241,10 @@ const App = {
     }
 };
 
-document.addEventListener('auth-verified', () => {
-    console.log('Segnale auth-verified ricevuto. Avvio App Commesse.');
+window.authReady.then((user) => {
+    console.log('Promessa di autenticazione mantenuta. Avvio App Commesse per l-utente:', user.email);
     App.init();
 });
 
-// Rendiamo la funzione di refresh disponibile globalmente, se serve
+// Rendiamo la funzione di refresh disponibile globalmente
 window.refreshCommesseView = () => App.fetchCommesse(true);

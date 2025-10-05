@@ -1,20 +1,22 @@
-// js/auth-guard.js (Versione con segnale)
+// js/auth-guard.js (Versione con Promise)
 
 import { supabase } from './supabase-client.js';
 
-async function verifyAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+// Creiamo una "promessa" che verrà mantenuta quando l'autenticazione sarà verificata.
+// La esponiamo globalmente per renderla accessibile agli altri script.
+window.authReady = new Promise(resolve => {
+    async function verifyAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
 
-    if (session) {
-        console.log("AuthGuard: Sessione valida trovata.");
-        // Invia il segnale di "via libera" a tutta la pagina
-        document.dispatchEvent(new Event('auth-verified'));
-        return;
+        if (session) {
+            console.log("AuthGuard: Sessione valida trovata. Autenticazione completata.");
+            resolve(session.user); // Manteniamo la promessa e passiamo i dati dell'utente
+            return;
+        }
+        
+        console.log("AuthGuard: Nessuna sessione. Reindirizzamento al login.");
+        window.location.replace('login.html');
     }
-    
-    // Se non c'è sessione, reindirizza (logica semplificata)
-    console.log("AuthGuard: Nessuna sessione. Reindirizzamento al login.");
-    window.location.replace('login.html');
-}
 
-verifyAuth();
+    verifyAuth();
+});
