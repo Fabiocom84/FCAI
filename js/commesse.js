@@ -1,5 +1,7 @@
 // js/commesse.js
 
+import { apiFetch } from './api-client.js';
+
 const App = {
     state: {
         currentPage: 1,
@@ -78,7 +80,7 @@ const App = {
         }
 
         try {
-            const response = await window.apiFetch(`/api/commesse-view?${params.toString()}`);
+            const response = await apiFetch(`/api/commesse-view?${params.toString()}`);
             const data = await response.json();
             
             this.state.totalCount = data.count;
@@ -189,7 +191,7 @@ const App = {
 
         if (isConfirmed) {
             try {
-                const response = await window.apiFetch(`/api/commesse/${commessaId}`, {
+                const response = await apiFetch(`/api/commesse/${commessaId}`, {
                     method: 'DELETE'
                 });
 
