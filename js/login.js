@@ -23,22 +23,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = loginForm.password.value;
 
         try {
-            // Usiamo il metodo di login ufficiale di Supabase.
-            const { error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
+            // 1. Chiamiamo il nostro backend per fare da assistente al login
+            const response = await apiFetch('/api/assistente-login', {
+                method: 'POST',
+                body: JSON.stringify({ email: email, password: password })
             });
 
-            // Se Supabase restituisce un errore, lo mostriamo e ci fermiamo.
-            if (error) throw error;
+            const sessionData = await response.json();
 
-            // Se il login ha successo, Supabase (grazie alla configurazione corretta
-            // in supabase-client.js) salva automaticamente la sessione.
-            // L'unica cosa che dobbiamo fare è reindirizzare alla pagina principale.
+            // 2. Se il backend ci dà un errore, lo mostriamo
+            if (!response.ok) {
+                throw new Error(sessionData.error || 'Credenziali non valide.');
+            }
+
+            // 3. Se il backend ci dà i token, li usiamo per impostare la sessione
+            const { error } = await supabase.auth.setSession({
+                access_token: sessionData.access_token,
+                refresh_token: sessionData.refresh_token,
+            });
+
+            if (error) {
+                throw new Error('Errore nell\'impostare la sessione nel browser.');
+            }
+            
+            // 4. Se tutto è andato bene, andiamo alla pagina principale
             window.location.href = 'index.html';
 
         } catch (error) {
-            errorMessage.textContent = error.message || 'Credenziali non valide.';
+            errorMessage.textContent = error.message;
             errorMessage.style.display = 'block';
         }
     }
