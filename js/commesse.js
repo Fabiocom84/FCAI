@@ -243,8 +243,8 @@ const App = {
     }
 };
 
-window.authReady.then((user) => {
-    console.log('Promessa di autenticazione mantenuta. Avvio App Commesse per l-utente:', user.email);
+window.authReady.then((session) => {
+    console.log('Promessa di autenticazione mantenuta. Avvio App Commesse per l-utente:', session.user.email);
     App.init();
 });
 

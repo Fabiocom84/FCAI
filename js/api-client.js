@@ -1,21 +1,17 @@
-// js/api-client.js (Versione Definitiva)
+// js/api-client.js (Versione Finale)
 
 import { API_BASE_URL } from './config.js';
-import { supabase } from './supabase-client.js';
 
 export async function apiFetch(url, options = {}) {
-    // Chiede a Supabase la sessione PIU' RECENTE disponibile, un attimo prima della chiamata.
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-    // Se, anche chiedendo ora, non c'è una sessione valida, l'utente non è loggato.
-    if (sessionError || !session) {
-        console.error("apiFetch: Tentativo di chiamata API senza una sessione valida.");
-        window.location.replace('login.html'); // Reindirizza al login per sicurezza
-        throw new Error("Sessione non valida o scaduta.");
-    }
-
     const headers = { ...options.headers };
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+
+    // Usa il "testimone" (la sessione) che la guardia ha già verificato e salvato.
+    if (window.currentSession && window.currentSession.access_token) {
+        headers['Authorization'] = `Bearer ${window.currentSession.access_token}`;
+    } else {
+        // Questo errore non dovrebbe mai accadere, ma è una sicurezza in più.
+        throw new Error("Chiamata API fallita: la sessione non è stata inizializzata correttamente.");
+    }
 
     if (!(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
