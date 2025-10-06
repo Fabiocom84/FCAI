@@ -207,3 +207,12 @@
 .commesse-card.status-bg-chiuso .card-details {
     opacity: 0.85;
 }
+
+/*
+ * FIX PER LA FRECCIA DI CHOICES.JS
+ * Sposta la freccia del menu a tendina più a sinistra
+ * per evitare che sporga dal modale.
+*/
+.choices__inner::after {
+    right: 15.5px; /* Aumenta questo valore per spostarla più a sinistra */
+}

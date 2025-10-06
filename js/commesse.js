@@ -112,7 +112,7 @@ const App = {
     createCard(commessa) {
         const card = document.createElement('div');
         card.className = 'commesse-card';
-        card.dataset.commessaId = commessa.id_commessa; // Aggiungiamo l'ID qui per trovarlo facilmente
+        card.dataset.commessaId = commessa.id_commessa;
 
         const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
         card.classList.add(`status-bg-${statusName}`);
@@ -122,7 +122,7 @@ const App = {
 
         const registrazioniSummary = commessa.registrazioni.length > 0
             ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
-               | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
+                | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
             : `<p><strong>Registrazioni:</strong> 0</p>`;
 
         card.innerHTML = `
@@ -152,7 +152,7 @@ const App = {
             </div>
         `;
 
-        // --- INIZIO BLOCCO MANCANTE ---
+        // --- INIZIO BLOCCO MANCANTE (DA AGGIUNGERE) ---
         // Questo codice trova i pulsanti appena creati e aggiunge gli event listener
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) {
@@ -166,7 +166,8 @@ const App = {
         if (editBtn) {
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.handleEdit(editBtn.dataset.id);
+                // Ecco la chiamata che mancava!
+                this.handleEdit(editBtn.dataset.id); 
             });
         }
         // --- FINE BLOCCO MANCANTE ---

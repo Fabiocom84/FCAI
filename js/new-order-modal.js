@@ -37,13 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
         editingCommessaId = isEditMode ? commessaId : null;
 
+        // 1. Pulisce e resetta lo stato precedente
+        window.cleanupNewOrderModal();
+
+        // 2. Inizializza i componenti grafici (Choices.js)
+        initializeAllChoices();
+        
+        // 3. Carica i dati dai dropdown dal server
+        await window.prepareNewOrderModal();
+
+        // 4. Mostra il modale solo quando tutto è pronto
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
 
-        await window.prepareNewOrderModal();
-
         if (isEditMode) {
-            // Modalità MODIFICA
+            // Logica per la modalità MODIFICA (resta invariata)
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
             try {
@@ -56,8 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
-            // Modalità CREAZIONE
-            window.cleanupNewOrderModal(); // Resetta il form e i valori di default
+            // Logica per la modalità CREAZIONE (resta invariata)
+            if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
+            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
         }
     };
 
@@ -80,36 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (immagineInput) immagineInput.addEventListener('change', handleImageUpload);
     
     // --- 4. FUNZIONI GLOBALI DI GESTIONE MODALE ---
-
-    // Chiamata da `commesse.js` per aprire il modale in modalità MODIFICA
-    window.openNewOrderModalForEdit = async (commessaId) => {
-        editingCommessaId = commessaId;
-
-        await prepareAndOpenModal();
-
-        if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
-        if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
-
-        try {
-            const response = await apiFetch(`/api/commessa/${commessaId}`);
-            if (!response.ok) throw new Error('Dati commessa non trovati.');
-            const data = await response.json();
-            populateForm(data);
-        } catch (error) {
-            console.error('Errore nel caricamento dati per modifica:', error);
-            window.showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
-        }
-    };
-
-    // Funzione di utility per preparare e aprire il modale
-    async function prepareAndOpenModal() {
-        if (typeof window.prepareNewOrderModal === 'function') {
-            await window.prepareNewOrderModal();
-        }
-        if (typeof window.openNewOrderModal === 'function') {
-            window.openNewOrderModal();
-        }
-    }
 
     // Prepara i dati dei dropdown (viene chiamata una sola volta)
     window.prepareNewOrderModal = async function() {
@@ -292,5 +271,4 @@ document.addEventListener('DOMContentLoaded', () => {
             if(saveOrderBtn) saveOrderBtn.disabled = false;
         }
     }
-    initializeAllChoices();
 });

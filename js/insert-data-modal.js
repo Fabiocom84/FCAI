@@ -31,9 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Espone le funzioni per essere chiamate da main.js quando il modale viene aperto/chiuso
     window.prepareInsertDataModal = async () => {
-        await preCheckMicrophonePermission();
-        await loadEtichette();
-    };
+            // 1. Inizializza il componente grafico (Choices.js)
+            initializeChoices(); 
+            
+            // 2. Controlla i permessi
+            await preCheckMicrophonePermission();
+
+            // 3. Carica i dati dal server (solo dopo che Choices è pronto)
+            await loadEtichette(); 
+        };
 
     window.cleanupInsertDataModal = () => {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -44,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inizializza la libreria Choices.js per la select delle commesse
     function initializeChoices() {
+        // Se l'istanza esiste già, non fare nulla per evitare duplicati
+        if (choicesInstance) return; 
+
         if (riferimentoDropdown) {
             choicesInstance = new Choices(riferimentoDropdown, {
                 searchEnabled: true,
@@ -64,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.disabled = false;
         stopButton.disabled = true;
         if (choicesInstance) {
+            // Non distruggiamo l'istanza, la resettiamo
             choicesInstance.clearStore();
             choicesInstance.clearInput();
         }
@@ -235,7 +245,4 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = event.target.files[0];
         fileNameDisplay.textContent = file ? file.name : 'Seleziona un file...';
     }
-
-    // --- INIZIALIZZAZIONE ---
-    initializeChoices();
 });
