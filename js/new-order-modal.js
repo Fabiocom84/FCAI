@@ -1,6 +1,7 @@
 // js/new-order-modal.js
 
 import { API_BASE_URL } from './config.js';
+import { apiFetch } from './api-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
             try {
-                const response = await window.apiFetch(`/api/commessa/${commessaId}`);
+                const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
                 populateForm(data);
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
 
         try {
-            const response = await window.apiFetch(`/api/commessa/${commessaId}`);
+            const response = await apiFetch(`/api/commessa/${commessaId}`);
             if (!response.ok) throw new Error('Dati commessa non trovati.');
             const data = await response.json();
             populateForm(data);
@@ -114,9 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!newOrderModal) return;
         try {
             const [clientiRes, modelliRes, statusRes] = await Promise.all([
-                window.apiFetch('/api/simple/clienti'),
-                window.apiFetch('/api/simple/modelli'),
-                window.apiFetch('/api/simple/status_commessa')
+                apiFetch('/api/simple/clienti'),
+                apiFetch('/api/simple/modelli'),
+                apiFetch('/api/simple/status_commessa')
             ]);
             const clienti = await clientiRes.json();
             const modelli = await modelliRes.json();
@@ -228,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await window.apiFetch(url, { method: method, body: formData });
+            const response = await apiFetch(url, { method: method, body: formData });
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Errore sconosciuto.');
