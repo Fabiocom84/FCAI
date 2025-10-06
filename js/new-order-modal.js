@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. VARIABILE DI STATO ---
     let editingCommessaId = null; // Memorizza l'ID della commessa se siamo in modalità "modifica"
+    let clienteChoices, modelloChoices, statusChoices;
 
     // --- 2. ELEMENTI DOM (dichiarati una sola volta) ---
     const newOrderModal = document.getElementById('newOrderModal');
@@ -123,9 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const modelli = await modelliRes.json();
             const status = await statusRes.json();
 
-            populateSelect(clienteSelect, clienti, 'id_cliente', 'ragione_sociale', 'Seleziona un cliente');
-            populateSelect(modelloSelect, modelli, 'id_modello', 'nome_modello', 'Seleziona un modello');
-            populateSelect(statusSelect, status, 'id_status', 'nome_status', 'Seleziona uno stato');
+            populateSelect(clienteChoices, clienti, 'id_cliente', 'ragione_sociale');
+            populateSelect(modelloChoices, modelli, 'id_modello', 'nome_modello');
+            populateSelect(statusChoices, status, 'id_status', 'nome_status');
         } catch (error) {
             console.error("Errore nel caricamento dati per il modale:", error);
         }
@@ -133,43 +134,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pulisce il modale alla chiusura e lo resetta per una nuova creazione
     window.cleanupNewOrderModal = function() {
-            if (newOrderForm) newOrderForm.reset();
-            editingCommessaId = null;
+        if (newOrderForm) newOrderForm.reset();
+        editingCommessaId = null;
 
-            if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-            if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
-            if (annoInput) annoInput.value = new Date().getFullYear();
-            setDefaultStatus();
-        };
+        if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
+        if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
+        if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
+        if (annoInput) annoInput.value = new Date().getFullYear();
+
+        if (clienteChoices) clienteChoices.clearStore();
+        if (modelloChoices) modelloChoices.clearStore();
+        if (statusChoices) statusChoices.clearStore();
+        
+        setDefaultStatus();
+    };
     
     // --- 5. FUNZIONI DI UTILITY INTERNE ---
 
     function populateForm(data) {
-        if(nomeCommessaInput) nomeCommessaInput.value = data.impianto || '';
-        if(clienteSelect) clienteSelect.value = data.id_cliente_fk || '';
-        if(modelloSelect) modelloSelect.value = data.id_modello_fk || '';
+        if(nomeCommessaInput) nomeCommessaInput.value = data.impianto || ''; 
         if(voInput) voInput.value = data.vo || '';
         if(rifTecnicoInput) rifTecnicoInput.value = data.riferimento_tecnico || '';
         if(descrizioneInput) descrizioneInput.value = data.note || '';
         if(provinciaInput) provinciaInput.value = data.provincia || '';
         if(paeseInput) paeseInput.value = data.paese || '';
         if(annoInput) annoInput.value = data.anno || '';
-        if(matricolaInput) matricolaInput.value = data.matricola || '';
-        if(statusSelect) statusSelect.value = data.id_status_fk || '';
+        if(matricolaInput) matricolaInput.value = data.matricola || '';        
         if(fileNameDisplay && data.immagine) {
             fileNameDisplay.textContent = data.immagine.split('/').pop();
         }
+        if(clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
+        if(modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
+        if(statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
     }
 
-    function populateSelect(selectElement, items, valueField, textField, placeholder) {
-        selectElement.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
-        items.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item[valueField];
-            option.textContent = item[textField];
-            selectElement.appendChild(option);
-        });
+    function initializeAllChoices() {
+        const commonConfig = {
+            searchEnabled: true,
+            itemSelectText: 'Seleziona',
+            searchPlaceholderValue: 'Digita per filtrare...',
+            placeholder: true,
+        };
+
+        if (clienteSelect) {
+            clienteChoices = new Choices(clienteSelect, {
+                ...commonConfig,
+                placeholderValue: 'Seleziona un cliente',
+            });
+        }
+        if (modelloSelect) {
+            modelloChoices = new Choices(modelloSelect, {
+                ...commonConfig,
+                placeholderValue: 'Seleziona un modello',
+            });
+        }
+        if (statusSelect) {
+            // Per lo status, la ricerca potrebbe non essere necessaria, ma la manteniamo per coerenza
+            statusChoices = new Choices(statusSelect, {
+                ...commonConfig,
+                searchEnabled: false, // Disabilitiamo la ricerca per lo status
+                placeholderValue: 'Seleziona uno stato',
+            });
+        }
+    }
+
+    function populateSelect(choicesInstance, items, valueField, textField) {
+        if (!choicesInstance) return;
+
+        const options = items.map(item => ({
+            value: item[valueField],
+            label: item[textField]
+        }));
+        
+        // Usiamo l'API di Choices per impostare le opzioni
+        choicesInstance.setChoices(options, 'value', 'label', true);
     }
     
     function setDefaultStatus() {
@@ -254,4 +292,5 @@ document.addEventListener('DOMContentLoaded', () => {
             if(saveOrderBtn) saveOrderBtn.disabled = false;
         }
     }
+    initializeAllChoices();
 });
