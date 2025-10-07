@@ -116,10 +116,11 @@ const App = {
         card.className = 'commesse-card';
         card.dataset.commessaId = commessa.id_commessa;
 
+        // QUI USI 'commessa' (corretto)
         const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
         card.classList.add(`status-bg-${statusName}`);
         const statusClass = `status-${statusName}`;
-        const formattedDate = commesse.data_commessa ? new Date(commesse.data_commessa).toLocaleDateString('it-IT') : 'N/D';
+        const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         const registrazioniSummary = commessa.registrazioni.length > 0
             ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
                 | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
@@ -129,7 +130,7 @@ const App = {
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
                 ${!commessa.immagine ? 'Nessuna Immagine' : ''}
             </div>
-            <div class.card-details">
+            <div class="card-details">
                 <div class="card-header">
                     <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
                     <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
