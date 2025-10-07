@@ -46,9 +46,6 @@ export function showModal(options) {
     });
 }
 
-// Rendiamo la funzione disponibile globalmente
-window.showModal = showModal;
-
 let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
 
 // Esporta la funzione per renderla importabile
@@ -85,7 +82,7 @@ export function showSuccessFeedbackModal(title, message, parentModalId) {
     feedbackModal.querySelector('[data-close-feedback]').onclick = closeSuccessFeedbackModal;
 }
 
-function closeSuccessFeedbackModal() {
+export function closeSuccessFeedbackModal() {
     clearInterval(countdownInterval);
     clearTimeout(closeTimeout);
 
