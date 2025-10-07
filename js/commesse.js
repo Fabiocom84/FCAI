@@ -1,237 +1,239 @@
-// js/new-order-modal.js
+// js/commesse.js
 
-import { API_BASE_URL } from './config.js';
 import { apiFetch } from './api-client.js';
-import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
+import { showModal } from './shared-ui.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+const App = {
+    state: {
+        currentPage: 1,
+        totalCount: 0,
+        isLoading: false,
+        activeStatus: '', // Default a "Tutte" come discusso
+        searchTerm: '',
+        sortBy: 'data_commessa',
+        sortOrder: 'desc',
+    },
     
-    // --- VARIABILI DI STATO ---
-    let editingCommessaId = null;
-    let clienteChoices, modelloChoices, statusChoices;
-
-    // --- ELEMENTI DOM ---
-    const newOrderModal = document.getElementById('newOrderModal');
-    if (!newOrderModal) return;
-
-    const modalTitle = newOrderModal.querySelector('h2');
-    const closeNewOrderModalBtn = newOrderModal.querySelector('.close-button');
-    const newOrderForm = document.getElementById('newOrderForm');
-    const saveOrderBtn = document.getElementById('saveOrderBtn');
-    const saveOrderBtnText = saveOrderBtn?.querySelector('span');
-    const nomeCommessaInput = document.getElementById('nome-commessa');
-    const clienteSelect = document.getElementById('cliente-select');
-    const modelloSelect = document.getElementById('modello-select');
-    const voInput = document.getElementById('vo-offerta');
-    const rifTecnicoInput = document.getElementById('riferimento-tecnico');
-    const descrizioneInput = document.getElementById('descrizione-commessa');
-    const provinciaInput = document.getElementById('provincia-commessa');
-    const paeseInput = document.getElementById('paese-commessa');
-    const annoInput = document.getElementById('anno-commessa');
-    const matricolaInput = document.getElementById('matricola-commessa');
-    const statusSelect = document.getElementById('status-select');
-    const immagineInput = document.getElementById('immagineCommessa');
-    const fileNameDisplay = newOrderModal.querySelector('label[for="immagineCommessa"] .file-name');
-    const modalOverlay = document.getElementById('modalOverlay');
-
-    // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
-
-    window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
-        editingCommessaId = isEditMode ? commessaId : null;
-        cleanupNewOrderModal();
-        initializeAllChoices();
-        
-        // Mostra subito il modale ma con il pulsante di salvataggio disabilitato
-        if (newOrderModal) newOrderModal.style.display = 'block';
-        if (modalOverlay) modalOverlay.style.display = 'block';
-        if(saveOrderBtn) saveOrderBtn.disabled = true;
-
-        // **SEQUENZA CORRETTA INIZIA QUI**
-        // 1. Attende che i dati dei dropdown siano caricati e li memorizza
-        const dropdownData = await prepareNewOrderModal();
-
-        if (isEditMode) {
-            // 2A. Se siamo in MODIFICA, carica i dati specifici della commessa
-            if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
-            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
-            try {
-                const response = await apiFetch(`/api/commessa/${commessaId}`);
-                if (!response.ok) throw new Error('Dati commessa non trovati.');
-                const data = await response.json();
-                // 3A. Popola il form DOPO che i dropdown sono pieni. Ora funzionerà.
-                populateForm(data); 
-            } catch (error) {
-                console.error('Errore nel caricamento dati per modifica:', error);
-                showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
-            }
-        } else {
-            // 2B. Se siamo in CREAZIONE, imposta i default
-            if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-            
-            // 3B. Imposta lo stato "In Lavorazione" usando i dati appena caricati. Ora funzionerà.
-            if (dropdownData.status && statusChoices) {
-                const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
-                if (inLavorazioneStatus) {
-                    statusChoices.setChoiceByValue(String(inLavorazioneStatus.id_status));
-                }
-            }
-        }
-        
-        // 4. Riabilita il pulsante di salvataggio
-        if(saveOrderBtn) saveOrderBtn.disabled = false;
-    };
-
-    window.closeNewOrderModal = () => {
-        if (newOrderModal) newOrderModal.style.display = 'none';
-        if (modalOverlay) modalOverlay.style.display = 'none';
-        cleanupNewOrderModal();
-    };
-
-    // --- EVENT LISTENERS ---
-    if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
-    if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
-    if (voInput) voInput.addEventListener('input', formatVO);
-    if (rifTecnicoInput) rifTecnicoInput.addEventListener('input', formatRifTecnico);
-    if (immagineInput) immagineInput.addEventListener('change', handleImageUpload);
-    
-    // --- FUNZIONI DI GESTIONE ---
-
-    async function prepareNewOrderModal() {
-        try {
-            const [clientiRes, modelliRes, statusRes] = await Promise.all([
-                apiFetch('/api/simple/clienti'),
-                apiFetch('/api/simple/modelli'),
-                apiFetch('/api/simple/status_commessa')
-            ]);
-            const clienti = await clientiRes.json();
-            const modelli = await modelliRes.json();
-            const status = await statusRes.json();
-
-            populateSelect(clienteChoices, clienti, 'id_cliente', 'ragione_sociale');
-            populateSelect(modelloChoices, modelli, 'id_modello', 'nome_modello');
-            populateSelect(statusChoices, status, 'id_status', 'nome_status');
-            
-            return { clienti, modelli, status }; // Restituisce i dati per usarli dopo
-
-        } catch (error) {
-            console.error("Errore nel caricamento dati per il modale:", error);
-            return {};
-        }
-    }
-
-    function cleanupNewOrderModal() {
-        if (newOrderForm) newOrderForm.reset();
-        // editingCommessaId NON viene resettato qui, ma solo all'apertura del modale.
-
-        if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-        if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-        if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
-        if (annoInput) annoInput.value = new Date().getFullYear();
-
-        if (clienteChoices) clienteChoices.clearStore();
-        if (modelloChoices) modelloChoices.clearStore();
-        if (statusChoices) statusChoices.clearStore();
-    }
-    
-    // --- FUNZIONI DI UTILITY ---
-
-    function populateForm(data) {
-        if(nomeCommessaInput) nomeCommessaInput.value = data.impianto || ''; 
-        if(voInput) voInput.value = data.vo || '';
-        if(rifTecnicoInput) rifTecnicoInput.value = data.riferimento_tecnico || '';
-        if(descrizioneInput) descrizioneInput.value = data.note || '';
-        if(provinciaInput) provinciaInput.value = data.provincia || '';
-        if(paeseInput) paeseInput.value = data.paese || '';
-        if(annoInput) annoInput.value = data.anno || '';
-        if(matricolaInput) matricolaInput.value = data.matricola || '';        
-        if(fileNameDisplay && data.immagine) {
-            fileNameDisplay.textContent = data.immagine.split('/').pop();
-        }
-        if(clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
-        if(modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
-        if(statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
-    }
-
-    function initializeAllChoices() {
-        const commonConfig = {
-            searchEnabled: true,
-            itemSelectText: 'Seleziona',
-            searchPlaceholderValue: 'Digita per filtrare...',
-            placeholder: true,
+    // Le funzioni ora sono definite come metodi dell'oggetto App
+    init: function() {
+        this.dom = {
+            grid: document.getElementById('commesse-grid'),
+            loader: document.getElementById('loader'),
+            statusFilters: document.querySelectorAll('.filter-btn'),
+            searchInput: document.getElementById('search-input'),
+            sortSelect: document.getElementById('sort-select'),
+            addBtn: document.getElementById('add-commessa-btn'),
         };
-
-        if (clienteSelect && !clienteChoices) {
-            clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
-        }
-        if (modelloSelect && !modelloChoices) {
-            modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
-        }
-        if (statusSelect && !statusChoices) {
-            statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
-        }
-    }
-
-    function populateSelect(choicesInstance, items, valueField, textField) {
-        if (!choicesInstance) return;
-        const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
-        choicesInstance.setChoices(options, 'value', 'label', true);
-    }
+        this.addEventListeners();
+        this.fetchCommesse(true);
+    },
     
-    function formatVO(event) {
-        let value = event.target.value.replace(/\D/g, '');
-        if (value.length > 2) value = value.substring(0, 2) + '-' + value.substring(2, 6);
-        event.target.value = value;
-    }
+    addEventListeners: function() {
+        this.dom.addBtn.addEventListener('click', () => {
+            if (typeof window.openNewOrderModal === 'function') {
+                window.openNewOrderModal(false);
+            } else {
+                console.error('Funzione openNewOrderModal non trovata.');
+            }
+        });
 
-    function formatRifTecnico(event) {
-        let value = event.target.value;
-        if (value.length === 0) return;
-        let firstChar = value.charAt(0).toUpperCase().replace(/[^A-Z]/, '');
-        let otherChars = value.substring(1).replace(/\D/g, '');
-        event.target.value = firstChar + otherChars.substring(0, 4);
-    }
-    
-    function handleImageUpload(event) {
-        const file = event.target.files[0];
-        if (file && fileNameDisplay) fileNameDisplay.textContent = file.name;
-        else if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
-    }
+        this.dom.statusFilters.forEach(btn => {
+            btn.addEventListener('click', () => this.handleStatusFilter(btn));
+        });
+        
+        let searchTimeout;
+        this.dom.searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.state.searchTerm = this.dom.searchInput.value;
+                this.fetchCommesse(true);
+            }, 500);
+        });
 
-    // --- FUNZIONE DI SALVATAGGIO ---
+        this.dom.sortSelect.addEventListener('change', () => this.handleSort());
+        window.addEventListener('scroll', () => this.handleScroll());
+    },
 
-    async function saveOrder(event) {
-        event.preventDefault();
-        if (!newOrderForm.checkValidity()) {
-            newOrderForm.reportValidity();
+    fetchCommesse: async function(isNewQuery = false) {
+        if (this.state.isLoading) return;
+        this.state.isLoading = true;
+        if (isNewQuery) {
+            this.state.currentPage = 1;
+            this.dom.grid.innerHTML = '';
+        }
+        this.dom.loader.style.display = 'block';
+
+        const deepSearchCheckbox = document.getElementById('deep-search-checkbox');
+        const isDeepSearch = deepSearchCheckbox.checked;
+
+        const params = new URLSearchParams({
+            page: this.state.currentPage,
+            limit: 20,
+            status: this.state.activeStatus,
+            search: this.state.searchTerm,
+            sortBy: this.state.sortBy,
+            sortOrder: this.state.sortOrder,
+        });
+
+        if (isDeepSearch) {
+            params.append('deep_search', 'true');
+        }
+
+        try {
+            const response = await apiFetch(`/api/commesse-view?${params.toString()}`);
+            if (!response.ok) throw new Error('Risposta di rete non valida.');
+            const data = await response.json();
+            
+            this.state.totalCount = data.count;
+            this.renderCards(data.data);
+            this.state.currentPage++;
+            
+        } catch (error) {
+            console.error("Errore durante il fetch delle commesse:", error);
+            this.dom.grid.innerHTML = `<p class="error-text">Errore nel caricamento delle commesse.</p>`;
+        } finally {
+            this.state.isLoading = false;
+            this.dom.loader.style.display = 'none';
+        }
+    },
+
+    renderCards: function(commesseData) {
+        if (!commesseData || (commesseData.length === 0 && this.state.currentPage === 1)) {
+            this.dom.grid.innerHTML = `<p class="error-text">Nessuna commessa trovata con i filtri attuali.</p>`;
             return;
         }
-        if(saveOrderBtn) saveOrderBtn.disabled = true;
+        
+        const fragment = document.createDocumentFragment();
+        commesseData.forEach(commessa => {
+            const card = this.createCard(commessa);
+            fragment.appendChild(card);
+        });
+        this.dom.grid.appendChild(fragment);
+    },
+    
+    createCard: function(commessa) {
+        const card = document.createElement('div');
+        card.className = 'commesse-card';
+        card.dataset.commessaId = commessa.id_commessa;
 
-        const formData = new FormData(newOrderForm);
-        const url = editingCommessaId ? `/api/commesse/${editingCommessaId}` : '/api/commesse';
-        const method = editingCommessaId ? 'PUT' : 'POST';
+        const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
+        card.classList.add(`status-bg-${statusName}`);
+        const statusClass = `status-${statusName}`;
+        const formattedDate = commesse.data_commessa ? new Date(commesse.data_commessa).toLocaleDateString('it-IT') : 'N/D';
+        const registrazioniSummary = commessa.registrazioni.length > 0
+            ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
+                | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
+            : `<p><strong>Registrazioni:</strong> 0</p>`;
 
-        try {
-            const response = await apiFetch(url, { method: method, body: formData });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Errore sconosciuto.');
+        card.innerHTML = `
+            <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
+                ${!commessa.immagine ? 'Nessuna Immagine' : ''}
+            </div>
+            <div class.card-details">
+                <div class="card-header">
+                    <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
+                    <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                </div>
+                <div class="card-info">
+                    <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
+                    <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
+                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
+                    <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+                    <p><strong>Data:</strong> ${formattedDate}</p>
+                    <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
+                </div>
+                <div class="registrazioni-section">
+                    ${registrazioniSummary}
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="button button--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
+                <button class="button button--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
+            </div>
+        `;
+
+        const deleteBtn = card.querySelector('[data-action="delete"]');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.handleDelete(deleteBtn.dataset.id);
+            });
+        }
+
+        const editBtn = card.querySelector('[data-action="edit"]');
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.handleEdit(editBtn.dataset.id); 
+            });
+        }
+        return card;
+    },
+
+    handleStatusFilter: function(clickedBtn) {
+        this.dom.statusFilters.forEach(btn => btn.classList.remove('active'));
+        clickedBtn.classList.add('active');
+        this.state.activeStatus = clickedBtn.dataset.status;
+        this.fetchCommesse(true);
+    },
+
+    handleDelete: async function(commessaId) {
+        const isConfirmed = await showModal({
+            title: 'Conferma Eliminazione',
+            message: `Sei sicuro di voler eliminare questa commessa? L'azione è irreversibile.`,
+            confirmText: 'Elimina',
+            cancelText: 'Annulla'
+        });
+
+        if (isConfirmed) {
+            try {
+                const response = await apiFetch(`/api/commesse/${commessaId}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Errore del server');
+                }
+                const cardToRemove = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
+                if (cardToRemove) cardToRemove.remove();
+            } catch (error) {
+                showModal({
+                    title: 'Errore',
+                    message: `Impossibile eliminare la commessa: ${error.message}`,
+                    confirmText: 'OK'
+                });
             }
-            
-            if (window.refreshCommesseView) window.refreshCommesseView();
-            window.closeNewOrderModal(); 
+        }
+    },
 
-        } catch (error) {
-            let userFriendlyMessage = `Si è verificato un errore. Dettagli: ${error.message}`;
-            if (error.message?.includes('violates not-null constraint')) {
-                if (error.message.includes('id_cliente_fk')) userFriendlyMessage = 'È necessario selezionare un cliente.';
-                else if (error.message.includes('id_modello_fk')) userFriendlyMessage = 'È necessario selezionare un modello.';
-                else userFriendlyMessage = 'Assicurati di aver compilato tutti i campi obbligatori (*).';
-            }
-            await showModal({ title: 'Attenzione', message: userFriendlyMessage, confirmText: 'Chiudi' });
-        } finally {
-            if(saveOrderBtn) saveOrderBtn.disabled = false;
+    handleEdit: function(commessaId) {
+        if (typeof window.openNewOrderModal === 'function') {
+            window.openNewOrderModal(true, commessaId);
+        } else {
+            console.error('La funzione openNewOrderModal non è stata trovata.');
+            alert('Errore: la funzionalità di modifica non è disponibile.');
+        }
+    },
+
+    handleSort: function() {
+        const [sortBy, sortOrder] = this.dom.sortSelect.value.split(':');
+        this.state.sortBy = sortBy;
+        this.state.sortOrder = sortOrder;
+        this.fetchCommesse(true);
+    },
+
+    handleScroll: function() {
+        if (this.state.isLoading) return;
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        const loadedCommesse = this.dom.grid.children.length;
+        
+        if (clientHeight + scrollTop >= scrollHeight - 100 && loadedCommesse < this.state.totalCount) {
+            this.fetchCommesse(false);
         }
     }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Pagina pronta e guardia passata. Avvio App Commesse.');
+    App.init();
 });
+
+window.refreshCommesseView = () => App.fetchCommesse(true);
