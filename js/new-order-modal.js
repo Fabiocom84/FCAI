@@ -2,6 +2,7 @@
 
 import { API_BASE_URL } from './config.js';
 import { apiFetch } from './api-client.js';
+import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 populateForm(data);
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
-                window.showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
+                showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
             // Logica per la modalità CREAZIONE (resta invariata)
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const successTitle = editingCommessaId ? 'MODIFICA COMMESSA' : 'NUOVA COMMESSA';
             const successMessage = editingCommessaId ? 'Dati aggiornati con successo!' : 'Dati salvati con successo!';
-            window.showSuccessFeedbackModal(successTitle, successMessage, 'newOrderModal');
+            showSuccessFeedbackModal(successTitle, successMessage, 'newOrderModal');
             
             if (window.refreshCommesseView) window.refreshCommesseView();
 
@@ -266,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (error.message.includes('id_modello_fk')) userFriendlyMessage = 'È necessario selezionare un modello.';
                 else userFriendlyMessage = 'Assicurati di aver compilato tutti i campi obbligatori (*).';
             }
-            await window.showModal({ title: 'Attenzione', message: userFriendlyMessage, confirmText: 'Chiudi' });
+            await showModal({ title: 'Attenzione', message: userFriendlyMessage, confirmText: 'Chiudi' });
         } finally {
             if(saveOrderBtn) saveOrderBtn.disabled = false;
         }

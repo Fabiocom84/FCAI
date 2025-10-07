@@ -1,7 +1,7 @@
 // js/insert-data-modal.js
 
 import { apiFetch } from './api-client.js';
-import { showModal } from './shared-ui.js';
+import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore durante il salvataggio.');
             }
 
-            if (window.showSuccessFeedbackModal) {
-                window.showSuccessFeedbackModal('INSERISCI DATI', 'Dati salvati con successo!', 'insertDataModal');
+            if (showSuccessFeedbackModal) {
+                showSuccessFeedbackModal('INSERISCI DATI', 'Dati salvati con successo!', 'insertDataModal');
             }
 
         } catch (error) {
