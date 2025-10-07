@@ -1,6 +1,7 @@
 // js/commesse.js
 
 import { apiFetch } from './api-client.js';
+import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
 const App = {
     state: {
@@ -183,7 +184,7 @@ const App = {
     },
 
     async handleDelete(commessaId) {
-        const isConfirmed = await window.showModal({
+        const isConfirmed = await showModal({
             title: 'Conferma Eliminazione',
             message: `Sei sicuro di voler eliminare questa commessa? L'azione è irreversibile.`,
             confirmText: 'Elimina',
@@ -208,7 +209,7 @@ const App = {
                 }
                 
             } catch (error) {
-                window.showModal({
+                showModal({
                     title: 'Errore',
                     message: `Impossibile eliminare la commessa: ${error.message}`,
                     confirmText: 'OK'
