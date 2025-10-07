@@ -37,38 +37,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
         editingCommessaId = isEditMode ? commessaId : null;
-
-        // 1. Pulisce e resetta lo stato precedente
         window.cleanupNewOrderModal();
-
-        // 2. Inizializza i componenti grafici (Choices.js)
         initializeAllChoices();
-        
-        // 3. Carica i dati dai dropdown dal server
-        await window.prepareNewOrderModal();
 
-        // 4. Mostra il modale solo quando tutto è pronto
+        // Mostra il modale subito con un'indicazione di caricamento
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
+        if (saveOrderBtn) saveOrderBtn.disabled = true; // Disabilita il salvataggio mentre si carica
+
+        // Attende che i dati dei dropdown siano caricati e li memorizza
+        const dropdownData = await window.prepareNewOrderModal();
 
         if (isEditMode) {
-            // Logica per la modalità MODIFICA (resta invariata)
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
             try {
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
-                populateForm(data);
+                // Ora populateForm viene chiamato DOPO che i dropdown sono pieni, risolvendo il bug
+                populateForm(data); 
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
                 showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
-            // Logica per la modalità CREAZIONE (resta invariata)
             if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
+
+            // NUOVA LOGICA: Imposta lo stato di default su "In Lavorazione"
+            if (dropdownData.status && statusChoices) {
+                const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
+                if (inLavorazioneStatus) {
+                    statusChoices.setChoiceByValue(String(inLavorazioneStatus.id_status));
+                }
+            }
         }
+
+        if(saveOrderBtn) saveOrderBtn.disabled = false; // Riabilita il salvataggio
     };
 
     window.closeNewOrderModal = () => {
@@ -93,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prepara i dati dei dropdown (viene chiamata una sola volta)
     window.prepareNewOrderModal = async function() {
-        if (!newOrderModal) return;
+        if (!newOrderModal) return {}; // Restituisce un oggetto vuoto se il modale non esiste
         try {
             const [clientiRes, modelliRes, statusRes] = await Promise.all([
                 apiFetch('/api/simple/clienti'),
@@ -107,8 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(clienteChoices, clienti, 'id_cliente', 'ragione_sociale');
             populateSelect(modelloChoices, modelli, 'id_modello', 'nome_modello');
             populateSelect(statusChoices, status, 'id_status', 'nome_status');
+
+            // Restituisce i dati caricati
+            return { clienti, modelli, status }; 
+
         } catch (error) {
             console.error("Errore nel caricamento dati per il modale:", error);
+            return {}; // Restituisce un oggetto vuoto in caso di errore
         }
     };
 
@@ -126,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modelloChoices) modelloChoices.clearStore();
         if (statusChoices) statusChoices.clearStore();
         
-        setDefaultStatus();
     };
     
     // --- 5. FUNZIONI DI UTILITY INTERNE ---
@@ -189,16 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Usiamo l'API di Choices per impostare le opzioni
         choicesInstance.setChoices(options, 'value', 'label', true);
     }
-    
-    function setDefaultStatus() {
-        const statusOptions = statusSelect.options;
-        for (let i = 0; i < statusOptions.length; i++) {
-            if (statusOptions[i].textContent.toLowerCase() === 'in lavorazione') {
-                statusSelect.value = statusOptions[i].value;
-                break;
-            }
-        }
-    }
 
     function formatVO(event) {
         let value = event.target.value.replace(/\D/g, '');
@@ -253,11 +253,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore sconosciuto.');
             }
             
-            const successTitle = editingCommessaId ? 'MODIFICA COMMESSA' : 'NUOVA COMMESSA';
-            const successMessage = editingCommessaId ? 'Dati aggiornati con successo!' : 'Dati salvati con successo!';
-            showSuccessFeedbackModal(successTitle, successMessage, 'newOrderModal');
+            // Non mostriamo più il modale di feedback qui per un'esperienza più fluida,
+            // la chiusura e l'aggiornamento della griglia sono un feedback sufficiente.
             
+            // Aggiorna la vista delle commesse in background
             if (window.refreshCommesseView) window.refreshCommesseView();
+
+            // --- RIGA MANCANTE AGGIUNTA QUI ---
+            // Chiude il modale di modifica/creazione dopo il salvataggio.
+            window.closeNewOrderModal(); 
 
         } catch (error) {
             // Logica per i messaggi di errore chiari (invariata)
