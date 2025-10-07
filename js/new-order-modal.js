@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 2. ELEMENTI DOM (dichiarati una sola volta) ---
     const newOrderModal = document.getElementById('newOrderModal');
+    const modalOverlay = document.getElementById('modalOverlay');
     const modalTitle = newOrderModal?.querySelector('h2');
     const closeNewOrderModalBtn = newOrderModal?.querySelector('.close-button');
     const newOrderForm = document.getElementById('newOrderForm');
@@ -84,12 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 3. EVENT LISTENERS ---
-    // Aggiunge l'evento al pulsante 'X' di chiusura
-    const closeBtn = newOrderModal?.querySelector('.close-button');
-    if (closeBtn) closeBtn.addEventListener('click', window.closeNewOrderModal);
-    if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
-    
-    if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', () => window.closeNewOrderModal());
+    if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
     if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
     if (voInput) voInput.addEventListener('input', formatVO);
     if (rifTecnicoInput) rifTecnicoInput.addEventListener('input', formatRifTecnico);
