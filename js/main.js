@@ -2,6 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
+import { showSuccessFeedbackModal } from './shared-ui.js';
 
 let appInitialized = false;
 window.currentUserProfile = null;
@@ -96,7 +97,6 @@ function setupUI() {
     window.closeChatModal = closeChatModal;
     window.closeTrainingModal = closeTrainingModal;
     
-    window.showSuccessFeedbackModal = showSuccessFeedbackModal;
     window.closeSuccessFeedbackModal = closeSuccessFeedbackModal;
 
     console.log("Fase 4: Interfaccia utente pronta e operativa.");
