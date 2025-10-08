@@ -165,6 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeAllChoices() {
+        // Pulisce le istanze precedenti se esistono, per sicurezza
+        if (clienteChoices) clienteChoices.destroy();
+        if (modelloChoices) modelloChoices.destroy();
+        if (statusChoices) statusChoices.destroy();
+
         const commonConfig = {
             searchEnabled: true,
             itemSelectText: 'Seleziona',
@@ -172,15 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholder: true,
         };
 
-        if (clienteSelect && !clienteChoices) {
-            clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
-        }
-        if (modelloSelect && !modelloChoices) {
-            modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
-        }
-        if (statusSelect && !statusChoices) {
-            statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
-        }
+        // Crea sempre nuove istanze. Questo garantisce che le variabili siano sempre valide.
+        clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
+        modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
+        statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
     }
 
     function populateSelect(choicesInstance, items, valueField, textField) {
