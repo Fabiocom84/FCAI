@@ -37,18 +37,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
 
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
+        // FASE 1: Setup iniziale e pulizia
         console.log(`--- Apertura modale. Modalità modifica: ${isEditMode}, ID: ${commessaId} ---`);
         editingCommessaId = isEditMode ? commessaId : null;
         cleanupNewOrderModal();
-        initializeAllChoices(); 
         
+        // FASE 2: Mostra il modale e disabilita il salvataggio
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
         if (saveOrderBtn) saveOrderBtn.disabled = true;
 
+        // FASE 3: Inizializza i componenti grafici (Choices.js) e ATTENDI il loro caricamento
+        // Questa è la modifica chiave: ora siamo sicuri che i menu esistano prima di popolarli.
+        await initializeAllChoices();
+        
+        // FASE 4: Carica i dati per i dropdown
         const dropdownData = await prepareNewOrderModal();
         console.log("LOG 2: Dati per i dropdown caricati.");
 
+        // FASE 5: Logica di modifica o creazione (ora funzionerà)
         if (isEditMode) {
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
@@ -164,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`--- FINE DEBUG ---`);
     }
 
-    function initializeAllChoices() {
-        // Pulisce le istanze precedenti se esistono, per sicurezza
+    // Modifichiamo anche initializeAllChoices per renderla asincrona
+    async function initializeAllChoices() {
         if (clienteChoices) clienteChoices.destroy();
         if (modelloChoices) modelloChoices.destroy();
         if (statusChoices) statusChoices.destroy();
@@ -181,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
         modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
         statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
+        return Promise.resolve();    
     }
 
     function populateSelect(choicesInstance, items, valueField, textField) {
