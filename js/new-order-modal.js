@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
 
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
+        console.log(`--- Apertura modale. Modalità modifica: ${isEditMode}, ID: ${commessaId} ---`);
         editingCommessaId = isEditMode ? commessaId : null;
         cleanupNewOrderModal();
         initializeAllChoices();
@@ -45,19 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalOverlay) modalOverlay.style.display = 'block';
         if (saveOrderBtn) saveOrderBtn.disabled = true;
 
-        // **SEQUENZA CORRETTA E DEFINITIVA**
-        // 1. Attende che i dati dei dropdown siano stati caricati e li memorizza.
         const dropdownData = await prepareNewOrderModal();
+        console.log("LOG 2: Dati per i dropdown caricati.");
 
         if (isEditMode) {
-            // 2A. Se siamo in MODIFICA, carica i dati specifici della commessa.
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
             try {
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
-                // 3A. Popola il form. Ora funzionerà perché i dropdown sono già pieni.
+                console.log("LOG 3: Dati della commessa da modificare caricati:", data);
                 populateForm(data);
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
@@ -98,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI GESTIONE ---
 
     async function prepareNewOrderModal() {
+        console.log("LOG 1: Avvio caricamento dati per i dropdown...");
         try {
             const [clientiRes, modelliRes, statusRes] = await Promise.all([
                 apiFetch('/api/simple/clienti'),
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(modelloChoices, modelli, 'id_modello', 'nome_modello');
             populateSelect(statusChoices, status, 'id_status', 'nome_status');
             
-            return { clienti, modelli, status }; // Restituisce i dati per usarli dopo
+            return { clienti, modelli, status };
 
         } catch (error) {
             console.error("Errore nel caricamento dati per il modale:", error);
@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI UTILITY ---
 
     function populateForm(data) {
+        console.log("LOG 4: Esecuzione di populateForm...");
         if(nomeCommessaInput) nomeCommessaInput.value = data.impianto || ''; 
         if(voInput) voInput.value = data.vo || '';
         if(rifTecnicoInput) rifTecnicoInput.value = data.riferimento_tecnico || '';
@@ -148,9 +149,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if(fileNameDisplay && data.immagine) {
             fileNameDisplay.textContent = data.immagine.split('/').pop();
         }
-        if(clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
-        if(modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
-        if(statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
+        console.log(`--- DEBUG POPOLAMENTO DROPDOWN ---`);
+        console.log(`Tentativo di impostare CLIENTE con ID: ${data.id_cliente_fk}`);
+        console.log('Opzioni presenti nel dropdown CLIENTE in questo momento:', clienteChoices.store.choices);
+        if (clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
+
+        console.log(`Tentativo di impostare MODELLO con ID: ${data.id_modello_fk}`);
+        console.log('Opzioni presenti nel dropdown MODELLO in questo momento:', modelloChoices.store.choices);
+        if (modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
+
+        console.log(`Tentativo di impostare STATUS con ID: ${data.id_status_fk}`);
+        console.log('Opzioni presenti nel dropdown STATUS in questo momento:', statusChoices.store.choices);
+        if (statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
+        console.log(`--- FINE DEBUG ---`);
     }
 
     function initializeAllChoices() {
@@ -173,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateSelect(choicesInstance, items, valueField, textField) {
+        console.log(`Popolazione di ${choicesInstance.element.id} con ${items.length} opzioni.`);
         if (!choicesInstance) return;
         const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
         choicesInstance.setChoices(options, 'value', 'label', true);
