@@ -12,55 +12,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const newOrderModal = document.getElementById('newOrderModal');
     if (!newOrderModal) return;
 
-    const modalTitle = newOrderModal.querySelector('h2');
-    const closeNewOrderModalBtn = newOrderModal.querySelector('.close-button');
-    const newOrderForm = document.getElementById('newOrderForm');
-    const saveOrderBtn = document.getElementById('saveOrderBtn');
-    const saveOrderBtnText = saveOrderBtn?.querySelector('span');
-    const nomeCommessaInput = document.getElementById('nome-commessa');
-    const clienteSelect = document.getElementById('cliente-select');
-    const modelloSelect = document.getElementById('modello-select');
-    const voInput = document.getElementById('vo-offerta');
-    const rifTecnicoInput = document.getElementById('riferimento-tecnico');
-    const descrizioneInput = document.getElementById('descrizione-commessa');
-    const provinciaInput = document.getElementById('provincia-commessa');
-    const paeseInput = document.getElementById('paese-commessa');
-    const annoInput = document.getElementById('anno-commessa');
-    const matricolaInput = document.getElementById('matricola-commessa');
-    const statusSelect = document.getElementById('status-select');
-    const immagineInput = document.getElementById('immagineCommessa');
-    const fileNameDisplay = newOrderModal.querySelector('label[for="immagineCommessa"] .file-name');
-    const modalOverlay = document.getElementById('modalOverlay');
+    // Seleziona tutti gli elementi DOM una sola volta
+    const elements = {
+        modalOverlay: document.getElementById('modalOverlay'),
+        modalTitle: newOrderModal.querySelector('h2'),
+        closeBtn: newOrderModal.querySelector('.close-button'),
+        form: document.getElementById('newOrderForm'),
+        saveBtn: document.getElementById('saveOrderBtn'),
+        saveBtnText: document.getElementById('saveOrderBtn')?.querySelector('span'),
+        clienteSelect: document.getElementById('cliente-select'),
+        modelloSelect: document.getElementById('modello-select'),
+        statusSelect: document.getElementById('status-select'),
+        nomeCommessaInput: document.getElementById('nome-commessa'),
+        voInput: document.getElementById('vo-offerta'),
+        rifTecnicoInput: document.getElementById('riferimento-tecnico'),
+        descrizioneInput: document.getElementById('descrizione-commessa'),
+        provinciaInput: document.getElementById('provincia-commessa'),
+        paeseInput: document.getElementById('paese-commessa'),
+        annoInput: document.getElementById('anno-commessa'),
+        matricolaInput: document.getElementById('matricola-commessa'),
+        immagineInput: document.getElementById('immagineCommessa'),
+        fileNameDisplay: newOrderModal.querySelector('label[for="immagineCommessa"] .file-name')
+    };
 
+    // 1. Inizializza i componenti Choices UNA SOLA VOLTA.
     initializeAllChoices();
+
+    // 2. Associa gli eventi ai pulsanti.
+    if (elements.closeBtn) elements.closeBtn.addEventListener('click', closeAndCleanup);
+    if (elements.saveBtn) elements.saveBtn.addEventListener('click', saveOrder);
+
+    // 3. Definisci le funzioni globali.
+    window.openNewOrderModal = openModal; // Rinominiamo per chiarezza
+    window.closeNewOrderModal = closeAndCleanup; // Rinominiamo per chiarezza
 
     // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
 
-    window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
+    async function openModal(isEditMode = false, commessaId = null) {
         editingCommessaId = isEditMode ? commessaId : null;
-        cleanupNewOrderModal();
         
+        // Mostra il modale e disabilita il salvataggio
         if (newOrderModal) newOrderModal.style.display = 'block';
-        if (modalOverlay) modalOverlay.style.display = 'block';
-        if (saveOrderBtn) saveOrderBtn.disabled = true;
+        if (elements.modalOverlay) elements.modalOverlay.style.display = 'block';
+        if (elements.saveBtn) elements.saveBtn.disabled = true;
 
-        // Istanze di Choices GIA' ESISTONO, quindi possiamo caricare i dati senza problemi.
-        const dropdownData = await prepareNewOrderModal();
+        // SEQUENZA GARANTITA:
+        // A. Carica i dati per i dropdown.
+        const dropdownData = await loadDropdownData();
 
         if (isEditMode) {
-            if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
-            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
+            // B. Se in modifica, carica i dati della commessa.
+            elements.modalTitle.textContent = 'MODIFICA COMMESSA';
+            elements.saveBtnText.textContent = 'Salva Modifiche';
             try {
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
+                // C. Popola il form. Ora i dropdown sono già pieni.
                 populateForm(data);
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
             }
         } else {
-            if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-            if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
+            // B. Se in creazione, imposta i default.
+            elements.modalTitle.textContent = 'NUOVA COMMESSA';
+            elements.saveBtnText.textContent = 'Crea Commessa';
             if (dropdownData.status && statusChoices) {
                 const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
                 if (inLavorazioneStatus) {
@@ -69,17 +85,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        if (saveOrderBtn) saveOrderBtn.disabled = false;
-    };
+        // D. Riabilita il salvataggio.
+        if (elements.saveBtn) elements.saveBtn.disabled = false;
+    }
 
-    window.closeNewOrderModal = () => {
+    function closeAndCleanup() {
         if (newOrderModal) newOrderModal.style.display = 'none';
-        if (modalOverlay) modalOverlay.style.display = 'none';
-        cleanupNewOrderModal();
-    };
-
-    if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
-    if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
+        if (elements.modalOverlay) elements.modalOverlay.style.display = 'none';
+        
+        if (elements.form) elements.form.reset();
+        if (clienteChoices) clienteChoices.clearStore();
+        if (modelloChoices) modelloChoices.clearStore();
+        if (statusChoices) statusChoices.clearStore();
+        if (elements.fileNameDisplay) elements.fileNameDisplay.textContent = 'Carica un\'immagine...';
+        if (elements.annoInput) elements.annoInput.value = new Date().getFullYear();
+    }
     
     // --- FUNZIONI DI GESTIONE ---
 
@@ -97,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
     }
 
-    async function prepareNewOrderModal() {
+    async function loadDropdownData() {
         try {
             const [clientiRes, modelliRes, statusRes] = await Promise.all([
                 apiFetch('/api/simple/clienti'),
