@@ -135,29 +135,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateForm(data) {
         console.log("LOG 4: Esecuzione di populateForm...");
-        if(nomeCommessaInput) nomeCommessaInput.value = data.impianto || ''; 
-        if(voInput) voInput.value = data.vo || '';
-        if(rifTecnicoInput) rifTecnicoInput.value = data.riferimento_tecnico || '';
-        if(descrizioneInput) descrizioneInput.value = data.note || '';
-        if(provinciaInput) provinciaInput.value = data.provincia || '';
-        if(paeseInput) paeseInput.value = data.paese || '';
-        if(annoInput) annoInput.value = data.anno || '';
-        if(matricolaInput) matricolaInput.value = data.matricola || '';        
-        if(fileNameDisplay && data.immagine) {
+        if (nomeCommessaInput) nomeCommessaInput.value = data.impianto || '';
+        if (voInput) voInput.value = data.vo || '';
+        if (rifTecnicoInput) rifTecnicoInput.value = data.riferimento_tecnico || '';
+        if (descrizioneInput) descrizioneInput.value = data.note || '';
+        if (provinciaInput) provinciaInput.value = data.provincia || '';
+        if (paeseInput) paeseInput.value = data.paese || '';
+        if (annoInput) annoInput.value = data.anno || '';
+        if (matricolaInput) matricolaInput.value = data.matricola || '';
+        if (fileNameDisplay && data.immagine) {
             fileNameDisplay.textContent = data.immagine.split('/').pop();
         }
+        
         console.log(`--- DEBUG POPOLAMENTO DROPDOWN ---`);
+
         console.log(`Tentativo di impostare CLIENTE con ID: ${data.id_cliente_fk}`);
-        console.log('Opzioni presenti nel dropdown CLIENTE in questo momento:', clienteChoices.store.choices);
+        // ERRORE CORRETTO QUI: Rimosso ".store"
+        console.log('Opzioni presenti nel dropdown CLIENTE in questo momento:', clienteChoices.choices);
         if (clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
 
         console.log(`Tentativo di impostare MODELLO con ID: ${data.id_modello_fk}`);
-        console.log('Opzioni presenti nel dropdown MODELLO in questo momento:', modelloChoices.store.choices);
+        // ERRORE CORRETTO QUI: Rimosso ".store"
+        console.log('Opzioni presenti nel dropdown MODELLO in questo momento:', modelloChoices.choices);
         if (modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
 
         console.log(`Tentativo di impostare STATUS con ID: ${data.id_status_fk}`);
-        console.log('Opzioni presenti nel dropdown STATUS in questo momento:', statusChoices.store.choices);
+        // ERRORE CORRETTO QUI: Rimosso ".store"
+        console.log('Opzioni presenti nel dropdown STATUS in questo momento:', statusChoices.choices);
         if (statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
+        
         console.log(`--- FINE DEBUG ---`);
     }
 
