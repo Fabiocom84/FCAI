@@ -184,11 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateSelect(choicesInstance, items, valueField, textField) {
-        console.log(`Popolazione di ${choicesInstance.element.id} con ${items.length} opzioni.`);
-        if (!choicesInstance) return;
-        const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
-        choicesInstance.setChoices(options, 'value', 'label', true);
-    }
+    console.log(`Popolazione di ${choicesInstance.element.id} con ${items.length} opzioni.`);
+    if (!choicesInstance) return;
+    const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
+    choicesInstance.setChoices(options, 'value', 'label', true);
+}
     
     function formatVO(event) {
         let value = event.target.value.replace(/\D/g, '');
