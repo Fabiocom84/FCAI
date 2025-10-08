@@ -41,35 +41,34 @@ document.addEventListener('DOMContentLoaded', () => {
         cleanupNewOrderModal();
         initializeAllChoices();
         
-        // Mostra subito il modale ma con il pulsante di salvataggio disabilitato
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
-        if(saveOrderBtn) saveOrderBtn.disabled = true;
+        if (saveOrderBtn) saveOrderBtn.disabled = true;
 
-        // **SEQUENZA CORRETTA INIZIA QUI**
-        // 1. Attende che i dati dei dropdown siano caricati e li memorizza
+        // **SEQUENZA CORRETTA E DEFINITIVA**
+        // 1. Attende che i dati dei dropdown siano stati caricati e li memorizza.
         const dropdownData = await prepareNewOrderModal();
 
         if (isEditMode) {
-            // 2A. Se siamo in MODIFICA, carica i dati specifici della commessa
+            // 2A. Se siamo in MODIFICA, carica i dati specifici della commessa.
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
             try {
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
-                // 3A. Popola il form DOPO che i dropdown sono pieni. Ora funzionerà.
-                populateForm(data); 
+                // 3A. Popola il form. Ora funzionerà perché i dropdown sono già pieni.
+                populateForm(data);
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
                 showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
-            // 2B. Se siamo in CREAZIONE, imposta i default
+            // 2B. Se siamo in CREAZIONE, imposta i default.
             if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
             
-            // 3B. Imposta lo stato "In Lavorazione" usando i dati appena caricati. Ora funzionerà.
+            // 3B. Imposta lo stato "In Lavorazione" usando i dati appena caricati.
             if (dropdownData.status && statusChoices) {
                 const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
                 if (inLavorazioneStatus) {
@@ -78,9 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // 4. Riabilita il pulsante di salvataggio
-        if(saveOrderBtn) saveOrderBtn.disabled = false;
+        // 4. Riabilita il pulsante di salvataggio.
+        if (saveOrderBtn) saveOrderBtn.disabled = false;
     };
+
 
     window.closeNewOrderModal = () => {
         if (newOrderModal) newOrderModal.style.display = 'none';
