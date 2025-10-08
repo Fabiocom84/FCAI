@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileNameDisplay = newOrderModal.querySelector('label[for="immagineCommessa"] .file-name');
     const modalOverlay = document.getElementById('modalOverlay');
 
+    initializeAllChoices();
+
     // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
 
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
