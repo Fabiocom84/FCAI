@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`--- Apertura modale. Modalità modifica: ${isEditMode}, ID: ${commessaId} ---`);
         editingCommessaId = isEditMode ? commessaId : null;
         cleanupNewOrderModal();
-        initializeAllChoices();
+        initializeAllChoices(); 
         
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
