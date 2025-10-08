@@ -111,10 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholder: true,
         };
 
-        // Creiamo le istanze, che rimarranno attive per tutta la vita della pagina.
-        clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
-        modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
-        statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
+        // CORREZIONE: Usa l'oggetto 'elements' per trovare gli elementi del DOM
+        clienteChoices = new Choices(elements.clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
+        modelloChoices = new Choices(elements.modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
+        statusChoices = new Choices(elements.statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
     }
 
     async function loadDropdownData() {
@@ -137,18 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Errore nel caricamento dati per il modale:", error);
             return {};
         }
-    }
-
-    function cleanupNewOrderModal() {
-        if (newOrderForm) newOrderForm.reset();
-        if (clienteChoices) clienteChoices.clearStore();
-        if (modelloChoices) modelloChoices.clearStore();
-        if (statusChoices) statusChoices.clearStore();
-
-        if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
-        if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-        if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
-        if (annoInput) annoInput.value = new Date().getFullYear();
     }
     
     // --- FUNZIONI DI UTILITY ---
