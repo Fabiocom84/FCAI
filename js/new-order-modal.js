@@ -50,6 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // FASE 3: Inizializza i componenti grafici (Choices.js) e ATTENDI il loro caricamento
         // Questa è la modifica chiave: ora siamo sicuri che i menu esistano prima di popolarli.
         await initializeAllChoices();
+
+        if (!clienteChoices || !modelloChoices || !statusChoices) {
+            console.error("ERRORE FATALE: Le istanze di Choices.js non sono state create. Controllare la funzione initializeAllChoices.");
+            alert("Si è verificato un errore critico nell'inizializzazione del modale. Controllare la console.");
+            return; // Interrompe l'esecuzione per prevenire altri errori.
+        }
+        if (newOrderModal) newOrderModal.style.display = 'block';
+        if (modalOverlay) modalOverlay.style.display = 'block';
+        if (saveOrderBtn) saveOrderBtn.disabled = true;
         
         // FASE 4: Carica i dati per i dropdown
         const dropdownData = await prepareNewOrderModal();
@@ -172,23 +181,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Modifichiamo anche initializeAllChoices per renderla asincrona
-    async function initializeAllChoices() {
-        if (clienteChoices) clienteChoices.destroy();
-        if (modelloChoices) modelloChoices.destroy();
-        if (statusChoices) statusChoices.destroy();
+    function initializeAllChoices() {
+        try {
+            if (clienteChoices) clienteChoices.destroy();
+            if (modelloChoices) modelloChoices.destroy();
+            if (statusChoices) statusChoices.destroy();
 
-        const commonConfig = {
-            searchEnabled: true,
-            itemSelectText: 'Seleziona',
-            searchPlaceholderValue: 'Digita per filtrare...',
-            placeholder: true,
-        };
+            const commonConfig = {
+                searchEnabled: true,
+                itemSelectText: 'Seleziona',
+                searchPlaceholderValue: 'Digita per filtrare...',
+                placeholder: true,
+            };
 
-        // Crea sempre nuove istanze. Questo garantisce che le variabili siano sempre valide.
-        clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
-        modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
-        statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
-        return Promise.resolve();    
+            clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
+            modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
+            statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
+            
+        } catch (error) {
+            // Se c'è un errore durante la creazione, lo vedremo qui.
+            console.error("!!! ERRORE DURANTE L'ESECUZIONE DI new Choices() !!!", error);
+        }
     }
 
     function populateSelect(choicesInstance, items, valueField, textField) {
