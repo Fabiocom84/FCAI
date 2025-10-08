@@ -1645,11 +1645,11 @@ h2 {
 }
 
 /* ================================================================== */
-/* == Stile Avanzato per Dropdown (Choices.js) v3.0 - ALTA SPECIFICITÀ == */
+/* == Stile Avanzato per Dropdown (Choices.js) v3.1 - RIUTILIZZABILE == */
 /* ================================================================== */
 
-/* 1. Contenitore principale: si applica SOLO al modale #insertDataModal */
-#insertDataModal .choices__inner {
+/* 1. Contenitore principale: ora usa una classe generica */
+.styled-choices-container .choices__inner {
     min-height: 45px;
     height: 45px;
     background-color: #fff;
@@ -1662,43 +1662,43 @@ h2 {
     box-sizing: border-box; 
 }
 
-/* 2. Testo selezionato: grassetto SOLO se non è placeholder e SOLO in questo modale */
-#insertDataModal .choices__list--single .choices__item:not([data-placeholder]) {
+/* 2. Testo selezionato: grassetto (se non è placeholder) */
+.styled-choices-container .choices__list--single .choices__item:not([data-placeholder]) {
     width: 100%;
-    text-align: center;
-    font-weight: 700; /* Applica il grassetto */
+    text-align: left; /* Modificato da 'center' per adattarsi meglio a tutti i form */
+    font-weight: 700;
     padding-right: 30px; 
 }
 
-/* 3. Placeholder: SOLO in questo modale, centrato e NON in grassetto */
-#insertDataModal .choices__placeholder, 
-#insertDataModal .choices__item[data-placeholder] {
+/* 3. Placeholder: non in grassetto */
+.styled-choices-container .choices__placeholder, 
+.styled-choices-container .choices__item[data-placeholder] {
     width: 100%;
-    text-align: center;
+    text-align: left; /* Modificato da 'center' */
     opacity: 1;
     color: #999;
-    font-weight: 400 !important; /* Manteniamo !important come ultima sicurezza */
+    font-weight: 400 !important;
     padding-top: 2px;
 }
 
-/* 4. Lista delle opzioni (SOLO in questo modale) */
-#insertDataModal .choices__list--dropdown {
+/* 4. Lista delle opzioni */
+.styled-choices-container .choices__list--dropdown {
     border-radius: 8px;
     border: 1px solid #b0b0b0;
 }
-#insertDataModal .choices__list--dropdown .choices__item--choice {
+.styled-choices-container .choices__list--dropdown .choices__item--choice {
     font-size: 1em;
     padding: 10px 15px;
 }
 
-/* 5. Stato "focus" (SOLO in questo modale) */
-#insertDataModal .choices.is-focused .choices__inner {
+/* 5. Stato "focus" */
+.styled-choices-container .choices.is-focused .choices__inner {
     border-color: #2A76B8;
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
 }
 
-/* 6. Freccia a discesa (SOLO in questo modale) */
-#insertDataModal .choices[data-type*="select-one"] .choices__inner::after {
+/* 6. Freccia a discesa */
+.styled-choices-container .choices[data-type*="select-one"] .choices__inner::after {
     right: 15px;
     margin-top: -6px;
     border-width: 5px;
