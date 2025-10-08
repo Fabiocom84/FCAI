@@ -1668,9 +1668,7 @@ h2 {
     text-align: left;
     font-weight: 700;
     padding-right: 30px; 
-    height: 100%;
-    display: flex;
-    align-items: center;
+    padding-top: 12px; 
 }
 
 /* 3. Placeholder: non in grassetto */
