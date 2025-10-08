@@ -1665,9 +1665,12 @@ h2 {
 /* 2. Testo selezionato: grassetto (se non è placeholder) */
 .styled-choices-container .choices__list--single .choices__item:not([data-placeholder]) {
     width: 100%;
-    text-align: left; /* Modificato da 'center' per adattarsi meglio a tutti i form */
+    text-align: left;
     font-weight: 700;
     padding-right: 30px; 
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 /* 3. Placeholder: non in grassetto */
