@@ -6,11 +6,9 @@ import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- VARIABILI DI STATO ---
     let editingCommessaId = null;
     let clienteChoices, modelloChoices, statusChoices;
 
-    // --- ELEMENTI DOM ---
     const newOrderModal = document.getElementById('newOrderModal');
     if (!newOrderModal) return;
 
@@ -37,28 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
 
     window.openNewOrderModal = async (isEditMode = false, commessaId = null) => {
-        // FASE 1: Setup iniziale e pulizia
-        console.log(`--- Apertura modale. Modalità modifica: ${isEditMode}, ID: ${commessaId} ---`);
         editingCommessaId = isEditMode ? commessaId : null;
         cleanupNewOrderModal();
         
-        // FASE 2: Mostra il modale e disabilita il salvataggio
         if (newOrderModal) newOrderModal.style.display = 'block';
         if (modalOverlay) modalOverlay.style.display = 'block';
         if (saveOrderBtn) saveOrderBtn.disabled = true;
 
-        // FASE 3: Inizializza i componenti grafici (Choices.js)
-        initializeAllChoices();
-        
-        // --- BLOCCO DUPLICATO RIMOSSO DA QUI ---
-        // Il controllo di sicurezza e la seconda visualizzazione del modale sono stati eliminati
-        // perché erano ridondanti e causavano l'errore.
-
-        // FASE 4: Carica i dati per i dropdown
+        // Istanze di Choices GIA' ESISTONO, quindi possiamo caricare i dati senza problemi.
         const dropdownData = await prepareNewOrderModal();
-        console.log("LOG 2: Dati per i dropdown caricati.");
 
-        // FASE 5: Logica di modifica o creazione
         if (isEditMode) {
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
@@ -66,11 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
-                console.log("LOG 3: Dati della commessa da modificare caricati:", data);
                 populateForm(data);
             } catch (error) {
                 console.error('Errore nel caricamento dati per modifica:', error);
-                showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
             if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
@@ -83,10 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // FASE 6: Riabilita il salvataggio
         if (saveOrderBtn) saveOrderBtn.disabled = false;
     };
-
 
     window.closeNewOrderModal = () => {
         if (newOrderModal) newOrderModal.style.display = 'none';
@@ -94,17 +76,26 @@ document.addEventListener('DOMContentLoaded', () => {
         cleanupNewOrderModal();
     };
 
-    // --- EVENT LISTENERS ---
     if (closeNewOrderModalBtn) closeNewOrderModalBtn.addEventListener('click', window.closeNewOrderModal);
     if (saveOrderBtn) saveOrderBtn.addEventListener('click', saveOrder);
-    if (voInput) voInput.addEventListener('input', formatVO);
-    if (rifTecnicoInput) rifTecnicoInput.addEventListener('input', formatRifTecnico);
-    if (immagineInput) immagineInput.addEventListener('change', handleImageUpload);
     
     // --- FUNZIONI DI GESTIONE ---
 
+    function initializeAllChoices() {
+        const commonConfig = {
+            searchEnabled: true,
+            itemSelectText: 'Seleziona',
+            searchPlaceholderValue: 'Digita per filtrare...',
+            placeholder: true,
+        };
+
+        // Creiamo le istanze, che rimarranno attive per tutta la vita della pagina.
+        clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
+        modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
+        statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
+    }
+
     async function prepareNewOrderModal() {
-        console.log("LOG 1: Avvio caricamento dati per i dropdown...");
         try {
             const [clientiRes, modelliRes, statusRes] = await Promise.all([
                 apiFetch('/api/simple/clienti'),
@@ -120,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(statusChoices, status, 'id_status', 'nome_status');
             
             return { clienti, modelli, status };
-
         } catch (error) {
             console.error("Errore nel caricamento dati per il modale:", error);
             return {};
@@ -129,16 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cleanupNewOrderModal() {
         if (newOrderForm) newOrderForm.reset();
-        // editingCommessaId NON viene resettato qui, ma solo all'apertura del modale.
+        if (clienteChoices) clienteChoices.clearStore();
+        if (modelloChoices) modelloChoices.clearStore();
+        if (statusChoices) statusChoices.clearStore();
 
         if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
         if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
         if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
         if (annoInput) annoInput.value = new Date().getFullYear();
-
-        if (clienteChoices) clienteChoices.clearStore();
-        if (modelloChoices) modelloChoices.clearStore();
-        if (statusChoices) statusChoices.clearStore();
     }
     
     // --- FUNZIONI DI UTILITY ---
@@ -171,36 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`--- FINE DEBUG ---`);
     }
 
-    // Modifichiamo anche initializeAllChoices per renderla asincrona
-    function initializeAllChoices() {
-        try {
-            if (clienteChoices) clienteChoices.destroy();
-            if (modelloChoices) modelloChoices.destroy();
-            if (statusChoices) statusChoices.destroy();
-
-            const commonConfig = {
-                searchEnabled: true,
-                itemSelectText: 'Seleziona',
-                searchPlaceholderValue: 'Digita per filtrare...',
-                placeholder: true,
-            };
-
-            clienteChoices = new Choices(clienteSelect, { ...commonConfig, placeholderValue: 'Seleziona un cliente' });
-            modelloChoices = new Choices(modelloSelect, { ...commonConfig, placeholderValue: 'Seleziona un modello' });
-            statusChoices = new Choices(statusSelect, { ...commonConfig, searchEnabled: false, placeholderValue: 'Seleziona uno stato' });
-            
-        } catch (error) {
-            // Se c'è un errore durante la creazione, lo vedremo qui.
-            console.error("!!! ERRORE DURANTE L'ESECUZIONE DI new Choices() !!!", error);
-        }
-    }
-
     function populateSelect(choicesInstance, items, valueField, textField) {
-    console.log(`Popolazione di ${choicesInstance.element.id} con ${items.length} opzioni.`);
-    if (!choicesInstance) return;
-    const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
-    choicesInstance.setChoices(options, 'value', 'label', true);
-}
+        if (!choicesInstance) return;
+        const options = items.map(item => ({ value: item[valueField], label: item[textField] }));
+        choicesInstance.setChoices(options, 'value', 'label', true);
+    }
     
     function formatVO(event) {
         let value = event.target.value.replace(/\D/g, '');
