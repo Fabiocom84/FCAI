@@ -47,24 +47,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalOverlay) modalOverlay.style.display = 'block';
         if (saveOrderBtn) saveOrderBtn.disabled = true;
 
-        // FASE 3: Inizializza i componenti grafici (Choices.js) e ATTENDI il loro caricamento
-        // Questa è la modifica chiave: ora siamo sicuri che i menu esistano prima di popolarli.
-        await initializeAllChoices();
-
-        if (!clienteChoices || !modelloChoices || !statusChoices) {
-            console.error("ERRORE FATALE: Le istanze di Choices.js non sono state create. Controllare la funzione initializeAllChoices.");
-            alert("Si è verificato un errore critico nell'inizializzazione del modale. Controllare la console.");
-            return; // Interrompe l'esecuzione per prevenire altri errori.
-        }
-        if (newOrderModal) newOrderModal.style.display = 'block';
-        if (modalOverlay) modalOverlay.style.display = 'block';
-        if (saveOrderBtn) saveOrderBtn.disabled = true;
+        // FASE 3: Inizializza i componenti grafici (Choices.js)
+        initializeAllChoices();
         
+        // --- BLOCCO DUPLICATO RIMOSSO DA QUI ---
+        // Il controllo di sicurezza e la seconda visualizzazione del modale sono stati eliminati
+        // perché erano ridondanti e causavano l'errore.
+
         // FASE 4: Carica i dati per i dropdown
         const dropdownData = await prepareNewOrderModal();
         console.log("LOG 2: Dati per i dropdown caricati.");
 
-        // FASE 5: Logica di modifica o creazione (ora funzionerà)
+        // FASE 5: Logica di modifica o creazione
         if (isEditMode) {
             if (modalTitle) modalTitle.textContent = 'MODIFICA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Salva Modifiche';
@@ -79,11 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showModal({ title: 'Errore', message: 'Impossibile caricare i dati della commessa.', confirmText: 'Chiudi' });
             }
         } else {
-            // 2B. Se siamo in CREAZIONE, imposta i default.
             if (modalTitle) modalTitle.textContent = 'NUOVA COMMESSA';
             if (saveOrderBtnText) saveOrderBtnText.textContent = 'Crea Commessa';
-            
-            // 3B. Imposta lo stato "In Lavorazione" usando i dati appena caricati.
             if (dropdownData.status && statusChoices) {
                 const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
                 if (inLavorazioneStatus) {
@@ -92,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // 4. Riabilita il pulsante di salvataggio.
+        // FASE 6: Riabilita il salvataggio
         if (saveOrderBtn) saveOrderBtn.disabled = false;
     };
 
