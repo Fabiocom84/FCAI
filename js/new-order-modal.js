@@ -197,13 +197,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveOrder(event) {
         event.preventDefault();
-        if (!newOrderForm.checkValidity()) {
-            newOrderForm.reportValidity();
+        // CORREZIONE: Usa elements.form per la validazione
+        if (!elements.form.checkValidity()) {
+            elements.form.reportValidity();
             return;
         }
-        if(saveOrderBtn) saveOrderBtn.disabled = true;
+        if (elements.saveBtn) elements.saveBtn.disabled = true;
 
-        const formData = new FormData(newOrderForm);
+        // CORREZIONE: Usa elements.form per creare FormData
+        const formData = new FormData(elements.form);
         const url = editingCommessaId ? `/api/commesse/${editingCommessaId}` : '/api/commesse';
         const method = editingCommessaId ? 'PUT' : 'POST';
 
