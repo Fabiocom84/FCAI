@@ -44,9 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.closeBtn) elements.closeBtn.addEventListener('click', closeAndCleanup);
     if (elements.saveBtn) elements.saveBtn.addEventListener('click', saveOrder);
 
-    // 3. Esponi la funzione di apertura al mondo esterno.
-    window.openNewOrderModal = openModal;
-
     // --- FUNZIONE PRINCIPALE DI APERTURA ---
     async function openModal(isEditMode = false, commessaId = null) {
         editingCommessaId = isEditMode ? commessaId : null;
@@ -231,5 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             if(saveOrderBtn) saveOrderBtn.disabled = false;
         }
-    }
+    }    
 });
+
+export { openModal as openNewOrderModal };
