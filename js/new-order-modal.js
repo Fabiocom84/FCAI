@@ -94,9 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeAndCleanup() {
-        if (elements.modal) elements.modal.style.display = 'none';
+        if (elements.modal) elements.modal.style.display = 'none'; // <-- CORRETTO
         if (elements.overlay) elements.overlay.style.display = 'none';
-        
+
         if (elements.form) elements.form.reset();
         if (clienteChoices) clienteChoices.clearStore();
         if (modelloChoices) modelloChoices.clearStore();
