@@ -337,3 +337,30 @@
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+/* Imposta una larghezza di base per le colonne della vista 'commesse' */
+.agile-table[data-view="commesse"] th:nth-child(3),  /* Stato */
+.agile-table[data-view="commesse"] td:nth-child(3) {
+    width: 120px;
+}
+
+.agile-table[data-view="commesse"] th:nth-child(6),  /* Anno */
+.agile-table[data-view="commesse"] td:nth-child(6),
+.agile-table[data-view="commesse"] th:nth-child(7),  /* VO */
+.agile-table[data-view="commesse"] td:nth-child(7),
+.agile-table[data-view="commesse"] th:nth-child(12), /* Matricola */
+.agile-table[data-view="commesse"] td:nth-child(12),
+.agile-table[data-view="commesse"] th:nth-child(13), /* Immagine */
+.agile-table[data-view="commesse"] td:nth-child(13) {
+    width: 90px;
+    text-align: center;
+}
+
+/* Allarga la colonna 'Note' e gestisce il testo lungo */
+.agile-table[data-view="commesse"] th:last-child,
+.agile-table[data-view="commesse"] td:last-child {
+    width: 25%; /* Dà alla colonna Note una larghezza percentuale significativa */
+    min-width: 250px;
+    white-space: normal; /* Permette al testo di andare a capo se necessario */
+    word-wrap: break-word; /* Forza il testo a interrompersi per evitare overflow */
+}

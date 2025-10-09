@@ -51,6 +51,8 @@ const App = {
         'commesse': {
             apiEndpoint: '/api/commesse',
             idColumn: 'id_commessa',
+            defaultSortBy: 'data_commessa',
+            defaultSortOrder: 'desc',
             columns: [
                 { 
                     key: 'id_cliente_fk', 
@@ -702,6 +704,7 @@ const App = {
 
         const table = document.createElement('table');
         table.className = 'agile-table';
+        table.dataset.view = this.state.currentView;
         const thead = table.createTHead();
         const headerRow = thead.insertRow();
 
