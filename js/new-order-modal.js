@@ -35,58 +35,65 @@ document.addEventListener('DOMContentLoaded', () => {
         fileNameDisplay: newOrderModal.querySelector('label[for="immagineCommessa"] .file-name')
     };
 
-    // 1. Inizializza i componenti Choices UNA SOLA VOLTA.
+    if (!elements.modal) return;
+
+    // 1. Inizializza i componenti Choices una sola volta e li lascia pronti.
     initializeAllChoices();
 
     // 2. Associa gli eventi ai pulsanti.
     if (elements.closeBtn) elements.closeBtn.addEventListener('click', closeAndCleanup);
     if (elements.saveBtn) elements.saveBtn.addEventListener('click', saveOrder);
 
-    // 3. Definisci le funzioni globali.
-    window.openNewOrderModal = openModal; // Rinominiamo per chiarezza
-    window.closeNewOrderModal = closeAndCleanup; // Rinominiamo per chiarezza
+    // 3. Esponi la funzione di apertura al mondo esterno.
+    window.openNewOrderModal = openModal;
 
-    // --- FUNZIONI DI APERTURA/CHIUSURA GLOBALI ---
-
+    // --- FUNZIONE PRINCIPALE DI APERTURA ---
     async function openModal(isEditMode = false, commessaId = null) {
         editingCommessaId = isEditMode ? commessaId : null;
         
-        // Mostra il modale e disabilita il salvataggio
-        if (newOrderModal) newOrderModal.style.display = 'block';
-        if (elements.modalOverlay) elements.modalOverlay.style.display = 'block';
+        if (elements.modal) elements.modal.style.display = 'block';
+        if (elements.overlay) elements.overlay.style.display = 'block';
         if (elements.saveBtn) elements.saveBtn.disabled = true;
 
-        // SEQUENZA GARANTITA:
-        // A. Carica i dati per i dropdown.
-        const dropdownData = await loadDropdownData();
+        // **LA MODIFICA CHIAVE È QUI**
+        // Ora attendiamo una singola funzione che fa tutto in ordine.
+        await loadDataAndPopulate(isEditMode, commessaId);
+        
+        if (elements.saveBtn) elements.saveBtn.disabled = false;
+    }
 
-        if (isEditMode) {
-            // B. Se in modifica, carica i dati della commessa.
-            elements.modalTitle.textContent = 'MODIFICA COMMESSA';
-            elements.saveBtnText.textContent = 'Salva Modifiche';
-            try {
+    // --- NUOVA FUNZIONE DI ORCHESTRAZIONE ---
+    async function loadDataAndPopulate(isEditMode, commessaId) {
+        try {
+            // FASE A: Carica i dati per TUTTI i menu a tendina.
+            const dropdownData = await loadDropdownData();
+
+            if (isEditMode) {
+                // FASE B (MODIFICA): Carica i dati specifici della commessa.
+                elements.title.textContent = 'MODIFICA COMMESSA';
+                elements.saveBtnText.textContent = 'Salva Modifiche';
                 const response = await apiFetch(`/api/commessa/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const data = await response.json();
-                // C. Popola il form. Ora i dropdown sono già pieni.
+                
+                // FASE C (MODIFICA): Popola l'intero form.
+                // Questo viene eseguito solo DOPO che la FASE A è completata.
                 populateForm(data);
-            } catch (error) {
-                console.error('Errore nel caricamento dati per modifica:', error);
-            }
-        } else {
-            // B. Se in creazione, imposta i default.
-            elements.modalTitle.textContent = 'NUOVA COMMESSA';
-            elements.saveBtnText.textContent = 'Crea Commessa';
-            if (dropdownData.status && statusChoices) {
-                const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
-                if (inLavorazioneStatus) {
-                    statusChoices.setChoiceByValue(String(inLavorazioneStatus.id_status));
+            } else {
+                // FASE B (CREAZIONE): Imposta i valori di default.
+                elements.title.textContent = 'NUOVA COMMESSA';
+                elements.saveBtnText.textContent = 'Crea Commessa';
+                if (dropdownData.status && statusChoices) {
+                    const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
+                    if (inLavorazioneStatus) {
+                        statusChoices.setChoiceByValue(String(inLavorazioneStatus.id_status));
+                    }
                 }
             }
+        } catch (error) {
+            console.error("Errore durante il caricamento e popolamento del modale:", error);
+            showModal({ title: 'Errore', message: 'Impossibile caricare i dati necessari.', confirmText: 'Chiudi' });
         }
-        
-        // D. Riabilita il salvataggio.
-        if (elements.saveBtn) elements.saveBtn.disabled = false;
     }
 
     function closeAndCleanup() {
