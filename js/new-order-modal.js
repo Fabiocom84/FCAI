@@ -186,8 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function handleImageUpload(event) {
         const file = event.target.files[0];
-        if (file && fileNameDisplay) fileNameDisplay.textContent = file.name;
-        else if (fileNameDisplay) fileNameDisplay.textContent = 'Carica un\'immagine...';
+        if (file && elements.fileNameDisplay) {
+            elements.fileNameDisplay.textContent = file.name;
+        } else if (elements.fileNameDisplay) {
+            elements.fileNameDisplay.textContent = 'Carica un\'immagine...';
+        }
     }
 
     // --- FUNZIONE DI SALVATAGGIO ---
