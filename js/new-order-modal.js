@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (window.refreshCommesseView) window.refreshCommesseView();
-            window.closeNewOrderModal(); 
+            closeAndCleanup(); 
 
         } catch (error) {
             let userFriendlyMessage = `Si è verificato un errore. Dettagli: ${error.message}`;
