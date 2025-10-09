@@ -394,11 +394,8 @@ const App = {
         params.append('page', this.state.currentPage);
         params.append('limit', '50');
             
-        // --- FIX: Use sorting values from the state ---
-        // Use the state's sortBy/sortOrder, or a safe default on the first load.
         params.append('sortBy', this.state.sortBy || config.columns[0].key);
         params.append('sortOrder', this.state.sortOrder || 'asc');
-        // --- END OF FIX ---
 
         const searchTerm = document.getElementById('filter-search-term')?.value;
         if (searchTerm) params.append('search', searchTerm);
@@ -409,11 +406,15 @@ const App = {
 
         try {
             const endpoint = `${config.apiEndpoint}?${params.toString()}`;
+            
+            // --- CORREZIONE CHIAVE QUI ---
             const response = await apiFetch(endpoint);
+            const jsonResponse = await response.json(); // <-- Riga mancante
                 
-            this.state.tableData = response.data;
+            this.state.tableData = jsonResponse.data; // Usa jsonResponse.data
             this.renderTable();
-            this.renderPagination(response.count);
+            this.renderPagination(jsonResponse.count); // Usa jsonResponse.count
+            
         } catch (error) {
             this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
             if (document.getElementById('pagination-container')) {
@@ -616,7 +617,6 @@ const App = {
         
     renderToolbar() {
         const view = this.state.currentView;
-        // Render all buttons at once. Their visibility will be controlled by CSS/JS.
         this.dom.toolbarArea.innerHTML = `
             <div class="toolbar-group">
                 <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
@@ -629,6 +629,12 @@ const App = {
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
                 <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
             </div>`;
+        
+        // --- RIGA AGGIUNTA PER CORREZIONE ---
+        // Disabilita subito il pulsante "Aggiungi" se siamo nella vista 'commesse'
+        if (view === 'commesse' && document.getElementById('addRowBtn')) {
+            document.getElementById('addRowBtn').disabled = true;
+        }
     },
 
     updateToolbarState() {
