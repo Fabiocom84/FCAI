@@ -2,7 +2,6 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
-import { openNewOrderModal } from './new-order-modal.js';
 
 const App = {
     state: {
@@ -30,8 +29,13 @@ const App = {
     },
     
     addEventListeners: function() {
+        // Ripristina 'window.'
         this.dom.addBtn.addEventListener('click', () => {
-            openNewOrderModal(false); 
+            if (typeof window.openNewOrderModal === 'function') {
+                window.openNewOrderModal(false);
+            } else {
+                console.error('Funzione openNewOrderModal non trovata.');
+            }
         });
 
         this.dom.statusFilters.forEach(btn => {
@@ -203,7 +207,12 @@ const App = {
     },
 
     handleEdit: function(commessaId) {
-        openNewOrderModal(true, commessaId);
+        // Ripristina 'window.'
+        if (typeof window.openNewOrderModal === 'function') {
+            window.openNewOrderModal(true, commessaId);
+        } else {
+            console.error('La funzione openNewOrderModal non è stata trovata.');
+        }
     },
 
     handleSort: function() {

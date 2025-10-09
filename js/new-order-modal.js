@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.saveBtn) elements.saveBtn.disabled = false;
     }
 
+    window.openNewOrderModal = openModal;
+
     // --- NUOVA FUNZIONE DI ORCHESTRAZIONE ---
     async function loadDataAndPopulate(isEditMode, commessaId) {
         try {
@@ -230,5 +232,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }    
 });
-
-export { openModal as openNewOrderModal };
