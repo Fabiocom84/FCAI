@@ -147,6 +147,8 @@ const App = {
         'registrazioni': {
             apiEndpoint: '/api/registrazioni',
             idColumn: 'id_registrazione',
+            defaultSortBy: 'data_creazione',
+            defaultSortOrder: 'desc', 
             columns: [
                 { 
                     key: 'data_creazione', 
@@ -394,8 +396,10 @@ const App = {
         params.append('page', this.state.currentPage);
         params.append('limit', '50');
             
-        params.append('sortBy', this.state.sortBy || config.columns[0].key);
-        params.append('sortOrder', this.state.sortOrder || 'asc');
+        const sortBy = this.state.sortBy || config.defaultSortBy || config.columns[0].key;
+        const sortOrder = this.state.sortOrder || config.defaultSortOrder || 'asc';
+        params.append('sortBy', sortBy);
+        params.append('sortOrder', sortOrder);
 
         const searchTerm = document.getElementById('filter-search-term')?.value;
         if (searchTerm) params.append('search', searchTerm);
