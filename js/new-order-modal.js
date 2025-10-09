@@ -47,15 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONE PRINCIPALE DI APERTURA ---
     async function openModal(isEditMode = false, commessaId = null) {
         editingCommessaId = isEditMode ? commessaId : null;
-        
+            
+        // CORREZIONE: Usa elements.modal e elements.overlay
         if (elements.modal) elements.modal.style.display = 'block';
         if (elements.overlay) elements.overlay.style.display = 'block';
         if (elements.saveBtn) elements.saveBtn.disabled = true;
 
-        // **LA MODIFICA CHIAVE È QUI**
-        // Ora attendiamo una singola funzione che fa tutto in ordine.
         await loadDataAndPopulate(isEditMode, commessaId);
-        
+            
         if (elements.saveBtn) elements.saveBtn.disabled = false;
     }
 
@@ -96,9 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeAndCleanup() {
-        if (newOrderModal) newOrderModal.style.display = 'none';
-        if (elements.modalOverlay) elements.modalOverlay.style.display = 'none';
-        
+        // CORREZIONE: Usa elements.modal e elements.overlay
+        if (elements.modal) elements.modal.style.display = 'none';
+        if (elements.overlay) elements.overlay.style.display = 'none';
+            
         if (elements.form) elements.form.reset();
         if (clienteChoices) clienteChoices.clearStore();
         if (modelloChoices) modelloChoices.clearStore();
