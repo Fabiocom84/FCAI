@@ -47,14 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONE PRINCIPALE DI APERTURA ---
     async function openModal(isEditMode = false, commessaId = null) {
         editingCommessaId = isEditMode ? commessaId : null;
-            
-        // CORREZIONE: Usa elements.modal e elements.overlay
+        
         if (elements.modal) elements.modal.style.display = 'block';
         if (elements.overlay) elements.overlay.style.display = 'block';
         if (elements.saveBtn) elements.saveBtn.disabled = true;
 
         await loadDataAndPopulate(isEditMode, commessaId);
-            
+        
         if (elements.saveBtn) elements.saveBtn.disabled = false;
     }
 
@@ -95,10 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeAndCleanup() {
-        // CORREZIONE: Usa elements.modal e elements.overlay
         if (elements.modal) elements.modal.style.display = 'none';
         if (elements.overlay) elements.overlay.style.display = 'none';
-            
+        
         if (elements.form) elements.form.reset();
         if (clienteChoices) clienteChoices.clearStore();
         if (modelloChoices) modelloChoices.clearStore();
@@ -148,9 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNZIONI DI UTILITY ---
 
     function populateForm(data) {
-        console.log("LOG 4: Esecuzione di populateForm...");
-        
-        // CORREZIONE: Usa 'elements.' prima di ogni nome di variabile
         if (elements.nomeCommessaInput) elements.nomeCommessaInput.value = data.impianto || '';
         if (elements.voInput) elements.voInput.value = data.vo || '';
         if (elements.rifTecnicoInput) elements.rifTecnicoInput.value = data.riferimento_tecnico || '';
@@ -163,11 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.fileNameDisplay.textContent = data.immagine.split('/').pop();
         }
         
-        // I menu a tendina sono già corretti perché usano le variabili globali del modulo
         if (clienteChoices) clienteChoices.setChoiceByValue(String(data.id_cliente_fk || ''));
         if (modelloChoices) modelloChoices.setChoiceByValue(String(data.id_modello_fk || ''));
         if (statusChoices) statusChoices.setChoiceByValue(String(data.id_status_fk || ''));
     }
+
 
     function populateSelect(choicesInstance, items, valueField, textField) {
         if (!choicesInstance) return;
