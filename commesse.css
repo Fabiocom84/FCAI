@@ -222,6 +222,7 @@
     display: flex;
     align-items: center;
     gap: 15px; /* Spazio tra il badge e il toggle */
+    flex-shrink: 0;
 }
 
 /* Stile base per il toggle switch */
