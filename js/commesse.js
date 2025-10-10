@@ -15,7 +15,7 @@ const App = {
     },
     
     // Le funzioni ora sono definite come metodi dell'oggetto App
-    init: function() {
+    init: async function() {
         this.dom = {
             grid: document.getElementById('commesse-grid'),
             loader: document.getElementById('loader'),
