@@ -24,6 +24,14 @@ const App = {
             sortSelect: document.getElementById('sort-select'),
             addBtn: document.getElementById('add-commessa-btn'),
         };
+        try {
+            // Carica tutti gli stati possibili e li salva nello stato dell'app
+            const response = await apiFetch('/api/simple/status_commessa');
+            this.state.allStatuses = await response.json();
+        } catch (error) {
+            console.error("Errore nel caricamento degli stati delle commesse:", error);
+            this.state.allStatuses = []; // Imposta un array vuoto in caso di errore
+        }
         this.addEventListeners();
         this.fetchCommesse(true);
     },
@@ -177,6 +185,14 @@ const App = {
                 this.handleEdit(editBtn.dataset.id); 
             });
         }
+
+        const toggleInput = card.querySelector('[data-action="toggle-status"]');
+        if (toggleInput) {
+            toggleInput.addEventListener('change', (e) => {
+                this.handleStatusToggle(e);
+            });
+        }
+
         return card;
     },
 
@@ -220,6 +236,63 @@ const App = {
             window.openNewOrderModal(true, commessaId);
         } else {
             console.error('La funzione openNewOrderModal non è stata trovata.');
+        }
+    },
+
+    handleStatusToggle: async function(event) {
+        const toggleInput = event.target;
+        const commessaId = toggleInput.dataset.id;
+        const isCompleted = toggleInput.checked; // true se è stato spostato su "Completato"
+
+        // Trova gli ID corretti dallo stato che abbiamo caricato all'inizio
+        const completedStatus = this.state.allStatuses.find(s => s.nome_status === 'Completato');
+        const inProgressStatus = this.state.allStatuses.find(s => s.nome_status === 'In Lavorazione');
+
+        if (!completedStatus || !inProgressStatus) {
+            return showModal({ title: 'Errore', message: 'Impossibile trovare gli stati necessari.', confirmText: 'OK' });
+        }
+
+        const newStatusId = isCompleted ? completedStatus.id_status : inProgressStatus.id_status;
+        const newStatusName = isCompleted ? 'Completato' : 'In Lavorazione';
+
+        try {
+            // Disabilita momentaneamente il toggle per prevenire click multipli
+            toggleInput.disabled = true;
+
+            // Chiama l'API che abbiamo già creato
+            await apiFetch(`/api/commesse/${commessaId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ id_status_fk: newStatusId })
+            });
+
+            // --- Aggiornamento UI Istantaneo ---
+            const card = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
+            if (card) {
+                // Se il filtro attivo non corrisponde più al nuovo stato, rimuovi la card
+                if (this.state.activeStatus && this.state.activeStatus !== newStatusName) {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => card.remove(), 500);
+                } else {
+                    // Altrimenti, aggiorna semplicemente la card
+                    const badge = card.querySelector('.status-badge');
+                    const statusNameClass = newStatusName.toLowerCase().replace(' ', '-');
+
+                    badge.textContent = newStatusName;
+                    badge.className = `status-badge status-${statusNameClass}`;
+                    
+                    card.className = 'commesse-card'; // Resetta le classi di sfondo
+                    card.classList.add(`status-bg-${statusNameClass}`);
+                }
+            }
+
+        } catch (error) {
+            showModal({ title: 'Errore', message: `Impossibile aggiornare lo stato: ${error.message}`, confirmText: 'OK' });
+            // Ripristina lo stato visivo del toggle in caso di errore
+            toggleInput.checked = !isCompleted;
+        } finally {
+            toggleInput.disabled = false;
         }
     },
 
