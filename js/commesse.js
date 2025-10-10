@@ -8,7 +8,7 @@ const App = {
         currentPage: 1,
         totalCount: 0,
         isLoading: false,
-        activeStatus: '', // Default a "Tutte" come discusso
+        activeStatus: 'In Lavorazione', // Default a "Tutte" come discusso
         searchTerm: '',
         sortBy: 'data_commessa',
         sortOrder: 'desc',
