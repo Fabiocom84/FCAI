@@ -216,3 +216,61 @@
 .choices__inner::after {
     right: 15.5px; /* Aumenta questo valore per spostarla più a sinistra */
 }
+
+/* Contenitore per allineare badge e toggle */
+.status-and-toggle {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Spazio tra il badge e il toggle */
+}
+
+/* Stile base per il toggle switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* Larghezza del toggle */
+    height: 28px; /* Altezza del toggle */
+}
+
+/* Nasconde la checkbox di default */
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Lo sfondo del toggle */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+}
+
+/* Il "pallino" che si sposta */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+/* Cambia colore quando il toggle è attivo (checked) */
+input:checked + .slider {
+    background-color: #28a745; /* Verde per "Completato" */
+}
+
+/* Sposta il pallino quando il toggle è attivo */
+input:checked + .slider:before {
+    transform: translateX(22px);
+}

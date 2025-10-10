@@ -117,7 +117,6 @@ const App = {
         card.className = 'commesse-card';
         card.dataset.commessaId = commessa.id_commessa;
 
-        // QUI USI 'commessa' (corretto)
         const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
         card.classList.add(`status-bg-${statusName}`);
         const statusClass = `status-${statusName}`;
@@ -134,7 +133,16 @@ const App = {
             <div class="card-details">
                 <div class="card-header">
                     <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
-                    <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                    <div class="status-and-toggle">
+                        <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" 
+                                   data-action="toggle-status" 
+                                   data-id="${commessa.id_commessa}" 
+                                   ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="card-info">
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
