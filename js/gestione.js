@@ -959,7 +959,9 @@ const App = {
             select.innerHTML = `<option value="">Caricamento...</option>`;
 
             try {
-                const optionsData = await apiFetch(columnConfig.options.apiEndpoint);
+                const response = await apiFetch(columnConfig.options.apiEndpoint);
+                const optionsData = await response.json(); // <-- RIGA MANCANTE AGGIUNTA QUI
+
                 select.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
                 optionsData.forEach(opt => {
                     const option = document.createElement('option');
