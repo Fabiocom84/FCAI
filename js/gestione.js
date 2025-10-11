@@ -854,8 +854,8 @@ const App = {
         popup.className = 'column-filter-popup';
         document.body.appendChild(popup);
         const rect = iconElement.getBoundingClientRect();
-        popup.style.left = `${rect.left}px`;
-        popup.style.top = `${rect.bottom + 5}px`;
+        popup.style.top = `${rect.bottom + 5 + window.scrollY}px`;
+        popup.style.left = `${rect.right + 5 + window.scrollX}px`;
         popup.innerHTML = `<div class="loader-small"></div>`;
 
         try {
@@ -946,7 +946,7 @@ const App = {
         clearBtn.className = 'button';
         clearBtn.onclick = () => {
             delete this.state.activeFilters[columnKey];
-            this.loadAndRenderData(true); // Usa il nome corretto della funzione
+            this.loadAndRenderData(true);
             this.closeColumnFilterPopup();
         };
         
