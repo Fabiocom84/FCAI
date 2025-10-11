@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Presenze - Segretario AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style-v2.css">
+    
+    <link rel="stylesheet" href="registro-presenze.css">
+
+</head>
+
+<body>
+    <div class="main-content-wrapper">
+        <div class="top-controls-wrapper">
+            <a href="index.html" class="logout-button-horizontal" style="background-color: #3498db;">
+                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg);">
+                <span>Torna alla Home</span>
+            </a>
+            <div class="help-button-container">
+                <button class="help-button" data-legend="presenzeLegend">?</button>
+            </div>
+        </div>
+
+        <h1>REGISTRO PRESENZE</h1>
+
+        <div class="presenze-controls">
+            <div class="month-navigation">
+                <button id="prev-month">&lt;</button>
+                <h2 id="current-month-display">Ottobre 2025</h2>
+                <button id="next-month">&gt;</button>
+            </div>
+            <input type="search" id="search-notes" placeholder="Cerca nelle note...">
+        </div>
+
+        <div class="timeline-container">
+            <table class="timeline-table">
+                <thead>
+                    <tr id="header-row">
+                        <th style="position: -webkit-sticky; position: sticky; left: 0; z-index: 15;">Operatore</th>
+                        </tr>
+                </thead>
+                <tbody id="timeline-body">
+                    <tr>
+                        <th>Mario Rossi</th>
+                        <td>8</td>
+                        <td>8</td>
+                        <td>4</td>
+                        <td style="background-color: #fff0f0;">Malattia</td>
+                        <td>8</td>
+                        <td>...</td>
+                    </tr>
+                    <tr>
+                        <th>Luigi Bianchi</th>
+                        <td style="background-color: #e6f7ff;">Ferie</td>
+                        <td style="background-color: #e6f7ff;">Ferie</td>
+                        <td style="background-color: #e6f7ff;">Ferie</td>
+                        <td style="background-color: #e6f7ff;">Ferie</td>
+                        <td style="background-color: #e6f7ff;">Ferie</td>
+                        <td>...</td>
+                    </tr>
+                     </tbody>
+            </table>
+        </div>
+    </div>
+
+    </body>
+</html>

@@ -1,0 +1,108 @@
+/* =================================================== */
+/* == Stili Specifici per la Pagina Registro Presenze == */
+/* =================================================== */
+
+/* Adeguiamo il layout principale per una pagina a tutto schermo */
+body {
+    justify-content: flex-start;
+}
+
+.main-content-wrapper {
+    max-width: 95%; /* Sfruttiamo più spazio per la griglia */
+    padding-top: 20px;
+}
+
+/* Controlli specifici per la pagina presenze */
+.presenze-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.month-navigation {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.month-navigation button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.month-navigation button:hover {
+    background-color: #5a6268;
+}
+
+#current-month-display {
+    font-size: 1.5em;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+
+#search-notes {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-width: 250px;
+}
+
+/* Contenitore della Timeline (griglia) */
+.timeline-container {
+    width: 100%;
+    overflow-x: auto; /* Abilita lo scorrimento orizzontale */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #fff;
+    max-height: 70vh; /* Limita l'altezza per evitare scroll della pagina intera */
+    overflow-y: auto;
+}
+
+.timeline-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.timeline-table th,
+.timeline-table td {
+    border: 1px solid #e9ecef;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 130px;
+}
+
+/* Stile per l'intestazione fissa (nomi e giorni) */
+.timeline-table thead th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Stile per la colonna fissa a sinistra (nomi operatori) */
+.timeline-table tbody th {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    background-color: #f8f9fa;
+    z-index: 5;
+    text-align: left;
+    font-weight: 500;
+    min-width: 200px;
+    border-right: 2px solid #dee2e6; /* Linea più marcata per separare */
+}
