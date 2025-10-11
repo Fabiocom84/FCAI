@@ -845,16 +845,25 @@ const App = {
 
     async openColumnFilterPopup(iconElement, columnKey) {
         this.closeColumnFilterPopup();
-        const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
-        const filterKey = columnConfig.filterOptions?.key || columnKey;
-
         const popup = document.createElement('div');
         popup.className = 'column-filter-popup';
         document.body.appendChild(popup);
-        const rect = iconElement.getBoundingClientRect();
-        popup.style.left = `${rect.left}px`;
-        popup.style.top = `${rect.bottom + 5}px`;
+        
+        // Posiziona temporaneamente il popup per calcolarne le dimensioni senza mostrarlo
+        popup.style.visibility = 'hidden';
+        popup.style.top = '-9999px';
         popup.innerHTML = `<div class="loader-small"></div>`;
+
+        const rect = iconElement.getBoundingClientRect();
+        
+        // --- CALCOLO POSIZIONE CORRETTO ---
+        // Posiziona l'inizio verticale del popup (top) alla fine verticale dell'icona (bottom)
+        popup.style.top = `${rect.bottom + 5 + window.scrollY}px`; 
+        // Posiziona l'inizio orizzontale del popup (left) alla fine orizzontale dell'icona (right)
+        popup.style.left = `${rect.right + 5 + window.scrollX}px`;
+        
+        // Rendi il popup visibile nella posizione calcolata
+        popup.style.visibility = 'visible';
 
         try {
             const viewConfig = this.viewConfig[this.state.currentView];
