@@ -845,31 +845,24 @@ const App = {
 
     async openColumnFilterPopup(iconElement, columnKey) {
         this.closeColumnFilterPopup();
+        
+        const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
+        // Determina la chiave corretta da usare per la chiamata API
+        const filterKey = columnConfig.filterOptions?.key || columnKey;
+
         const popup = document.createElement('div');
         popup.className = 'column-filter-popup';
         document.body.appendChild(popup);
-        
-        // Posiziona temporaneamente il popup per calcolarne le dimensioni senza mostrarlo
-        popup.style.visibility = 'hidden';
-        popup.style.top = '-9999px';
-        popup.innerHTML = `<div class="loader-small"></div>`;
-
         const rect = iconElement.getBoundingClientRect();
-        
-        // --- CALCOLO POSIZIONE CORRETTO ---
-        // Posiziona l'inizio verticale del popup (top) alla fine verticale dell'icona (bottom)
-        popup.style.top = `${rect.bottom + 5 + window.scrollY}px`; 
-        // Posiziona l'inizio orizzontale del popup (left) alla fine orizzontale dell'icona (right)
-        popup.style.left = `${rect.right + 5 + window.scrollX}px`;
-        
-        // Rendi il popup visibile nella posizione calcolata
-        popup.style.visibility = 'visible';
+        popup.style.left = `${rect.left}px`;
+        popup.style.top = `${rect.bottom + 5}px`;
+        popup.innerHTML = `<div class="loader-small"></div>`;
 
         try {
             const viewConfig = this.viewConfig[this.state.currentView];
             const tableNameForApi = viewConfig.tableName || this.state.currentView;
             
-            console.log(`Sto chiamando /api/distinct/${tableNameForApi}/${filterKey}`); // DEBUG
+            console.log(`Sto chiamando /api/distinct/${tableNameForApi}/${filterKey}`);
             
             const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
             
@@ -877,13 +870,11 @@ const App = {
             
             const optionsData = await response.json();
             
-            console.log('Dati per il filtro ricevuti:', optionsData); // DEBUG
+            console.log('Dati per il filtro ricevuti:', optionsData);
 
             this.renderFilterPopup(popup, optionsData, columnKey);
 
         } catch (error) {
-            // --- QUESTO È IL PUNTO CHIAVE ---
-            // Stampa l'errore completo e dettagliato nella console.
             console.error("--- ERRORE DETTAGLIATO CATTURATO ---", error); 
             popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
         }
