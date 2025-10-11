@@ -835,7 +835,14 @@ const App = {
             });
         });
     },
-        
+    
+    closeColumnFilterPopup: function() {
+        const existingPopup = document.querySelector('.column-filter-popup');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+    },
+
     async openColumnFilterPopup(iconElement, columnKey) {
         this.closeColumnFilterPopup();
         const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
