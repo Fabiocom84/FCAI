@@ -857,22 +857,21 @@ const App = {
         popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
 
         try {
-            let uniqueValues = [];
-            let valueKey = 'value';
-            let labelKey = 'value';
+            let optionsData = [];
+            const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
+            const filterKey = columnConfig.filterOptions?.key || columnConfig.key;
 
-            // --- FIX: Check specifically for an apiEndpoint before fetching ---
-            if (columnConfig.filterOptions && columnConfig.filterOptions.apiEndpoint) {
-                const items = await apiFetch(columnConfig.filterOptions.apiEndpoint);
-                valueKey = columnConfig.filterOptions.valueField || columnConfig.filterOptions.textField;
-                labelKey = columnConfig.filterOptions.textField;
-                uniqueValues = items.map(item => ({ value: item[valueKey], label: item[labelKey] }));
+            // --- LOGICA GENERICA RIPRISTINATA ---
+            if (columnConfig.filterOptions && column.filterOptions.apiEndpoint) {
+                const response = await apiFetch(columnConfig.filterOptions.apiEndpoint);
+                if (!response.ok) throw new Error('Risposta API non valida');
+                optionsData = await response.json();
             } else {
-                // This is now the fallback for simple filters (like booleans) and standard text filters.
-                const tableName = this.state.currentView;
-                const values = await apiFetch(`/api/distinct/${tableName}/${columnKey}`);
-                const labelFormatter = columnConfig.filterOptions?.formatter || ((val) => val);
-                uniqueValues = values.map(val => ({ value: val, label: labelFormatter(val) }));
+                const viewConfig = this.viewConfig[this.state.currentView];
+                const tableNameForApi = viewConfig.tableName || this.state.currentView; 
+                const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
+                if (!response.ok) throw new Error('Risposta API non valida');
+                optionsData = await response.json();
             }
                 
             const activeColumnFilters = this.state.activeFilters[filterKey] || [];
