@@ -480,7 +480,15 @@ const App = {
             await apiFetch(config.apiEndpoint, { method: 'POST', body: newObject });
             this.state.isAddingNewRow = false;
             await showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK' });
-            this.handleViewChange();
+
+            this.state.activeFilters = {};
+            this.state.searchTerm = '';
+   
+            const searchInput = document.getElementById('filter-search-term');
+            if (searchInput) searchInput.value = '';
+            
+            this.handleViewChange(); // Ora ricarica la vista senza filtri
+
         } catch (error) {
             showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK' });
         }
