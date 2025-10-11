@@ -468,28 +468,41 @@ const App = {
         if (!newRow) return;
         const config = this.viewConfig[this.state.currentView];
         const newObject = {};
-        // Seleziona sia input che select
         newRow.querySelectorAll('input[data-key], select[data-key]').forEach(input => {
             newObject[input.dataset.key] = input.value;
         });
+
         if (Object.values(newObject).every(val => !val)) {
-            showModal({ title: 'Attenzione', message: 'Compilare almeno un campo per salvare.', confirmText: 'OK' });
-            return;
+            return showModal({ title: 'Attenzione', message: 'Compilare almeno un campo per salvare.', confirmText: 'OK' });
         }
+
         try {
-            await apiFetch(config.apiEndpoint, { method: 'POST', body: newObject });
+            // Esegui la chiamata POST
+            const response = await apiFetch(config.apiEndpoint, {
+                method: 'POST',
+                body: JSON.stringify(newObject) // È buona norma usare JSON.stringify per il body
+            });
+
+            // --- CONTROLLO FONDAMENTALE AGGIUNTO QUI ---
+            if (!response.ok) {
+                // Se la risposta NON è positiva (es. 400, 404, 500), leggi l'errore e lancialo.
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Errore del server: ${response.status}`);
+            }
+
+            // Questo codice viene eseguito solo se response.ok è true
             this.state.isAddingNewRow = false;
             await showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK' });
 
             this.state.activeFilters = {};
             this.state.searchTerm = '';
-   
             const searchInput = document.getElementById('filter-search-term');
             if (searchInput) searchInput.value = '';
-            
-            this.handleViewChange(); // Ora ricarica la vista senza filtri
+
+            this.handleViewChange();
 
         } catch (error) {
+            // Ora l'errore del backend verrà catturato e mostrato qui
             showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK' });
         }
     },
