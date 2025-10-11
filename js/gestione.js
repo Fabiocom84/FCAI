@@ -855,7 +855,8 @@ const App = {
         document.body.appendChild(popup);
         const rect = iconElement.getBoundingClientRect();
         popup.style.top = `${rect.bottom + 5 + window.scrollY}px`;
-        popup.style.left = `${rect.right + 5 + window.scrollX}px`;
+        popup.style.left = `${rect.left + window.scrollX - popup.offsetWidth}px`;    
+        popup.style.visibility = 'visible';
         popup.innerHTML = `<div class="loader-small"></div>`;
 
         try {
