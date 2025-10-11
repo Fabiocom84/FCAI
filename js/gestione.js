@@ -846,7 +846,7 @@ const App = {
     async openColumnFilterPopup(iconElement, columnKey) {
         this.closeColumnFilterPopup();
         const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
-        const filterKey = columnConfig.filterOptions?.key || column_key;
+        const filterKey = columnConfig.filterOptions?.key || columnKey;
 
         const popup = document.createElement('div');
         popup.className = 'column-filter-popup';
