@@ -881,9 +881,17 @@ const App = {
     },
 
     renderFilterPopup: function(popupElement, options, columnKey) {
-        const content = document.createElement('div');
-        content.className = 'filter-popup-content';
+        // Crea la barra di ricerca
+        const searchFilter = document.createElement('input');
+        searchFilter.type = 'text';
+        searchFilter.placeholder = 'Filtra opzioni...';
+        searchFilter.className = 'filter-search-input';
 
+        // Crea il contenitore scorrevole per le opzioni
+        const optionsList = document.createElement('div');
+        optionsList.className = 'filter-options-list';
+
+        // Popola il contenitore con le opzioni (checkbox)
         options.forEach(option => {
             const checkboxWrapper = document.createElement('div');
             checkboxWrapper.className = 'filter-option';
@@ -892,8 +900,7 @@ const App = {
             checkbox.type = 'checkbox';
             checkbox.id = `filter-${columnKey}-${option}`;
             checkbox.value = option;
-
-            // Controlla se questa opzione è già nei filtri attivi
+            
             const isChecked = (this.state.activeFilters[columnKey] || []).includes(String(option));
             checkbox.checked = isChecked;
             
@@ -903,12 +910,24 @@ const App = {
             
             checkboxWrapper.appendChild(checkbox);
             checkboxWrapper.appendChild(label);
-            content.appendChild(checkboxWrapper);
+            optionsList.appendChild(checkboxWrapper);
         });
-        
-        popupElement.innerHTML = '';
-        popupElement.appendChild(content);
 
+        // Aggiunge l'evento per il filtro dinamico sulla barra di ricerca
+        searchFilter.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const allOptions = optionsList.querySelectorAll('.filter-option');
+            allOptions.forEach(opt => {
+                const label = opt.querySelector('label').textContent.toLowerCase();
+                if (label.includes(searchTerm)) {
+                    opt.style.display = 'flex'; // Mostra l'opzione
+                } else {
+                    opt.style.display = 'none'; // Nasconde l'opzione
+                }
+            });
+        });
+
+        // Crea il footer con i pulsanti "Applica" e "Pulisci"
         const footer = document.createElement('div');
         footer.className = 'filter-popup-footer';
         
@@ -916,9 +935,9 @@ const App = {
         applyBtn.textContent = 'Applica';
         applyBtn.className = 'button button--primary';
         applyBtn.onclick = () => {
-            const selectedOptions = Array.from(content.querySelectorAll('input:checked')).map(cb => cb.value);
+            const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
             this.state.activeFilters[columnKey] = selectedOptions;
-            this.fetchCommesse(true);
+            this.loadAndRenderData(true); // Usa il nome corretto della funzione
             this.closeColumnFilterPopup();
         };
 
@@ -927,12 +946,17 @@ const App = {
         clearBtn.className = 'button';
         clearBtn.onclick = () => {
             delete this.state.activeFilters[columnKey];
-            this.fetchCommesse(true);
+            this.loadAndRenderData(true); // Usa il nome corretto della funzione
             this.closeColumnFilterPopup();
         };
         
         footer.appendChild(clearBtn);
         footer.appendChild(applyBtn);
+
+        // Assembla il popup finale
+        popupElement.innerHTML = '';
+        popupElement.appendChild(searchFilter);
+        popupElement.appendChild(optionsList);
         popupElement.appendChild(footer);
     },
 
