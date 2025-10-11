@@ -393,35 +393,52 @@ const App = {
         }
 
         this.dom.gridWrapper.innerHTML = `<div class="loader">Caricamento...</div>`;
-        const params = new URLSearchParams();
+        const params = new URLSearchParams({
+            page: this.state.currentPage,
+            limit: '50',
+            sortBy: this.state.sortBy || config.defaultSortBy || config.columns[0].key,
+            sortOrder: this.state.sortOrder || config.defaultSortOrder || 'asc'
+        });
             
-        params.append('page', this.state.currentPage);
-        params.append('limit', '50');
-            
-        const sortBy = this.state.sortBy || config.defaultSortBy || config.columns[0].key;
-        const sortOrder = this.state.sortOrder || config.defaultSortOrder || 'asc';
-        params.append('sortBy', sortBy);
-        params.append('sortOrder', sortOrder);
-
         const searchTerm = document.getElementById('filter-search-term')?.value;
         if (searchTerm) params.append('search', searchTerm);
             
         for (const key in this.state.activeFilters) {
-                this.state.activeFilters[key].forEach(value => params.append(key, value));
+            this.state.activeFilters[key].forEach(value => params.append(key, value));
         }
 
+        const endpoint = `${config.apiEndpoint}?${params.toString()}`;
+        
         try {
-            const endpoint = `${config.apiEndpoint}?${params.toString()}`;
-            
-            // --- CORREZIONE CHIAVE QUI ---
+            // --- LOG 1: VERIFICA PARTENZA CHIAMATA ---
+            console.log(`LOG 1: Sto per eseguire la chiamata API a: ${endpoint}`);
+
             const response = await apiFetch(endpoint);
-            const jsonResponse = await response.json(); // <-- Riga mancante
+
+            // --- LOG 2: VERIFICA RISPOSTA RICEVUTA ---
+            console.log("LOG 2: Chiamata API completata. Oggetto risposta ricevuto:", response);
+
+            if (!response.ok) {
+                // --- LOG 3: ERRORE DI STATO HTTP ---
+                console.error(`LOG 3: La risposta del server non è OK. Stato: ${response.status}`);
+                const errorText = await response.text();
+                console.error("Testo dell'errore dal server:", errorText);
+                throw new Error(`Errore del server: ${response.status}`);
+            }
                 
-            this.state.tableData = jsonResponse.data; // Usa jsonResponse.data
+            const jsonResponse = await response.json();
+            
+            // --- LOG 4: VERIFICA DATI JSON ---
+            console.log("LOG 4: Dati JSON ricevuti e pronti per il rendering:", jsonResponse);
+                
+            this.state.tableData = jsonResponse.data;
             this.renderTable();
-            this.renderPagination(jsonResponse.count); // Usa jsonResponse.count
+            this.renderPagination(jsonResponse.count);
             
         } catch (error) {
+            // --- LOG 5: ERRORE CATTURATO ---
+            console.error("LOG 5: Si è verificato un errore nel blocco try-catch.", error);
+
             this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
             if (document.getElementById('pagination-container')) {
                 document.getElementById('pagination-container').innerHTML = '';
