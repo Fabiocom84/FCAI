@@ -880,6 +880,62 @@ const App = {
         }
     },
 
+    renderFilterPopup: function(popupElement, options, columnKey) {
+        const content = document.createElement('div');
+        content.className = 'filter-popup-content';
+
+        options.forEach(option => {
+            const checkboxWrapper = document.createElement('div');
+            checkboxWrapper.className = 'filter-option';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `filter-${columnKey}-${option}`;
+            checkbox.value = option;
+
+            // Controlla se questa opzione è già nei filtri attivi
+            const isChecked = (this.state.activeFilters[columnKey] || []).includes(String(option));
+            checkbox.checked = isChecked;
+            
+            const label = document.createElement('label');
+            label.setAttribute('for', checkbox.id);
+            label.textContent = option;
+            
+            checkboxWrapper.appendChild(checkbox);
+            checkboxWrapper.appendChild(label);
+            content.appendChild(checkboxWrapper);
+        });
+        
+        popupElement.innerHTML = '';
+        popupElement.appendChild(content);
+
+        const footer = document.createElement('div');
+        footer.className = 'filter-popup-footer';
+        
+        const applyBtn = document.createElement('button');
+        applyBtn.textContent = 'Applica';
+        applyBtn.className = 'button button--primary';
+        applyBtn.onclick = () => {
+            const selectedOptions = Array.from(content.querySelectorAll('input:checked')).map(cb => cb.value);
+            this.state.activeFilters[columnKey] = selectedOptions;
+            this.fetchCommesse(true);
+            this.closeColumnFilterPopup();
+        };
+
+        const clearBtn = document.createElement('button');
+        clearBtn.textContent = 'Pulisci';
+        clearBtn.className = 'button';
+        clearBtn.onclick = () => {
+            delete this.state.activeFilters[columnKey];
+            this.fetchCommesse(true);
+            this.closeColumnFilterPopup();
+        };
+        
+        footer.appendChild(clearBtn);
+        footer.appendChild(applyBtn);
+        popupElement.appendChild(footer);
+    },
+
     handleDocumentClick(event) {
         const popup = document.querySelector('.filter-popup');
         if (!popup) return;
