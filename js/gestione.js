@@ -837,77 +837,38 @@ const App = {
     },
         
     async openColumnFilterPopup(iconElement, columnKey) {
-        const existingPopup = document.querySelector('.filter-popup');
-        if (existingPopup) existingPopup.remove();
-
-        const config = this.viewConfig[this.state.currentView];
-        const columnConfig = config.columns.find(c => c.key === columnKey);
-        if (!columnConfig) return;
+        this.closeColumnFilterPopup();
+        const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
+        const filterKey = columnConfig.filterOptions?.key || column_key;
 
         const popup = document.createElement('div');
-        popup.className = 'filter-popup';
-        const filterKey = columnConfig.filterOptions?.key || columnConfig.key;
-        popup.dataset.column = filterKey;
-            
-        popup.innerHTML = `<div class="loader-small" style="text-align: center; padding: 10px;">Caricamento...</div>`;
+        popup.className = 'column-filter-popup';
         document.body.appendChild(popup);
-            
         const rect = iconElement.getBoundingClientRect();
-        popup.style.top = `${rect.bottom + window.scrollY}px`;
-        popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
+        popup.style.left = `${rect.left}px`;
+        popup.style.top = `${rect.bottom + 5}px`;
+        popup.innerHTML = `<div class="loader-small"></div>`;
 
         try {
-            let optionsData = [];
-            const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
-            const filterKey = columnConfig.filterOptions?.key || columnConfig.key;
+            const viewConfig = this.viewConfig[this.state.currentView];
+            const tableNameForApi = viewConfig.tableName || this.state.currentView;
+            
+            console.log(`Sto chiamando /api/distinct/${tableNameForApi}/${filterKey}`); // DEBUG
+            
+            const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
+            
+            if (!response.ok) throw new Error(`Risposta API non valida: ${response.status}`);
+            
+            const optionsData = await response.json();
+            
+            console.log('Dati per il filtro ricevuti:', optionsData); // DEBUG
 
-            // --- LOGICA GENERICA RIPRISTINATA ---
-            if (columnConfig.filterOptions && column.filterOptions.apiEndpoint) {
-                const response = await apiFetch(columnConfig.filterOptions.apiEndpoint);
-                if (!response.ok) throw new Error('Risposta API non valida');
-                optionsData = await response.json();
-            } else {
-                const viewConfig = this.viewConfig[this.state.currentView];
-                const tableNameForApi = viewConfig.tableName || this.state.currentView; 
-                const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
-                if (!response.ok) throw new Error('Risposta API non valida');
-                optionsData = await response.json();
-            }
-                
-            const activeColumnFilters = this.state.activeFilters[filterKey] || [];
-                
-            const listItems = uniqueValues.map(item => {
-                const isChecked = activeColumnFilters.includes(String(item.value)) ? 'checked' : '';
-                const sanitizedValue = String(item.value).replace(/"/g, '&quot;');
-                return `<li><label><input type="checkbox" class="filter-checkbox" value="${sanitizedValue}" ${isChecked}> <span class="filter-value">${item.label}</span></label></li>`;
-            }).join('');
-
-            popup.innerHTML = `
-                <input type="text" id="popup-search-input" placeholder="Cerca valori...">
-                <div class="filter-popup-buttons">
-                    <button class="button button--primary" id="apply-filter">Applica</button>
-                    <button class="button button--secondary" id="clear-filter">Pulisci</button>
-                </div>
-                <ul class="filter-popup-list">${listItems}</ul>`;
-                
-            popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-
-            const searchInput = popup.querySelector('#popup-search-input');
-            const listElements = popup.querySelectorAll('.filter-popup-list li');
-
-            searchInput.addEventListener('input', () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                listElements.forEach(li => {
-                    const label = li.querySelector('.filter-value').textContent.toLowerCase();
-                    if (label.includes(searchTerm)) {
-                        li.style.display = '';
-                    } else {
-                        li.style.display = 'none';
-                    }
-                });
-            });
+            this.renderFilterPopup(popup, optionsData, columnKey);
 
         } catch (error) {
+            // --- QUESTO È IL PUNTO CHIAVE ---
+            // Stampa l'errore completo e dettagliato nella console.
+            console.error("--- ERRORE DETTAGLIATO CATTURATO ---", error); 
             popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
         }
     },
