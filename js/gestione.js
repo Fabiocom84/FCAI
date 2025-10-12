@@ -441,8 +441,6 @@ const App = {
         * Carica i dati dal backend e avvia il rendering della tabella.
     */
     async loadAndRenderData(isNewQuery = false, searchTerm = '') {
-        this.renderToolbar();
-
         const config = this.viewConfig[this.state.currentView];
         if (!config) return;
 
@@ -1044,17 +1042,21 @@ const App = {
         });
 
         // Aggiunge l'evento per il filtro dinamico sulla barra di ricerca
+        let searchTimeout;
         searchFilter.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const allOptions = optionsList.querySelectorAll('.filter-option');
-            allOptions.forEach(opt => {
-                const label = opt.querySelector('label').textContent.toLowerCase();
-                if (label.includes(searchTerm)) {
-                    opt.style.display = 'flex'; // Mostra l'opzione
-                } else {
-                    opt.style.display = 'none'; // Nasconde l'opzione
-                }
-            });
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.toLowerCase();
+                const allOptions = optionsList.querySelectorAll('.filter-option');
+                allOptions.forEach(opt => {
+                    const label = opt.querySelector('label').textContent.toLowerCase();
+                    if (label.includes(searchTerm)) {
+                        opt.style.display = 'flex';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
+            }, 500);
         });
 
         // Crea il footer con i pulsanti "Applica" e "Pulisci"
@@ -1064,23 +1066,26 @@ const App = {
         const applyBtn = document.createElement('button');
         applyBtn.textContent = 'Applica';
         applyBtn.className = 'button button--primary';
-        applyBtn.onclick = () => {
-            event.stopPropagation();
-            const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
-            this.state.activeFilters[columnKey] = selectedOptions;
-            this.loadAndRenderData(true); // Usa il nome corretto della funzione
-            this.closeColumnFilterPopup();
-        };
 
         const clearBtn = document.createElement('button');
         clearBtn.textContent = 'Pulisci';
         clearBtn.className = 'button';
-        clearBtn.onclick = () => {
-            event.stopPropagation();
+        
+        // --- QUESTA È LA PARTE CRUCIALE ---
+        applyBtn.addEventListener('click', (event) => {
+            event.stopPropagation(); // Impedisce al click di proseguire e causare altri comandi
+            const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
+            this.state.activeFilters[columnKey] = selectedOptions;
+            this.loadAndRenderData(true);
+            this.closeColumnFilterPopup();
+        });
+
+        clearBtn.addEventListener('click', (event) => {
+            event.stopPropagation(); // Impedisce al click di proseguire e causare altri comandi
             delete this.state.activeFilters[columnKey];
             this.loadAndRenderData(true);
             this.closeColumnFilterPopup();
-        };
+        });
         
         footer.appendChild(clearBtn);
         footer.appendChild(applyBtn);
