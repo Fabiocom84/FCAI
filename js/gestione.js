@@ -403,6 +403,14 @@ const App = {
                 this.state.searchTerm = document.getElementById('filter-search-term')?.value || '';
                 this.loadAndRenderData(true);
                 break;
+            case 'resetSearchBtn':
+                const searchInput = document.getElementById('filter-search-term');
+                if (searchInput) {
+                    searchInput.value = ''; // Svuota il campo di testo
+                }
+                this.state.searchTerm = ''; // Resetta il termine di ricerca nello stato
+                this.loadAndRenderData(true); // Ricarica i dati senza filtri
+                break;
         }
     },
         
@@ -774,7 +782,6 @@ const App = {
         
     renderToolbar: function() {
         const view = this.state.currentView;
-        // const viewConfig = this.viewConfig[view]; // Non più necessario qui
 
         this.dom.toolbarArea.innerHTML = `
             <div class="toolbar-group">
@@ -782,15 +789,18 @@ const App = {
                 <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
                 <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
                 
-                <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
-                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
+                <button class="button icon-button button--primary" id="saveBtn" title="Salva" disabled>💾</button>
+                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla" disabled>❌</button>
             </div>
             
             <div class="toolbar-group search-group">
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
+                <button class="button icon-button" id="searchBtn" title="Cerca">🔎</button>
+                <button class="button icon-button" id="resetSearchBtn" title="Azzera ricerca">🧹</button>
             </div>
         `;
         
+        // Questa logica rimane invariata
         if (view === 'commesse' && document.getElementById('addRowBtn')) {
             document.getElementById('addRowBtn').disabled = true;
         }
