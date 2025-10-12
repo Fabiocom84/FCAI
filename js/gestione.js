@@ -320,20 +320,6 @@ const App = {
         if (this.dom.toolbarArea) {
             this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
         }
-        
-        // Ora cerchiamo gli elementi della toolbar qui, perché siamo sicuri che esistano
-        const searchInput = document.getElementById('filter-search-term');
-        if (searchInput) {
-            let searchTimeout;
-            searchInput.addEventListener('input', () => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    this.state.searchTerm = searchInput.value;
-                    this.loadAndRenderData(true);
-                }, 500);
-            });
-        }
-        // Aggiungeremo qui gli altri listener per sortSelect etc. quando serviranno
     },
 
     /**
