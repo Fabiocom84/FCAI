@@ -80,8 +80,8 @@ body {
     border: 1px solid #e9ecef;
     padding: 8px 5px; /* Ridotto lo spazio laterale */
     text-align: center;
-    min-width: 90px;  /* Ridotta la larghezza minima */
-    max-width: 90px;  /* Aggiunta per consistenza */
+    min-width: 100px;  /* Ridotta la larghezza minima */
+    max-width: 100px;  /* Aggiunta per consistenza */
 }
 
 /* Stile per l'intestazione fissa (nomi e giorni) */
