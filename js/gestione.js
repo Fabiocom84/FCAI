@@ -359,7 +359,7 @@ const App = {
                 break;
             case 'deleteRowBtn':
                 if (this.state.selectedRowId) {
-                    this.handleDelete(this.state.selectedRowId);
+                    this.handleDeleteRow(); // <-- NOME CORRETTO
                 } else {
                     showModal({ title: 'Attenzione', message: 'Selezionare una riga da eliminare.', confirmText: 'OK' });
                 }
