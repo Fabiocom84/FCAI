@@ -174,8 +174,8 @@ body {
     width: 0;
     height: 0;
     /* Crea un triangolo usando i bordi: la dimensione è definita qui (12px) */
-    border-top: 12px solid #e74c3c; /* Un rosso vivo ma non aggressivo */
-    border-left: 12px solid transparent;
+    border-top: 24px solid #e74c3c; /* Un rosso vivo ma non aggressivo */
+    border-left: 24px solid transparent;
 }
 
 /* Stile per evidenziare la colonna del giorno corrente */
