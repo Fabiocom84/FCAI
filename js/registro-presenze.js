@@ -1,151 +1,121 @@
-// js/registro-presenze.js
-
-/**
- * Gestisce la logica per la pagina del Registro Presenze.
- * @namespace TimelineApp
- */
 const TimelineApp = {
-    /**
-     * Lo stato corrente dell'applicazione, include la data visualizzata.
-     * @property {Date} currentDate - La data usata per calcolare il mese da mostrare.
-     */
     state: {
         currentDate: new Date(),
+        // NOVITÀ: Aggiungiamo uno stato per contenere i dati caricati
+        employees: [],
+        presenze: new Map(), // Usiamo una mappa per un accesso rapido ai dati
     },
 
-    /**
-     * Oggetto contenente i riferimenti agli elementi del DOM.
-     * @property {HTMLElement} headerRow - La riga dell'intestazione della tabella.
-     * @property {HTMLElement} timelineBody - Il corpo della tabella.
-     * @property {HTMLElement} currentMonthDisplay - L'elemento H2 che mostra il mese.
-     * @property {HTMLElement} prevMonthBtn - Il pulsante per il mese precedente.
-     * @property {HTMLElement} nextMonthBtn - Il pulsante per il mese successivo.
-     */
     dom: {},
 
     /**
-     * Inizializza l'applicazione, recupera gli elementi del DOM e avvia il rendering.
+     * MODIFICA: init ora è una funzione asincrona per attendere il caricamento dei dati
      */
-    init() {
-        // Popoliamo l'oggetto dom con gli elementi della pagina
+    async init() {
         this.dom.headerRow = document.getElementById('header-row');
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
         this.dom.prevMonthBtn = document.getElementById('prev-month');
         this.dom.nextMonthBtn = document.getElementById('next-month');
 
-        // Aggiungiamo gli event listener per la navigazione tra i mesi
         this.addEventListeners();
 
         // Avviamo il primo rendering della griglia
-        this.render();
+        await this.render();
     },
 
-    /**
-     * Aggiunge gli event listener ai pulsanti di navigazione.
-     */
     addEventListeners() {
         this.dom.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
         this.dom.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
     },
 
     /**
-     * Funzione principale che orchestra il rendering della griglia.
+     * MODIFICA: render ora è asincrono per caricare i dati prima di disegnare
      */
-    render() {
+    async render() {
         console.log("Rendering per il mese:", this.state.currentDate.toLocaleDateString());
 
-        // Aggiorna l'etichetta del mese (es. "OTTOBRE 2025")
         this.updateMonthDisplay();
-        
-        // Disegna le intestazioni dei giorni (Lun 01, Mar 02, ...)
         this.renderHeaders();
 
-        // Disegna le righe per ogni operatore (per ora con dati finti)
+        // NOVITÀ: Carichiamo i dati dal backend prima di disegnare le righe
+        await this.loadDataForCurrentMonth();
+
+        // Disegniamo le righe usando i dati caricati
         this.renderRows();
     },
     
-    /**
-     * Aggiorna il testo dell'elemento H2 con il mese e l'anno correnti.
-     */
     updateMonthDisplay() {
         const monthName = this.state.currentDate.toLocaleString('it-IT', { month: 'long' });
         const year = this.state.currentDate.getFullYear();
         this.dom.currentMonthDisplay.textContent = `${monthName.toUpperCase()} ${year}`;
     },
 
-    /**
-     * Genera e inserisce le intestazioni (<th>) per ogni giorno del mese.
-     */
     renderHeaders() {
-        // Pulisce le intestazioni precedenti
-        // Manteniamo la prima cella "Operatore" che è statica nell'HTML
         this.dom.headerRow.innerHTML = '<th style="position: -webkit-sticky; position: sticky; left: 0; z-index: 15;">Operatore</th>';
 
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        // Creiamo un frammento per ottimizzare l'inserimento nel DOM
         const fragment = document.createDocumentFragment();
 
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDate = new Date(year, month, i);
-            
-            // Formattiamo il giorno della settimana (es. "Lun")
             const dayOfWeek = dayDate.toLocaleDateString('it-IT', { weekday: 'short' });
-            // Formattiamo il numero del giorno con lo zero (es. "01")
             const dayNumber = String(i).padStart(2, '0');
 
             const th = document.createElement('th');
             th.textContent = `${dayOfWeek} ${dayNumber}`;
             
-            // Evidenziamo Sabato e Domenica
-            const dayIndex = dayDate.getDay(); // 0 = Domenica, 6 = Sabato
+            const dayIndex = dayDate.getDay();
             if (dayIndex === 0 || dayIndex === 6) {
-                th.style.backgroundColor = "#e9ecef"; // Un grigio leggero per il weekend
+                th.style.backgroundColor = "#e9ecef";
             }
-
             fragment.appendChild(th);
         }
         
-        // Aggiungiamo tutte le nuove intestazioni in una sola operazione
         this.dom.headerRow.appendChild(fragment);
     },
 
     /**
-     * Genera e inserisce le righe per gli operatori.
-     * NOTA: Al momento usa dati finti. Verrà collegato all'API in seguito.
+     * MODIFICA: Ora disegna le righe basandosi sul personale caricato e popola le celle
+     * con i dati delle presenze.
      */
     renderRows() {
-        // Pulisce il corpo della tabella precedente
         this.dom.timelineBody.innerHTML = '';
         
-        // Dati di esempio (verranno sostituiti da una chiamata API)
-        const employees = [
-            { id: 1, name: 'Mario Rossi' },
-            { id: 2, name: 'Luigi Bianchi' },
-            { id: 3, name: 'Giovanni Verdi' },
-            // ...altri dipendenti
-        ];
-
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const fragment = document.createDocumentFragment();
 
-        employees.forEach(employee => {
+        // Usiamo la lista di dipendenti caricata nello stato
+        this.state.employees.forEach(employee => {
             const tr = document.createElement('tr');
+            // NOVITÀ: Aggiungiamo un identificatore univoco alla riga
+            tr.dataset.personaleId = employee.id_personale;
             
-            // Creiamo la cella fissa con il nome dell'operatore
             const thName = document.createElement('th');
-            thName.textContent = employee.name;
+            thName.textContent = employee.nome_cognome;
             tr.appendChild(thName);
 
-            // Creiamo le celle vuote per ogni giorno del mese
             for (let i = 1; i <= daysInMonth; i++) {
                 const td = document.createElement('td');
-                td.textContent = ''; // Lasciamo vuoto, verrà riempito con i dati
+                // NOVITÀ: Aggiungiamo un identificatore di data alla cella
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                td.dataset.date = dateString;
+                
+                // Cerchiamo se esiste una presenza per questo dipendente in questa data
+                const presenceKey = `${employee.id_personale}_${dateString}`;
+                const presenceData = this.state.presenze.get(presenceKey);
+                
+                if (presenzaData) {
+                    // Se troviamo dati, li visualizziamo (per ora solo le ore)
+                    td.textContent = presenzaData.numero_ore || ''; 
+                    // Qui in futuro inseriremo i "chip" colorati
+                }
+                
                 tr.appendChild(td);
             }
             fragment.appendChild(tr);
@@ -153,20 +123,54 @@ const TimelineApp = {
 
         this.dom.timelineBody.appendChild(fragment);
     },
+
+    /**
+     * NOVITÀ: Carica tutti i dati necessari (personale e presenze) per il mese corrente.
+     */
+    async loadDataForCurrentMonth() {
+        try {
+            // 1. Carica la lista del personale (solo se non è già stata caricata)
+            if (this.state.employees.length === 0) {
+                const response = await apiFetch('/api/personale?attivo=true&limit=100'); // Filtriamo per attivi
+                if (!response.ok) throw new Error('Errore nel caricamento del personale.');
+                const data = await response.json();
+                this.state.employees = data.data; // L'API restituisce un oggetto con 'data' e 'count'
+            }
+
+            // 2. Carica i dati delle presenze per il mese corrente
+            const year = this.state.currentDate.getFullYear();
+            const month = this.state.currentDate.getMonth();
+            const firstDay = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+            const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+            const lastDay = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
+
+            const presenzeResponse = await apiFetch(`/api/presenze?startDate=${firstDay}&endDate=${lastDay}`);
+            if (!presenzeResponse.ok) throw new Error('Errore nel caricamento delle presenze.');
+            const presenzeData = await presenzeResponse.json();
+            
+            // Convertiamo l'array di dati in una mappa per un accesso O(1)
+            this.state.presenze.clear();
+            presenzeData.forEach(p => {
+                const key = `${p.id_personale_fk}_${p.data}`;
+                this.state.presenze.set(key, p);
+            });
+
+        } catch (error) {
+            console.error("Errore durante il caricamento dei dati:", error);
+            // Qui potresti mostrare un messaggio di errore all'utente
+        }
+    },
     
     /**
-     * Cambia il mese visualizzato avanti o indietro.
-     * @param {number} direction - -1 per il mese precedente, 1 per quello successivo.
+     * MODIFICA: changeMonth ora è asincrono
      */
-    changeMonth(direction) {
-        // Imposta il giorno a 1 per evitare problemi con mesi di diversa lunghezza
+    async changeMonth(direction) {
         this.state.currentDate.setDate(1); 
         this.state.currentDate.setMonth(this.state.currentDate.getMonth() + direction);
-        this.render();
+        await this.render();
     }
 };
 
-// Avvia l'applicazione quando il DOM è completamente caricato
 document.addEventListener('DOMContentLoaded', () => {
     TimelineApp.init();
 });
