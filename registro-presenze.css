@@ -254,3 +254,22 @@ body {
 .presenze-controls {
     margin-bottom: 5px; /* Era 25px */
 }
+
+/* Stili per migliorare l'aspetto della tabella */
+
+/* Rende le ore in grassetto */
+.chip.ore {
+    font-weight: 700;
+}
+
+/* Colora le righe pari per una migliore leggibilità */
+.timeline-table tbody tr:nth-child(even) th,
+.timeline-table tbody tr:nth-child(even) td {
+    background-color: #f8f9fa;
+}
+
+/* Evidenzia la riga al passaggio del mouse */
+.timeline-table tbody tr:hover th,
+.timeline-table tbody tr:hover td {
+    background-color: #e9ecef;
+}
