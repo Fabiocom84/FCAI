@@ -292,8 +292,8 @@ const App = {
         // 1. Qui cerchiamo solo gli elementi SEMPRE presenti nella pagina
         this.dom = {
             gridWrapper: document.querySelector('.grid-container'),
-            toolbarArea: document.getElementById('toolbar-area'),
-            viewSelector: document.getElementById('view-selector')
+            toolbarArea: document.getElementById('toolbarArea'), // Corretto
+            viewSelector: document.getElementById('tableViewSelector')
         };
 
         if (this.dom.viewSelector) {
