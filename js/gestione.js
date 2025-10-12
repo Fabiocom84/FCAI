@@ -1065,6 +1065,7 @@ const App = {
         applyBtn.textContent = 'Applica';
         applyBtn.className = 'button button--primary';
         applyBtn.onclick = () => {
+            event.stopPropagation();
             const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
             this.state.activeFilters[columnKey] = selectedOptions;
             this.loadAndRenderData(true); // Usa il nome corretto della funzione
@@ -1075,6 +1076,7 @@ const App = {
         clearBtn.textContent = 'Pulisci';
         clearBtn.className = 'button';
         clearBtn.onclick = () => {
+            event.stopPropagation();
             delete this.state.activeFilters[columnKey];
             this.loadAndRenderData(true);
             this.closeColumnFilterPopup();

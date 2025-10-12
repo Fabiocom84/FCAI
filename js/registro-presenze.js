@@ -106,15 +106,31 @@ const TimelineApp = {
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayString = new Date().toISOString().slice(0, 10); // <-- Definiamo la data di oggi
         const fragment = document.createDocumentFragment();
+
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDate = new Date(year, month, i);
+            const dateString = dayDate.toISOString().slice(0, 10); // <-- Otteniamo la data della colonna
             const dayOfWeek = dayDate.toLocaleString('it-IT', { weekday: 'short' });
             const dayNumber = String(i).padStart(2, '0');
             const th = document.createElement('th');
             th.textContent = `${dayOfWeek} ${dayNumber}`;
+            th.dataset.date = dateString;
+
+            // --- LOGICA DI CONTROLLO AGGIUNTA QUI ---
+            if (dateString === todayString) {
+                th.classList.add('today-column');
+            }
+            // -----------------------------------------
+
             const dayIndex = dayDate.getDay();
-            if (dayIndex === 0 || dayIndex === 6) th.style.backgroundColor = "#e9ecef";
+            if (dayIndex === 0 || dayIndex === 6) {
+                // Evita di sovrascrivere il colore di 'today-column' se è un weekend
+                if (!th.classList.contains('today-column')) {
+                     th.style.backgroundColor = "#e9ecef";
+                }
+            }
             fragment.appendChild(th);
         }
         this.dom.headerRow.appendChild(fragment);
