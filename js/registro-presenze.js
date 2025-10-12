@@ -1,13 +1,25 @@
 import { apiFetch } from './api-client.js';
 
+const DateUtils = {
+    addDays(date, days) {
+        const result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    },
+    toYYYYMMDD(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+};
+
 const TimelineApp = {
     state: {
-        currentDate: new Date(),
+        startDate: null,
+        endDate: null,
         employees: [],
         presenze: new Map(),
         tipiPresenza: [],
         activeCell: null,
-        isInitialLoad: true,
+        isLoadingMore: false, // Per evitare caricamenti multipli
     },
 
     dom: {},
@@ -20,14 +32,25 @@ const TimelineApp = {
         this.dom.prevMonthBtn = document.getElementById('prev-month');
         this.dom.nextMonthBtn = document.getElementById('next-month');
 
-        await this.loadInitialData();
+        const today = new Date();
+        this.state.startDate = DateUtils.addDays(today, -15);
+        this.state.endDate = DateUtils.addDays(today, +15);
+
+        await this.loadInitialData(); // Carica personale e tipi
+        await this.loadPresenzeForDateRange(this.state.startDate, this.state.endDate); // Carica primo blocco di presenze
+        
+        this.renderInitialTable(); // Disegna la tabella per la prima volta
+        this.scrollToToday(); // Centra su oggi
+        
         this.addEventListeners();
-        await this.render();
     },
 
     addEventListeners() {
-        this.dom.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
-        this.dom.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+        let scrollTimeout;
+        this.dom.timelineContainer.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => this.handleScroll(), 100);
+        });
         
         this.dom.timelineBody.addEventListener('click', (event) => {
             const cell = event.target.closest('td');
@@ -35,22 +58,6 @@ const TimelineApp = {
                 this.handleCellClick(cell);
             }
         });
-    },
-
-    async render() {
-        if (this.state.activeCell) {
-            await this.saveCell(this.state.activeCell);
-        }
-        this.updateMonthDisplay();
-        this.renderHeaders();
-        await this.loadPresenzeForCurrentMonth();
-        this.renderRows();
-
-        // NUOVO: Esegui lo scroll solo al primo caricamento
-        if (this.state.isInitialLoad) {
-            this.scrollToToday();
-            this.state.isInitialLoad = false;
-        }
     },
     
     // --- FUNZIONI DI CARICAMENTO DATI ---
@@ -72,108 +79,170 @@ const TimelineApp = {
         }
     },
     
-    async loadPresenzeForCurrentMonth() {
+    async loadPresenzeForDateRange(start, end) {
+        if (!start || !end) return;
         try {
-            const year = this.state.currentDate.getFullYear();
-            const month = this.state.currentDate.getMonth();
-            const firstDay = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-            const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-            const lastDay = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
-
-            const presenzeResponse = await apiFetch(`/api/presenze?startDate=${firstDay}&endDate=${lastDay}`);
-            if (!presenzeResponse.ok) throw new Error('Errore nel caricamento delle presenze.');
+            const presenzeResponse = await apiFetch(`/api/presenze?startDate=${DateUtils.toYYYYMMDD(start)}&endDate=${DateUtils.toYYYYMMDD(end)}`);
+            if (!presenzeResponse.ok) throw new Error('Errore caricamento presenze.');
             
             const presenzeData = await presenzeResponse.json();
-            this.state.presenze.clear();
             presenzeData.forEach(p => {
                 const key = `${p.id_personale_fk}_${p.data}`;
                 this.state.presenze.set(key, p);
             });
-        } catch (error) {
-            console.error("Errore durante il caricamento delle presenze:", error);
-        }
+        } catch (error) { console.error("Errore durante il caricamento delle presenze:", error); }
     },
 
-    // --- FUNZIONI DI RENDERING ---
-    updateMonthDisplay() {
-        const monthName = this.state.currentDate.toLocaleString('it-IT', { month: 'long' });
-        const year = this.state.currentDate.getFullYear();
-        this.dom.currentMonthDisplay.textContent = `${monthName.toUpperCase()} ${year}`;
-    },
-
-    renderHeaders() {
+    renderInitialTable() {
         this.dom.headerRow.innerHTML = '<th style="position: sticky; left: 0; z-index: 15;">Operatore</th>';
-        const year = this.state.currentDate.getFullYear();
-        const month = this.state.currentDate.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        const today = new Date();
-        const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                
-        const fragment = document.createDocumentFragment();
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dayDate = new Date(year, month, i);
-            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
-            const dayOfWeek = dayDate.toLocaleString('it-IT', { weekday: 'short' });
-            const dayNumber = String(i).padStart(2, '0');
-            const th = document.createElement('th');
-            th.textContent = `${dayOfWeek} ${dayNumber}`;
-            th.dataset.date = dateString;
-
-            // --- LOGICA DI CONTROLLO AGGIUNTA QUI ---
-            if (dateString === todayString) {
-                th.classList.add('today-column');
-            }
-            // -----------------------------------------
-
-            const dayIndex = dayDate.getDay();
-            if (dayIndex === 0 || dayIndex === 6) {
-                // Evita di sovrascrivere il colore di 'today-column' se è un weekend
-                if (!th.classList.contains('today-column')) {
-                     th.style.backgroundColor = "#e9ecef";
-                }
-            }
-            fragment.appendChild(th);
-        }
-        this.dom.headerRow.appendChild(fragment);
-    },
-
-    renderRows() {
         this.dom.timelineBody.innerHTML = '';
-        const year = this.state.currentDate.getFullYear();
-        const month = this.state.currentDate.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        const today = new Date();
-        const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                
-        const fragment = document.createDocumentFragment();
+
+        // Crea le righe del personale
         this.state.employees.forEach(employee => {
             const tr = document.createElement('tr');
             tr.dataset.personaleId = employee.id_personale;
             const thName = document.createElement('th');
             thName.textContent = employee.nome_cognome;
             tr.appendChild(thName);
-            for (let i = 1; i <= daysInMonth; i++) {
-                const td = document.createElement('td');
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                td.dataset.date = dateString;
-                
-                // MODIFICA: Applica la classe se il giorno è oggi
-                if (dateString === todayString) {
-                    td.classList.add('today-column');
-                }
-
-                const presenceKey = `${employee.id_personale}_${dateString}`;
-                const presenceData = this.state.presenze.get(presenceKey);
-                this.updateCellDisplay(td, presenceData);
-                tr.appendChild(td);
-            }
-            fragment.appendChild(tr);
+            this.dom.timelineBody.appendChild(tr);
         });
-        this.dom.timelineBody.appendChild(fragment);
+
+        // Aggiunge le colonne per il range di date iniziale
+        this.appendDays(this.state.startDate, this.state.endDate);
+        this.updateMonthDisplay();
+    },
+
+    /**
+     * Aggiunge colonne (<th> e <td>) alla fine della tabella per un nuovo range di date
+     */
+    appendDays(start, end) {
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+            const dateString = DateUtils.toYYYYMMDD(currentDate);
+            // Aggiungi header
+            const th = this.createHeaderCell(currentDate, dateString);
+            this.dom.headerRow.appendChild(th);
+            
+            // Aggiungi celle dati a ogni riga
+            this.dom.timelineBody.querySelectorAll('tr').forEach(tr => {
+                const td = this.createDataCell(tr.dataset.personaleId, dateString);
+                tr.appendChild(td);
+            });
+            currentDate = DateUtils.addDays(currentDate, 1);
+        }
+    },
+
+    /**
+     * Aggiunge colonne (<th> e <td>) all'inizio della tabella
+     */
+    prependDays(start, end) {
+        let currentDate = new Date(end);
+        while (currentDate >= start) {
+            const dateString = DateUtils.toYYYYMMDD(currentDate);
+            // Inserisci header dopo la prima colonna fissa
+            const th = this.createHeaderCell(currentDate, dateString);
+            this.dom.headerRow.insertBefore(th, this.dom.headerRow.children[1]);
+
+            // Inserisci celle dati dopo la prima colonna fissa in ogni riga
+             this.dom.timelineBody.querySelectorAll('tr').forEach(tr => {
+                const td = this.createDataCell(tr.dataset.personaleId, dateString);
+                tr.insertBefore(td, tr.children[1]);
+            });
+            currentDate = DateUtils.addDays(currentDate, -1);
+        }
+    },
+
+    // --- FUNZIONI DI UTILITÀ PER CREARE CELLE ---
+    createHeaderCell(date, dateString) {
+        const today = new Date();
+        const todayString = DateUtils.toYYYYMMDD(today);
+        const dayOfWeek = date.toLocaleString('it-IT', { weekday: 'short' });
+        const dayNumber = String(date.getDate()).padStart(2, '0');
+        const th = document.createElement('th');
+        th.textContent = `${dayOfWeek} ${dayNumber}`;
+        th.dataset.date = dateString;
+        if (dateString === todayString) th.classList.add('today-column');
+        const dayIndex = date.getDay();
+        if ((dayIndex === 0 || dayIndex === 6) && !th.classList.contains('today-column')) {
+            th.style.backgroundColor = "#e9ecef";
+        }
+        return th;
+    },
+
+    createDataCell(personaleId, dateString) {
+        const today = new Date();
+        const todayString = DateUtils.toYYYYMMDD(today);
+        const td = document.createElement('td');
+        td.dataset.date = dateString;
+        if (dateString === todayString) td.classList.add('today-column');
+        const presenceKey = `${personaleId}_${dateString}`;
+        const presenceData = this.state.presenze.get(presenceKey);
+        this.updateCellDisplay(td, presenceData);
+        return td;
+    },
+
+    /**
+     * Gestisce lo scroll: carica nuovi dati quando si arriva ai bordi.
+     */
+    async handleScroll() {
+        if (this.state.isLoadingMore) return;
+
+        this.updateMonthDisplay(); // Aggiorna il mese mentre si scorre
+
+        const container = this.dom.timelineContainer;
+        const scrollLeft = container.scrollLeft;
+        const scrollWidth = container.scrollWidth;
+        const clientWidth = container.clientWidth;
+        const threshold = 300; // Carica nuovi dati quando mancano 300px al bordo
+
+        // Carica futuro (scroll a destra)
+        if (scrollLeft + clientWidth >= scrollWidth - threshold) {
+            this.state.isLoadingMore = true;
+            const newStartDate = DateUtils.addDays(this.state.endDate, 1);
+            const newEndDate = DateUtils.addDays(this.state.endDate, 30);
+            await this.loadPresenzeForDateRange(newStartDate, newEndDate);
+            this.appendDays(newStartDate, newEndDate);
+            this.state.endDate = newEndDate;
+            this.state.isLoadingMore = false;
+        }
+
+        // Carica passato (scroll a sinistra)
+        if (scrollLeft <= threshold) {
+            this.state.isLoadingMore = true;
+            const oldScrollWidth = container.scrollWidth;
+
+            const newEndDate = DateUtils.addDays(this.state.startDate, -1);
+            const newStartDate = DateUtils.addDays(this.state.startDate, -30);
+            await this.loadPresenzeForDateRange(newStartDate, newEndDate);
+            this.prependDays(newStartDate, newEndDate);
+            this.state.startDate = newStartDate;
+
+            // Ripristina la posizione dello scroll per non "saltare"
+            const newScrollWidth = container.scrollWidth;
+            container.scrollLeft = (newScrollWidth - oldScrollWidth) + scrollLeft;
+
+            this.state.isLoadingMore = false;
+        }
+    },
+    
+    /**
+     * Aggiorna il display del mese basandosi sulla data al centro della vista.
+     */
+    updateMonthDisplay() {
+        const container = this.dom.timelineContainer;
+        const centerPosition = container.scrollLeft + (container.clientWidth / 2);
+        // Trova tutte le intestazioni delle date e calcola quale è più vicina al centro
+        const headers = Array.from(this.dom.headerRow.querySelectorAll('th[data-date]'));
+        const centerHeader = headers.reduce((prev, curr) => {
+            return (Math.abs(curr.offsetLeft - centerPosition) < Math.abs(prev.offsetLeft - centerPosition) ? curr : prev);
+        });
+
+        if (centerHeader) {
+            const centerDate = new Date(centerHeader.dataset.date + 'T12:00:00'); // Aggiungo T12:00:00 per evitare problemi di fuso orario
+            const monthName = centerDate.toLocaleString('it-IT', { month: 'long' });
+            const year = centerDate.getFullYear();
+            this.dom.currentMonthDisplay.textContent = `${monthName.toUpperCase()} ${year}`;
+        }
     },
 
     scrollToToday() {
