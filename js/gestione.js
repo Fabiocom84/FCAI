@@ -449,6 +449,10 @@ const App = {
         * Carica i dati dal backend e avvia il rendering della tabella.
     */
     async loadAndRenderData(isNewQuery = false) {
+        // --- RIGA MANCANTE AGGIUNTA QUI ---
+        // Per prima cosa, disegna la toolbar corretta per la vista attuale.
+        this.renderToolbar();
+
         const config = this.viewConfig[this.state.currentView];
         if (!config) return;
 
@@ -474,35 +478,20 @@ const App = {
         const endpoint = `${config.apiEndpoint}?${params.toString()}`;
         
         try {
-            // --- LOG 1: VERIFICA PARTENZA CHIAMATA ---
-            console.log(`LOG 1: Sto per eseguire la chiamata API a: ${endpoint}`);
-
             const response = await apiFetch(endpoint);
-
-            // --- LOG 2: VERIFICA RISPOSTA RICEVUTA ---
-            console.log("LOG 2: Chiamata API completata. Oggetto risposta ricevuto:", response);
-
+                
             if (!response.ok) {
-                // --- LOG 3: ERRORE DI STATO HTTP ---
-                console.error(`LOG 3: La risposta del server non è OK. Stato: ${response.status}`);
                 const errorText = await response.text();
-                console.error("Testo dell'errore dal server:", errorText);
                 throw new Error(`Errore del server: ${response.status}`);
             }
                 
             const jsonResponse = await response.json();
-            
-            // --- LOG 4: VERIFICA DATI JSON ---
-            console.log("LOG 4: Dati JSON ricevuti e pronti per il rendering:", jsonResponse);
                 
             this.state.tableData = jsonResponse.data;
             this.renderTable();
             this.renderPagination(jsonResponse.count);
             
         } catch (error) {
-            // --- LOG 5: ERRORE CATTURATO ---
-            console.error("LOG 5: Si è verificato un errore nel blocco try-catch.", error);
-
             this.dom.gridWrapper.innerHTML = `<div class="error-text">Impossibile caricare i dati.</div>`;
             if (document.getElementById('pagination-container')) {
                 document.getElementById('pagination-container').innerHTML = '';
