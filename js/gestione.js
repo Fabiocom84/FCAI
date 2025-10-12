@@ -290,7 +290,7 @@ const App = {
     */
     init: function() {
         this.dom = {
-            gridWrapper: document.getElementById('grid-wrapper'),
+            gridWrapper: document.querySelector('.grid-container'),
             loader: document.querySelector('.loader'),
             toolbarArea: document.getElementById('toolbar-area'),
             viewSelector: document.getElementById('view-selector'),
