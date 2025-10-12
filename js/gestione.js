@@ -378,10 +378,12 @@ const App = {
                 }
                 break;
             case 'cancelBtn':
-                this.exitEditMode(this.state.editingRowId);
                 if (this.state.isAddingNewRow) {
-                    this.state.isAddingNewRow = false;
-                    this.handleViewChange();
+                    // Se stavi aggiungendo una nuova riga, ricarica la vista per eliminarla
+                    this.handleCancelEdit(); 
+                } else if (this.state.isEditingRow) {
+                    // Se stavi modificando una riga esistente, annulla le modifiche
+                    this.exitEditMode(this.state.editingRowId);
                 }
                 break;
             case 'searchBtn':
@@ -735,7 +737,7 @@ const App = {
         if (!rowElement) return;
 
         rowElement.classList.remove('editing');
-        
+        this.state.isEditingRow = false; // Resetta lo stato di modifica
         // Se abbiamo dati aggiornati, ricarica la riga con i nuovi valori
         if (updatedRowData) {
             const config = this.viewConfig[this.state.currentView];
@@ -902,6 +904,8 @@ const App = {
         } else {
             data.forEach((rowData, index) => {
                 const row = tbody.insertRow();
+                row.className = 'agile-table-row';
+                row.dataset.id = rowData[config.idColumn];
                 const pageOffset = (this.state.currentPage - 1) * 50;
                 row.insertCell().textContent = pageOffset + index + 1;
 

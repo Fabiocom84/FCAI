@@ -106,12 +106,16 @@ const TimelineApp = {
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const todayString = new Date().toISOString().slice(0, 10); // <-- Definiamo la data di oggi
+        
+        const today = new Date();
+        const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                
         const fragment = document.createDocumentFragment();
 
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDate = new Date(year, month, i);
-            const dateString = dayDate.toISOString().slice(0, 10); // <-- Otteniamo la data della colonna
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
             const dayOfWeek = dayDate.toLocaleString('it-IT', { weekday: 'short' });
             const dayNumber = String(i).padStart(2, '0');
             const th = document.createElement('th');
@@ -141,8 +145,11 @@ const TimelineApp = {
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const today = new Date();
+        const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                
         const fragment = document.createDocumentFragment();
-        const todayString = new Date().toISOString().slice(0, 10);
         this.state.employees.forEach(employee => {
             const tr = document.createElement('tr');
             tr.dataset.personaleId = employee.id_personale;
