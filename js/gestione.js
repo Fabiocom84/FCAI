@@ -654,6 +654,31 @@ const App = {
         this.updateToolbarState();
     },
 
+    selectRow: function(rowElement) {
+        // Rimuovi la selezione da qualsiasi altra riga
+        const currentlySelected = this.dom.gridWrapper.querySelector('.agile-table-row.selected');
+        if (currentlySelected) {
+            currentlySelected.classList.remove('selected');
+        }
+
+        // Se l'elemento cliccato non è una riga valida, deseleziona tutto
+        if (!rowElement) {
+            this.state.selectedRowId = null;
+            this.updateToolbarState();
+            return;
+        }
+
+        // Aggiungi la classe 'selected' alla nuova riga
+        rowElement.classList.add('selected');
+        
+        // --- QUESTA È LA PARTE FONDAMENTALE MANCANTE ---
+        // Salva l'ID della riga selezionata nello stato dell'applicazione
+        this.state.selectedRowId = rowElement.dataset.id;
+
+        // Aggiorna lo stato dei pulsanti della toolbar (es. abilita/disabilita Modifica)
+        this.updateToolbarState();
+    },
+
     /**
          * Salva le modifiche apportate a una riga.
          */
