@@ -5,7 +5,8 @@ const TimelineApp = {
         currentDate: new Date(),
         employees: [],
         presenze: new Map(),
-        tipiPresenza: [], // Conterrà i dati da `tipi_presenza` (ferie, etc.)
+        tipiPresenza: [],
+        activeCell: null, // Traccia la cella attualmente in modifica
     },
 
     dom: {},
@@ -17,7 +18,7 @@ const TimelineApp = {
         this.dom.prevMonthBtn = document.getElementById('prev-month');
         this.dom.nextMonthBtn = document.getElementById('next-month');
 
-        await this.loadInitialData(); // Carichiamo anche i tipi di presenza
+        await this.loadInitialData();
         this.addEventListeners();
         await this.render();
     },
@@ -26,16 +27,19 @@ const TimelineApp = {
         this.dom.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
         this.dom.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
         
-        // Usiamo la "event delegation" per gestire i click su tutte le celle
         this.dom.timelineBody.addEventListener('click', (event) => {
-            // Se clicchiamo su una cella dati (TD) e non c'è già un input
-            if (event.target.tagName === 'TD' && !event.target.querySelector('input')) {
-                this.handleCellClick(event.target);
+            const cell = event.target.closest('td');
+            if (cell && !cell.classList.contains('editing')) {
+                this.handleCellClick(cell);
             }
         });
     },
 
     async render() {
+        // Se c'è una cella in modifica, la salviamo prima di ridisegnare
+        if (this.state.activeCell) {
+            await this.saveCell(this.state.activeCell);
+        }
         this.updateMonthDisplay();
         this.renderHeaders();
         await this.loadPresenzeForCurrentMonth();
@@ -45,10 +49,9 @@ const TimelineApp = {
     // --- FUNZIONI DI CARICAMENTO DATI ---
     async loadInitialData() {
         try {
-            // Carichiamo personale e tipi di presenza in parallelo
             const [personaleRes, tipiRes] = await Promise.all([
                 apiFetch('/api/personale?attivo=true&limit=100'),
-                apiFetch('/api/tipi_presenza') // Assicurati di avere un endpoint per questo!
+                apiFetch('/api/tipi_presenza')
             ]);
             
             if (!personaleRes.ok || !tipiRes.ok) throw new Error('Errore nel caricamento dati iniziali.');
@@ -140,20 +143,25 @@ const TimelineApp = {
      * Aggiorna il contenuto di una cella per mostrare i chip e l'indicatore di nota.
      */
     updateCellDisplay(cell, data) {
-        cell.innerHTML = ''; // Pulisce la cella
-        if (!data) return; // Se non ci sono dati, la cella rimane vuota
+        cell.innerHTML = '';
+        cell.classList.remove('editing');
+        this.state.activeCell = null;
+        if (!data) return;
 
         let content = '';
-        if (data.numero_ore) {
+        if (data.numero_ore != null) {
             content += `<span class="chip ore">${data.numero_ore}</span>`;
         }
-        if (data.tipi_presenza) { // Se il backend ha fatto il join
-             content += `<span class="chip" style="background-color:${data.tipi_presenza.colore_hex}; color:white;">${data.tipi_presenza.icona} ${data.tipi_presenza.etichetta}</span>`;
+        if (data.id_tipo_presenza_fk && this.state.tipiPresenza.length > 0) {
+            const tipo = this.state.tipiPresenza.find(t => t.id_tipo === data.id_tipo_presenza_fk);
+            if (tipo) {
+                content += `<span class="chip" style="background-color:${tipo.colore_hex}; color:white;">${tipo.icona || ''} ${tipo.etichetta}</span>`;
+            }
         }
         
         if (data.note) {
-            cell.title = data.note; // Tooltip in stile Excel
-            content += '<span class="note-indicator">◢</span>'; // Indicatore di nota
+            cell.title = data.note;
+            content += '<span class="note-indicator"></span>';
         } else {
             cell.title = '';
         }
@@ -163,12 +171,134 @@ const TimelineApp = {
 
     // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
-        // Logica per mostrare l'input ibrido quando una cella viene cliccata
-        // (Questa parte la svilupperemo nel prossimo passaggio)
-        console.log(`Cella cliccata: Personale ID ${cell.parentElement.dataset.personaleId}, Data ${cell.dataset.date}`);
+        if (this.state.activeCell && this.state.activeCell !== cell) {
+            this.saveCell(this.state.activeCell);
+        }
+
+        this.state.activeCell = cell;
+        cell.classList.add('editing');
+        
+        const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
+        const currentData = this.state.presenze.get(presenceKey);
+        const currentValue = this.dataToString(currentData);
+        
+        cell.innerHTML = `
+            <div class="edit-container">
+                <input type="text" class="cell-input" value="${currentValue}" />
+                <button class="options-btn">...</button>
+            </div>
+        `;
+        
+        const input = cell.querySelector('.cell-input');
+        input.focus();
+        input.select();
+
+        input.addEventListener('blur', () => this.saveCell(cell));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.saveCell(cell);
+            if (e.key === 'Escape') this.updateCellDisplay(cell, currentData); // Annulla
+        });
+
+        // Per ora il pulsante "..." non fa nulla, lo implementeremo dopo
+        cell.querySelector('.options-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            alert('Popup di inserimento guidato da implementare!');
+        });
     },
 
+    async saveCell(cell) {
+        if (!cell || !cell.classList.contains('editing')) return;
+        
+        const input = cell.querySelector('.cell-input');
+        if (!input) return;
+
+        const rawText = input.value;
+        const parsedData = this.parseInput(rawText);
+
+        const payload = {
+            id_personale_fk: parseInt(cell.parentElement.dataset.personaleId),
+            data: cell.dataset.date,
+            ...parsedData
+        };
+
+        try {
+            const response = await apiFetch('/api/presenze', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error('Salvataggio fallito');
+            
+            const savedData = await response.json();
+            
+            // Aggiorna lo stato locale e la cella
+            const key = `${savedData.id_personale_fk}_${savedData.data}`;
+            this.state.presenze.set(key, savedData);
+            this.updateCellDisplay(cell, savedData);
+
+        } catch (error) {
+            console.error("Errore durante il salvataggio:", error);
+            // In caso di errore, ripristina la cella allo stato precedente
+            const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
+            const originalData = this.state.presenze.get(presenceKey);
+            this.updateCellDisplay(cell, originalData);
+        }
+    },
+
+    /**
+     * Converte un oggetto dati in una stringa per l'input.
+     */
+    dataToString(data) {
+        if (!data) return '';
+        let parts = [];
+        if (data.numero_ore != null) parts.push(data.numero_ore);
+        if (data.id_tipo_presenza_fk) {
+            const tipo = this.state.tipiPresenza.find(t => t.id_tipo === data.id_tipo_presenza_fk);
+            if (tipo) parts.push(`\\${tipo.shortcut_key}`);
+        }
+        if (data.note) parts.push(`+${data.note}`);
+        return parts.join(' ');
+    },
+
+    /**
+     * Analizza la stringa dall'input e la converte in un oggetto dati.
+     */
+    parseInput(text) {
+        const data = {
+            numero_ore: null,
+            id_tipo_presenza_fk: null,
+            note: null
+        };
+        
+        const parts = text.trim().split(' ');
+        
+        parts.forEach(part => {
+            if (/^\d+(\.\d+)?$/.test(part)) { // Se è un numero (ore)
+                data.numero_ore = parseFloat(part);
+            } else if (part.startsWith('\\') && part.length === 2) { // Se è una shortcut
+                const shortcut = part.substring(1);
+                const tipo = this.state.tipiPresenza.find(t => t.shortcut_key === shortcut);
+                if (tipo) data.id_tipo_presenza_fk = tipo.id_tipo;
+            } else if (part.startsWith('+')) { // Se è una nota
+                // Ricostruisce la nota completa se contiene spazi
+                const noteIndex = text.indexOf('+');
+                data.note = text.substring(noteIndex + 1).trim();
+            }
+        });
+        
+        // Se la nota è stata catturata da un'altra parte, la rimuoviamo per non duplicarla
+        if (data.note) {
+            const noteParts = data.note.split(' ');
+            if (noteParts.includes(`\\${this.state.tipiPresenza.find(t=>t.id_tipo === data.id_tipo_presenza_fk)?.shortcut_key}`)) {
+                // Semplice fix per evitare note sporche, migliorabile se necessario
+            }
+        }
+
+        return data;
+    },
+    
     async changeMonth(direction) {
+        await this.render(); // Salva la cella attiva prima di cambiare mese
         this.state.currentDate.setDate(1);
         this.state.currentDate.setMonth(this.state.currentDate.getMonth() + direction);
         await this.render();

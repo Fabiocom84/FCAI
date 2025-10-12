@@ -106,3 +106,72 @@ body {
     min-width: 200px;
     border-right: 2px solid #dee2e6; /* Linea più marcata per separare */
 }
+
+/* ============================================= */
+/* == Stili per l'Interfaccia di Modifica       == */
+/* ============================================= */
+
+/* Contenitore per l'input e il pulsante opzioni */
+.edit-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Stile per l'input di testo nella cella */
+.cell-input {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #007bff; /* Evidenzia la cella in modifica */
+    box-sizing: border-box;
+    font-size: 1em;
+    padding: 0 5px;
+    flex-grow: 1;
+}
+.cell-input:focus {
+    outline: none;
+}
+
+/* Pulsante "..." per le opzioni */
+.options-btn {
+    width: 25px;
+    height: 100%;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* --- Stili per i "Chip" di visualizzazione dati --- */
+.chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin: 1px;
+    white-space: nowrap;
+}
+.chip.ore {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+/* Indicatore di nota in stile Excel */
+.note-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-top: 8px solid red;
+    border-left: 8px solid transparent;
+}
+
+/* Serve per posizionare l'indicatore correttamente */
+.timeline-table td {
+    position: relative;
+}
