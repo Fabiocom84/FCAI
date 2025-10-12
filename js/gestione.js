@@ -327,20 +327,52 @@ const App = {
     /**
         * Gestisce i click sui pulsanti della toolbar.
     */
-    handleToolbarClick(event) {
-        const button = event.target.closest('button');
-        if (!button) return;
+    handleToolbarClick: function(event) {
+        const action = event.target.closest('.button')?.id;
+        if (!action) return;
 
-        switch (button.id) {
-            case 'searchBtn': this.loadAndRenderData(true); break;
-            case 'addRowBtn': this.handleAddRow(); break;
-            case 'editRowBtn': this.handleEditRow(); break;
-            case 'deleteRowBtn': this.handleDeleteRow(); break;
-            case 'saveBtn': 
-                if (this.state.isAddingNewRow) this.handleSaveNewRow();
-                if (this.state.isEditingRow) this.handleSaveChanges();
+        switch (action) {
+            case 'addRowBtn':
+                this.handleAddRow();
                 break;
-            case 'cancelBtn': this.handleCancelEdit(); break;
+            case 'editRowBtn':
+                if (this.state.selectedRowId) {
+                    this.handleEditRow(this.state.selectedRowId);
+                } else {
+                    showModal({ title: 'Attenzione', message: 'Selezionare una riga da modificare.', confirmText: 'OK' });
+                }
+                break;
+            case 'deleteRowBtn':
+                if (this.state.selectedRowId) {
+                    this.handleDelete(this.state.selectedRowId);
+                } else {
+                    showModal({ title: 'Attenzione', message: 'Selezionare una riga da eliminare.', confirmText: 'OK' });
+                }
+                break;
+            case 'saveBtn':
+                // --- CORREZIONE QUI ---
+                if (this.state.editingRowId) {
+                    // Trova l'elemento della riga che stiamo modificando...
+                    const rowElement = this.dom.gridWrapper.querySelector(`.agile-table-row[data-id="${this.state.editingRowId}"]`);
+                    if (rowElement) {
+                        // ...e passalo alla funzione di salvataggio.
+                        this.handleSaveChanges(rowElement);
+                    }
+                } else if (this.state.isAddingNewRow) {
+                    this.handleSaveNewRow();
+                }
+                break;
+            case 'cancelBtn':
+                this.exitEditMode(this.state.editingRowId);
+                if (this.state.isAddingNewRow) {
+                    this.state.isAddingNewRow = false;
+                    this.handleViewChange();
+                }
+                break;
+            case 'searchBtn':
+                this.state.searchTerm = document.getElementById('filter-search-term')?.value || '';
+                this.loadAndRenderData(true);
+                break;
         }
     },
         
