@@ -280,27 +280,47 @@ const TimelineApp = {
 
     // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
-        if (this.state.activeCell && this.state.activeCell !== cell) {
-            // CORREZIONE: Usiamo TimelineApp per essere espliciti
-            TimelineApp.saveCellFromInput(this.state.activeCell);
+        if (TimelineApp.state.activeCell && TimelineApp.state.activeCell !== cell) {
+            TimelineApp.saveCellFromInput(TimelineApp.state.activeCell);
         }
-        this.state.activeCell = cell;
+
+        TimelineApp.state.activeCell = cell;
         cell.classList.add('editing');
         const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
-        const currentData = this.state.presenze.get(presenceKey);
-        const currentValue = this.dataToString(currentData);
-        cell.innerHTML = `...`; // (contenuto invariato)
-        const input = cell.querySelector('.cell-input');
+        const currentData = TimelineApp.state.presenze.get(presenceKey);
+        const currentValue = TimelineApp.dataToString(currentData);
+
+        // Svuota la cella prima di aggiungere i nuovi elementi
+        cell.innerHTML = '';
+
+        // --- NUOVA LOGICA: Creazione manuale degli elementi ---
+        const container = document.createElement('div');
+        container.className = 'edit-container';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'cell-input';
+        input.value = currentValue;
+
+        const optionsBtn = document.createElement('button');
+        optionsBtn.className = 'options-btn';
+        optionsBtn.textContent = '...';
+
+        container.appendChild(input);
+        container.appendChild(optionsBtn);
+        cell.appendChild(container);
+
+        // Ora 'input' è un riferimento diretto e sicuro all'elemento
         input.focus();
         input.select();
 
-        // CORREZIONE: Usiamo TimelineApp per essere espliciti
+        // Aggiungiamo gli event listener agli elementi appena creati
         input.addEventListener('blur', () => TimelineApp.saveCellFromInput(cell));
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') TimelineApp.saveCellFromInput(cell);
             if (e.key === 'Escape') TimelineApp.updateCellDisplay(cell, currentData);
         });
-        cell.querySelector('.options-btn').addEventListener('click', (e) => {
+        optionsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             TimelineApp.showVisualPopup(cell, currentData);
         });
