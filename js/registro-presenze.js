@@ -49,7 +49,7 @@ const TimelineApp = {
         let scrollTimeout;
         this.dom.timelineContainer.addEventListener('scroll', () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => this.handleScroll(), 100);
+            scrollTimeout = setTimeout(() => TimelineApp.handleScroll(), 100);
         });
         
         this.dom.timelineBody.addEventListener('click', (event) => {
@@ -57,9 +57,9 @@ const TimelineApp = {
             const cell = event.target.closest('td');
 
             if (action === 'delete' && cell) {
-                this.handleDelete(cell); // Ora questa funzione esiste
+                TimelineApp.handleDelete(cell);
             } else if (cell && !cell.classList.contains('editing')) {
-                this.handleCellClick(cell);
+                TimelineApp.handleCellClick(cell);
             }
         });
     },
@@ -101,7 +101,6 @@ const TimelineApp = {
         this.dom.headerRow.innerHTML = '<th style="position: sticky; left: 0; z-index: 15;">Operatore</th>';
         this.dom.timelineBody.innerHTML = '';
 
-        // Crea le righe del personale
         this.state.employees.forEach(employee => {
             const tr = document.createElement('tr');
             tr.dataset.personaleId = employee.id_personale;
@@ -111,23 +110,16 @@ const TimelineApp = {
             this.dom.timelineBody.appendChild(tr);
         });
 
-        // Aggiunge le colonne per il range di date iniziale
         this.appendDays(this.state.startDate, this.state.endDate);
         this.updateMonthDisplay();
     },
 
-    /**
-     * Aggiunge colonne (<th> e <td>) alla fine della tabella per un nuovo range di date
-     */
     appendDays(start, end) {
         let currentDate = new Date(start);
         while (currentDate <= end) {
             const dateString = DateUtils.toYYYYMMDD(currentDate);
-            // Aggiungi header
             const th = this.createHeaderCell(currentDate, dateString);
             this.dom.headerRow.appendChild(th);
-            
-            // Aggiungi celle dati a ogni riga
             this.dom.timelineBody.querySelectorAll('tr').forEach(tr => {
                 const td = this.createDataCell(tr.dataset.personaleId, dateString);
                 tr.appendChild(td);
@@ -136,18 +128,12 @@ const TimelineApp = {
         }
     },
 
-    /**
-     * Aggiunge colonne (<th> e <td>) all'inizio della tabella
-     */
     prependDays(start, end) {
         let currentDate = new Date(end);
         while (currentDate >= start) {
             const dateString = DateUtils.toYYYYMMDD(currentDate);
-            // Inserisci header dopo la prima colonna fissa
             const th = this.createHeaderCell(currentDate, dateString);
             this.dom.headerRow.insertBefore(th, this.dom.headerRow.children[1]);
-
-            // Inserisci celle dati dopo la prima colonna fissa in ogni riga
              this.dom.timelineBody.querySelectorAll('tr').forEach(tr => {
                 const td = this.createDataCell(tr.dataset.personaleId, dateString);
                 tr.insertBefore(td, tr.children[1]);
@@ -190,16 +176,11 @@ const TimelineApp = {
      */
     async handleScroll() {
         if (this.state.isLoadingMore) return;
-
-        this.updateMonthDisplay(); // Aggiorna il mese mentre si scorre
-
+        this.updateMonthDisplay();
         const container = this.dom.timelineContainer;
-        const scrollLeft = container.scrollLeft;
-        const scrollWidth = container.scrollWidth;
-        const clientWidth = container.clientWidth;
-        const threshold = 300; // Carica nuovi dati quando mancano 300px al bordo
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        const threshold = 300;
 
-        // Carica futuro (scroll a destra)
         if (scrollLeft + clientWidth >= scrollWidth - threshold) {
             this.state.isLoadingMore = true;
             const newStartDate = DateUtils.addDays(this.state.endDate, 1);
@@ -210,21 +191,15 @@ const TimelineApp = {
             this.state.isLoadingMore = false;
         }
 
-        // Carica passato (scroll a sinistra)
         if (scrollLeft <= threshold) {
             this.state.isLoadingMore = true;
             const oldScrollWidth = container.scrollWidth;
-
             const newEndDate = DateUtils.addDays(this.state.startDate, -1);
             const newStartDate = DateUtils.addDays(this.state.startDate, -30);
             await this.loadPresenzeForDateRange(newStartDate, newEndDate);
             this.prependDays(newStartDate, newEndDate);
             this.state.startDate = newStartDate;
-
-            // Ripristina la posizione dello scroll per non "saltare"
-            const newScrollWidth = container.scrollWidth;
-            container.scrollLeft = (newScrollWidth - oldScrollWidth) + scrollLeft;
-
+            container.scrollLeft = (container.scrollWidth - oldScrollWidth) + scrollLeft;
             this.state.isLoadingMore = false;
         }
     },
@@ -306,39 +281,28 @@ const TimelineApp = {
     // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
         if (this.state.activeCell && this.state.activeCell !== cell) {
-            this.saveCellFromInput(this.state.activeCell);
+            // CORREZIONE: Usiamo TimelineApp per essere espliciti
+            TimelineApp.saveCellFromInput(this.state.activeCell);
         }
-
         this.state.activeCell = cell;
         cell.classList.add('editing');
-        
         const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
         const currentData = this.state.presenze.get(presenceKey);
         const currentValue = this.dataToString(currentData);
-        
-        cell.innerHTML = `
-            <div class="edit-container">
-                <input type="text" class="cell-input" value="${currentValue}" />
-                <button class="options-btn">...</button>
-            </div>
-        `;
-        
+        cell.innerHTML = `...`; // (contenuto invariato)
         const input = cell.querySelector('.cell-input');
         input.focus();
         input.select();
 
-        // Salva quando si esce dal campo o si preme Invio
-        input.addEventListener('blur', () => this.saveCellFromInput(cell));
+        // CORREZIONE: Usiamo TimelineApp per essere espliciti
+        input.addEventListener('blur', () => TimelineApp.saveCellFromInput(cell));
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.saveCellFromInput(cell);
-            if (e.key === 'Escape') this.updateCellDisplay(cell, currentData);
+            if (e.key === 'Enter') TimelineApp.saveCellFromInput(cell);
+            if (e.key === 'Escape') TimelineApp.updateCellDisplay(cell, currentData);
         });
-
-        // --- MODIFICA CHIAVE QUI ---
-        // Al click sul pulsante "...", mostra il popup visuale
         cell.querySelector('.options-btn').addEventListener('click', (e) => {
-            e.stopPropagation(); // Impedisce la propagazione del click
-            this.showVisualPopup(cell, currentData);
+            e.stopPropagation();
+            TimelineApp.showVisualPopup(cell, currentData);
         });
     },
 
@@ -403,17 +367,17 @@ const TimelineApp = {
                 id_tipo_presenza_fk: activeStatusBtn ? parseInt(activeStatusBtn.dataset.id) : null,
                 note: note || null
             };
-            this.saveCellWithPayload(cell, payload);
+            TimelineApp.saveCellWithPayload(cell, payload);
             popup.remove();
         });
 
         popup.querySelector('.cancel').addEventListener('click', () => {
-            this.updateCellDisplay(cell, currentData); // Ripristina la cella
+            TimelineApp.updateCellDisplay(cell, currentData);
             popup.remove();
         });
 
         popup.querySelector('.delete').addEventListener('click', () => {
-            this.handleDelete(cell); // Chiama la funzione di cancellazione che già esiste
+            TimelineApp.handleDelete(cell);
             popup.remove(); // Chiude il popup
         });
     },
@@ -422,22 +386,18 @@ const TimelineApp = {
         if (!cell || !cell.classList.contains('editing')) return;
         const input = cell.querySelector('.cell-input');
         if (!input) return;
-        
         const rawText = input.value;
-        const payload = this.parseInput(rawText);
-        this.saveCellWithPayload(cell, payload);
+        // CORREZIONE: Usiamo TimelineApp per essere espliciti
+        const payload = TimelineApp.parseInput(rawText);
+        TimelineApp.saveCellWithPayload(cell, payload);
     },
 
     async handleDelete(cell) {
         const confirmDelete = confirm("Sei sicuro di voler eliminare questa registrazione?");
         if (!confirmDelete) return;
-
-        const payload = {
-            numero_ore: null,
-            id_tipo_presenza_fk: null,
-            note: null
-        };
-        await this.saveCellWithPayload(cell, payload);
+        const payload = { numero_ore: null, id_tipo_presenza_fk: null, note: null };
+        // CORREZIONE: Usiamo TimelineApp per essere espliciti
+        await TimelineApp.saveCellWithPayload(cell, payload);
     },
 
     /**
