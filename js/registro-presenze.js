@@ -1,3 +1,5 @@
+import { apiFetch } from './api-client.js';
+
 const TimelineApp = {
     state: {
         currentDate: new Date(),
