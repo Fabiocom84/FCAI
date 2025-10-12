@@ -172,14 +172,17 @@ const TimelineApp = {
     scrollToToday() {
         const todayHeader = this.dom.headerRow.querySelector('.today-column');
         if (todayHeader) {
-            const container = this.dom.timelineContainer;
-            const containerWidth = container.offsetWidth;
-            const scrollTarget = todayHeader.offsetLeft - (containerWidth / 2) + (todayHeader.offsetWidth / 2);
-            
-            container.scrollTo({
-                left: scrollTarget,
-                behavior: 'smooth'
-            });
+            // Usiamo setTimeout per assicurarci che il browser abbia finito di renderizzare
+            setTimeout(() => {
+                const container = this.dom.timelineContainer;
+                const containerWidth = container.offsetWidth;
+                const scrollTarget = todayHeader.offsetLeft - (containerWidth / 2) + (todayHeader.offsetWidth / 2);
+                
+                container.scrollTo({
+                    left: scrollTarget,
+                    behavior: 'smooth'
+                });
+            }, 100); // Un piccolo ritardo di 100ms è più che sufficiente
         }
     },
     
