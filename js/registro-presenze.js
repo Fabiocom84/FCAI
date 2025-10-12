@@ -19,7 +19,7 @@ const TimelineApp = {
         presenze: new Map(),
         tipiPresenza: [],
         activeCell: null,
-        isLoadingMore: false, // Per evitare caricamenti multipli
+        isLoadingMore: false,
     },
 
     dom: {},
@@ -29,18 +29,18 @@ const TimelineApp = {
         this.dom.headerRow = document.getElementById('header-row');
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
-        this.dom.prevMonthBtn = document.getElementById('prev-month');
-        this.dom.nextMonthBtn = document.getElementById('next-month');
-
+        
+        // CORREZIONE: Rimossi i riferimenti ai pulsanti prev/next mese
+        
         const today = new Date();
         this.state.startDate = DateUtils.addDays(today, -15);
         this.state.endDate = DateUtils.addDays(today, +15);
 
-        await this.loadInitialData(); // Carica personale e tipi
-        await this.loadPresenzeForDateRange(this.state.startDate, this.state.endDate); // Carica primo blocco di presenze
+        await this.loadInitialData();
+        await this.loadPresenzeForDateRange(this.state.startDate, this.state.endDate);
         
-        this.renderInitialTable(); // Disegna la tabella per la prima volta
-        this.scrollToToday(); // Centra su oggi
+        this.renderInitialTable();
+        this.scrollToToday();
         
         this.addEventListeners();
     },
@@ -53,14 +53,18 @@ const TimelineApp = {
         });
         
         this.dom.timelineBody.addEventListener('click', (event) => {
+            const action = event.target.dataset.action;
             const cell = event.target.closest('td');
-            if (cell && !cell.classList.contains('editing')) {
+
+            if (action === 'delete' && cell) {
+                this.handleDelete(cell); // Ora questa funzione esiste
+            } else if (cell && !cell.classList.contains('editing')) {
                 this.handleCellClick(cell);
             }
         });
     },
     
-    // --- FUNZIONI DI CARICAMENTO DATI ---
+    // --- FUNZIONI DI CARICAMENTO DATI (invariate) ---
     async loadInitialData() {
         try {
             const [personaleRes, tipiRes] = await Promise.all([
@@ -271,26 +275,36 @@ const TimelineApp = {
         this.state.activeCell = null;
         if (!data) return;
 
-        let content = '';
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'cell-content-wrapper';
+        let chipsHtml = '';
         if (data.numero_ore != null) {
-            content += `<span class="chip ore">${data.numero_ore}</span>`;
+            chipsHtml += `<span class="chip ore">${data.numero_ore}</span>`;
         }
         if (data.id_tipo_presenza_fk && this.state.tipiPresenza.length > 0) {
             const tipo = this.state.tipiPresenza.find(t => t.id_tipo === data.id_tipo_presenza_fk);
             if (tipo) {
-                content += `<span class="chip" style="background-color:${tipo.colore_hex}; color:white;">${tipo.icona || ''} ${tipo.etichetta}</span>`;
+                chipsHtml += `<span class="chip" style="background-color:${tipo.colore_hex}; color:white;">${tipo.icona || ''} ${tipo.etichetta}</span>`;
             }
         }
+        contentWrapper.innerHTML = chipsHtml;
+        const deleteBtn = document.createElement('span');
+        deleteBtn.className = 'delete-chip-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.dataset.action = 'delete';
+        contentWrapper.appendChild(deleteBtn);
+        cell.appendChild(contentWrapper);
         
         if (data.note) {
             cell.title = data.note;
-            content += '<span class="note-indicator"></span>';
+            const noteIndicator = document.createElement('span');
+            noteIndicator.className = 'note-indicator';
+            cell.appendChild(noteIndicator);
         } else {
             cell.title = '';
         }
-
-        cell.innerHTML = content;
     },
+
 
     // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
@@ -409,32 +423,16 @@ const TimelineApp = {
         this.saveCellWithPayload(cell, payload);
     },
 
-    async saveCellWithPayload(cell, payload) {
-        const fullPayload = {
-            id_personale_fk: parseInt(cell.parentElement.dataset.personaleId),
-            data: cell.dataset.date,
-            ...payload
+    async handleDelete(cell) {
+        const confirmDelete = confirm("Sei sicuro di voler eliminare questa registrazione?");
+        if (!confirmDelete) return;
+
+        const payload = {
+            numero_ore: null,
+            id_tipo_presenza_fk: null,
+            note: null
         };
-
-        try {
-            const response = await apiFetch('/api/presenze', {
-                method: 'POST',
-                body: JSON.stringify(fullPayload),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (!response.ok) throw new Error('Salvataggio fallito');
-            
-            const savedData = await response.json();
-            const key = `${savedData.id_personale_fk}_${savedData.data}`;
-            this.state.presenze.set(key, savedData);
-            this.updateCellDisplay(cell, savedData);
-
-        } catch (error) {
-            console.error("Errore durante il salvataggio:", error);
-            const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
-            const originalData = this.state.presenze.get(presenceKey);
-            this.updateCellDisplay(cell, originalData);
-        }
+        await this.saveCellWithPayload(cell, payload);
     },
 
     /**
@@ -488,13 +486,6 @@ const TimelineApp = {
 
         return data;
     },
-    
-    async changeMonth(direction) {
-        await this.render(); // Salva la cella attiva prima di cambiare mese
-        this.state.currentDate.setDate(1);
-        this.state.currentDate.setMonth(this.state.currentDate.getMonth() + direction);
-        await this.render();
-    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
