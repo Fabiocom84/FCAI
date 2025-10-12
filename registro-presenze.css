@@ -340,7 +340,8 @@ body {
 
 .popup-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; /* Allinea i gruppi ai lati opposti */
+    align-items: center;
     gap: 10px;
     margin-top: 10px;
 }
@@ -358,4 +359,22 @@ body {
 .popup-actions .cancel {
     background-color: #6c757d;
     color: white;
+}
+.popup-actions .main-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Stile per il nuovo pulsante Elimina */
+.popup-actions .delete {
+    background-color: #e74c3c; /* Rosso */
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.popup-actions .delete:hover {
+    background-color: #c0392b;
 }

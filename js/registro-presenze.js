@@ -287,12 +287,9 @@ const TimelineApp = {
                 chipsHtml += `<span class="chip" style="background-color:${tipo.colore_hex}; color:white;">${tipo.icona || ''} ${tipo.etichetta}</span>`;
             }
         }
+        
+        // Ora il wrapper contiene solo i chip
         contentWrapper.innerHTML = chipsHtml;
-        const deleteBtn = document.createElement('span');
-        deleteBtn.className = 'delete-chip-btn';
-        deleteBtn.innerHTML = '🗑️';
-        deleteBtn.dataset.action = 'delete';
-        contentWrapper.appendChild(deleteBtn);
         cell.appendChild(contentWrapper);
         
         if (data.note) {
@@ -371,8 +368,11 @@ const TimelineApp = {
 
         // 4. Pulsanti Azioni
         const actionsHtml = `<div class="popup-actions">
-                                <button class="cancel">Annulla</button>
-                                <button class="save">Salva</button>
+                                <button class="delete">🗑️ Elimina</button>
+                                <div class="main-actions">
+                                    <button class="cancel">Annulla</button>
+                                    <button class="save">Salva</button>
+                                </div>
                              </div>`;
 
         popup.innerHTML = oreHtml + statusHtml + noteHtml + actionsHtml;
@@ -410,6 +410,11 @@ const TimelineApp = {
         popup.querySelector('.cancel').addEventListener('click', () => {
             this.updateCellDisplay(cell, currentData); // Ripristina la cella
             popup.remove();
+        });
+
+        popup.querySelector('.delete').addEventListener('click', () => {
+            this.handleDelete(cell); // Chiama la funzione di cancellazione che già esiste
+            popup.remove(); // Chiude il popup
         });
     },
 
