@@ -126,6 +126,7 @@ const TimelineApp = {
         const month = this.state.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const fragment = document.createDocumentFragment();
+        const todayString = new Date().toISOString().slice(0, 10);
         this.state.employees.forEach(employee => {
             const tr = document.createElement('tr');
             tr.dataset.personaleId = employee.id_personale;
