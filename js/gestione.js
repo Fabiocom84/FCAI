@@ -1174,35 +1174,41 @@ const App = {
     },
 
     addEventListeners: function() {
-        // Aggiunge l'evento ai pulsanti della toolbar
+        // Aggiunge gli eventi solo se gli elementi esistono nella pagina
+
         if (this.dom.toolbarArea) {
             this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
         }
-
-        // Aggiunge l'evento per la selezione delle righe e i filtri colonna
         if (this.dom.gridWrapper) {
             this.dom.gridWrapper.addEventListener('click', (event) => this.handleTableClick(event));
         }
+        if (this.dom.viewSelector) {
+            this.dom.viewSelector.addEventListener('change', () => this.handleViewChange());
+        }
 
-        // Aggiunge gli eventi ai filtri di stato
-        this.dom.statusFilters.forEach(btn => {
-            btn.addEventListener('click', () => this.handleStatusFilter(btn));
-        });
-        
-        // Aggiunge l'evento alla barra di ricerca globale (con ritardo)
-        let searchTimeout;
-        this.dom.searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.state.searchTerm = this.dom.searchInput.value;
-                this.loadAndRenderData(true);
-            }, 500);
-        });
+        // --- CONTROLLI DI SICUREZZA AGGIUNTI QUI ---
 
-        // Aggiunge l'evento al selettore di ordinamento
-        this.dom.sortSelect.addEventListener('change', () => this.handleSort());
+        if (this.dom.statusFilters) {
+            this.dom.statusFilters.forEach(btn => {
+                btn.addEventListener('click', () => this.handleStatusFilter(btn));
+            });
+        }
         
-        // Aggiunge l'evento per lo scroll infinito
+        if (this.dom.searchInput) {
+            let searchTimeout;
+            this.dom.searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.state.searchTerm = this.dom.searchInput.value;
+                    this.loadAndRenderData(true);
+                }, 500);
+            });
+        }
+
+        if (this.dom.sortSelect) {
+            this.dom.sortSelect.addEventListener('change', () => this.handleSort());
+        }
+        
         window.addEventListener('scroll', () => this.handleScroll());
     },
 };  
