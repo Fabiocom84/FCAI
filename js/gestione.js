@@ -312,10 +312,7 @@ const App = {
             this.dom.viewSelector.addEventListener('change', () => this.handleViewChange());
         }
         window.addEventListener('scroll', () => this.handleScroll());
-    },
 
-    addToolbarEventListeners: function() {
-        // Aggiunge gli eventi ai pulsanti della toolbar DOPO che sono stati creati
         if (this.dom.toolbarArea) {
             this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
         }
@@ -826,8 +823,6 @@ const App = {
         if (view === 'commesse' && document.getElementById('addRowBtn')) {
             document.getElementById('addRowBtn').disabled = true;
         }
-
-        this.addToolbarEventListeners();
     },
 
     updateToolbarState() {
