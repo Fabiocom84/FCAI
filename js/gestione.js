@@ -300,8 +300,7 @@ const App = {
 
         // 2. Chiamiamo gli event listener per gli elementi statici
         this.addStaticEventListeners();
-        
-        // 3. Carichiamo la vista di default (che a sua volta chiamerà renderToolbar)
+        this.renderToolbar();
         this.loadAndRenderData(true);
     },
 
