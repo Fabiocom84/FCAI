@@ -161,18 +161,21 @@ body {
     color: #333;
 }
 
-.note-indicator::after {
-    content: '💬'; /* Icona del fumetto */
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    font-size: 10px;
-    opacity: 0.6; /* La rendiamo leggermente trasparente */
-}
-
-/* Serve per posizionare l'indicatore correttamente */
+/* Assicura che la cella sia il contenitore di riferimento per l'indicatore */
 .timeline-table td {
     position: relative;
+}
+
+/* Stile per l'indicatore di nota, ora un triangolo rosso più grande */
+.note-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    /* Crea un triangolo usando i bordi: la dimensione è definita qui (12px) */
+    border-top: 12px solid #e74c3c; /* Un rosso vivo ma non aggressivo */
+    border-left: 12px solid transparent;
 }
 
 /* Stile per evidenziare la colonna del giorno corrente */

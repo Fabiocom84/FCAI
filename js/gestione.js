@@ -637,33 +637,44 @@ const App = {
     /**
         * Trasforma una riga in modalità di modifica.
     */
-    async handleEditRow() { // <-- Ora è ASYNC
-        if (!this.state.lastSelectedRadio) return;
-
+    async handleEditRow(id) { // <-- Ora accetta l'ID come parametro
         const config = this.viewConfig[this.state.currentView];
-        const id = this.state.lastSelectedRadio.value;
+        
+        // 1. Trova l'elemento della riga nel DOM usando il suo ID
+        const row = this.dom.gridWrapper.querySelector(`tr[data-id="${id}"]`);
+        if (!row) {
+            console.error("Riga da modificare non trovata nel DOM con ID:", id);
+            return;
+        }
+
+        // 2. Trova i dati corrispondenti nello stato dell'applicazione
         const rowData = this.state.tableData.find(item => String(item[config.idColumn]) === String(id));
-        if (!rowData) return;
+        if (!rowData) {
+            console.error("Dati per la riga da modificare non trovati nello stato con ID:", id);
+            return;
+        }
 
         this.state.isEditingRow = true;
-        const row = this.state.lastSelectedRadio.closest('tr');
+        this.state.editingRowId = id; // Memorizza l'ID della riga in modifica
         row.classList.add('editing-row');
 
-        const originalCells = Array.from(row.cells).slice(2); // Copia le celle originali
-        row.innerHTML = `<td>${row.cells[0].innerHTML}</td><td>${row.cells[1].innerHTML}</td>`; // Pulisce la riga mantenendo # e radio
+        // Salva il numero di riga e la checkbox prima di pulire
+        const rowNumberHTML = row.cells[0].innerHTML;
+        const radioHTML = row.cells[1].innerHTML;
+        row.innerHTML = `<td>${rowNumberHTML}</td><td>${radioHTML}</td>`;
 
-        for (const col of config.columns) { // Usiamo un ciclo for...of
+        // 3. Ricostruisci la riga con i campi di input
+        for (const col of config.columns) {
             const cell = row.insertCell();
             if (col.editable) {
-                const currentValue = rowData[col.key]; // Prende l'ID della FK
-                const inputElement = await this.createCellInput(col, currentValue); // <-- USA LA NUOVA FUNZIONE
+                const currentValue = this.getPropertyByString(rowData, col.key);
+                const inputElement = await this.createCellInput(col, currentValue);
                 inputElement.style.width = '100%';
                 inputElement.style.boxSizing = 'border-box';
                 cell.appendChild(inputElement);
             } else {
-                    // Se non è modificabile, rimetti il valore originale
-                const displayValue = this.getPropertyByString(rowData, col.displayKey || col.key) || '';
-                cell.textContent = displayValue;
+                cell.innerHTML = this.getPropertyByString(rowData, col.formatter ? null : (col.displayKey || col.key)) || '';
+                if(col.formatter) cell.innerHTML = col.formatter(rowData);
             }
         }
 
