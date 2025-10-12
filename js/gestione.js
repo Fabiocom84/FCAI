@@ -748,24 +748,33 @@ const App = {
         if (!rowElement) return;
 
         const config = this.viewConfig[this.state.currentView];
+        
+        // --- INIZIO BLOCCO DI RESET COMPLETO ---
+        // 1. Resetta lo stato di MODIFICA
         rowElement.classList.remove('editing');
         this.state.isEditingRow = false;
         this.state.editingRowId = null;
         
+        // 2. Resetta lo stato di SELEZIONE
+        this.state.lastSelectedRadio = null;
+        this.state.selectedRowId = null;
+        
+        // 3. Resetta l'aspetto della SELEZIONE
+        const radio = rowElement.querySelector('input[type="radio"]');
+        if (radio) radio.checked = false;
+        rowElement.classList.remove('selected-row');
+        // --- FINE BLOCCO DI RESET COMPLETO ---
+
         if (updatedRowData) {
-            // --- INIZIO BLOCCO AGGIUNTO ---
-            // 1. Trova l'indice dell'oggetto da aggiornare nella nostra copia locale dei dati.
+            // Aggiorna la copia locale dei dati
             const itemIndex = this.state.tableData.findIndex(
                 item => String(item[config.idColumn]) === String(rowId)
             );
-
-            // 2. Se lo trova, sostituisce il vecchio oggetto con quello nuovo appena salvato.
             if (itemIndex > -1) {
                 this.state.tableData[itemIndex] = updatedRowData;
             }
-            // --- FINE BLOCCO AGGIUNTO ---
 
-            // Aggiorna la visualizzazione della riga (questa parte era già corretta)
+            // Aggiorna la visualizzazione della riga
             config.columns.forEach((col, index) => {
                 const cell = rowElement.cells[index + 2];
                 if (cell) {
@@ -773,7 +782,7 @@ const App = {
                 }
             });
         } else {
-            // Se non ci sono dati aggiornati (es. annullamento), ricarica tutto per sicurezza
+            // In caso di annullamento, ricarica i dati per sicurezza
             this.loadAndRenderData(true);
         }
 
