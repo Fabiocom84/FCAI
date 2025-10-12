@@ -1092,36 +1092,6 @@ const App = {
         popupElement.appendChild(footer);
     },
 
-    handleDocumentClick(event) {
-        const popup = document.querySelector('.filter-popup');
-        if (!popup) return;
-
-        const target = event.target;
-        if (target.id === 'apply-filter') {
-            const columnKey = popup.dataset.column;
-            // Questa versione è più esplicita per evitare possibili problemi di stato del DOM.
-            const selectedValues = [];
-            const allCheckboxes = popup.querySelectorAll('.filter-checkbox');
-
-            allCheckboxes.forEach(checkbox => {
-                // Controlliamo la proprietà .checked direttamente, che è il metodo più affidabile.
-                if (checkbox.checked) {
-                    selectedValues.push(checkbox.value);
-                }
-            });
-            this.state.activeFilters[columnKey] = selectedValues;
-            this.loadAndRenderData(true); // Esegui come nuova query
-            popup.remove();
-        } else if (target.id === 'clear-filter') {
-            const columnKey = popup.dataset.column;
-            delete this.state.activeFilters[columnKey];
-            this.loadAndRenderData(true); // Esegui come nuova query
-            popup.remove();
-        } else if (!target.closest('.filter-popup') && !target.classList.contains('filter-icon')) {
-            popup.remove();
-        }
-    },
-
     async createCellInput(columnConfig, currentValue = '') {
         const key = columnConfig.key;
 
