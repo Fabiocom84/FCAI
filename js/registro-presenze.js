@@ -108,14 +108,16 @@ const TimelineApp = {
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 td.dataset.date = dateString;
                 
-                // Cerchiamo se esiste una presenza per questo dipendente in questa data
+                // Cerca se esiste una presenza per questo dipendente in questa data
                 const presenceKey = `${employee.id_personale}_${dateString}`;
+
+                // --> 1. Definiamo la costante qui
                 const presenceData = this.state.presenze.get(presenceKey);
-                
+
+                // --> 2. Controlliamo che la costante esista
                 if (presenzaData) {
-                    // Se troviamo dati, li visualizziamo (per ora solo le ore)
-                    td.textContent = presenzaData.numero_ore || ''; 
-                    // Qui in futuro inseriremo i "chip" colorati
+                    // --> 3. Usiamo ESATTAMENTE lo stesso nome per accedere ai dati
+                    td.textContent = presenceData.numero_ore || ''; 
                 }
                 
                 tr.appendChild(td);
