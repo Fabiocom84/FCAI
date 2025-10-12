@@ -115,7 +115,7 @@ const TimelineApp = {
                 const presenceData = this.state.presenze.get(presenceKey);
 
                 // --> 2. Controlliamo che la costante esista
-                if (presenzaData) {
+                if (presenceData) {
                     // --> 3. Usiamo ESATTAMENTE lo stesso nome per accedere ai dati
                     td.textContent = presenceData.numero_ore || ''; 
                 }
