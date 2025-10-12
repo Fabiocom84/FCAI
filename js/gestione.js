@@ -7,13 +7,20 @@ const App = {
 
     dom: {},
     state: {
-        currentView: null,
-        activeFilters: {},
-        tableData: [],
-        currentPage: 1,
-        isAddingNewRow: false,
-        isEditingRow: false,
-        lastSelectedRadio: null,
+            currentPage: 1,
+            totalCount: 0,
+            isLoading: false,
+            activeFilters: {},
+            searchTerm: '',
+            // --- MODIFICHE QUI ---
+            currentView: 'registrazioni', // Imposta 'registrazioni' come vista di default
+            sortBy: 'data_creazione',     // Imposta la colonna di ordinamento di default
+            sortOrder: 'desc',            // Imposta l'ordine di default (desc = dal più recente)
+            // --- FINE MODIFICHE ---
+            selectedRowId: null,
+            editingRowId: null,
+            isAddingNewRow: false,
+            allStatuses: []
     },
     viewConfig: {
         'clienti': {
@@ -281,30 +288,25 @@ const App = {
     /**
     * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
     */
-    init() {
-        this.dom.viewSelector = document.getElementById('tableViewSelector');
-        this.dom.toolbarArea = document.getElementById('toolbarArea');
-        this.dom.gridWrapper = document.getElementById('gridWrapper');
-            
-        this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
-        this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
-        this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
+    init: function() {
+        this.dom = {
+            gridWrapper: document.getElementById('grid-wrapper'),
+            loader: document.querySelector('.loader'),
+            toolbarArea: document.getElementById('toolbar-area'),
+            viewSelector: document.getElementById('view-selector'),
+            statusFilters: document.querySelectorAll('.filter-btn'), // Se presente in altre viste
+            searchInput: document.getElementById('search-input'),   // Se presente in altre viste
+            sortSelect: document.getElementById('sort-select')      // Se presente in altre viste
+        };
+
+        // Imposta il valore del selettore sulla vista di default
+        if (this.dom.viewSelector) {
+            this.dom.viewSelector.value = this.state.currentView;
+        }
+
         this.addEventListeners();
-        document.addEventListener('click', this.handleDocumentClick.bind(this));
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewParam = urlParams.get('view');
-        const filterKey = urlParams.get('filterKey'); // e.g., 'id_commessa_fk'
-        const filterValue = urlParams.get('filterValue'); // e.g., '123'
-
-        if (viewParam) {
-                this.dom.viewSelector.value = viewParam;
-        }
-        if (filterKey && filterValue) {
-            this.state.activeFilters[filterKey] = [filterValue];
-        }
-
-        this.handleViewChange();
+        
+        this.loadAndRenderData(true);
     },
 
     /**
