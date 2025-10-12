@@ -6,12 +6,14 @@ const TimelineApp = {
         employees: [],
         presenze: new Map(),
         tipiPresenza: [],
-        activeCell: null, // Traccia la cella attualmente in modifica
+        activeCell: null,
+        isInitialLoad: true,
     },
 
     dom: {},
 
     async init() {
+        this.dom.timelineContainer = document.querySelector('.timeline-container');
         this.dom.headerRow = document.getElementById('header-row');
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
@@ -36,7 +38,6 @@ const TimelineApp = {
     },
 
     async render() {
-        // Se c'è una cella in modifica, la salviamo prima di ridisegnare
         if (this.state.activeCell) {
             await this.saveCell(this.state.activeCell);
         }
@@ -44,6 +45,12 @@ const TimelineApp = {
         this.renderHeaders();
         await this.loadPresenzeForCurrentMonth();
         this.renderRows();
+
+        // NUOVO: Esegui lo scroll solo al primo caricamento
+        if (this.state.isInitialLoad) {
+            this.scrollToToday();
+            this.state.isInitialLoad = false;
+        }
     },
     
     // --- FUNZIONI DI CARICAMENTO DATI ---
@@ -129,14 +136,34 @@ const TimelineApp = {
                 const td = document.createElement('td');
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 td.dataset.date = dateString;
+                
+                // MODIFICA: Applica la classe se il giorno è oggi
+                if (dateString === todayString) {
+                    td.classList.add('today-column');
+                }
+
                 const presenceKey = `${employee.id_personale}_${dateString}`;
                 const presenceData = this.state.presenze.get(presenceKey);
-                this.updateCellDisplay(td, presenceData); // Usiamo una funzione dedicata per il display
+                this.updateCellDisplay(td, presenceData);
                 tr.appendChild(td);
             }
             fragment.appendChild(tr);
         });
         this.dom.timelineBody.appendChild(fragment);
+    },
+
+    scrollToToday() {
+        const todayHeader = this.dom.headerRow.querySelector('.today-column');
+        if (todayHeader) {
+            const container = this.dom.timelineContainer;
+            const containerWidth = container.offsetWidth;
+            const scrollTarget = todayHeader.offsetLeft - (containerWidth / 2) + (todayHeader.offsetWidth / 2);
+            
+            container.scrollTo({
+                left: scrollTarget,
+                behavior: 'smooth'
+            });
+        }
     },
     
     /**

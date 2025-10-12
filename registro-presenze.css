@@ -78,9 +78,10 @@ body {
 .timeline-table th,
 .timeline-table td {
     border: 1px solid #e9ecef;
-    padding: 10px 14px;
+    padding: 8px 5px; /* Ridotto lo spazio laterale */
     text-align: center;
-    min-width: 130px;
+    min-width: 90px;  /* Ridotta la larghezza minima */
+    max-width: 90px;  /* Aggiunta per consistenza */
 }
 
 /* Stile per l'intestazione fissa (nomi e giorni) */
@@ -160,18 +161,21 @@ body {
     color: #333;
 }
 
-/* Indicatore di nota in stile Excel */
-.note-indicator {
+.note-indicator::after {
+    content: '💬'; /* Icona del fumetto */
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-top: 8px solid red;
-    border-left: 8px solid transparent;
+    top: 1px;
+    right: 1px;
+    font-size: 10px;
+    opacity: 0.6; /* La rendiamo leggermente trasparente */
 }
 
 /* Serve per posizionare l'indicatore correttamente */
 .timeline-table td {
     position: relative;
+}
+
+/* Stile per evidenziare la colonna del giorno corrente */
+.today-column {
+    background-color: #fcf8e3 !important; /* Un giallo paglierino molto tenue */
 }
