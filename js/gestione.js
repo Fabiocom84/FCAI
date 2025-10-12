@@ -694,9 +694,7 @@ const App = {
         try {
             const response = await apiFetch(`${config.apiEndpoint}/${rowId}`, {
                 method: 'PUT',
-                // --- CORREZIONE QUI ---
-                // Converte l'oggetto JavaScript in una stringa JSON
-                body: JSON.stringify(updatedData) 
+                body: JSON.stringify(updatedData)
             });
 
             if (!response.ok) {
@@ -706,13 +704,40 @@ const App = {
 
             const resultData = await response.json();
             
-            // Uscita dalla modalità modifica per la riga
+            // --- CHIAMATA MANCANTE AGGIUNTA QUI ---
+            // Chiama la nuova funzione per aggiornare l'interfaccia e uscire dalla modalità modifica
             this.exitEditMode(rowId, resultData);
+
             await showModal({ title: 'Successo', message: 'Modifiche salvate con successo.', confirmText: 'OK' });
 
         } catch (error) {
             showModal({ title: 'Errore', message: `Impossibile salvare le modifiche: ${error.message}`, confirmText: 'OK' });
         }
+    },
+
+    // AGGIUNGI QUESTA NUOVA FUNZIONE (ad esempio dopo handleSaveChanges)
+    exitEditMode: function(rowId, updatedRowData = null) {
+        const rowElement = this.dom.gridWrapper.querySelector(`.agile-table-row[data-id="${rowId}"]`);
+        if (!rowElement) return;
+
+        rowElement.classList.remove('editing');
+        
+        // Se abbiamo dati aggiornati, ricarica la riga con i nuovi valori
+        if (updatedRowData) {
+            const config = this.viewConfig[this.state.currentView];
+            config.columns.forEach((col, index) => {
+                const cell = rowElement.cells[index + 1]; // +1 per saltare la checkbox
+                if (cell) {
+                    cell.innerHTML = this.formatCell(col, updatedRowData);
+                }
+            });
+        } else {
+            // Altrimenti, ricarica l'intera vista per annullare le modifiche non salvate
+            this.loadAndRenderData(true);
+        }
+
+        this.state.editingRowId = null;
+        this.updateToolbarState();
     },
 
     /**
