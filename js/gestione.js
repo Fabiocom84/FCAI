@@ -386,9 +386,9 @@ const App = {
                 }
                 break;
             case 'searchBtn':
-                this.state.searchTerm = document.getElementById('filter-search-term')?.value || '';
-                this.loadAndRenderData(true);
-                break;
+                    const searchTerm = document.getElementById('filter-search-term')?.value || '';
+                    this.loadAndRenderData(true, searchTerm); // Passiamo il termine di ricerca direttamente
+                    break;
             case 'resetSearchBtn':
                 const searchInput = document.getElementById('filter-search-term');
                 if (searchInput) {
@@ -440,9 +440,7 @@ const App = {
     /**
         * Carica i dati dal backend e avvia il rendering della tabella.
     */
-    async loadAndRenderData(isNewQuery = false) {
-        // --- RIGA MANCANTE AGGIUNTA QUI ---
-        // Per prima cosa, disegna la toolbar corretta per la vista attuale.
+    async loadAndRenderData(isNewQuery = false, searchTerm = '') {
         this.renderToolbar();
 
         const config = this.viewConfig[this.state.currentView];
@@ -460,8 +458,9 @@ const App = {
             sortOrder: this.state.sortOrder || config.defaultSortOrder || 'asc'
         });
             
-        const searchTerm = document.getElementById('filter-search-term')?.value;
-        if (searchTerm) params.append('search', searchTerm);
+        if (searchTerm) {
+            params.append('search', searchTerm);
+        }
             
         for (const key in this.state.activeFilters) {
             this.state.activeFilters[key].forEach(value => params.append(key, value));
