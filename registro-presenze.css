@@ -239,3 +239,18 @@ body {
 .page-header .help-button {
     /* Lo stile del pulsante "?" è già definito in style-v2.css e va bene */
 }
+
+/* Riduce lo spazio sopra l'intestazione principale */
+.main-content-wrapper {
+    padding-top: 20px;
+}
+
+/* Riduce lo spazio SOTTO l'intestazione principale */
+.page-header {
+    margin-bottom: 15px; /* Era 25px */
+}
+
+/* Riduce lo spazio SOTTO la barra dei controlli del mese */
+.presenze-controls {
+    margin-bottom: 15px; /* Era 25px */
+}
