@@ -289,24 +289,53 @@ const App = {
     * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
     */
     init: function() {
+        // 1. Qui cerchiamo solo gli elementi SEMPRE presenti nella pagina
         this.dom = {
             gridWrapper: document.querySelector('.grid-container'),
-            loader: document.querySelector('.loader'),
             toolbarArea: document.getElementById('toolbar-area'),
-            viewSelector: document.getElementById('view-selector'),
-            statusFilters: document.querySelectorAll('.filter-btn'), // Se presente in altre viste
-            searchInput: document.getElementById('search-input'),   // Se presente in altre viste
-            sortSelect: document.getElementById('sort-select')      // Se presente in altre viste
+            viewSelector: document.getElementById('view-selector')
         };
 
-        // Imposta il valore del selettore sulla vista di default
         if (this.dom.viewSelector) {
             this.dom.viewSelector.value = this.state.currentView;
         }
 
-        this.addEventListeners();
+        // 2. Chiamiamo gli event listener per gli elementi statici
+        this.addStaticEventListeners();
         
+        // 3. Carichiamo la vista di default (che a sua volta chiamerà renderToolbar)
         this.loadAndRenderData(true);
+    },
+
+    addStaticEventListeners: function() {
+        if (this.dom.gridWrapper) {
+            this.dom.gridWrapper.addEventListener('click', (event) => this.handleTableClick(event));
+        }
+        if (this.dom.viewSelector) {
+            this.dom.viewSelector.addEventListener('change', () => this.handleViewChange());
+        }
+        window.addEventListener('scroll', () => this.handleScroll());
+    },
+
+    addToolbarEventListeners: function() {
+        // Aggiunge gli eventi ai pulsanti della toolbar DOPO che sono stati creati
+        if (this.dom.toolbarArea) {
+            this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
+        }
+        
+        // Ora cerchiamo gli elementi della toolbar qui, perché siamo sicuri che esistano
+        const searchInput = document.getElementById('filter-search-term');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.state.searchTerm = searchInput.value;
+                    this.loadAndRenderData(true);
+                }, 500);
+            });
+        }
+        // Aggiungeremo qui gli altri listener per sortSelect etc. quando serviranno
     },
 
     /**
@@ -756,26 +785,31 @@ const App = {
         
     // --- Funzioni di Rendering e Utility ---
         
-    renderToolbar() {
+    renderToolbar: function() {
         const view = this.state.currentView;
+        const viewConfig = this.viewConfig[view];
+
+        // 1. Crea l'HTML per la toolbar
         this.dom.toolbarArea.innerHTML = `
             <div class="toolbar-group">
                 <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
-                <button class="button icon-button button--warning" id="editRowBtn" title="Modifica">✏️</button>
-                <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella">🗑️</button>
-                <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
-                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
+                <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
+                <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
+                <button class="button icon-button button--primary" id="saveBtn" title="Salva" style="display: none;">💾</button>
+                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla" style="display: none;">❌</button>
             </div>
+            ${viewConfig.searchable ? `
             <div class="toolbar-group search-group">
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
-                <button class="button icon-button button--secondary" id="searchBtn" title="Cerca">🔍</button>
-            </div>`;
+            </div>` : ''}
+        `;
         
-        // --- RIGA AGGIUNTA PER CORREZIONE ---
-        // Disabilita subito il pulsante "Aggiungi" se siamo nella vista 'commesse'
         if (view === 'commesse' && document.getElementById('addRowBtn')) {
             document.getElementById('addRowBtn').disabled = true;
         }
+
+        // 2. ORA che la toolbar è stata creata, agganciamo gli eventi
+        this.addToolbarEventListeners();
     },
 
     updateToolbarState() {
@@ -1171,45 +1205,6 @@ const App = {
         
     getPropertyByString(obj, path) {
         return path.split('.').reduce((current, key) => current && current[key], obj);
-    },
-
-    addEventListeners: function() {
-        // Aggiunge gli eventi solo se gli elementi esistono nella pagina
-
-        if (this.dom.toolbarArea) {
-            this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
-        }
-        if (this.dom.gridWrapper) {
-            this.dom.gridWrapper.addEventListener('click', (event) => this.handleTableClick(event));
-        }
-        if (this.dom.viewSelector) {
-            this.dom.viewSelector.addEventListener('change', () => this.handleViewChange());
-        }
-
-        // --- CONTROLLI DI SICUREZZA AGGIUNTI QUI ---
-
-        if (this.dom.statusFilters) {
-            this.dom.statusFilters.forEach(btn => {
-                btn.addEventListener('click', () => this.handleStatusFilter(btn));
-            });
-        }
-        
-        if (this.dom.searchInput) {
-            let searchTimeout;
-            this.dom.searchInput.addEventListener('input', () => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    this.state.searchTerm = this.dom.searchInput.value;
-                    this.loadAndRenderData(true);
-                }, 500);
-            });
-        }
-
-        if (this.dom.sortSelect) {
-            this.dom.sortSelect.addEventListener('change', () => this.handleSort());
-        }
-        
-        window.addEventListener('scroll', () => this.handleScroll());
     },
 };  
     
