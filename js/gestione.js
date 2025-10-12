@@ -625,24 +625,36 @@ const App = {
     /**
          * Salva le modifiche apportate a una riga.
          */
-    async handleSaveChanges() {
-        const editingRow = document.querySelector('.editing-row');
-        if (!editingRow) return;
+    async handleSaveChanges(rowElement) {
         const config = this.viewConfig[this.state.currentView];
+        const rowId = rowElement.dataset.id;
         const updatedData = {};
-        // Seleziona sia input che select
-        editingRow.querySelectorAll('input[data-key], select[data-key]').forEach(input => {
+
+        rowElement.querySelectorAll('input[data-key], select[data-key]').forEach(input => {
             updatedData[input.dataset.key] = input.value;
         });
-        const id = this.state.lastSelectedRadio.value;
-        const endpoint = `${config.apiEndpoint}/${id}`;
+
         try {
-            await apiFetch(endpoint, { method: 'PUT', body: updatedData });
-            this.state.isEditingRow = false;
-            await showModal({ title: 'Successo', message: 'Elemento modificato con successo.', confirmText: 'OK' });
-            this.handleViewChange();
+            const response = await apiFetch(`${config.apiEndpoint}/${rowId}`, {
+                method: 'PUT',
+                // --- CORREZIONE QUI ---
+                // Converte l'oggetto JavaScript in una stringa JSON
+                body: JSON.stringify(updatedData) 
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore del server');
+            }
+
+            const resultData = await response.json();
+            
+            // Uscita dalla modalità modifica per la riga
+            this.exitEditMode(rowId, resultData);
+            await showModal({ title: 'Successo', message: 'Modifiche salvate con successo.', confirmText: 'OK' });
+
         } catch (error) {
-            showModal({ title: 'Errore', message: `Errore durante la modifica: ${error.message}`, confirmText: 'OK' });
+            showModal({ title: 'Errore', message: `Impossibile salvare le modifiche: ${error.message}`, confirmText: 'OK' });
         }
     },
 
