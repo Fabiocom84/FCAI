@@ -247,10 +247,10 @@ body {
 
 /* Riduce lo spazio SOTTO l'intestazione principale */
 .page-header {
-    margin-bottom: 15px; /* Era 25px */
+    margin-bottom: 5px; /* Era 25px */
 }
 
 /* Riduce lo spazio SOTTO la barra dei controlli del mese */
 .presenze-controls {
-    margin-bottom: 15px; /* Era 25px */
+    margin-bottom: 5px; /* Era 25px */
 }
