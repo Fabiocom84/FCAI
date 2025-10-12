@@ -289,6 +289,7 @@ const App = {
         this.dom.viewSelector.addEventListener('change', this.handleViewChange.bind(this));
         this.dom.toolbarArea.addEventListener('click', this.handleToolbarClick.bind(this));
         this.dom.gridWrapper.addEventListener('click', this.handleTableClick.bind(this));
+        this.addEventListeners();
         document.addEventListener('click', this.handleDocumentClick.bind(this));
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -1168,6 +1169,39 @@ const App = {
         
     getPropertyByString(obj, path) {
         return path.split('.').reduce((current, key) => current && current[key], obj);
+    },
+
+    addEventListeners: function() {
+        // Aggiunge l'evento ai pulsanti della toolbar
+        if (this.dom.toolbarArea) {
+            this.dom.toolbarArea.addEventListener('click', (event) => this.handleToolbarClick(event));
+        }
+
+        // Aggiunge l'evento per la selezione delle righe e i filtri colonna
+        if (this.dom.gridWrapper) {
+            this.dom.gridWrapper.addEventListener('click', (event) => this.handleTableClick(event));
+        }
+
+        // Aggiunge gli eventi ai filtri di stato
+        this.dom.statusFilters.forEach(btn => {
+            btn.addEventListener('click', () => this.handleStatusFilter(btn));
+        });
+        
+        // Aggiunge l'evento alla barra di ricerca globale (con ritardo)
+        let searchTimeout;
+        this.dom.searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.state.searchTerm = this.dom.searchInput.value;
+                this.loadAndRenderData(true);
+            }, 500);
+        });
+
+        // Aggiunge l'evento al selettore di ordinamento
+        this.dom.sortSelect.addEventListener('change', () => this.handleSort());
+        
+        // Aggiunge l'evento per lo scroll infinito
+        window.addEventListener('scroll', () => this.handleScroll());
     },
 };  
     
