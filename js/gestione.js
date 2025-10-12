@@ -774,28 +774,27 @@ const App = {
         
     renderToolbar: function() {
         const view = this.state.currentView;
-        const viewConfig = this.viewConfig[view];
+        // const viewConfig = this.viewConfig[view]; // Non più necessario qui
 
-        // 1. Crea l'HTML per la toolbar
         this.dom.toolbarArea.innerHTML = `
             <div class="toolbar-group">
                 <button class="button icon-button button--primary" id="addRowBtn" title="Aggiungi">➕</button>
                 <button class="button icon-button button--warning" id="editRowBtn" title="Modifica" disabled>✏️</button>
                 <button class="button icon-button button--danger" id="deleteRowBtn" title="Cancella" disabled>🗑️</button>
-                <button class="button icon-button button--primary" id="saveBtn" title="Salva" style="display: none;">💾</button>
-                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla" style="display: none;">❌</button>
+                
+                <button class="button icon-button button--primary" id="saveBtn" title="Salva">💾</button>
+                <button class="button icon-button button--danger" id="cancelBtn" title="Annulla">❌</button>
             </div>
-            ${viewConfig.searchable ? `
+            
             <div class="toolbar-group search-group">
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
-            </div>` : ''}
+            </div>
         `;
         
         if (view === 'commesse' && document.getElementById('addRowBtn')) {
             document.getElementById('addRowBtn').disabled = true;
         }
 
-        // 2. ORA che la toolbar è stata creata, agganciamo gli eventi
         this.addToolbarEventListeners();
     },
 
