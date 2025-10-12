@@ -12,11 +12,9 @@ const App = {
             isLoading: false,
             activeFilters: {},
             searchTerm: '',
-            // --- MODIFICHE QUI ---
             currentView: 'registrazioni', // Imposta 'registrazioni' come vista di default
             sortBy: 'data_creazione',     // Imposta la colonna di ordinamento di default
             sortOrder: 'desc',            // Imposta l'ordine di default (desc = dal più recente)
-            // --- FINE MODIFICHE ---
             selectedRowId: null,
             editingRowId: null,
             isAddingNewRow: false,
