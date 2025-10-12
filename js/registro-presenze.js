@@ -295,7 +295,7 @@ const TimelineApp = {
     // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
         if (this.state.activeCell && this.state.activeCell !== cell) {
-            this.saveCell(this.state.activeCell);
+            this.saveCellFromInput(this.state.activeCell);
         }
 
         this.state.activeCell = cell;
