@@ -570,12 +570,17 @@ const App = {
     */
     handleRowSelection(currentRadio) {
         document.querySelectorAll('.agile-table tbody tr').forEach(r => r.classList.remove('selected-row'));
+
+        // Logica per deselezionare una riga
         if (this.state.lastSelectedRadio === currentRadio) {
             currentRadio.checked = false;
             this.state.lastSelectedRadio = null;
+            this.state.selectedRowId = null; // <-- RIGA AGGIUNTA: Azzera l'ID
         } else {
+        // Logica per selezionare una riga
             currentRadio.closest('tr').classList.add('selected-row');
             this.state.lastSelectedRadio = currentRadio;
+            this.state.selectedRowId = currentRadio.value; // <-- RIGA AGGIUNTA: Salva l'ID
         }
         this.updateToolbarState();
     },
