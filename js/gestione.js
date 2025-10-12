@@ -753,9 +753,11 @@ const App = {
         if (updatedRowData) {
             const config = this.viewConfig[this.state.currentView];
             config.columns.forEach((col, index) => {
-                const cell = rowElement.cells[index + 1]; // +1 per saltare la checkbox
+                // L'indice corretto è +2 per saltare '#' e la checkbox
+                const cell = rowElement.cells[index + 2]; 
                 if (cell) {
-                    cell.innerHTML = this.formatCell(col, updatedRowData);
+                    // Usa la nuova funzione corretta
+                    cell.innerHTML = this.formatCellValue(col, updatedRowData);
                 }
             });
         } else {
@@ -1182,6 +1184,16 @@ const App = {
         
     getPropertyByString(obj, path) {
         return path.split('.').reduce((current, key) => current && current[key], obj);
+    },
+
+    formatCellValue: function(col, rowData) {
+        // Se la colonna ha un formattatore personalizzato, usalo
+        if (col.formatter) {
+            return col.formatter(rowData);
+        }
+        // Altrimenti, prendi il valore della proprietà
+        const displayKey = col.displayKey || col.key;
+        return this.getPropertyByString(rowData, displayKey) || '';
     },
 };  
     
