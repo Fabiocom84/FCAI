@@ -316,52 +316,121 @@ const TimelineApp = {
         input.focus();
         input.select();
 
-        input.addEventListener('blur', () => this.saveCell(cell));
+        // Salva quando si esce dal campo o si preme Invio
+        input.addEventListener('blur', () => this.saveCellFromInput(cell));
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.saveCell(cell);
-            if (e.key === 'Escape') this.updateCellDisplay(cell, currentData); // Annulla
+            if (e.key === 'Enter') this.saveCellFromInput(cell);
+            if (e.key === 'Escape') this.updateCellDisplay(cell, currentData);
         });
 
-        // Per ora il pulsante "..." non fa nulla, lo implementeremo dopo
+        // --- MODIFICA CHIAVE QUI ---
+        // Al click sul pulsante "...", mostra il popup visuale
         cell.querySelector('.options-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            alert('Popup di inserimento guidato da implementare!');
+            e.stopPropagation(); // Impedisce la propagazione del click
+            this.showVisualPopup(cell, currentData);
         });
     },
 
-    async saveCell(cell) {
-        if (!cell || !cell.classList.contains('editing')) return;
+    showVisualPopup(cell, currentData) {
+        // Rimuovi eventuali popup esistenti
+        document.querySelector('.visual-popup')?.remove();
+
+        // Crea il contenitore del popup
+        const popup = document.createElement('div');
+        popup.className = 'visual-popup';
         
+        // 1. Campo Ore
+        const oreHtml = `<div><h4>Ore Lavorate</h4><input type="number" class="popup-ore" step="0.5" value="${currentData?.numero_ore || ''}"></div>`;
+
+        // 2. Pulsanti di Stato
+        let statusHtml = '<div><h4>Stato</h4><div class="status-buttons-container">';
+        this.state.tipiPresenza.forEach(tipo => {
+            const isActive = currentData?.id_tipo_presenza_fk === tipo.id_tipo;
+            statusHtml += `<button class="status-btn ${isActive ? 'active' : ''}" data-id="${tipo.id_tipo}" style="background-color:${tipo.colore_hex}20; border-color:${tipo.colore_hex};">
+                            ${tipo.icona || ''} ${tipo.etichetta}
+                           </button>`;
+        });
+        statusHtml += '</div></div>';
+
+        // 3. Campo Note
+        const noteHtml = `<div><h4>Note (commento)</h4><textarea class="popup-note">${currentData?.note || ''}</textarea></div>`;
+
+        // 4. Pulsanti Azioni
+        const actionsHtml = `<div class="popup-actions">
+                                <button class="cancel">Annulla</button>
+                                <button class="save">Salva</button>
+                             </div>`;
+
+        popup.innerHTML = oreHtml + statusHtml + noteHtml + actionsHtml;
+        document.body.appendChild(popup);
+
+        // Posiziona il popup vicino alla cella
+        const cellRect = cell.getBoundingClientRect();
+        popup.style.top = `${cellRect.bottom + window.scrollY}px`;
+        popup.style.left = `${cellRect.left + window.scrollX}px`;
+
+        // Aggiungi event listener al popup
+        const statusContainer = popup.querySelector('.status-buttons-container');
+        statusContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('status-btn')) {
+                // Gestisce la selezione singola del pulsante di stato
+                statusContainer.querySelector('.active')?.classList.remove('active');
+                e.target.classList.add('active');
+            }
+        });
+
+        popup.querySelector('.save').addEventListener('click', () => {
+            const ore = popup.querySelector('.popup-ore').value;
+            const activeStatusBtn = popup.querySelector('.status-btn.active');
+            const note = popup.querySelector('.popup-note').value;
+            
+            const payload = {
+                numero_ore: ore ? parseFloat(ore) : null,
+                id_tipo_presenza_fk: activeStatusBtn ? parseInt(activeStatusBtn.dataset.id) : null,
+                note: note || null
+            };
+            this.saveCellWithPayload(cell, payload);
+            popup.remove();
+        });
+
+        popup.querySelector('.cancel').addEventListener('click', () => {
+            this.updateCellDisplay(cell, currentData); // Ripristina la cella
+            popup.remove();
+        });
+    },
+
+    async saveCellFromInput(cell) {
+        if (!cell || !cell.classList.contains('editing')) return;
         const input = cell.querySelector('.cell-input');
         if (!input) return;
-
+        
         const rawText = input.value;
-        const parsedData = this.parseInput(rawText);
+        const payload = this.parseInput(rawText);
+        this.saveCellWithPayload(cell, payload);
+    },
 
-        const payload = {
+    async saveCellWithPayload(cell, payload) {
+        const fullPayload = {
             id_personale_fk: parseInt(cell.parentElement.dataset.personaleId),
             data: cell.dataset.date,
-            ...parsedData
+            ...payload
         };
 
         try {
             const response = await apiFetch('/api/presenze', {
                 method: 'POST',
-                body: JSON.stringify(payload),
+                body: JSON.stringify(fullPayload),
                 headers: { 'Content-Type': 'application/json' }
             });
             if (!response.ok) throw new Error('Salvataggio fallito');
             
             const savedData = await response.json();
-            
-            // Aggiorna lo stato locale e la cella
             const key = `${savedData.id_personale_fk}_${savedData.data}`;
             this.state.presenze.set(key, savedData);
             this.updateCellDisplay(cell, savedData);
 
         } catch (error) {
             console.error("Errore durante il salvataggio:", error);
-            // In caso di errore, ripristina la cella allo stato precedente
             const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
             const originalData = this.state.presenze.get(presenceKey);
             this.updateCellDisplay(cell, originalData);
