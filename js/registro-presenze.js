@@ -30,8 +30,6 @@ const TimelineApp = {
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
         
-        // CORREZIONE: Rimossi i riferimenti ai pulsanti prev/next mese
-        
         const today = new Date();
         this.state.startDate = DateUtils.addDays(today, -15);
         this.state.endDate = DateUtils.addDays(today, +15);
@@ -64,7 +62,6 @@ const TimelineApp = {
         });
     },
     
-    // --- FUNZIONI DI CARICAMENTO DATI (invariate) ---
     async loadInitialData() {
         try {
             const [personaleRes, tipiRes] = await Promise.all([
@@ -142,7 +139,6 @@ const TimelineApp = {
         }
     },
 
-    // --- FUNZIONI DI UTILITÀ PER CREARE CELLE ---
     createHeaderCell(date, dateString) {
         const today = new Date();
         const todayString = DateUtils.toYYYYMMDD(today);
@@ -171,9 +167,6 @@ const TimelineApp = {
         return td;
     },
 
-    /**
-     * Gestisce lo scroll: carica nuovi dati quando si arriva ai bordi.
-     */
     async handleScroll() {
         if (this.state.isLoadingMore) return;
         this.updateMonthDisplay();
@@ -204,20 +197,17 @@ const TimelineApp = {
         }
     },
     
-    /**
-     * Aggiorna il display del mese basandosi sulla data al centro della vista.
-     */
     updateMonthDisplay() {
         const container = this.dom.timelineContainer;
         const centerPosition = container.scrollLeft + (container.clientWidth / 2);
-        // Trova tutte le intestazioni delle date e calcola quale è più vicina al centro
         const headers = Array.from(this.dom.headerRow.querySelectorAll('th[data-date]'));
+        if (headers.length === 0) return;
         const centerHeader = headers.reduce((prev, curr) => {
             return (Math.abs(curr.offsetLeft - centerPosition) < Math.abs(prev.offsetLeft - centerPosition) ? curr : prev);
         });
 
         if (centerHeader) {
-            const centerDate = new Date(centerHeader.dataset.date + 'T12:00:00'); // Aggiungo T12:00:00 per evitare problemi di fuso orario
+            const centerDate = new Date(centerHeader.dataset.date + 'T12:00:00');
             const monthName = centerDate.toLocaleString('it-IT', { month: 'long' });
             const year = centerDate.getFullYear();
             this.dom.currentMonthDisplay.textContent = `${monthName.toUpperCase()} ${year}`;
@@ -227,23 +217,15 @@ const TimelineApp = {
     scrollToToday() {
         const todayHeader = this.dom.headerRow.querySelector('.today-column');
         if (todayHeader) {
-            // Usiamo setTimeout per assicurarci che il browser abbia finito di renderizzare
             setTimeout(() => {
                 const container = this.dom.timelineContainer;
                 const containerWidth = container.offsetWidth;
                 const scrollTarget = todayHeader.offsetLeft - (containerWidth / 2) + (todayHeader.offsetWidth / 2);
-                
-                container.scrollTo({
-                    left: scrollTarget,
-                    behavior: 'smooth'
-                });
-            }, 100); // Un piccolo ritardo di 100ms è più che sufficiente
+                container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            }, 100);
         }
     },
     
-    /**
-     * Aggiorna il contenuto di una cella per mostrare i chip e l'indicatore di nota.
-     */
     updateCellDisplay(cell, data) {
         cell.innerHTML = '';
         cell.classList.remove('editing');
@@ -262,9 +244,16 @@ const TimelineApp = {
                 chipsHtml += `<span class="chip" style="background-color:${tipo.colore_hex}; color:white;">${tipo.icona || ''} ${tipo.etichetta}</span>`;
             }
         }
-        
-        // Ora il wrapper contiene solo i chip
         contentWrapper.innerHTML = chipsHtml;
+
+        if (chipsHtml !== '') {
+            const deleteBtn = document.createElement('span');
+            deleteBtn.className = 'delete-chip-btn';
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.dataset.action = 'delete';
+            contentWrapper.appendChild(deleteBtn);
+        }
+        
         cell.appendChild(contentWrapper);
         
         if (data.note) {
@@ -277,44 +266,30 @@ const TimelineApp = {
         }
     },
 
-
-    // --- FUNZIONI DI INTERAZIONE UTENTE ---
     handleCellClick(cell) {
         if (TimelineApp.state.activeCell && TimelineApp.state.activeCell !== cell) {
             TimelineApp.saveCellFromInput(TimelineApp.state.activeCell);
         }
-
         TimelineApp.state.activeCell = cell;
         cell.classList.add('editing');
         const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
         const currentData = TimelineApp.state.presenze.get(presenceKey);
         const currentValue = TimelineApp.dataToString(currentData);
-
-        // Svuota la cella prima di aggiungere i nuovi elementi
         cell.innerHTML = '';
-
-        // --- NUOVA LOGICA: Creazione manuale degli elementi ---
         const container = document.createElement('div');
         container.className = 'edit-container';
-
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'cell-input';
         input.value = currentValue;
-
         const optionsBtn = document.createElement('button');
         optionsBtn.className = 'options-btn';
         optionsBtn.textContent = '...';
-
         container.appendChild(input);
         container.appendChild(optionsBtn);
         cell.appendChild(container);
-
-        // Ora 'input' è un riferimento diretto e sicuro all'elemento
         input.focus();
         input.select();
-
-        // Aggiungiamo gli event listener agli elementi appena creati
         input.addEventListener('blur', () => TimelineApp.saveCellFromInput(cell));
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') TimelineApp.saveCellFromInput(cell);
@@ -327,17 +302,10 @@ const TimelineApp = {
     },
 
     showVisualPopup(cell, currentData) {
-        // Rimuovi eventuali popup esistenti
         document.querySelector('.visual-popup')?.remove();
-
-        // Crea il contenitore del popup
         const popup = document.createElement('div');
         popup.className = 'visual-popup';
-        
-        // 1. Campo Ore
         const oreHtml = `<div><h4>Ore Lavorate</h4><input type="number" class="popup-ore" step="0.5" value="${currentData?.numero_ore || ''}"></div>`;
-
-        // 2. Pulsanti di Stato
         let statusHtml = '<div><h4>Stato</h4><div class="status-buttons-container">';
         this.state.tipiPresenza.forEach(tipo => {
             const isActive = currentData?.id_tipo_presenza_fk === tipo.id_tipo;
@@ -346,11 +314,7 @@ const TimelineApp = {
                            </button>`;
         });
         statusHtml += '</div></div>';
-
-        // 3. Campo Note
         const noteHtml = `<div><h4>Note (commento)</h4><textarea class="popup-note">${currentData?.note || ''}</textarea></div>`;
-
-        // 4. Pulsanti Azioni
         const actionsHtml = `<div class="popup-actions">
                                 <button class="delete">🗑️ Elimina</button>
                                 <div class="main-actions">
@@ -358,30 +322,23 @@ const TimelineApp = {
                                     <button class="save">Salva</button>
                                 </div>
                              </div>`;
-
         popup.innerHTML = oreHtml + statusHtml + noteHtml + actionsHtml;
         document.body.appendChild(popup);
-
-        // Posiziona il popup vicino alla cella
         const cellRect = cell.getBoundingClientRect();
         popup.style.top = `${cellRect.bottom + window.scrollY}px`;
         popup.style.left = `${cellRect.left + window.scrollX}px`;
-
-        // Aggiungi event listener al popup
         const statusContainer = popup.querySelector('.status-buttons-container');
         statusContainer.addEventListener('click', e => {
             if (e.target.classList.contains('status-btn')) {
-                // Gestisce la selezione singola del pulsante di stato
+                const alreadyActive = e.target.classList.contains('active');
                 statusContainer.querySelector('.active')?.classList.remove('active');
-                e.target.classList.add('active');
+                if (!alreadyActive) e.target.classList.add('active');
             }
         });
-
         popup.querySelector('.save').addEventListener('click', () => {
             const ore = popup.querySelector('.popup-ore').value;
             const activeStatusBtn = popup.querySelector('.status-btn.active');
             const note = popup.querySelector('.popup-note').value;
-            
             const payload = {
                 numero_ore: ore ? parseFloat(ore) : null,
                 id_tipo_presenza_fk: activeStatusBtn ? parseInt(activeStatusBtn.dataset.id) : null,
@@ -390,15 +347,13 @@ const TimelineApp = {
             TimelineApp.saveCellWithPayload(cell, payload);
             popup.remove();
         });
-
         popup.querySelector('.cancel').addEventListener('click', () => {
             TimelineApp.updateCellDisplay(cell, currentData);
             popup.remove();
         });
-
         popup.querySelector('.delete').addEventListener('click', () => {
             TimelineApp.handleDelete(cell);
-            popup.remove(); // Chiude il popup
+            popup.remove();
         });
     },
 
@@ -407,22 +362,42 @@ const TimelineApp = {
         const input = cell.querySelector('.cell-input');
         if (!input) return;
         const rawText = input.value;
-        // CORREZIONE: Usiamo TimelineApp per essere espliciti
         const payload = TimelineApp.parseInput(rawText);
         TimelineApp.saveCellWithPayload(cell, payload);
+    },
+
+    async saveCellWithPayload(cell, payload) {
+        const fullPayload = {
+            id_personale_fk: parseInt(cell.parentElement.dataset.personaleId),
+            data: cell.dataset.date,
+            ...payload
+        };
+        try {
+            const response = await apiFetch('/api/presenze', {
+                method: 'POST',
+                body: JSON.stringify(fullPayload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error('Salvataggio fallito');
+            const savedData = await response.json();
+            const key = `${savedData.id_personale_fk}_${savedData.data}`;
+            this.state.presenze.set(key, savedData);
+            this.updateCellDisplay(cell, savedData);
+        } catch (error) {
+            console.error("Errore durante il salvataggio:", error);
+            const presenceKey = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
+            const originalData = this.state.presenze.get(presenceKey);
+            this.updateCellDisplay(cell, originalData);
+        }
     },
 
     async handleDelete(cell) {
         const confirmDelete = confirm("Sei sicuro di voler eliminare questa registrazione?");
         if (!confirmDelete) return;
         const payload = { numero_ore: null, id_tipo_presenza_fk: null, note: null };
-        // CORREZIONE: Usiamo TimelineApp per essere espliciti
         await TimelineApp.saveCellWithPayload(cell, payload);
     },
 
-    /**
-     * Converte un oggetto dati in una stringa per l'input.
-     */
     dataToString(data) {
         if (!data) return '';
         let parts = [];
@@ -435,40 +410,28 @@ const TimelineApp = {
         return parts.join(' ');
     },
 
-    /**
-     * Analizza la stringa dall'input e la converte in un oggetto dati.
-     */
     parseInput(text) {
         const data = {
             numero_ore: null,
             id_tipo_presenza_fk: null,
             note: null
         };
-        
-        const parts = text.trim().split(' ');
-        
+        if (!text) return data;
+        const noteMatch = text.match(/\+(.*)/);
+        if (noteMatch) {
+            data.note = noteMatch[1].trim();
+            text = text.replace(noteMatch[0], '').trim();
+        }
+        const parts = text.split(' ');
         parts.forEach(part => {
-            if (/^\d+(\.\d+)?$/.test(part)) { // Se è un numero (ore)
+            if (/^\d+(\.\d+)?$/.test(part)) {
                 data.numero_ore = parseFloat(part);
-            } else if (part.startsWith('\\') && part.length === 2) { // Se è una shortcut
+            } else if (part.startsWith('\\') && part.length === 2) {
                 const shortcut = part.substring(1);
                 const tipo = this.state.tipiPresenza.find(t => t.shortcut_key === shortcut);
                 if (tipo) data.id_tipo_presenza_fk = tipo.id_tipo;
-            } else if (part.startsWith('+')) { // Se è una nota
-                // Ricostruisce la nota completa se contiene spazi
-                const noteIndex = text.indexOf('+');
-                data.note = text.substring(noteIndex + 1).trim();
             }
         });
-        
-        // Se la nota è stata catturata da un'altra parte, la rimuoviamo per non duplicarla
-        if (data.note) {
-            const noteParts = data.note.split(' ');
-            if (noteParts.includes(`\\${this.state.tipiPresenza.find(t=>t.id_tipo === data.id_tipo_presenza_fk)?.shortcut_key}`)) {
-                // Semplice fix per evitare note sporche, migliorabile se necessario
-            }
-        }
-
         return data;
     },
 };
