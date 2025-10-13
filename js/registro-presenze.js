@@ -30,6 +30,11 @@ const TimelineApp = {
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
         
+        // --- INIZIO TEST ---
+        // Aggiungiamo il riferimento al pulsante di aiuto
+        this.dom.helpButton = document.querySelector('[data-legend="presenzeLegend"]');
+        // --- FINE TEST ---
+
         const today = new Date();
         this.state.startDate = DateUtils.addDays(today, -15);
         this.state.endDate = DateUtils.addDays(today, +15);
@@ -51,15 +56,25 @@ const TimelineApp = {
         });
         
         this.dom.timelineBody.addEventListener('click', (event) => {
-            const action = event.target.dataset.action;
             const cell = event.target.closest('td');
-
-            if (action === 'delete' && cell) {
-                TimelineApp.handleDelete(cell);
-            } else if (cell && !cell.classList.contains('editing')) {
+            if (cell && !cell.classList.contains('editing')) {
                 TimelineApp.handleCellClick(cell);
             }
         });
+
+        // --- INIZIO TEST ---
+        // Aggiungiamo l'evento di click per il nostro test
+        if (this.dom.helpButton) {
+            this.dom.helpButton.addEventListener('click', () => {
+                console.log("Pulsante Aiuto cliccato!");
+                const legend = document.getElementById('presenzeLegend');
+                if (legend) {
+                    // Semplice logica per mostrare/nascondere la legenda
+                    legend.style.display = legend.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        }
+        // --- FINE TEST ---
     },
     
     async loadInitialData() {

@@ -156,9 +156,24 @@ body {
     margin: 1px;
     white-space: nowrap;
 }
+
 .chip.ore {
-    background-color: #e9ecef;
-    color: #333;
+    /* Aspetto del testo */
+    font-size: 1em;          /* Ingrandiamo leggermente il carattere */
+    font-weight: 700;        /* Grassetto per massima visibilità */
+    color: #212529;          /* Un nero più deciso */
+    
+    /* Aspetto del cerchio */
+    background-color: #dee2e6; /* Un grigio leggermente più scuro per maggior contrasto */
+    border-radius: 5%;      
+    
+    /* Dimensioni e allineamento */
+    min-width: 28px;         /* Larghezza minima fissa */
+    height: 28px;            /* Altezza fissa */
+    display: inline-flex;    /* Necessario per centrare il contenuto */
+    align-items: center;     /* Allinea il numero verticalmente */
+    justify-content: center; /* Allinea il numero orizzontalmente */
+    padding: 0;              /* Rimuoviamo il padding laterale non più necessario */
 }
 
 /* Assicura che la cella sia il contenitore di riferimento per l'indicatore */
@@ -253,13 +268,6 @@ body {
 /* Riduce lo spazio SOTTO la barra dei controlli del mese */
 .presenze-controls {
     margin-bottom: 5px; /* Era 25px */
-}
-
-/* Stili per migliorare l'aspetto della tabella */
-
-/* Rende le ore in grassetto */
-.chip.ore {
-    font-weight: 700;
 }
 
 /* Colora le righe pari per una migliore leggibilità */
