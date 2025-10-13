@@ -245,14 +245,6 @@ const TimelineApp = {
             }
         }
         contentWrapper.innerHTML = chipsHtml;
-
-        if (chipsHtml !== '') {
-            const deleteBtn = document.createElement('span');
-            deleteBtn.className = 'delete-chip-btn';
-            deleteBtn.innerHTML = '🗑️';
-            deleteBtn.dataset.action = 'delete';
-            contentWrapper.appendChild(deleteBtn);
-        }
         
         cell.appendChild(contentWrapper);
         
