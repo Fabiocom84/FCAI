@@ -257,6 +257,15 @@ h2 {
 .training-button { background-color: #e74c3c; }
 .training-button:hover { background-color: #c0392b; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
+.task-button { 
+    background-color: #00796B; /* Un color foglia di tè / verde scuro */
+}
+.task-button:hover { 
+    background-color: #004D40; /* Una versione più scura per l'hover */
+    transform: translateY(-3px); 
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2); 
+}
+
 /* --- Gruppo: Placeholder/Inattivi (Grigio) --- */
 .placeholder-button { 
     background-color: #95a5a6;
