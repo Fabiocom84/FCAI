@@ -386,3 +386,9 @@ body {
 .popup-actions .delete:hover {
     background-color: #c0392b;
 }
+
+/* Stile per le celle sfumate durante la ricerca */
+.timeline-table td.dimmed {
+    opacity: 0.2;
+    transition: opacity 0.3s ease;
+}

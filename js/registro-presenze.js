@@ -29,6 +29,7 @@ const TimelineApp = {
         this.dom.headerRow = document.getElementById('header-row');
         this.dom.timelineBody = document.getElementById('timeline-body');
         this.dom.currentMonthDisplay = document.getElementById('current-month-display');
+        this.dom.searchNotesInput = document.getElementById('search-notes');
         
         // --- INIZIO TEST ---
         // Aggiungiamo il riferimento al pulsante di aiuto
@@ -62,19 +63,23 @@ const TimelineApp = {
             }
         });
 
-        // --- INIZIO TEST ---
-        // Aggiungiamo l'evento di click per il nostro test
         if (this.dom.helpButton) {
             this.dom.helpButton.addEventListener('click', () => {
-                console.log("Pulsante Aiuto cliccato!");
                 const legend = document.getElementById('presenzeLegend');
                 if (legend) {
-                    // Semplice logica per mostrare/nascondere la legenda
                     legend.style.display = legend.style.display === 'block' ? 'none' : 'block';
                 }
             });
         }
-        // --- FINE TEST ---
+
+        // --- AGGIUNGI QUESTO BLOCCO ---
+        let searchTimeout;
+        this.dom.searchNotesInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            // Attende 300ms prima di avviare la ricerca per non appesantire il browser
+            searchTimeout = setTimeout(() => TimelineApp.filterTimeline(), 300);
+        });
+        // --- FINE BLOCCO ---
     },
     
     async loadInitialData() {
@@ -239,6 +244,30 @@ const TimelineApp = {
                 container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
             }, 100);
         }
+    },
+
+    filterTimeline() {
+        const searchTerm = this.dom.searchNotesInput.value.toLowerCase().trim();
+        const allCells = this.dom.timelineBody.querySelectorAll('td');
+
+        // Se la ricerca è vuota, mostra di nuovo tutte le celle
+        if (!searchTerm) {
+            allCells.forEach(cell => cell.classList.remove('dimmed'));
+            return;
+        }
+
+        // Altrimenti, applica il filtro
+        allCells.forEach(cell => {
+            const key = `${cell.parentElement.dataset.personaleId}_${cell.dataset.date}`;
+            const data = this.state.presenze.get(key);
+
+            // Se la cella ha una nota e la nota include il termine di ricerca...
+            if (data && data.note && data.note.toLowerCase().includes(searchTerm)) {
+                cell.classList.remove('dimmed'); // ...mostrala normalmente
+            } else {
+                cell.classList.add('dimmed'); // ...altrimenti, sfumala
+            }
+        });
     },
     
     updateCellDisplay(cell, data) {
