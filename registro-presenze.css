@@ -392,3 +392,10 @@ body {
     opacity: 0.2;
     transition: opacity 0.3s ease;
 }
+
+/* Stile per evidenziare e restringere le colonne del weekend */
+.weekend-column {
+    background-color: #f8f9fa !important; /* Un grigio molto chiaro, !important per sovrascrivere altri stili */
+    min-width: 60px;  /* Larghezza ridotta per i weekend */
+    max-width: 60px;
+}

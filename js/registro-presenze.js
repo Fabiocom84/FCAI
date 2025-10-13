@@ -169,8 +169,8 @@ const TimelineApp = {
         th.dataset.date = dateString;
         if (dateString === todayString) th.classList.add('today-column');
         const dayIndex = date.getDay();
-        if ((dayIndex === 0 || dayIndex === 6) && !th.classList.contains('today-column')) {
-            th.style.backgroundColor = "#e9ecef";
+        if (dayIndex === 0 || dayIndex === 6) { // 0 = Domenica, 6 = Sabato
+            th.classList.add('weekend-column');
         }
         return th;
     },
@@ -180,6 +180,10 @@ const TimelineApp = {
         const todayString = DateUtils.toYYYYMMDD(today);
         const td = document.createElement('td');
         td.dataset.date = dateString;
+        const cellDate = new Date(dateString + 'T12:00:00'); // Creiamo un oggetto data per controllarne il giorno
+        const dayIndex = cellDate.getDay();
+        if (dayIndex === 0 || dayIndex === 6) {
+            td.classList.add('weekend-column');
         if (dateString === todayString) td.classList.add('today-column');
         const presenceKey = `${personaleId}_${dateString}`;
         const presenceData = this.state.presenze.get(presenceKey);
