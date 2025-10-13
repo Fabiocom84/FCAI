@@ -394,8 +394,8 @@ body {
 }
 
 /* Stile per evidenziare e restringere le colonne del weekend */
-.weekend-column {
-    background-color: #f8f9fa !important; /* Un grigio molto chiaro, !important per sovrascrivere altri stili */
-    min-width: 40px;  /* Larghezza ridotta per i weekend */
-    max-width: 40px;
+.timeline-table .weekend-column {
+    background-color: #f8f9fa; /* Ora !important non è più necessario */
+    min-width: 60px;
+    max-width: 60px;
 }
