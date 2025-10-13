@@ -184,6 +184,7 @@ const TimelineApp = {
         const dayIndex = cellDate.getDay();
         if (dayIndex === 0 || dayIndex === 6) {
             td.classList.add('weekend-column');
+        }
         if (dateString === todayString) td.classList.add('today-column');
         const presenceKey = `${personaleId}_${dateString}`;
         const presenceData = this.state.presenze.get(presenceKey);
