@@ -407,17 +407,16 @@ const App = {
         const filterIcon = target.closest('.filter-icon');
         if (filterIcon) {
             const columnKey = filterIcon.dataset.columnKey;
-            const existingPopup = document.querySelector('.filter-popup');
+            const existingPopup = document.querySelector('.column-filter-popup');
 
-            // --- NEW: Toggle Logic ---
-            // If a popup for this exact column is already open, close it and stop.
+            // Se un pop-up è già aperto per QUESTA STESSA colonna, chiudilo e fermati.
             if (existingPopup && existingPopup.dataset.column === columnKey) {
-                existingPopup.remove();
+                this.closeColumnFilterPopup();
                 return;
             }
-            // --- END: Toggle Logic ---
 
-            // If no popup was open for this column, open a new one.
+            // Altrimenti, procedi ad aprire il nuovo pop-up (la funzione si occuperà
+            // di chiudere eventuali altri pop-up aperti per altre colonne).
             this.openColumnFilterPopup(filterIcon, columnKey);
             return;
         }
@@ -1020,7 +1019,7 @@ const App = {
 
         const rect = iconElement.getBoundingClientRect();
         popup.style.top = `${rect.bottom + 5 + window.scrollY}px`;
-        popup.style.left = `${rect.left + window.scrollX}px`;
+        popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
         popup.style.visibility = 'visible';
         popup.innerHTML = `<div class="loader-small"></div>`;
 
