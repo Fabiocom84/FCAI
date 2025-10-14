@@ -16,7 +16,7 @@
 }
 
 /* Stile specifico per il pulsante "Aggiungi" */
-.commesse-header .button {
+#add-commessa-btn {
     background-color: #28a745;
     color: white;
     padding: 8px 16px;
@@ -24,7 +24,7 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    /* Annulla stili generici per allineamento corretto */
+    /* ...altre proprietà... */
     display: inline-flex;
     align-items: center;
     flex-direction: row;
