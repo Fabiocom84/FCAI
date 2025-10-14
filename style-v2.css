@@ -1714,3 +1714,46 @@ h2 {
     border-width: 5px;
     border-color: #555 transparent transparent transparent;
 }
+
+/* Stile per la nuova intestazione scura */
+.page-header {
+    background-color: #4a5568; /* Grigio scuro da commesse.css */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 25px; /* Spazio prima dei controlli del mese */
+    border-radius: 8px;
+}
+
+/* Stile per il titolo H1 all'interno della nuova intestazione */
+.page-header h1 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Stile per il pulsante "Home" nell'intestazione */
+.header-button {
+    background-color: #3498db; /* Un blu coerente */
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 5px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+.header-button:hover {
+    background-color: #2980b9;
+}
+.header-button img {
+    width: 16px;
+    height: 16px;
+}
