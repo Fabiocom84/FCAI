@@ -1008,94 +1008,104 @@ const App = {
 
     async openColumnFilterPopup(iconElement, columnKey) {
         this.closeColumnFilterPopup();
-        
-        const columnConfig = this.viewConfig[this.state.currentView].columns.find(c => c.key === columnKey);
-        // Determina la chiave corretta da usare per la chiamata API
-        const filterKey = columnConfig.filterOptions?.key || columnKey;
+
+        const config = this.viewConfig[this.state.currentView];
+        const columnConfig = config.columns.find(c => c.key === columnKey);
+        const filterOptions = columnConfig.filterOptions;
 
         const popup = document.createElement('div');
         popup.className = 'column-filter-popup';
+        popup.dataset.column = columnKey; // Memorizza la colonna a cui si riferisce
         document.body.appendChild(popup);
+
         const rect = iconElement.getBoundingClientRect();
         popup.style.top = `${rect.bottom + 5 + window.scrollY}px`;
-        popup.style.left = `${rect.left + window.scrollX - popup.offsetWidth}px`;    
+        popup.style.left = `${rect.left + window.scrollX}px`;
         popup.style.visibility = 'visible';
         popup.innerHTML = `<div class="loader-small"></div>`;
 
         try {
-            const viewConfig = this.viewConfig[this.state.currentView];
-            const tableNameForApi = viewConfig.tableName || this.state.currentView;
-            
-            console.log(`Sto chiamando /api/distinct/${tableNameForApi}/${filterKey}`);
-            
-            const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
-            
-            if (!response.ok) throw new Error(`Risposta API non valida: ${response.status}`);
-            
-            const optionsData = await response.json();
-            
-            console.log('Dati per il filtro ricevuti:', optionsData);
+            let optionsData;
+            // SE la colonna ha una configurazione di filtro avanzata, usala.
+            if (filterOptions && filterOptions.apiEndpoint) {
+                const response = await apiFetch(filterOptions.apiEndpoint);
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                optionsData = await response.json();
+            } 
+            // ALTRIMENTI, usa il vecchio metodo generico.
+            else {
+                const filterKey = filterOptions?.key || columnKey;
+                const tableNameForApi = config.tableName || this.state.currentView;
+                const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                optionsData = await response.json();
+            }
 
-            this.renderFilterPopup(popup, optionsData, columnKey);
+            this.renderFilterPopup(popup, optionsData, columnKey, filterOptions);
 
         } catch (error) {
-            console.error("--- ERRORE DETTAGLIATO CATTURATO ---", error); 
+            console.error("Errore durante il recupero delle opzioni di filtro:", error);
             popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
         }
     },
 
-    renderFilterPopup: function(popupElement, options, columnKey) {
-        // Crea la barra di ricerca
+    renderFilterPopup: function(popupElement, options, columnKey, filterOptions) {
         const searchFilter = document.createElement('input');
         searchFilter.type = 'text';
         searchFilter.placeholder = 'Filtra opzioni...';
         searchFilter.className = 'filter-search-input';
 
-        // Crea il contenitore scorrevole per le opzioni
         const optionsList = document.createElement('div');
         optionsList.className = 'filter-options-list';
 
-        // Popola il contenitore con le opzioni (checkbox)
+        const filterKey = filterOptions?.key || columnKey;
+        const activeFilterValues = (this.state.activeFilters[filterKey] || []).map(String);
+
         options.forEach(option => {
+            let value, text;
+
+            // SE abbiamo opzioni complesse (ID + Testo), estrai i valori corretti.
+            if (filterOptions && filterOptions.valueField && filterOptions.textField) {
+                value = option[filterOptions.valueField];
+                text = option[filterOptions.textField];
+            } 
+            // ALTRIMENTI, valore e testo sono la stessa cosa.
+            else {
+                value = option;
+                text = option;
+            }
+
             const checkboxWrapper = document.createElement('div');
             checkboxWrapper.className = 'filter-option';
             
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.id = `filter-${columnKey}-${option}`;
-            checkbox.value = option;
-            
-            const isChecked = (this.state.activeFilters[columnKey] || []).includes(String(option));
-            checkbox.checked = isChecked;
+            checkbox.id = `filter-${columnKey}-${value}`;
+            checkbox.value = value;
+            checkbox.checked = activeFilterValues.includes(String(value));
             
             const label = document.createElement('label');
             label.setAttribute('for', checkbox.id);
-            label.textContent = option;
+            label.textContent = text;
             
             checkboxWrapper.appendChild(checkbox);
             checkboxWrapper.appendChild(label);
             optionsList.appendChild(checkboxWrapper);
         });
 
-        // Aggiunge l'evento per il filtro dinamico sulla barra di ricerca
+        // La logica per la ricerca interna, i pulsanti e gli eventi rimane invariata...
         let searchTimeout;
         searchFilter.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 const searchTerm = e.target.value.toLowerCase();
-                const allOptions = optionsList.querySelectorAll('.filter-option');
-                allOptions.forEach(opt => {
+                optionsList.querySelectorAll('.filter-option').forEach(opt => {
                     const label = opt.querySelector('label').textContent.toLowerCase();
-                    if (label.includes(searchTerm)) {
-                        opt.style.display = 'flex';
-                    } else {
-                        opt.style.display = 'none';
-                    }
+                    opt.style.display = label.includes(searchTerm) ? 'flex' : 'none';
                 });
-            }, 500);
+            }, 300);
         });
 
-        // Crea il footer con i pulsanti "Applica" e "Pulisci"
         const footer = document.createElement('div');
         footer.className = 'filter-popup-footer';
         
@@ -1107,18 +1117,23 @@ const App = {
         clearBtn.textContent = 'Pulisci';
         clearBtn.className = 'button';
         
-        // --- QUESTA È LA PARTE CRUCIALE ---
         applyBtn.addEventListener('click', (event) => {
-            event.stopPropagation(); // Impedisce al click di proseguire e causare altri comandi
+            event.stopPropagation();
             const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
-            this.state.activeFilters[columnKey] = selectedOptions;
+            
+            if (selectedOptions.length > 0) {
+                this.state.activeFilters[filterKey] = selectedOptions;
+            } else {
+                delete this.state.activeFilters[filterKey];
+            }
+
             this.loadAndRenderData(true);
             this.closeColumnFilterPopup();
         });
 
         clearBtn.addEventListener('click', (event) => {
-            event.stopPropagation(); // Impedisce al click di proseguire e causare altri comandi
-            delete this.state.activeFilters[columnKey];
+            event.stopPropagation();
+            delete this.state.activeFilters[filterKey];
             this.loadAndRenderData(true);
             this.closeColumnFilterPopup();
         });
@@ -1126,7 +1141,6 @@ const App = {
         footer.appendChild(clearBtn);
         footer.appendChild(applyBtn);
 
-        // Assembla il popup finale
         popupElement.innerHTML = '';
         popupElement.appendChild(searchFilter);
         popupElement.appendChild(optionsList);
