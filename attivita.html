@@ -22,18 +22,14 @@
             </button>
         </header>
 
-        <main id="kanbanBoard" class="kanban-board">
-            <div class="kanban-column" data-status="Da Fare">
-                <h2>Da Fare</h2>
-                <div class="tasks-container" data-status-container="Da Fare"></div>
-            </div>
-            <div class="kanban-column" data-status="In Corso">
-                <h2>In Corso</h2>
-                <div class="tasks-container" data-status-container="In Corso"></div>
-            </div>
-            <div class="kanban-column" data-status="Completato">
-                <h2>Completato</h2>
-                <div class="tasks-container" data-status-container="Completato"></div>
+        <main id="taskView" class="task-view-grid">
+            <div class="task-column" id="daFareContainer">
+                <h2>Attività da Fare</h2>
+                </div>
+            <div class="task-column" id="completatiContainer">
+                <h2>Ultime Attività Completate</h2>
+                <div class="tasks-container" data-status-container="Completato">
+                    </div>
             </div>
         </main>
     </div>
@@ -48,6 +44,7 @@
                 <form id="taskForm">
                     <input type="hidden" id="taskId">
                     <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
+                    <input type="text" id="taskSubcategory" placeholder="Sottocategoria (es. Manutenzione)...">
                     <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
                     
                     <div class="form-grid">
