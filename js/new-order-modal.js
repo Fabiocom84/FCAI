@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // FASE 2 (Modifica): Carica i dati della commessa.
                 elements.title.textContent = 'MODIFICA COMMESSA';
                 elements.saveBtnText.textContent = 'Salva Modifiche';
-                const response = await apiFetch(`/api/commessa/${commessaId}`);
+                const response = await apiFetch(`/api/commesse/${commessaId}`);
                 if (!response.ok) throw new Error('Dati commessa non trovati.');
                 const commessaData = await response.json();
                 

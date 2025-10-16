@@ -34,36 +34,69 @@ const TaskApp = {
         this.addEventListeners();
     },
 
+    // In loadInitialData, change the way tasks are stored
     loadInitialData: async function() {
         try {
             const [tasksRes, personaleRes] = await Promise.all([
                 apiFetch('/api/tasks'),
-                apiFetch('/api/personale') // Usiamo l'endpoint esistente
+                apiFetch('/api/personale')
             ]);
-            const tasksData = await tasksRes.json();
-            const personaleData = await personaleRes.json();
-            
-            this.state.tasks = tasksData.data;
-            this.state.personale = personaleData.data;
+            // The entire structured object is now stored in state.tasks
+            this.state.tasks = await tasksRes.json(); 
+            this.state.personale = (await personaleRes.json()).data;
             
             this.populatePersonaleSelect(this.dom.taskAssignee);
             this.renderBoard();
         } catch (error) {
-            console.error("Errore nel caricamento dei dati iniziali:", error);
+            console.error("Errore nel caricamento dei dati:", error);
         }
     },
 
     renderBoard: function() {
-        // Pulisci le colonne
-        document.querySelectorAll('.tasks-container').forEach(c => c.innerHTML = '');
+        const daFareContainer = document.getElementById('daFareContainer');
+        const completatiContainer = document.querySelector('#completatiContainer .tasks-container');
 
-        // Popola con i task
-        this.state.tasks.forEach(task => {
-            const container = document.querySelector(`.tasks-container[data-status-container="${task.stato}"]`);
-            if (container) {
-                const card = this.createTaskCard(task);
-                container.appendChild(card);
-            }
+        // Clear previous content but keep the main headers
+        daFareContainer.innerHTML = '<h2>Attività da Fare</h2>';
+        completatiContainer.innerHTML = '';
+
+        // Render categorized "Da Fare" tasks
+        const organizedTasks = this.state.tasks.da_fare_organizzato || {};
+        for (const category in organizedTasks) {
+            const group = document.createElement('div');
+            group.className = 'subcategory-group';
+            
+            const header = document.createElement('h3');
+            header.className = 'subcategory-header';
+            header.textContent = category;
+            group.appendChild(header);
+            
+            const tasksContainer = document.createElement('div');
+            tasksContainer.className = 'tasks-container';
+            tasksContainer.dataset.statusContainer = 'Da Fare'; // For drag-drop
+            organizedTasks[category].forEach(task => {
+                tasksContainer.appendChild(this.createTaskCard(task));
+            });
+            group.appendChild(tasksContainer);
+            daFareContainer.appendChild(group);
+        }
+
+        // Render recent "Completato" tasks
+        const recentTasks = this.state.tasks.completati_recenti || [];
+        recentTasks.forEach(task => {
+            completatiContainer.appendChild(this.createTaskCard(task));
+        });
+        
+        // Re-attach drag-drop listeners after re-rendering
+        this.addDragDropListeners(); 
+    },
+
+    // Add this new helper function to avoid re-attaching listeners unnecessarily
+    addDragDropListeners: function() {
+        const containers = document.querySelectorAll('.tasks-container');
+        containers.forEach(container => {
+            container.addEventListener('dragover', this.handleDragOver);
+            container.addEventListener('drop', this.handleDrop);
         });
     },
 
@@ -87,11 +120,12 @@ const TaskApp = {
 
     addEventListeners: function() {
         this.dom.addTaskBtn.addEventListener('click', () => this.openModal());
-        this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
-        this.dom.modalOverlay.addEventListener('click', () => this.closeModal());
-        this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
-        this.dom.addCommentBtn.addEventListener('click', () => this.handleAddComment());
-
+    this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
+    this.dom.modalOverlay.addEventListener('click', () => this.closeModal());
+    this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
+    this.dom.addCommentBtn.addEventListener('click', () => this.handleAddComment());
+    this.addDragDropListeners();
+    
         // Eventi per il Drag & Drop
         const containers = document.querySelectorAll('.tasks-container');
         containers.forEach(container => {
@@ -170,6 +204,7 @@ const TaskApp = {
         const taskId = this.dom.taskId.value;
         const payload = {
             titolo: this.dom.taskTitle.value,
+            sottocategoria: this.dom.taskSubcategory.value.trim() || null,
             descrizione: this.dom.taskDescription.value,
             id_assegnatario_fk: this.dom.taskAssignee.value || null,
             data_obiettivo: this.dom.taskDueDate.value || null,
