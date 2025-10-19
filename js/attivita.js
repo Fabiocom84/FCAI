@@ -217,6 +217,7 @@ const TaskApp = {
             searchPlaceholderValue: 'Digita per cercare...',
             placeholder: true,
             placeholderValue: 'Seleziona o digita dettaglio...',
+            allowHTML: false,
         });
         const etichetteOptions = this.state.initData.etichette.map(e => ({
             value: e.label,
