@@ -196,7 +196,6 @@ const TaskApp = {
                 this.dom.completeTaskBtn.style.display = task.stato === 'Da Fare' ? 'inline-block' : 'none';
                 this.dom.reopenTaskBtn.style.display = task.stato === 'Completato' ? 'inline-block' : 'none';
 
-                // Trigger change to show correct subcategory field
                 this.handleCategoryChange();
 
             } catch (error) {
@@ -210,6 +209,12 @@ const TaskApp = {
             this.dom.historySection.style.display = 'none';
             this.dom.completeTaskBtn.style.display = 'none';
             this.dom.reopenTaskBtn.style.display = 'none';
+            
+            // Pre-assign to the logged-in user
+            if (this.state.currentUserProfile) {
+                this.dom.taskAssignee.value = this.state.currentUserProfile.id_personale;
+            }
+            
             this.handleCategoryChange();
         }
         
@@ -225,7 +230,15 @@ const TaskApp = {
     populatePersonaleSelects: function() {
         const select = this.dom.taskAssignee;
         select.innerHTML = '<option value="">Non Assegnato</option>';
-        this.state.personale.forEach(p => {
+        
+        // Filter for active users from Trevignano who can access the system
+        const filteredPersonale = this.state.personale.filter(p =>
+            p.attivo === true &&
+            p.puo_accedere === true &&
+            p.aziende?.sede === 'Trevignano'
+        );
+
+        filteredPersonale.forEach(p => {
             const option = document.createElement('option');
             option.value = p.id_personale;
             option.textContent = p.nome_cognome;
@@ -264,7 +277,6 @@ const TaskApp = {
             priorita: this.dom.taskPriority.value,
             id_assegnatario_fk: this.dom.taskAssignee.value || null,
             data_obiettivo: this.dom.taskDueDate.value || null,
-            // Dynamic subcategory
             id_commessa_fk: selectedCategory?.nome_categoria === 'Commessa' ? this.dom.taskCommessa.value || null : null,
             sottocategoria: selectedCategory?.nome_categoria !== 'Commessa' ? this.dom.taskSubcategory.value.trim() : null,
         };
@@ -313,7 +325,6 @@ const TaskApp = {
         this.loadTasks();
     },
 
-    // --- Unchanged Methods ---
     renderComments: function(comments) {
         if (!comments || comments.length === 0) {
             this.dom.commentsContainer.innerHTML = '<p>Nessun commento.</p>'; return;
@@ -338,9 +349,15 @@ const TaskApp = {
         const commentText = this.dom.newCommentText.value.trim();
         if (!taskId || !commentText) return;
         try {
-            const newComment = await (await apiFetch(`/api/tasks/${taskId}/commenti`, {
+            const newCommentRes = await apiFetch(`/api/tasks/${taskId}/commenti`, {
                 method: 'POST', body: JSON.stringify({ testo_commento: commentText })
-            })).json();
+            });
+            const newComment = await newCommentRes.json();
+            
+            // To get the author's name, we need to manually add it from our state
+            const author = this.state.personale.find(p => p.id_personale === newComment.id_autore_fk);
+            newComment.autore = { nome_cognome: author ? author.nome_cognome : 'Tu' };
+
             this.dom.newCommentText.value = '';
             this.state.currentTask.task_commenti.push(newComment);
             this.renderComments(this.state.currentTask.task_commenti);

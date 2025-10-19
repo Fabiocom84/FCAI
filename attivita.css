@@ -146,6 +146,56 @@ body {
 /* --- 6. STILI PER IL MODALE (RIVISTI) --- */
 .modal-content.large { max-width: 800px; }
 
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 15px; 
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header h2 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.modal-header .modal-header-buttons {
+    display: flex;
+    align-items: center;
+    flex-basis: 50px; 
+}
+
+.modal-header .modal-header-buttons:first-child {
+    justify-content: flex-start;
+}
+
+.modal-header .modal-header-buttons:last-child {
+    justify-content: flex-end;
+}
+
+.help-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.help-button:hover {
+    background-color: #5a6268;
+}
+
 /* Stile Sezioni Modale (in analogia a commesse) */
 .form-section {
     margin-bottom: 20px;
@@ -165,6 +215,11 @@ body {
     border-bottom: 1px solid #e0e0e0;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+}
+
+.form-section-header img {
+    width: 20px;
+    height: 20px;
 }
 
 #taskForm input,
@@ -190,7 +245,6 @@ body {
     grid-template-columns: 1fr 1fr; 
     gap: 20px; 
 }
-/* Azzera il margine inferiore per gli elementi nella griglia per evitare doppi spazi */
 .form-grid div > * {
     margin-bottom: 0;
 }

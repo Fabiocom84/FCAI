@@ -49,49 +49,71 @@
     <div id="taskModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header">
+                <div class="modal-header-buttons">
+                    <button class="help-button" id="taskHelpBtn">?</button>
+                </div>
                 <h2 id="modalTitle">Dettaglio Task</h2>
-                <button class="close-button">&times;</button>
+                <div class="modal-header-buttons">
+                    <button class="close-button">&times;</button>
+                </div>
             </div>
             <div class="modal-body">
                 <form id="taskForm">
                     <input type="hidden" id="taskId">
-                    <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
-                    
-                    <div class="form-grid">
-                        <div>
-                            <label for="taskCategory">Categoria *</label>
-                            <select id="taskCategory" required></select>
+
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <img src="img/edit.png" alt="Icona Dati Principali">
+                            <h3>Dati Principali</h3>
                         </div>
-                        <div>
-                            <label for="taskPriority">Priorità *</label>
-                            <select id="taskPriority" required>
-                                <option value="Bassa">Bassa</option>
-                                <option value="Media" selected>Media</option>
-                                <option value="Alta">Alta</option>
-                            </select>
+                        <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
+                        <div class="form-grid">
+                            <div>
+                                <label for="taskCategory">Categoria *</label>
+                                <select id="taskCategory" required></select>
+                            </div>
+                            <div>
+                                <label for="taskPriority">Priorità *</label>
+                                <select id="taskPriority" required>
+                                    <option value="Bassa">Bassa</option>
+                                    <option value="Media" selected>Media</option>
+                                    <option value="Alta">Alta</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Contenitori per sottocategoria dinamica -->
-                    <div id="commessaSubcategoryContainer" style="display: none;">
-                        <label for="taskCommessa">Commessa di Riferimento</label>
-                        <select id="taskCommessa"></select>
-                    </div>
-                    <div id="textSubcategoryContainer">
-                        <label for="taskSubcategory">Sottocategoria / Dettaglio</label>
-                        <input type="text" id="taskSubcategory" placeholder="Es. Manutenzione Ordinaria, Nuovo Sviluppo...">
+                    <div class="form-section">
+                         <div class="form-section-header">
+                            <img src="img/model.png" alt="Icona Dettagli">
+                            <h3>Dettagli</h3>
+                        </div>
+                        <!-- Contenitori per sottocategoria dinamica -->
+                        <div id="commessaSubcategoryContainer" style="display: none;">
+                            <label for="taskCommessa">Commessa di Riferimento</label>
+                            <select id="taskCommessa"></select>
+                        </div>
+                        <div id="textSubcategoryContainer">
+                            <label for="taskSubcategory">Sottocategoria / Dettaglio</label>
+                            <input type="text" id="taskSubcategory" placeholder="Es. Manutenzione Ordinaria, Nuovo Sviluppo...">
+                        </div>
+                        <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
                     </div>
 
-                    <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
-                    
-                    <div class="form-grid">
-                        <div>
-                            <label for="taskAssignee">Assegnato a:</label>
-                            <select id="taskAssignee"></select>
+                    <div class="form-section">
+                         <div class="form-section-header">
+                            <img src="img/user.png" alt="Icona Assegnazione">
+                            <h3>Assegnazione e Scadenze</h3>
                         </div>
-                        <div>
-                            <label for="taskDueDate">Data Scadenza:</label>
-                            <input type="date" id="taskDueDate">
+                        <div class="form-grid">
+                            <div>
+                                <label for="taskAssignee">Assegnato a:</label>
+                                <select id="taskAssignee"></select>
+                            </div>
+                            <div>
+                                <label for="taskDueDate">Data Scadenza:</label>
+                                <input type="date" id="taskDueDate">
+                            </div>
                         </div>
                     </div>
                 </form>
