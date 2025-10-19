@@ -101,6 +101,17 @@ body {
     background-color: #5a6268;
 }
 
+/* ## INIZIO MODIFICA ## */
+/* Forza anche la dimensione del bottone archivio */
+.task-column-header .button {
+    min-height: unset;
+    width: auto;
+    flex-basis: auto;
+    padding: 6px 12px;
+    font-size: 0.8em;
+}
+/* ## FINE MODIFICA ## */
+
 /* --- 4. AREE DI CONTENUTO SCORREVOLI --- */
 #daFareContent,
 #completatiContainer .tasks-container {
@@ -211,6 +222,14 @@ body {
 .modal-footer .button {
     margin: 0 5px;
 }
+
+/* ## INIZIO MODIFICA ## */
+/* Fix per il testo del placeholder tagliato in Choices.js */
+.choices__input--cloned {
+    width: auto !important;
+}
+/* ## FINE MODIFICA ## */
+
 
 /* --- 7. STILI ARCHIVIO --- */
 #archiveModal .modal-body {
