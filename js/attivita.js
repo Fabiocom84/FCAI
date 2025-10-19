@@ -41,26 +41,26 @@ const TaskApp = {
                 apiFetch('/api/tasks'),
                 apiFetch('/api/personale')
             ]);
-            // The entire structured object is now stored in state.tasks
-            this.state.tasks = await tasksRes.json(); 
-            this.state.personale = (await personaleRes.json()).data;
+            this.state.tasks = await tasksRes.json();
+            const personaleData = await personaleRes.json();
+            
+            this.state.personale = personaleData.data;
             
             this.populatePersonaleSelect(this.dom.taskAssignee);
             this.renderBoard();
         } catch (error) {
-            console.error("Errore nel caricamento dei dati:", error);
+            console.error("Errore nel caricamento dei dati iniziali:", error);
         }
     },
 
     renderBoard: function() {
-        const daFareContainer = document.getElementById('daFareContainer');
+        const daFareContent = document.getElementById('daFareContent');
         const completatiContainer = document.querySelector('#completatiContainer .tasks-container');
 
-        // Clear previous content but keep the main headers
-        daFareContainer.innerHTML = '<h2>Attività da Fare</h2>';
+        daFareContent.innerHTML = ''; // Pulisci solo il contenitore del contenuto
         completatiContainer.innerHTML = '';
 
-        // Render categorized "Da Fare" tasks
+        // Renderizza le sottocategorie in 'daFareContent'
         const organizedTasks = this.state.tasks.da_fare_organizzato || {};
         for (const category in organizedTasks) {
             const group = document.createElement('div');
@@ -73,21 +73,20 @@ const TaskApp = {
             
             const tasksContainer = document.createElement('div');
             tasksContainer.className = 'tasks-container';
-            tasksContainer.dataset.statusContainer = 'Da Fare'; // For drag-drop
+            tasksContainer.dataset.statusContainer = 'Da Fare';
             organizedTasks[category].forEach(task => {
                 tasksContainer.appendChild(this.createTaskCard(task));
             });
             group.appendChild(tasksContainer);
-            daFareContainer.appendChild(group);
+            daFareContent.appendChild(group); // Aggiungi il gruppo al contenitore corretto
         }
 
-        // Render recent "Completato" tasks
+        // Renderizza i task completati (invariato)
         const recentTasks = this.state.tasks.completati_recenti || [];
         recentTasks.forEach(task => {
             completatiContainer.appendChild(this.createTaskCard(task));
         });
         
-        // Re-attach drag-drop listeners after re-rendering
         this.addDragDropListeners(); 
     },
 
@@ -120,18 +119,11 @@ const TaskApp = {
 
     addEventListeners: function() {
         this.dom.addTaskBtn.addEventListener('click', () => this.openModal());
-    this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
-    this.dom.modalOverlay.addEventListener('click', () => this.closeModal());
-    this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
-    this.dom.addCommentBtn.addEventListener('click', () => this.handleAddComment());
-    this.addDragDropListeners();
-    
-        // Eventi per il Drag & Drop
-        const containers = document.querySelectorAll('.tasks-container');
-        containers.forEach(container => {
-            container.addEventListener('dragover', this.handleDragOver);
-            container.addEventListener('drop', this.handleDrop);
-        });
+        this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
+        this.dom.modalOverlay.addEventListener('click', () => this.closeModal());
+        this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
+        this.dom.addCommentBtn.addEventListener('click', () => this.handleAddComment());
+        this.addDragDropListeners();
     },
 
     openModal: async function(taskId = null) {
@@ -140,7 +132,6 @@ const TaskApp = {
         this.dom.historyContainer.innerHTML = '';
 
         if (taskId) {
-            // Modal in modalità MODIFICA
             this.dom.modalTitle.textContent = 'Dettaglio Task';
             try {
                 const res = await apiFetch(`/api/tasks/${taskId}`);
@@ -149,6 +140,7 @@ const TaskApp = {
                 
                 this.dom.taskId.value = task.id_task;
                 this.dom.taskTitle.value = task.titolo;
+                this.dom.taskSubcategory.value = task.sottocategoria || '';
                 this.dom.taskDescription.value = task.descrizione || '';
                 this.dom.taskAssignee.value = task.id_assegnatario_fk || '';
                 this.dom.taskDueDate.value = task.data_obiettivo ? task.data_obiettivo.split('T')[0] : '';
@@ -161,7 +153,6 @@ const TaskApp = {
                 return;
             }
         } else {
-            // Modal in modalità CREAZIONE
             this.dom.modalTitle.textContent = 'Nuovo Task';
             this.state.currentTask = null;
         }
@@ -186,17 +177,25 @@ const TaskApp = {
     },
     
     renderComments: function(comments) {
+        if (!comments || comments.length === 0) {
+            this.dom.commentsContainer.innerHTML = '<p>Nessun commento.</p>';
+            return;
+        }
         this.dom.commentsContainer.innerHTML = comments.map(c => `
             <div class="comment">
-                <strong>${c.autore.nome_cognome}</strong>
+                <strong>${c.autore?.nome_cognome || 'Utente'}</strong>
                 <p>${c.testo_commento}</p>
             </div>
         `).join('');
     },
     
     renderHistory: function(history) {
+        if (!history || history.length === 0) {
+            this.dom.historyContainer.innerHTML = '<li>Nessuno storico disponibile.</li>';
+            return;
+        }
         this.dom.historyContainer.innerHTML = history.map(h => `
-            <li><strong>${new Date(h.data_azione).toLocaleString('it-IT')}:</strong> ${h.utente.nome_cognome} ha eseguito l'azione '${h.azione}'. ${h.dettagli || ''}</li>
+            <li><strong>${new Date(h.data_azione).toLocaleString('it-IT')}:</strong> ${h.utente?.nome_cognome || 'Sistema'} ha eseguito l'azione '${h.azione}'. ${h.dettagli || ''}</li>
         `).join('');
     },
     
@@ -212,14 +211,12 @@ const TaskApp = {
 
         try {
             if (taskId) {
-                // Aggiorna task esistente
                 await apiFetch(`/api/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(payload) });
             } else {
-                // Crea nuovo task
                 await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(payload) });
             }
             this.closeModal();
-            await this.loadInitialData(); // Ricarica tutto
+            await this.loadInitialData();
         } catch (error) {
             console.error("Errore nel salvataggio del task:", error);
         }
@@ -237,27 +234,27 @@ const TaskApp = {
                 body: JSON.stringify({ testo_commento: commentText })
             });
             this.dom.newCommentText.value = '';
-            // Ricarica solo i dettagli del modale per aggiornare i commenti
             this.openModal(taskId); 
         } catch (error) {
             console.error("Errore nell'aggiunta del commento:", error);
         }
     },
 
-    // --- Funzioni Drag & Drop ---
     handleDragStart: function(e) {
         e.dataTransfer.setData('text/plain', e.target.dataset.taskId);
         setTimeout(() => { e.target.classList.add('dragging'); }, 0);
     },
     
     handleDragOver: function(e) {
-        e.preventDefault(); // Necessario per permettere il drop
+        e.preventDefault();
     },
     
     handleDrop: async function(e) {
         e.preventDefault();
         const taskId = e.dataTransfer.getData('text/plain');
         const draggedElement = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+        if (!draggedElement) return;
+        
         draggedElement.classList.remove('dragging');
 
         const dropContainer = e.target.closest('.tasks-container');
@@ -265,19 +262,15 @@ const TaskApp = {
             const newStatus = dropContainer.dataset.statusContainer;
             dropContainer.appendChild(draggedElement);
 
-            // Aggiorna lo stato sul backend
             try {
                 await apiFetch(`/api/tasks/${taskId}`, {
                     method: 'PUT',
-                    body: JSON.stringify({ stato: newStatus })
+                    body: JSON.stringify({ stato: newStatus, data_ultima_modifica: new Date().toISOString() })
                 });
-                // Aggiorna lo stato locale per coerenza
-                const task = TaskApp.state.tasks.find(t => t.id_task == taskId);
-                if(task) task.stato = newStatus;
-                
+                await TaskApp.loadInitialData(); // Ricarica tutto per aggiornare entrambe le colonne
             } catch (error) {
                 console.error("Errore durante l'aggiornamento dello stato:", error);
-                TaskApp.renderBoard(); // Ripristina la board in caso di errore
+                TaskApp.renderBoard();
             }
         }
     },

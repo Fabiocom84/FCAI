@@ -1,3 +1,13 @@
+GitHub su cloudshell
+Locale:
+	git add
+	git commit -m ""
+	git push origin main
+Cloudshell:
+	git pull origin main
+	gcloud run deploy segretario-ai-backend-service   --source .   --region europe-west1   --service-account "backend-segretario-ai@segretario-ai-produzione.iam.gserviceaccount.com"
+
+
 Accesso supabase
 SUPABASE_URL="https://mqfhsiezsorpdnskcsgw.supabase.co"
 SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZmhzaWV6c29ycGRuc2tjc2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MjY3NTgsImV4cCI6MjA3MzEwMjc1OH0.JImF22KAyhAVDdVTvDWF3nwv2CyQIt8aiT76IghSFqI"
@@ -24,3 +34,5 @@ curl -i -X OPTIONS \
    https://segretario-ai-backend-service-460205196659.europe-west1.run.app/api/init-inserimento-ore
 
 Passare ad un nuovo ramo del frontend: git checkout -b sviluppo-backend
+
+"eyJhbGciOiJIUzI1NiIsImtpZCI6IklwY3VoL1ZQNllHQkIyZngiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL21xZmhzaWV6c29ycGRuc2tjc2d3LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyMDc1OTY2Ni1mZjFlLTQ4NTUtYTBhNi0xNDM3ZTI3YWVlYWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU5NDMyNTI4LCJpYXQiOjE3NTk0Mjg5MjgsImVtYWlsIjoiZmNvbWF6emV0dG9AYXBpc3BhLm5ldCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzU5MjU3OTkyfV0sInNlc3Npb25faWQiOiI5NzU2NmI3Ni03Yjg0LTRlOWQtYmYwMy00ZTJkYjkwMzY3ODAiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.cTsOj5DPcLafijm0eSN_cOuHs6q7woMg8TZe9gGFTtk"

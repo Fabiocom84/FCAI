@@ -89,7 +89,7 @@ const App = {
         }
 
         try {
-            const response = await apiFetch(`/api/commesse-view?${params.toString()}`);
+            const response = await apiFetch(`/api/commesse/view?${params.toString()}`);
             if (!response.ok) throw new Error('Risposta di rete non valida.');
             const data = await response.json();
             
