@@ -10,14 +10,16 @@ const TaskApp = {
         initData: null,
         currentUserProfile: null,
         currentTask: null,
-        // NUOVO: Stato per la gestione dell'archivio
         archivePage: 1,
         archiveTasks: [],
         isLoadingArchive: false,
         canLoadMore: true,
+        // NUOVO: Istanza per il dropdown delle commesse
+        commessaChoicesInstance: null,
     },
 
     init: async function() {
+        // ... (selezione elementi DOM esistenti) ...
         this.dom.addTaskBtn = document.getElementById('addTaskBtn');
         this.dom.modal = document.getElementById('taskModal');
         this.dom.modalOverlay = document.getElementById('modalOverlay');
@@ -88,7 +90,6 @@ const TaskApp = {
             if (this.state.currentUserProfile?.is_admin && selectedUserId) {
                 params.append('id_utente_filtro', selectedUserId);
             }
-            // --- CORREZIONE CORS --- Aggiunto slash finale a /api/tasks/
             const res = await apiFetch(`/api/tasks/?${params.toString()}`);
             if (!res.ok) throw new Error('Network response was not ok');
             return await res.json();
@@ -185,10 +186,34 @@ const TaskApp = {
         this.dom.archiveTasksContainer.appendChild(fragment);
     },
 
+    initializeCommessaChoices: function() {
+        if (this.state.commessaChoicesInstance) {
+            this.state.commessaChoicesInstance.destroy();
+        }
+
+        this.state.commessaChoicesInstance = new Choices(this.dom.taskCommessa, {
+            searchEnabled: true,
+            removeItemButton: true,
+            itemSelectText: 'Seleziona',
+            searchPlaceholderValue: 'Digita per cercare...',
+            placeholder: true,
+            placeholderValue: 'Seleziona una commessa...',
+        });
+
+        const commesseOptions = this.state.initData.commesse.map(c => ({
+            value: c.id_commessa,
+            label: `${c.impianto} (${c.codice_commessa})`
+        }));
+
+        this.state.commessaChoicesInstance.setChoices(commesseOptions, 'value', 'label', false);
+    },
+
     openTaskModal: async function(taskId = null) {
         this.dom.taskForm.reset();
         this.dom.commentsContainer.innerHTML = '';
         this.dom.historyContainer.innerHTML = '';
+        
+        this.initializeCommessaChoices();
         this.toggleSubcategoryField();
 
         if (taskId) {
@@ -200,9 +225,11 @@ const TaskApp = {
                 this.dom.taskId.value = task.id_task;
                 this.dom.taskTitle.value = task.titolo;
                 this.dom.taskCategory.value = task.id_categoria_fk;
+                
                 this.toggleSubcategoryField(); 
+                
                 if(task.id_commessa_fk) {
-                    this.dom.taskCommessa.value = task.id_commessa_fk;
+                    this.state.commessaChoicesInstance.setChoiceByValue(String(task.id_commessa_fk));
                 } else {
                     this.dom.taskSubcategory.value = task.sottocategoria || '';
                 }
@@ -239,6 +266,10 @@ const TaskApp = {
         this.dom.modal.style.display = 'none';
         if (this.dom.archiveModal.style.display !== 'block') {
             this.dom.modalOverlay.style.display = 'none';
+        }
+        if (this.state.commessaChoicesInstance) {
+            this.state.commessaChoicesInstance.destroy();
+            this.state.commessaChoicesInstance = null;
         }
     },
 
@@ -303,7 +334,8 @@ const TaskApp = {
             this.dom.adminFilterContainer.style.display = 'flex';
             const select = this.dom.adminUserFilter;
             select.innerHTML = '<option value="">Tutti</option>';
-            this.state.personale.forEach(p => {
+            const usersWithAccess = this.state.personale.filter(p => p.puo_accedere);
+            usersWithAccess.forEach(p => {
                 select.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
             });
         }
@@ -315,16 +347,10 @@ const TaskApp = {
         this.state.initData.categorie.forEach(c => {
             catSelect.innerHTML += `<option value="${c.id_categoria}">${c.nome_categoria}</option>`;
         });
-
-        const commSelect = this.dom.taskCommessa;
-        commSelect.innerHTML = '<option value="">Nessuna Commessa</option>';
-        this.state.initData.commesse.forEach(c => {
-            commSelect.innerHTML += `<option value="${c.id_commessa}">${c.impianto} (${c.codice_commessa})</option>`;
-        });
         
         const assigneeSelect = this.dom.taskAssignee;
         assigneeSelect.innerHTML = '<option value="">Non Assegnato</option>';
-        const filteredPersonale = this.state.personale.filter(p => p.attivo && p.puo_accedere && p.aziende?.sede === 'Trevignano');
+        const filteredPersonale = this.state.personale.filter(p => p.puo_accedere);
         filteredPersonale.forEach(p => {
             assigneeSelect.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
         });
@@ -347,6 +373,8 @@ const TaskApp = {
         const selectedCategory = this.state.initData.categorie.find(c => c.id_categoria == this.dom.taskCategory.value);
         const isCommessa = selectedCategory && selectedCategory.nome_categoria.toLowerCase() === 'commessa';
 
+        const commessaId = isCommessa ? this.state.commessaChoicesInstance.getValue(true) : null;
+
         const payload = {
             titolo: this.dom.taskTitle.value,
             descrizione: this.dom.taskDescription.value,
@@ -354,7 +382,7 @@ const TaskApp = {
             data_obiettivo: this.dom.taskDueDate.value || null,
             id_categoria_fk: this.dom.taskCategory.value,
             priorita: this.dom.taskPriority.value,
-            id_commessa_fk: isCommessa ? (this.dom.taskCommessa.value || null) : null,
+            id_commessa_fk: commessaId,
             sottocategoria: !isCommessa ? this.dom.taskSubcategory.value.trim() : null,
         };
 
