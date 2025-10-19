@@ -227,10 +227,19 @@ body {
 }
 
 /* ## INIZIO MODIFICA ## */
-/* Aumenta l'altezza dei menu a tendina per rendere il testo leggibile */
-.choices__inner {
-    min-height: 40px;
-    padding: 6px 12px !important;
+/* Aumenta l'altezza di TUTTI i menu a tendina nel modale del task */
+
+/* Per i menu a tendina standard (Categoria, Priorità, Assegnato a) */
+#taskForm select {
+    min-height: 42px; /* Allineamento con choices.js */
+    padding: 8px 12px;
+}
+
+/* Per i menu a tendina avanzati (Choices.js) */
+#taskForm .choices__inner {
+    min-height: 42px;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
 }
 /* ## FINE MODIFICA ## */
 
