@@ -25,7 +25,7 @@
         </header>
 
         <div id="adminFilterContainer" class="admin-filter-container" style="display: none;">
-            <label for="adminUserFilter"><strong>Mostra task per:</strong></label>
+            <strong>Mostra task per:</strong>
             <select id="adminUserFilter"></select>
         </div>
 
@@ -33,26 +33,30 @@
             <div class="task-column" id="daFareContainer">
                 <h2>Attività da Fare</h2>
                 <div id="daFareContent">
-                    <!-- I gruppi di categorie verranno inseriti qui dal JS -->
+                    <!-- Le sottocategorie e le card verranno inserite qui dal JS -->
                 </div>
             </div>
             <div class="task-column" id="completatiContainer">
-                <h2>Ultime Attività Completate</h2>
+                <div class="task-column-header">
+                    <h2>Ultime Attività Completate</h2>
+                    <button id="openArchiveBtn" class="button-secondary">Vedi Archivio</button>
+                </div>
                 <div class="tasks-container" data-status-container="Completato">
-                    <!-- Le card dei task completati verranno inserite qui -->
+                    <!-- Le card dei task completati di recente verranno inserite qui -->
                 </div>
             </div>
         </main>
 
     </div>
 
+    <!-- Modale per Creazione/Modifica Task -->
     <div id="taskModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header">
                 <div class="modal-header-buttons">
-                    <button class="help-button" id="taskHelpBtn">?</button>
+                    <button class="help-button">?</button>
                 </div>
-                <h2 id="modalTitle">Dettaglio Task</h2>
+                <h2 id="modalTitle">Nuovo Task</h2>
                 <div class="modal-header-buttons">
                     <button class="close-button">&times;</button>
                 </div>
@@ -60,10 +64,10 @@
             <div class="modal-body">
                 <form id="taskForm">
                     <input type="hidden" id="taskId">
-
+                    
                     <div class="form-section">
                         <div class="form-section-header">
-                            <img src="img/edit.png" alt="Icona Dati Principali">
+                            <img src="img/edit-tool.png" alt="Icona Dati Principali">
                             <h3>Dati Principali</h3>
                         </div>
                         <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
@@ -72,12 +76,12 @@
                                 <label for="taskCategory">Categoria *</label>
                                 <select id="taskCategory" required></select>
                             </div>
-                            <div>
+                             <div>
                                 <label for="taskPriority">Priorità *</label>
                                 <select id="taskPriority" required>
-                                    <option value="Bassa">Bassa</option>
-                                    <option value="Media" selected>Media</option>
-                                    <option value="Alta">Alta</option>
+                                    <option>Bassa</option>
+                                    <option selected>Media</option>
+                                    <option>Alta</option>
                                 </select>
                             </div>
                         </div>
@@ -85,10 +89,9 @@
 
                     <div class="form-section">
                          <div class="form-section-header">
-                            <img src="img/model.png" alt="Icona Dettagli">
+                            <img src="img/chat.png" alt="Icona Dettagli">
                             <h3>Dettagli</h3>
                         </div>
-                        <!-- Contenitori per sottocategoria dinamica -->
                         <div id="commessaSubcategoryContainer" style="display: none;">
                             <label for="taskCommessa">Commessa di Riferimento</label>
                             <select id="taskCommessa"></select>
@@ -101,9 +104,9 @@
                     </div>
 
                     <div class="form-section">
-                         <div class="form-section-header">
-                            <img src="img/user.png" alt="Icona Assegnazione">
-                            <h3>Assegnazione e Scadenze</h3>
+                        <div class="form-section-header">
+                            <img src="img/team.png" alt="Icona Assegnazione">
+                            <h3>Assegnazione</h3>
                         </div>
                         <div class="form-grid">
                             <div>
@@ -118,7 +121,7 @@
                     </div>
                 </form>
 
-                <div class="task-details-section" id="commentsSection" style="display: none;">
+                <div id="commentsSection" class="task-details-section">
                     <h3>Commenti</h3>
                     <div id="commentsContainer"></div>
                     <div class="comment-form">
@@ -126,18 +129,45 @@
                         <button id="addCommentBtn" class="button">Aggiungi</button>
                     </div>
                 </div>
-                 <div class="task-details-section" id="historySection" style="display: none;">
+                 <div id="historySection" class="task-details-section">
                     <h3>Storico</h3>
                     <ul id="historyContainer"></ul>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="completeTaskBtn" class="button button--warning" style="display: none;">Completa Task</button>
-                <button id="reopenTaskBtn" class="button" style="display: none;">Riapri Task</button>
+                <div>
+                    <button id="completeTaskBtn" class="button button--warning" style="display: none;">Completa Task</button>
+                    <button id="reopenTaskBtn" class="button" style="display: none;">Riapri Task</button>
+                </div>
                 <button id="saveTaskBtn" class="save-button">Salva</button>
             </div>
         </div>
     </div>
+    
+    <!-- NUOVO: Modale per Archivio Task Completati -->
+    <div id="archiveModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                 <div class="modal-header-buttons">
+                    <button class="help-button">?</button>
+                </div>
+                <h2>Archivio Task Completati</h2>
+                <div class="modal-header-buttons">
+                    <button class="close-button">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="archiveTasksContainer" class="archive-tasks-container">
+                    <!-- I task archiviati verranno caricati qui -->
+                </div>
+                <div class="archive-footer">
+                    <button id="loadMoreBtn" class="button">Carica Altri</button>
+                    <div id="archiveLoader" class="loader" style="display: none;">Caricamento...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalOverlay" class="modal-overlay"></div>
 
     <script type="module" src="js/config.js"></script>

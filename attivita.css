@@ -33,7 +33,6 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    /* Forzatura dimensioni per override */
     display: inline-flex;
     align-items: center;
     flex-direction: row;
@@ -44,7 +43,6 @@ body {
 #addTaskBtn:hover {
     background-color: #218838;
 }
-
 
 .admin-filter-container {
     background-color: #f4f5f7;
@@ -83,15 +81,44 @@ body {
 #daFareContainer { flex-grow: 2; }
 #completatiContainer { flex-grow: 1; }
 
-.task-column h2 {
-    font-size: 1.1em;
+/* NUOVO: Stile per l'header della colonna "Completati" */
+.task-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-bottom: 10px;
-    margin-top: 0;
     border-bottom: 2px solid #dcdfe4;
+    margin-bottom: 10px;
+}
+
+.task-column h2, .task-column-header h2 {
+    font-size: 1.1em;
+    margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     flex-shrink: 0;
 }
+/* Rimuove il bordo doppio per h2 dentro il nuovo header */
+.task-column-header h2 {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* NUOVO: Stile per il pulsante secondario (Vedi Archivio) */
+.button-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.button-secondary:hover {
+    background-color: #5a6268;
+}
+
 
 /* --- 4. AREE DI CONTENUTO SCORREVOLI --- */
 #daFareContent,
@@ -122,13 +149,12 @@ body {
     margin-bottom: 8px;
     box-shadow: 0 1px 1px rgba(0,0,0,0.1);
     cursor: grab;
-    border-left: 5px solid transparent; /* Base per la priorità */
+    border-left: 5px solid transparent;
     transition: background-color 0.2s ease;
 }
 .task-card:hover { background-color: #f7f7f7; }
 .task-card.dragging { opacity: 0.5; transform: rotate(3deg); }
 
-/* Stili Priorità */
 .task-card.priority-alta { border-left-color: #eb5757; }
 .task-card.priority-media { border-left-color: #f2c94c; }
 .task-card.priority-bassa { border-left-color: #bdbdbd; }
@@ -143,7 +169,7 @@ body {
     display: inline-block;
 }
 
-/* --- 6. STILI PER IL MODALE (RIVISTI) --- */
+/* --- 6. STILI PER IL MODALE PRINCIPALE --- */
 .modal-content.large { max-width: 800px; }
 
 .modal-header {
@@ -168,23 +194,17 @@ body {
     align-items: center;
     flex-basis: 50px; 
 }
-
-.modal-header .modal-header-buttons:first-child {
-    justify-content: flex-start;
-}
-
-.modal-header .modal-header-buttons:last-child {
-    justify-content: flex-end;
-}
+.modal-header .modal-header-buttons:first-child { justify-content: flex-start; }
+.modal-header .modal-header-buttons:last-child { justify-content: flex-end; }
 
 .help-button {
     background-color: #6c757d;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -192,11 +212,8 @@ body {
     justify-content: center;
     line-height: 1;
 }
-.help-button:hover {
-    background-color: #5a6268;
-}
+.help-button:hover { background-color: #5a6268; }
 
-/* Stile Sezioni Modale (in analogia a commesse) */
 .form-section {
     margin-bottom: 20px;
     border: 1px solid #e0e0e0;
@@ -216,78 +233,57 @@ body {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
-
-.form-section-header img {
-    width: 20px;
-    height: 20px;
-}
-
-#taskForm input,
-#taskForm textarea,
-#taskForm select { 
+.form-section-header img { width: 20px; height: 20px; }
+#taskForm input, #taskForm textarea, #taskForm select { 
     width: 100%; 
     margin-bottom: 10px;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box; /* Corregge disallineamenti */
+    box-sizing: border-box;
 }
-
-#taskForm label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    font-size: 0.9em;
-}
-
-.form-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 20px; 
-}
-.form-grid div > * {
-    margin-bottom: 0;
-}
-
-
-.task-details-section { 
-    margin-top: 25px; 
-}
-.task-details-section h3 { 
-    border-bottom: 1px solid #ccc; 
-    padding-bottom: 5px; 
-    margin-bottom: 10px; 
-}
-#commentsContainer .comment { 
-    margin-bottom: 10px; 
-    background: #f4f4f4; 
-    padding: 8px; 
-    border-radius: 5px; 
-}
+#taskForm label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-grid div > * { margin-bottom: 0; }
+.task-details-section { margin-top: 25px; }
+.task-details-section h3 { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; }
+#commentsContainer .comment { margin-bottom: 10px; background: #f4f4f4; padding: 8px; border-radius: 5px; }
 .comment strong { font-size: 13px; }
 .comment p { margin: 4px 0 0; font-size: 14px; }
 .comment-form { display: flex; flex-direction: column; align-items: flex-end; }
 .comment-form textarea { width: 100%; margin-bottom: 5px; }
-#historyContainer { 
-    list-style: none; 
-    padding: 0; 
-    max-height: 200px; 
-    overflow-y: auto; 
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
-    padding: 10px;
+#historyContainer { list-style: none; padding: 10px; max-height: 200px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; }
+#historyContainer li { font-size: 13px; color: #555; padding: 4px 0; border-bottom: 1px solid #e9ecef; }
+#historyContainer li:last-child { border-bottom: none; }
+.modal-footer { justify-content: space-between; }
+
+/* --- 7. NUOVO: Stili per Modale Archivio --- */
+.archive-tasks-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 15px;
 }
-#historyContainer li { 
-    font-size: 13px; 
-    color: #555; 
-    padding: 4px 0; 
-    border-bottom: 1px solid #e9ecef;
+
+.archive-task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #f0f0f0;
 }
-#historyContainer li:last-child {
+.archive-task-item:last-child {
     border-bottom: none;
 }
 
-.modal-footer {
-    justify-content: space-between;
+.archive-task-item span { font-size: 0.9em; }
+.archive-task-item .title { font-weight: 600; flex-basis: 50%; }
+.archive-task-item .assignee { color: #555; flex-basis: 25%; }
+.archive-task-item .date { color: #888; flex-basis: 25%; text-align: right; }
+
+.archive-footer {
+    text-align: center;
+    padding-top: 10px;
 }
