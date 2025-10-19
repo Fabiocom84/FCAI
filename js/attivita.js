@@ -14,12 +14,11 @@ const TaskApp = {
         archiveTasks: [],
         isLoadingArchive: false,
         canLoadMore: true,
-        // NUOVO: Istanza per il dropdown delle commesse
         commessaChoicesInstance: null,
+        subcategoryChoicesInstance: null, 
     },
 
     init: async function() {
-        // ... (selezione elementi DOM esistenti) ...
         this.dom.addTaskBtn = document.getElementById('addTaskBtn');
         this.dom.modal = document.getElementById('taskModal');
         this.dom.modalOverlay = document.getElementById('modalOverlay');
@@ -64,16 +63,18 @@ const TaskApp = {
         try {
             this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
 
-            const [tasksRes, personaleRes, initDataRes] = await Promise.all([
+            const [tasksRes, personaleRes, initDataRes, etichetteRes] = await Promise.all([
                 this.loadTasks(),
                 apiFetch('/api/personale/'),
-                apiFetch('/api/tasks/init-data')
+                apiFetch('/api/tasks/init-data'),
+                apiFetch('/api/get-etichette')
             ]);
             
             this.state.tasks = tasksRes;
             const personaleData = await personaleRes.json();
             this.state.initData = await initDataRes.json();
             this.state.personale = personaleData.data;
+            this.state.initData.etichette = await etichetteRes.json();
 
             this.setupAdminFilter();
             this.populateDropdowns();
@@ -190,7 +191,6 @@ const TaskApp = {
         if (this.state.commessaChoicesInstance) {
             this.state.commessaChoicesInstance.destroy();
         }
-
         this.state.commessaChoicesInstance = new Choices(this.dom.taskCommessa, {
             searchEnabled: true,
             removeItemButton: true,
@@ -199,13 +199,30 @@ const TaskApp = {
             placeholder: true,
             placeholderValue: 'Seleziona una commessa...',
         });
-
         const commesseOptions = this.state.initData.commesse.map(c => ({
             value: c.id_commessa,
             label: `${c.impianto} (${c.codice_commessa})`
         }));
-
         this.state.commessaChoicesInstance.setChoices(commesseOptions, 'value', 'label', false);
+    },
+
+    initializeSubcategoryChoices: function() {
+        if (this.state.subcategoryChoicesInstance) {
+            this.state.subcategoryChoicesInstance.destroy();
+        }
+        this.state.subcategoryChoicesInstance = new Choices(this.dom.taskSubcategory, {
+            searchEnabled: true,
+            removeItemButton: true,
+            itemSelectText: 'Seleziona',
+            searchPlaceholderValue: 'Digita per cercare...',
+            placeholder: true,
+            placeholderValue: 'Seleziona o digita dettaglio...',
+        });
+        const etichetteOptions = this.state.initData.etichette.map(e => ({
+            value: e.label,
+            label: e.label
+        }));
+        this.state.subcategoryChoicesInstance.setChoices(etichetteOptions, 'value', 'label', false);
     },
 
     openTaskModal: async function(taskId = null) {
@@ -214,6 +231,7 @@ const TaskApp = {
         this.dom.historyContainer.innerHTML = '';
         
         this.initializeCommessaChoices();
+        this.initializeSubcategoryChoices();
         this.toggleSubcategoryField();
 
         if (taskId) {
@@ -230,9 +248,10 @@ const TaskApp = {
                 
                 if(task.id_commessa_fk) {
                     this.state.commessaChoicesInstance.setChoiceByValue(String(task.id_commessa_fk));
-                } else {
-                    this.dom.taskSubcategory.value = task.sottocategoria || '';
+                } else if (task.sottocategoria) {
+                    this.state.subcategoryChoicesInstance.setChoiceByValue(task.sottocategoria);
                 }
+                
                 this.dom.taskDescription.value = task.descrizione || '';
                 this.dom.taskAssignee.value = task.id_assegnatario_fk || '';
                 this.dom.taskDueDate.value = task.data_obiettivo ? task.data_obiettivo.split('T')[0] : '';
@@ -270,6 +289,10 @@ const TaskApp = {
         if (this.state.commessaChoicesInstance) {
             this.state.commessaChoicesInstance.destroy();
             this.state.commessaChoicesInstance = null;
+        }
+        if (this.state.subcategoryChoicesInstance) {
+            this.state.subcategoryChoicesInstance.destroy();
+            this.state.subcategoryChoicesInstance = null;
         }
     },
 
@@ -374,6 +397,7 @@ const TaskApp = {
         const isCommessa = selectedCategory && selectedCategory.nome_categoria.toLowerCase() === 'commessa';
 
         const commessaId = isCommessa ? this.state.commessaChoicesInstance.getValue(true) : null;
+        const sottocategoriaValue = !isCommessa ? this.state.subcategoryChoicesInstance.getValue(true) : null;
 
         const payload = {
             titolo: this.dom.taskTitle.value,
@@ -383,7 +407,7 @@ const TaskApp = {
             id_categoria_fk: this.dom.taskCategory.value,
             priorita: this.dom.taskPriority.value,
             id_commessa_fk: commessaId,
-            sottocategoria: !isCommessa ? this.dom.taskSubcategory.value.trim() : null,
+            sottocategoria: sottocategoriaValue,
         };
 
         try {
