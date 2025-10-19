@@ -24,16 +24,23 @@
             </button>
         </header>
 
+        <div id="adminFilterContainer" class="admin-filter-container" style="display: none;">
+            <label for="adminUserFilter"><strong>Mostra task per:</strong></label>
+            <select id="adminUserFilter"></select>
+        </div>
+
         <main id="taskView" class="task-view-grid">
             <div class="task-column" id="daFareContainer">
                 <h2>Attività da Fare</h2>
                 <div id="daFareContent">
-                    </div>
+                    <!-- I gruppi di categorie verranno inseriti qui dal JS -->
+                </div>
             </div>
             <div class="task-column" id="completatiContainer">
                 <h2>Ultime Attività Completate</h2>
                 <div class="tasks-container" data-status-container="Completato">
-                    </div>
+                    <!-- Le card dei task completati verranno inserite qui -->
+                </div>
             </div>
         </main>
 
@@ -49,7 +56,32 @@
                 <form id="taskForm">
                     <input type="hidden" id="taskId">
                     <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
-                    <input type="text" id="taskSubcategory" placeholder="Sottocategoria (es. Manutenzione)...">
+                    
+                    <div class="form-grid">
+                        <div>
+                            <label for="taskCategory">Categoria *</label>
+                            <select id="taskCategory" required></select>
+                        </div>
+                        <div>
+                            <label for="taskPriority">Priorità *</label>
+                            <select id="taskPriority" required>
+                                <option value="Bassa">Bassa</option>
+                                <option value="Media" selected>Media</option>
+                                <option value="Alta">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contenitori per sottocategoria dinamica -->
+                    <div id="commessaSubcategoryContainer" style="display: none;">
+                        <label for="taskCommessa">Commessa di Riferimento</label>
+                        <select id="taskCommessa"></select>
+                    </div>
+                    <div id="textSubcategoryContainer">
+                        <label for="taskSubcategory">Sottocategoria / Dettaglio</label>
+                        <input type="text" id="taskSubcategory" placeholder="Es. Manutenzione Ordinaria, Nuovo Sviluppo...">
+                    </div>
+
                     <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
                     
                     <div class="form-grid">
@@ -64,7 +96,7 @@
                     </div>
                 </form>
 
-                <div class="task-details-section">
+                <div class="task-details-section" id="commentsSection" style="display: none;">
                     <h3>Commenti</h3>
                     <div id="commentsContainer"></div>
                     <div class="comment-form">
@@ -72,18 +104,19 @@
                         <button id="addCommentBtn" class="button">Aggiungi</button>
                     </div>
                 </div>
-                 <div class="task-details-section">
+                 <div class="task-details-section" id="historySection" style="display: none;">
                     <h3>Storico</h3>
                     <ul id="historyContainer"></ul>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="saveTaskBtn" class="save-button">Salva Modifiche</button>
+                <button id="completeTaskBtn" class="button button--warning" style="display: none;">Completa Task</button>
+                <button id="reopenTaskBtn" class="button" style="display: none;">Riapri Task</button>
+                <button id="saveTaskBtn" class="save-button">Salva</button>
             </div>
         </div>
     </div>
     <div id="modalOverlay" class="modal-overlay"></div>
-
 
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/api-client.js"></script>
