@@ -271,6 +271,27 @@ body {
 }
 
 /* Stili per l'accordion dei task */
+.form-section-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.form-section-header img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.form-section-header h3 {
+    margin: 0; /* Rimuove il margin predefinito dell'h3 */
+    flex-grow: 1; /* Fa sì che il titolo occupi lo spazio disponibile */
+}
+
 .form-section-header.collapsible {
     cursor: pointer;
     transition: background-color 0.2s;
@@ -278,4 +299,73 @@ body {
 
 .form-section-header.collapsible:hover {
     background-color: #e9ecef; /* Un grigio leggero al hover */
+}
+
+/* Stili per l'icona della freccia */
+.accordion-icon {
+    display: flex; /* Centra l'SVG all'interno dello span */
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: 10px; /* Spazio tra il titolo e l'icona */
+    transition: transform 0.3s ease; /* Transizione fluida per la rotazione */
+}
+
+/* Ruota la freccia quando il contenuto è mostrato (non collassato) */
+.form-section-header.collapsible + .form-section-content[style*="display: block"] .accordion-icon {
+    transform: rotate(180deg);
+}
+
+/* Stile per la textarea del commento */
+#taskCommentInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding e border nella larghezza */
+}
+
+/* Stile per il pulsante "Aggiungi Commento" */
+#addCommentBtn {
+    background-color: #28a745; /* Verde per l'aggiunta */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s;
+}
+
+#addCommentBtn:hover {
+    background-color: #218838;
+}
+
+/* Stile per la lista dello storico */
+.history-list {
+    background-color: #f2f2f2;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px;
+    max-height: 200px; /* Limita l'altezza e aggiunge scroll */
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 5px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-item .timestamp {
+    font-weight: bold;
+    color: #333;
+    margin-right: 5px;
 }

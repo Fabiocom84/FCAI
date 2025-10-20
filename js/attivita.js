@@ -19,6 +19,7 @@ const TaskApp = {
     },
 
     init: async function() {
+        // --- Inizializzazione DOM Pulita ---
         this.dom.addTaskBtn = document.getElementById('addTaskBtn');
         this.dom.modal = document.getElementById('taskModal');
         this.dom.modalOverlay = document.getElementById('modalOverlay');
@@ -31,10 +32,7 @@ const TaskApp = {
         this.dom.taskDueDate = document.getElementById('taskDueDate');
         this.dom.saveTaskBtn = document.getElementById('saveTaskBtn');
         this.dom.closeModalBtn = this.dom.modal.querySelector('.close-button');
-        this.dom.commentsContainer = document.getElementById('commentsContainer');
-        this.dom.newCommentText = document.getElementById('newCommentText');
-        this.dom.addCommentBtn = document.getElementById('addCommentBtn');
-        this.dom.historyContainer = document.getElementById('historyContainer');
+        
         this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
         this.dom.adminUserFilter = document.getElementById('adminUserFilter');
         this.dom.taskCategory = document.getElementById('taskCategory');
@@ -43,10 +41,7 @@ const TaskApp = {
         this.dom.taskCommessa = document.getElementById('taskCommessa');
         this.dom.commessaSubcategoryContainer = document.getElementById('commessaSubcategoryContainer');
         this.dom.textSubcategoryContainer = document.getElementById('textSubcategoryContainer');
-        this.dom.completeTaskBtn = document.getElementById('completeTaskBtn');
-        this.dom.reopenTaskBtn = document.getElementById('reopenTaskBtn');
-        this.dom.commentsSection = document.getElementById('commentsSection');
-        this.dom.historySection = document.getElementById('historySection');
+        
         this.dom.openArchiveBtn = document.getElementById('openArchiveBtn');
         this.dom.archiveModal = document.getElementById('archiveModal');
         this.dom.closeArchiveBtn = this.dom.archiveModal.querySelector('.close-button');
@@ -54,6 +49,14 @@ const TaskApp = {
         this.dom.loadMoreBtn = document.getElementById('loadMoreBtn');
         this.dom.archiveLoader = document.getElementById('archiveLoader');
         this.dom.daFareContent = document.getElementById('daFareContent');
+
+        // --- Nuovi Elementi (Commenti/Storico/Azioni) ---
+        this.dom.addCommentBtn = document.getElementById('addCommentBtn');
+        this.dom.taskCommentInput = document.getElementById('taskCommentInput');
+        this.dom.taskHistoryContainer = document.getElementById('taskHistoryContainer');
+        this.dom.completeTaskBtn = document.getElementById('completeTaskBtn');
+        this.dom.reopenTaskBtn = document.getElementById('reopenTaskBtn');
+        // this.dom.deleteTaskBtn = document.getElementById('deleteTaskBtn'); // Decommenta se hai un pulsante elimina
         
         await this.loadInitialData();
         this.addEventListeners();
@@ -113,25 +116,28 @@ const TaskApp = {
             }
         });
         this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
-        this.dom.addCommentBtn.addEventListener('click', () => this.handleAddComment());
         this.dom.adminUserFilter.addEventListener('change', async () => {
             this.state.tasks = await this.loadTasks();
             this.renderBoard();
         });
         this.dom.taskCategory.addEventListener('change', () => this.toggleSubcategoryField());
-        this.dom.completeTaskBtn.addEventListener('click', () => this.updateTaskStatus('Completato'));
-        this.dom.reopenTaskBtn.addEventListener('click', () => this.updateTaskStatus('Da Fare'));
         this.dom.openArchiveBtn.addEventListener('click', () => this.openArchiveModal());
         this.dom.closeArchiveBtn.addEventListener('click', () => this.closeArchiveModal());
         this.dom.loadMoreBtn.addEventListener('click', () => this.loadCompletedTasks());
 
+        // --- Listener Nuovi/Modificati ---
+        this.dom.addCommentBtn.addEventListener('click', () => this.addCommentToHistory());
+        this.dom.completeTaskBtn.addEventListener('click', () => this.completeTask());
+        this.dom.reopenTaskBtn.addEventListener('click', () => this.updateTaskStatus('Da Fare'));
+        // this.dom.deleteTaskBtn.addEventListener('click', () => this.deleteTask()); // Decommenta se hai un pulsante elimina
+
+        // Listener Accordion (era già corretto)
         this.dom.taskForm.querySelectorAll('.form-section').forEach(section => {
             const header = section.querySelector('.form-section-header');
             const content = section.querySelector('.form-section-content');
             
             if (header && content) {
                 header.addEventListener('click', () => {
-                    // Collassa/espandi solo se l'header ha la classe 'collapsible'
                     if (header.classList.contains('collapsible')) {
                         const isCollapsed = content.style.display === 'none';
                         content.style.display = isCollapsed ? 'block' : 'none';
@@ -243,31 +249,31 @@ const TaskApp = {
 
     openTaskModal: async function(taskId = null) {
         this.dom.taskForm.reset();
-        this.dom.commentsContainer.innerHTML = '';
-        this.dom.historyContainer.innerHTML = '';
+        
+        // Pulizia nuovi campi
+        this.dom.taskCommentInput.value = '';
+        this.dom.taskHistoryContainer.innerHTML = '';
         
         this.initializeCommessaChoices();
         this.initializeSubcategoryChoices();
         this.toggleSubcategoryField();
 
+        // Logica Accordion
         const formSections = this.dom.taskForm.querySelectorAll('.form-section');
-            const isEditing = !!taskId; // Vero se stiamo modificando (taskId esiste)
+        const isEditing = !!taskId; 
+        formSections.forEach(section => {
+            const header = section.querySelector('.form-section-header');
+            const content = section.querySelector('.form-section-content');
+            if (!header || !content) return;
 
-            formSections.forEach(section => {
-                const header = section.querySelector('.form-section-header');
-                const content = section.querySelector('.form-section-content');
-                if (!header || !content) return;
-
-                if (isEditing) {
-                    // MODIFICA TASK: collassa tutto
-                    header.classList.add('collapsible');
-                    content.style.display = 'none';
-                } else {
-                    // NUOVO TASK: espandi tutto
-                    header.classList.remove('collapsible');
-                    content.style.display = 'block';
-                }
-            });
+            if (isEditing) {
+                header.classList.add('collapsible');
+                content.style.display = 'none';
+            } else {
+                header.classList.remove('collapsible');
+                content.style.display = 'block';
+            }
+        });
 
         if (taskId) {
             this.dom.modalTitle.textContent = 'Dettaglio Task';
@@ -291,12 +297,14 @@ const TaskApp = {
                 this.dom.taskAssignee.value = task.id_assegnatario_fk || '';
                 this.dom.taskDueDate.value = task.data_obiettivo ? task.data_obiettivo.split('T')[0] : '';
                 this.dom.taskPriority.value = task.priorita || 'Media';
-                this.renderComments(task.task_commenti);
-                this.renderHistory(task.task_storia);
-                this.dom.commentsSection.style.display = 'block';
-                this.dom.historySection.style.display = 'block';
+                
+                // --- Logica bottoni ---
                 this.dom.reopenTaskBtn.style.display = task.stato === 'Completato' ? 'inline-block' : 'none';
                 this.dom.completeTaskBtn.style.display = task.stato === 'Da Fare' ? 'inline-block' : 'none';
+                // if(this.dom.deleteTaskBtn) this.dom.deleteTaskBtn.style.display = 'inline-block';
+
+                // Carica il NUOVO storico
+                this.fetchTaskHistory(taskId);
 
             } catch (error) {
                 console.error("Errore nel caricare i dettagli del task:", error);
@@ -306,10 +314,10 @@ const TaskApp = {
             this.dom.modalTitle.textContent = 'Nuovo Task';
             this.state.currentTask = null;
             this.dom.taskAssignee.value = this.state.currentUserProfile.id_personale;
-            this.dom.commentsSection.style.display = 'none';
-            this.dom.historySection.style.display = 'none';
             this.dom.completeTaskBtn.style.display = 'none';
             this.dom.reopenTaskBtn.style.display = 'none';
+            // if(this.dom.deleteTaskBtn) this.dom.deleteTaskBtn.style.display = 'none';
+            this.dom.taskSaveBtn.textContent = 'Crea Task';
         }
         
         this.dom.modal.style.display = 'block';
@@ -475,47 +483,98 @@ const TaskApp = {
         }
     },
 
-    handleAddComment: async function() {
+    // --- NUOVE FUNZIONI PER COMMENTI/STORICO/AZIONI ---
+
+    completeTask: async function() {
         const taskId = this.state.currentTask?.id_task;
-        const commentText = this.dom.newCommentText.value.trim();
-        if (!taskId || !commentText) return;
+        if (!taskId) return;
+
+        if (!confirm('Sei sicuro di voler completare questo task?')) {
+            return;
+        }
+        // Chiama la funzione di aggiornamento stato
+        this.updateTaskStatus('Completato');
+    },
+
+    addCommentToHistory: async function() {
+        const commentText = this.dom.taskCommentInput.value.trim();
+        if (!commentText) {
+            alert('Per favore, scrivi un commento.');
+            return;
+        }
+
+        const taskId = this.state.currentTask?.id_task;
+        if (!taskId) return;
 
         try {
-            const res = await apiFetch(`/api/tasks/${taskId}/commenti`, {
+            // Usa il NUOVO endpoint per lo storico
+            const response = await apiFetch(`/api/tasks/${taskId}/storia`, {
                 method: 'POST',
-                body: JSON.stringify({ testo_commento: commentText })
+                body: JSON.stringify({
+                    azione: 'COMMENTO', // Azione specifica
+                    dettagli: commentText
+                })
             });
-            const newComment = await res.json();
-            this.state.currentTask.task_commenti.push(newComment);
-            this.renderComments(this.state.currentTask.task_commenti);
-            this.dom.newCommentText.value = '';
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore durante l\'aggiunta del commento.');
+            }
+
+            this.dom.taskCommentInput.value = ''; // Resetta il campo input
+            this.fetchTaskHistory(taskId); // Ricarica lo storico per mostrare il nuovo commento
+
         } catch (error) {
-            console.error("Errore nell'aggiunta del commento:", error);
+            console.error('Errore nell\'aggiunta del commento:', error);
+            alert('Si è verificato un errore durante l\'aggiunta del commento.');
         }
     },
 
-    renderComments: function(comments) {
-        if (!comments || comments.length === 0) {
-            this.dom.commentsContainer.innerHTML = '<p>Nessun commento.</p>';
-            return;
+    fetchTaskHistory: async function(taskId) {
+        try {
+            // CORRETTO: Usa apiFetch, che gestisce URL base e token
+            const response = await apiFetch(`/api/tasks/${taskId}/storia`); 
+            if (!response.ok) {
+                throw new Error('Errore nel recupero dello storico del task.');
+            }
+
+            const history = await response.json();
+            this.dom.taskHistoryContainer.innerHTML = ''; // Pulisce il contenitore NUOVO
+
+            if (!history || history.length === 0) {
+                this.dom.taskHistoryContainer.innerHTML = '<p>Nessun evento registrato.</p>';
+                return;
+            }
+            
+            // Ordina lo storico dal più recente al più vecchio
+            history.sort((a, b) => new Date(b.data_ora_azione) - new Date(a.data_ora_azione));
+
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history-item'); // Usa la nuova classe CSS
+                const timestamp = new Date(item.data_ora_azione).toLocaleString('it-IT');
+                
+                const user = item.utente ? item.utente.nome_cognome : (item.id_utente_azione_fk ? 'Utente Sconosciuto' : 'Sistema');
+                
+                // HTML Semplificato per lo storico
+                historyItem.innerHTML = `
+                    <p style="margin: 0; font-size: 0.8em; color: #555;">
+                        <strong style="color: #000;">${timestamp}</strong> - ${user}
+                    </p>
+                    <p style="margin: 4px 0 10px; font-size: 0.95em;">
+                        <strong>${item.azione}:</strong> ${item.dettagli || 'Azione registrata.'}
+                    </p>
+                `;
+                this.dom.taskHistoryContainer.appendChild(historyItem);
+            });
+
+        } catch (error) {
+            console.error('Errore nel caricamento dello storico:', error);
+            this.dom.taskHistoryContainer.innerHTML = '<p>Errore nel caricamento dello storico.</p>';
         }
-        this.dom.commentsContainer.innerHTML = comments.map(c => `
-            <div class="comment">
-                <strong>${c.autore?.nome_cognome || 'Utente'}</strong>
-                <p>${c.testo_commento}</p>
-            </div>
-        `).join('');
     },
-    
-    renderHistory: function(history) {
-        if (!history || history.length === 0) {
-            this.dom.historyContainer.innerHTML = '<li>Nessuno storico disponibile.</li>';
-            return;
-        }
-        this.dom.historyContainer.innerHTML = history.sort((a,b) => new Date(b.data_azione) - new Date(a.data_azione)).map(h => `
-            <li><strong>${new Date(h.data_azione).toLocaleString('it-IT')}:</strong> ${h.utente?.nome_cognome || 'Sistema'} ha eseguito l'azione '${h.azione}'. ${h.dettagli || ''}</li>
-        `).join('');
-    },
+
+    // --- FUNZIONI DRAG & DROP ---
 
     handleDragStart: function(e) {
         e.dataTransfer.setData('text/plain', e.target.dataset.taskId);
