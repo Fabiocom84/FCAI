@@ -124,6 +124,21 @@ const TaskApp = {
         this.dom.openArchiveBtn.addEventListener('click', () => this.openArchiveModal());
         this.dom.closeArchiveBtn.addEventListener('click', () => this.closeArchiveModal());
         this.dom.loadMoreBtn.addEventListener('click', () => this.loadCompletedTasks());
+
+        this.dom.taskForm.querySelectorAll('.form-section').forEach(section => {
+            const header = section.querySelector('.form-section-header');
+            const content = section.querySelector('.form-section-content');
+            
+            if (header && content) {
+                header.addEventListener('click', () => {
+                    // Collassa/espandi solo se l'header ha la classe 'collapsible'
+                    if (header.classList.contains('collapsible')) {
+                        const isCollapsed = content.style.display === 'none';
+                        content.style.display = isCollapsed ? 'block' : 'none';
+                    }
+                });
+            }
+        });
     },
 
     openArchiveModal: async function() {
@@ -234,6 +249,25 @@ const TaskApp = {
         this.initializeCommessaChoices();
         this.initializeSubcategoryChoices();
         this.toggleSubcategoryField();
+
+        const formSections = this.dom.taskForm.querySelectorAll('.form-section');
+            const isEditing = !!taskId; // Vero se stiamo modificando (taskId esiste)
+
+            formSections.forEach(section => {
+                const header = section.querySelector('.form-section-header');
+                const content = section.querySelector('.form-section-content');
+                if (!header || !content) return;
+
+                if (isEditing) {
+                    // MODIFICA TASK: collassa tutto
+                    header.classList.add('collapsible');
+                    content.style.display = 'none';
+                } else {
+                    // NUOVO TASK: espandi tutto
+                    header.classList.remove('collapsible');
+                    content.style.display = 'block';
+                }
+            });
 
         if (taskId) {
             this.dom.modalTitle.textContent = 'Dettaglio Task';

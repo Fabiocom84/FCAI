@@ -71,58 +71,64 @@
                     
                     <div class="form-section">
                         <div class="form-section-header">
-                            <!-- MODIFICA: Icona esistente -->
                             <img src="img/file.png" alt="Dati Principali">
                             <h3>Dati Principali</h3>
                         </div>
-                        <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
-                        <div class="form-grid">
-                            <div>
-                                <label for="taskCategory">Categoria *</label>
-                                <select id="taskCategory" required></select>
-                            </div>
-                            <div>
-                                <label for="taskPriority">Priorità *</label>
-                                <select id="taskPriority" required>
-                                    <option>Bassa</option>
-                                    <option selected>Media</option>
-                                    <option>Alta</option>
-                                </select>
+                        
+                        <div class="form-section-content">
+                            <input type="text" id="taskTitle" placeholder="Titolo del task..." required>
+                            <div class="form-grid">
+                                <div>
+                                    <label for="taskCategory">Categoria *</label>
+                                    <select id="taskCategory" required></select>
+                                </div>
+                                <div>
+                                    <label for="taskPriority">Priorità *</label>
+                                    <select id="taskPriority" required>
+                                        <option>Bassa</option>
+                                        <option selected>Media</option>
+                                        <option>Alta</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <div class="form-section-header">
-                            <!-- MODIFICA: Icona esistente -->
                             <img src="img/tasks.png" alt="Dettagli">
                             <h3>Dettagli</h3>
                         </div>
-                        <div id="textSubcategoryContainer">
-                            <label for="taskSubcategory">Sottocategoria / Dettaglio</label>
-                            <select id="taskSubcategory"></select>
+
+                        <div class="form-section-content">
+                            <div id="textSubcategoryContainer">
+                                <label for="taskSubcategory">Sottocategoria / Dettaglio</label>
+                                <select id="taskSubcategory"></select>
+                            </div>
+                            <div id="commessaSubcategoryContainer" style="display: none;">
+                                    <label for="taskCommessa">Seleziona Commessa</label>
+                                    <select id="taskCommessa"></select>
+                            </div>
+                            <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
                         </div>
-                        <div id="commessaSubcategoryContainer" style="display: none;">
-                             <label for="taskCommessa">Seleziona Commessa</label>
-                             <select id="taskCommessa"></select>
-                        </div>
-                        <textarea id="taskDescription" placeholder="Aggiungi una descrizione..."></textarea>
                     </div>
 
                     <div class="form-section">
                         <div class="form-section-header">
-                            <!-- MODIFICA: Icona esistente -->
                             <img src="img/disciplinary.png" alt="Assegnazione">
                             <h3>Assegnazione</h3>
                         </div>
-                        <div class="form-grid">
-                            <div>
-                                <label for="taskAssignee">Assegnato a:</label>
-                                <select id="taskAssignee"></select>
-                            </div>
-                            <div>
-                                <label for="taskDueDate">Data Scadenza:</label>
-                                <input type="date" id="taskDueDate">
+
+                        <div class="form-section-content">
+                            <div class="form-grid">
+                                <div>
+                                    <label for="taskAssignee">Assegnato a:</label>
+                                    <select id="taskAssignee"></select>
+                                </div>
+                                <div>
+                                    <label for="taskDueDate">Data Scadenza:</label>
+                                    <input type="date" id="taskDueDate">
+                                </div>
                             </div>
                         </div>
                     </div>

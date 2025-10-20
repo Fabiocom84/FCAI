@@ -269,3 +269,13 @@ body {
     height: 30px;
     border-width: 3px;
 }
+
+/* Stili per l'accordion dei task */
+.form-section-header.collapsible {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.form-section-header.collapsible:hover {
+    background-color: #e9ecef; /* Un grigio leggero al hover */
+}
