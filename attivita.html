@@ -157,7 +157,15 @@
                         </div>
                     </div>
 
-                    <div class="form-section" id="commentSection">
+                    <div class="modal-action-buttons">
+                            <button id="addCommentBtn" type="button" class="button button--primary">Aggiungi Commento</button>
+                            <button id="completeTaskBtn" class="button button--warning" style="display: none;">Completa Task</button>
+                            <button id="reopenTaskBtn" class="button" style="display: none; background-color: #ffc107; color: #212529;">Riapri Task</button>
+                            
+                            <button id="saveTaskBtn" class="button button--secondary">Salva</button> 
+                        </div>
+
+                    <div class="form-section" id="historySection">
                         <div class="form-section-header">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#495057" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
                                 <circle cx="12" cy="12" r="10"/>
@@ -172,12 +180,6 @@
                     </div>
 
                     </form>
-            </div>
-            
-            <div class="modal-footer">
-                 <button id="reopenTaskBtn" class="button" style="display: none; background-color: #ffc107; color: #212529;">Riapri Task</button>
-                 <button id="completeTaskBtn" class="button button--warning" style="display: none;">Completa Task</button>
-                 <button id="saveTaskBtn" class="save-button">Salva</button>
             </div>
         </div>
     </div>

@@ -327,10 +327,35 @@ body {
     box-sizing: border-box; /* Include padding e border nella larghezza */
 }
 
-/* NUOVO STILE (PER ALLINEARE A DESTRA) */
-.form-section-content.align-right {
+/* Contenitore per la nuova barra dei bottoni */
+.modal-action-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; /* Allinea i bottoni a destra */
+    gap: 10px;
+    margin-top: 15px;
+    border-top: 1px solid #e0e0e0; /* Linea separatrice */
+    padding-top: 15px;
+}
+
+/* Assicura che tutti i bottoni nel gruppo abbiano un aspetto coerente */
+.modal-action-buttons .button,
+.modal-action-buttons .save-button {
+    margin: 0;
+    flex-grow: 0;
+    flex-basis: auto;
+    width: auto;
+    padding: 8px 16px; /* Padding standard */
+    font-size: 0.9em;
+}
+
+/* Stile per il bottone di salvataggio (ora button--secondary) */
+#saveTaskBtn {
+    background-color: #007bff;
+    color: white;
+    border-color: #0069d9;
+}
+#saveTaskBtn:hover {
+    background-color: #0069d9;
 }
 
 /* Stile per la lista dello storico */

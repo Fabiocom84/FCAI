@@ -317,6 +317,7 @@ const TaskApp = {
                 // if(this.dom.deleteTaskBtn) this.dom.deleteTaskBtn.style.display = 'inline-block';
 
                 this.renderHistoryAndComments(task.task_storia || [], task.task_commenti || []);
+                this.dom.saveTaskBtn.textContent = 'Salva Modifiche';
 
             } catch (error) {
                 console.error("Errore nel caricare i dettagli del task:", error);
