@@ -266,13 +266,26 @@ const TaskApp = {
             const content = section.querySelector('.form-section-content');
             if (!header || !content) return;
 
+            // ## INIZIO MODIFICA ##
+            // Controlla se la sezione è quella dei commenti o dello storico
+            const isAlwaysOpen = section.id === 'commentSection' || section.id === 'historySection';
+
             if (isEditing) {
-                header.classList.add('collapsible');
-                content.style.display = 'none';
+                if (isAlwaysOpen) {
+                    // Se è commento o storico, forzane l'apertura e non renderlo collassabile
+                    header.classList.remove('collapsible');
+                    content.style.display = 'block';
+                } else {
+                    // Altrimenti, applica la vecchia logica (collassa)
+                    header.classList.add('collapsible');
+                    content.style.display = 'none';
+                }
             } else {
+                // In modalità creazione, tutto è visibile (comportamento invariato)
                 header.classList.remove('collapsible');
                 content.style.display = 'block';
             }
+            // ## FINE MODIFICA ##
         });
 
         if (taskId) {
