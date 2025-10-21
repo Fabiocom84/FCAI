@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Associa gli eventi
     if (elements.closeBtn) elements.closeBtn.addEventListener('click', closeAndCleanup);
     if (elements.saveBtn) elements.saveBtn.addEventListener('click', saveOrder);
+    if (elements.immagineInput) elements.immagineInput.addEventListener('change', handleImageUpload);
     
     // Rendi la funzione disponibile globalmente per commesse.js
     window.openNewOrderModal = openModal;
