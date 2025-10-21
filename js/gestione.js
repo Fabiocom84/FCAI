@@ -287,21 +287,42 @@ const App = {
     * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
     */
     init: function() {
-        // 1. Qui cerchiamo solo gli elementi SEMPRE presenti nella pagina
+        // 1. Recupera elementi DOM
         this.dom = {
             gridWrapper: document.querySelector('.grid-container'),
-            toolbarArea: document.getElementById('toolbarArea'), // Corretto
+            toolbarArea: document.getElementById('toolbarArea'),
             viewSelector: document.getElementById('tableViewSelector')
         };
 
+        // --- INIZIO MODIFICA: Leggi i parametri dall'URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view');
+        const filterKeyParam = urlParams.get('filterKey');
+        const filterValueParam = urlParams.get('filterValue');
+
+        // 2. Imposta lo stato INIZIALE in base ai parametri
+        if (viewParam) {
+            this.state.currentView = viewParam; // Sovrascrive il default 'registrazioni'
+        }
+
+        if (filterKeyParam && filterValueParam) {
+            // Imposta il filtro attivo
+            // Nota: il valore deve essere un array
+            this.state.activeFilters = {
+                [filterKeyParam]: [filterValueParam]
+            };
+        }
+        // --- FINE MODIFICA ---
+
+        // 3. Aggiorna l'interfaccia (ora userà lo stato modificato)
         if (this.dom.viewSelector) {
             this.dom.viewSelector.value = this.state.currentView;
         }
 
-        // 2. Chiamiamo gli event listener per gli elementi statici
+        // 4. Chiamiamo gli event listener e carichiamo i dati
         this.addStaticEventListeners();
         this.renderToolbar();
-        this.loadAndRenderData(true);
+        this.loadAndRenderData(true); // Questa chiamata ora userà i filtri!
     },
 
     addStaticEventListeners: function() {
