@@ -188,7 +188,7 @@ const App = {
                     options: { apiEndpoint: '/api/get-etichette', valueField: 'id', textField: 'label' },
                     // --- NUOVA CONFIGURAZIONE FILTRO COMMESSA ---
                     filterOptions: {
-                        key: 'commesse.id_commessa', // La chiave da usare per il filtro nel backend
+                        //key: 'commesse.id_commessa', // La chiave da usare per il filtro nel backend
                         apiEndpoint: '/api/get-etichette', // L'API da cui prendere le opzioni
                         valueField: 'id',        // La proprietà da usare come valore del filtro
                         textField: 'label'       // La proprietà da mostrare nella lista
