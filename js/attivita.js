@@ -265,7 +265,6 @@ const TaskApp = {
             const header = section.querySelector('.form-section-header');
             const content = section.querySelector('.form-section-content');
             if (!header || !content) return;
-            
 
             // ## INIZIO MODIFICA ##
             // Controlla se la sezione è quella dei commenti o dello storico
@@ -331,7 +330,7 @@ const TaskApp = {
             this.dom.completeTaskBtn.style.display = 'none';
             this.dom.reopenTaskBtn.style.display = 'none';
             // if(this.dom.deleteTaskBtn) this.dom.deleteTaskBtn.style.display = 'none';
-            this.dom.taskSaveBtn.textContent = 'Crea Task';
+            this.dom.saveTaskBtn.textContent = 'Crea Task';
         }
         
         this.dom.modal.style.display = 'block';
