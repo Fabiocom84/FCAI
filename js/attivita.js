@@ -126,7 +126,7 @@ const TaskApp = {
         this.dom.loadMoreBtn.addEventListener('click', () => this.loadCompletedTasks());
 
         // --- Listener Nuovi/Modificati ---
-        this.dom.addCommentBtn.addEventListener('click', () => this.addCommentToHistory());
+        this.dom.addCommentBtn.addEventListener('click', () => this.addComment());
         this.dom.completeTaskBtn.addEventListener('click', () => this.completeTask());
         this.dom.reopenTaskBtn.addEventListener('click', () => this.updateTaskStatus('Da Fare'));
         // this.dom.deleteTaskBtn.addEventListener('click', () => this.deleteTask()); // Decommenta se hai un pulsante elimina
@@ -316,8 +316,7 @@ const TaskApp = {
                 this.dom.completeTaskBtn.style.display = task.stato === 'Da Fare' ? 'inline-block' : 'none';
                 // if(this.dom.deleteTaskBtn) this.dom.deleteTaskBtn.style.display = 'inline-block';
 
-                // Carica il NUOVO storico
-                this.fetchTaskHistory(taskId);
+                this.renderHistoryAndComments(task.task_storia || [], task.task_commenti || []);
 
             } catch (error) {
                 console.error("Errore nel caricare i dettagli del task:", error);
@@ -509,7 +508,7 @@ const TaskApp = {
         this.updateTaskStatus('Completato');
     },
 
-    addCommentToHistory: async function() {
+    addComment: async function() {
         const commentText = this.dom.taskCommentInput.value.trim();
         if (!commentText) {
             alert('Per favore, scrivi un commento.');
@@ -520,12 +519,11 @@ const TaskApp = {
         if (!taskId) return;
 
         try {
-            // Usa il NUOVO endpoint per lo storico
-            const response = await apiFetch(`/api/tasks/${taskId}/storia`, {
+            // --- CORREZIONE: Chiama l'endpoint '/commenti' e usa 'testo_commento' ---
+            const response = await apiFetch(`/api/tasks/${taskId}/commenti`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    azione: 'COMMENTO', // Azione specifica
-                    dettagli: commentText
+                    testo_commento: commentText
                 })
             });
 
@@ -534,8 +532,15 @@ const TaskApp = {
                 throw new Error(errorData.error || 'Errore durante l\'aggiunta del commento.');
             }
 
+            const newComment = await response.json(); // Il backend restituisce il nuovo commento
             this.dom.taskCommentInput.value = ''; // Resetta il campo input
-            this.fetchTaskHistory(taskId); // Ricarica lo storico per mostrare il nuovo commento
+
+            // --- Aggiorna lo stato e ricarica lo storico ---
+            this.state.currentTask.task_commenti.push(newComment);
+            this.renderHistoryAndComments(
+                this.state.currentTask.task_storia,
+                this.state.currentTask.task_commenti
+            );
 
         } catch (error) {
             console.error('Errore nell\'aggiunta del commento:', error);
@@ -543,48 +548,58 @@ const TaskApp = {
         }
     },
 
-    fetchTaskHistory: async function(taskId) {
-        try {
-            // CORRETTO: Usa apiFetch, che gestisce URL base e token
-            const response = await apiFetch(`/api/tasks/${taskId}/storia`); 
-            if (!response.ok) {
-                throw new Error('Errore nel recupero dello storico del task.');
-            }
+    renderHistoryAndComments: function(history, comments) {
+        this.dom.taskHistoryContainer.innerHTML = ''; // Pulisce il contenitore
 
-            const history = await response.json();
-            this.dom.taskHistoryContainer.innerHTML = ''; // Pulisce il contenitore NUOVO
+        // 1. Combina commenti e storico in un unico array
+        const combinedList = [];
 
-            if (!history || history.length === 0) {
-                this.dom.taskHistoryContainer.innerHTML = '<p>Nessun evento registrato.</p>';
-                return;
-            }
-            
-            // Ordina lo storico dal più recente al più vecchio
-            history.sort((a, b) => new Date(b.data_ora_azione) - new Date(a.data_ora_azione));
-
-            history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.classList.add('history-item'); // Usa la nuova classe CSS
-                const timestamp = new Date(item.data_ora_azione).toLocaleString('it-IT');
-                
-                const user = item.utente ? item.utente.nome_cognome : (item.id_utente_azione_fk ? 'Utente Sconosciuto' : 'Sistema');
-                
-                // HTML Semplificato per lo storico
-                historyItem.innerHTML = `
-                    <p style="margin: 0; font-size: 0.8em; color: #555;">
-                        <strong style="color: #000;">${timestamp}</strong> - ${user}
-                    </p>
-                    <p style="margin: 4px 0 10px; font-size: 0.95em;">
-                        <strong>${item.azione}:</strong> ${item.dettagli || 'Azione registrata.'}
-                    </p>
-                `;
-                this.dom.taskHistoryContainer.appendChild(historyItem);
+        history.forEach(item => {
+            combinedList.push({
+                type: 'history',
+                date: new Date(item.data_ora_azione),
+                user: item.utente ? item.utente.nome_cognome : 'Sistema',
+                action: item.azione,
+                details: item.dettagli
             });
+        });
 
-        } catch (error) {
-            console.error('Errore nel caricamento dello storico:', error);
-            this.dom.taskHistoryContainer.innerHTML = '<p>Errore nel caricamento dello storico.</p>';
+        comments.forEach(item => {
+            combinedList.push({
+                type: 'comment',
+                date: new Date(item.data_creazione),
+                user: item.autore ? item.autore.nome_cognome : 'Utente',
+                action: 'COMMENTO',
+                details: item.testo_commento
+            });
+        });
+
+        // 2. Ordina l'array combinato per data (dal più recente)
+        combinedList.sort((a, b) => b.date - a.date);
+
+        // 3. Renderizza la lista
+        if (combinedList.length === 0) {
+            this.dom.taskHistoryContainer.innerHTML = '<p>Nessun evento registrato.</p>';
+            return;
         }
+
+        combinedList.forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.classList.add('history-item');
+            const timestamp = item.date.toLocaleString('it-IT');
+            
+            const detailsClass = item.type === 'comment' ? 'history-comment-details' : 'history-details';
+            
+            historyItem.innerHTML = `
+                <p style="margin: 0; font-size: 0.8em; color: #555;">
+                    <strong style="color: #000;">${timestamp}</strong> - ${item.user}
+                </p>
+                <p style="margin: 4px 0 10px; font-size: 0.95em;">
+                    <strong>${item.action}:</strong> <span class="${detailsClass}">${item.details || ''}</span>
+                </p>
+            `;
+            this.dom.taskHistoryContainer.appendChild(historyItem);
+        });
     },
 
     // --- FUNZIONI DRAG & DROP ---

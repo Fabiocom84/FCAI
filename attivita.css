@@ -327,20 +327,10 @@ body {
     box-sizing: border-box; /* Include padding e border nella larghezza */
 }
 
-/* Stile per il pulsante "Aggiungi Commento" */
-#addCommentBtn {
-    background-color: #28a745; /* Verde per l'aggiunta */
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.95em;
-    transition: background-color 0.2s;
-}
-
-#addCommentBtn:hover {
-    background-color: #218838;
+/* NUOVO STILE (PER ALLINEARE A DESTRA) */
+.form-section-content.align-right {
+    display: flex;
+    justify-content: flex-end;
 }
 
 /* Stile per la lista dello storico */
@@ -369,3 +359,15 @@ body {
     color: #333;
     margin-right: 5px;
 }
+
+.button--primary { background-color: #28a745; border-color: #218838; color: white; }
+.button--primary:hover { background-color: #218838; }
+
+.button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
+.button--secondary:hover { background-color: #0069d9; }
+
+.button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
+.button--warning:hover { background-color: #e0a800; }
+
+.button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
+.button--danger:hover { background-color: #c82333; }
