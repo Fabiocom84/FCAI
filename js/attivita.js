@@ -265,6 +265,7 @@ const TaskApp = {
             const header = section.querySelector('.form-section-header');
             const content = section.querySelector('.form-section-content');
             if (!header || !content) return;
+            
 
             // ## INIZIO MODIFICA ##
             // Controlla se la sezione è quella dei commenti o dello storico
