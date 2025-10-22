@@ -40,7 +40,7 @@ const TaskApp = {
         // --- DOM MODALE 1: CREAZIONE / MODIFICA FORM (#taskModal) ---
         this.dom.formModal = document.getElementById('taskModal');
         this.dom.formCloseBtn = this.dom.formModal.querySelector('[data-close-create]');
-        this.dom.formModalTitle = document.getElementById('modalTitle');
+        this.dom.formModalTitle = this.dom.formModal.querySelector('#modalTitle');
         this.dom.taskForm = document.getElementById('taskForm');
         this.dom.taskId = document.getElementById('taskId');
         this.dom.taskTitle = document.getElementById('taskTitle');
