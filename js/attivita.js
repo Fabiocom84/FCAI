@@ -264,7 +264,7 @@ const TaskApp = {
         
         // Imposta i valori di default per la CREAZIONE
         if (!taskId) {
-            this.dom.modalTitle.textContent = 'Nuovo Task';
+            this.dom.formModalTitle.textContent = 'Nuovo Task';
             this.dom.saveTaskBtn.textContent = 'Crea Task';
             // Pre-seleziona l'utente corrente come assegnatario
             this.dom.taskAssignee.value = this.state.currentUserProfile.id_personale;
@@ -273,7 +273,7 @@ const TaskApp = {
         } 
         // Se stiamo MODIFICANDO (chiamato da switchToEditMode)
         else {
-            this.dom.modalTitle.textContent = 'Modifica Dati Task';
+            this.dom.formModalTitle.textContent = 'Modifica Dati Task';
             this.dom.saveTaskBtn.textContent = 'Salva Modifiche';
             this.dom.taskId.value = taskId;
             // Carica i dati del task nel form
