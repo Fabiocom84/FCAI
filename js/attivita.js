@@ -1,24 +1,3 @@
-Ecco il file attivita.js riscritto da zero per adattarsi alla nuova architettura "agile" che abbiamo definito, con i due modali separati e lo stile "post-it".
-
-Ho seguito tutte le tue indicazioni:
-
-Stile "Post-it" (createTaskCard): Le card ora sono generate con le classi di priorità (priority-alta, media, bassa) che useremo nel CSS per lo sfondo colorato. Il contenuto è solo il titolo e l'assegnatario è stato rimosso.
-
-Logica Modali Separata:
-
-Cliccando "+ Nuovo Task" si apre solo il modale di creazione (openCreateModal).
-
-Cliccando su una card si apre il nuovo modale di dettaglio (openDetailModal).
-
-Flusso di Modifica: Il modale di dettaglio ha il pulsante "Modifica Dati" che, una volta cliccato, chiude il modale dettaglio e apre il modale form per la modifica approfondita (switchToEditMode).
-
-Interazioni: "Completa Task" e "Aggiungi Commento" sono ora gestiti correttamente dal modale di dettaglio.
-
-Drag-and-Drop: La logica per il trascinamento da "Da Fare" a "Completati" è stata mantenuta e funziona con le nuove card.
-
-File attivita.js (Riscritto)
-JavaScript
-
 // js/attivita.js
 // Versione 2.0 - Architettura a due modali (Creazione / Dettaglio)
 
