@@ -77,12 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             tipiList.forEach(t => {
                 typesById[t.id_tipo] = t;
-                // Usa la colonna 'shortcut_key' da Supabase (es. 'z', 'a', 'q')
                 if (t.shortcut_key) {
                     shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo;
                 }
             });
-            console.log("Mappa Shortcut Caricata:", shortcutMap);
         } catch (err) {
             console.error("Errore caricamento tipi:", err);
         }
@@ -120,8 +118,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         
+        // Header Color Picker (quello vecchio per le colonne)
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', async (e) => {
+                if(!colorPickerPopup.style.display || colorPickerPopup.style.display === 'none') return; // Ignora click nel popup visuale
                 const color = e.target.dataset.color;
                 if (activeHeaderDate) await applyColumnColor(activeHeaderDate, color);
                 colorPickerPopup.style.display = 'none';
@@ -228,10 +228,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const record = currentData.find(r => r.id_personale_fk === person.id_personale && r.data === dayInfo.dateStr);
                 if (record) renderCellContent(td, record);
 
-                // Modifica Rapida (Click singolo)
                 td.addEventListener('click', (e) => handleQuickEdit(e, td, person.id_personale, dayInfo.dateStr));
                 
-                // Modifica Visuale (Tasto Destro)
                 td.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     handleVisualEdit(e, td, person.id_personale, dayInfo.dateStr);
@@ -248,22 +246,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.className = ''; 
         if (td.dataset.isWeekend) td.classList.add('weekend-column'); 
 
-        // 1. Colore Sfondo Custom
         if (record.colore && record.colore !== 'none') {
             td.classList.add(`cell-color-${record.colore}`);
         }
 
-        // 2. Badge Tipo Presenza (Etichetta es. "Fer", "Mal")
-        // Mostra solo se esiste e se c'è un'etichetta definita nel DB
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const tipoInfo = typesById[record.id_tipo_presenza_fk];
-            
-            // Usa 'etichetta' dal DB (es. "Fer", "Cant")
             if (tipoInfo.etichetta) {
                 const badge = document.createElement('span');
                 badge.className = 'chip';
                 
-                // Usa 'colore_hex' dal DB (es. #2196F3)
                 if (tipoInfo.colore_hex) {
                     badge.style.backgroundColor = tipoInfo.colore_hex;
                     badge.style.color = '#fff';
@@ -272,17 +264,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 badge.textContent = tipoInfo.etichetta;
-                
-                // SPAZIATURA: Aggiunge margine se ci sono anche le ore
-                if (record.numero_ore) {
-                    badge.style.marginRight = '5px'; 
-                }
-                
+                if (record.numero_ore) badge.style.marginRight = '5px';
                 td.appendChild(badge);
             }
         }
 
-        // 3. Ore
         if (record.numero_ore !== null && record.numero_ore !== undefined) {
             const chip = document.createElement('span');
             chip.className = 'chip ore';
@@ -290,7 +276,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             td.appendChild(chip);
         }
 
-        // 4. Note
         if (record.note) {
             const indicator = document.createElement('div');
             indicator.className = 'note-indicator';
@@ -307,16 +292,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const record = currentData.find(r => r.id_personale_fk === personId && r.data === dateStr) || {};
         
-        // Popola l'input con i valori attuali
         let initialValue = "";
         if (record.numero_ore) initialValue += record.numero_ore;
         
         if (record.id_tipo_presenza_fk) {
             const tipo = typesById[record.id_tipo_presenza_fk];
-            // Mostra lo shortcut (es. \z) se disponibile
-            if (tipo && tipo.shortcut_key) {
-                initialValue += " \\" + tipo.shortcut_key;
-            }
+            if (tipo && tipo.shortcut_key) initialValue += " \\" + tipo.shortcut_key;
         }
         if (record.note) initialValue += " +" + record.note;
 
@@ -341,14 +322,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 const res = await apiClient.post('/presenze', payload);
-                
                 const idx = currentData.findIndex(r => r.id_personale_fk === personId && r.data === dateStr);
                 if(idx >= 0) currentData[idx] = res; else currentData.push(res);
-                
                 renderCellContent(td, res);
             } catch(err) {
                 console.error(err);
-                alert("Errore salvataggio: " + err.message);
                 renderCellContent(td, record); 
             }
         };
@@ -363,7 +341,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         input.focus();
     }
 
-    // Parser: "8 \z +nota"
     function parseQuickCommand(text) {
         let ore = null;
         let idTipo = null;
@@ -371,61 +348,89 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!text) return { ore, idTipo, note };
 
-        // Estrai Note
         const noteMatch = text.match(/\+(.*)/);
         if (noteMatch) {
             note = noteMatch[1].trim();
             text = text.replace(noteMatch[0], ''); 
         }
 
-        // Estrai Shortcut (\x)
         const cmdMatch = text.match(/\\([a-zA-Z0-9])/);
         if (cmdMatch) {
             const code = cmdMatch[1].toLowerCase();
-            // Cerca nella mappa caricata dal DB
-            if (shortcutMap[code]) {
-                idTipo = shortcutMap[code];
-            }
+            if (shortcutMap[code]) idTipo = shortcutMap[code];
             text = text.replace(cmdMatch[0], '');
         }
 
-        // Estrai Ore
         const numMatch = text.match(/(\d+(\.\d+)?)/);
-        if (numMatch) {
-            ore = parseFloat(numMatch[0]);
-        }
+        if (numMatch) ore = parseFloat(numMatch[0]);
 
         return { ore, idTipo, note };
     }
 
-    // --- MODIFICA VISUALE ---
+    // --- MODIFICA VISUALE (Tasto Destro) ---
     function handleVisualEdit(e, td, personId, dateStr) {
         if (activePopup) activePopup.remove();
         
         const record = currentData.find(r => r.id_personale_fk === personId && r.data === dateStr) || {};
         const popup = document.createElement('div');
         popup.className = 'visual-popup';
-        popup.style.top = `${e.pageY}px`;
+        
+        // Smart Position
+        const topPos = (window.scrollY + e.pageY + 400 > document.body.scrollHeight) ? e.pageY - 350 : e.pageY;
+        popup.style.top = `${topPos}px`;
         popup.style.left = `${e.pageX}px`;
 
-        let optionsHtml = '<option value="">(Ordinario)</option>';
+        // Genera Griglia Tipi
+        let buttonsHtml = '';
+        // Aggiungi pulsante "Reset/Ordinario"
+        const isOrd = (!record.id_tipo_presenza_fk);
+        buttonsHtml += `
+            <div class="type-btn ${isOrd ? 'selected' : ''}" data-id="">
+                <span style="font-size:0.8em;">(Ord)</span>
+            </div>
+        `;
+
         Object.values(typesById).sort((a,b)=>(a.etichetta||'').localeCompare(b.etichetta||'')).forEach(t => {
-            const sel = (record.id_tipo_presenza_fk === t.id_tipo) ? 'selected' : '';
-            optionsHtml += `<option value="${t.id_tipo}" ${sel}>${t.etichetta} (${t.shortcut_key})</option>`;
+            const isSel = (record.id_tipo_presenza_fk === t.id_tipo);
+            const style = t.colore_hex ? `border-left: 3px solid ${t.colore_hex};` : '';
+            buttonsHtml += `
+                <div class="type-btn ${isSel ? 'selected' : ''}" data-id="${t.id_tipo}" style="${style}">
+                    <span class="icon">${t.icona || ''}</span>
+                    <span>${t.etichetta || t.codice}</span>
+                </div>
+            `;
         });
+
+        // Color Picker HTML interno
+        const colors = ['none', 'red', 'yellow', 'green', 'blue'];
+        let colorHtml = '<div class="color-picker-row">';
+        colors.forEach(c => {
+            const sel = (record.colore === c || (!record.colore && c==='none')) ? 'selected' : '';
+            colorHtml += `<div class="color-dot ${sel}" data-color="${c}" data-bg="${c}"></div>`;
+        });
+        colorHtml += '</div>';
 
         popup.innerHTML = `
             <h4>${dateStr}</h4>
-            <div style="margin-bottom:10px;">
+            <div>
                 <label>Ore:</label>
                 <input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5">
             </div>
-            <div style="margin-bottom:10px;">
-                <label>Stato:</label>
-                <select id="v-tipo">${optionsHtml}</select>
+            <div style="margin-top:10px;">
+                <label>Tipo Presenza:</label>
+                <div class="type-grid" id="type-grid">
+                    ${buttonsHtml}
+                </div>
+                <input type="hidden" id="v-tipo" value="${record.id_tipo_presenza_fk || ''}">
             </div>
-            <div style="margin-bottom:10px;">
-                <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
+            <div style="margin-top:10px;">
+                <label>Colore Sfondo:</label>
+                ${colorHtml}
+                <input type="hidden" id="v-color" value="${record.colore || 'none'}">
+            </div>
+            <div style="margin-top:10px;">
+                <label>Note:</label>
+                <textarea id="v-note">${record.note || ''}</textarea>
             </div>
             <div class="popup-actions">
                 <button id="v-save" class="save">Salva</button>
@@ -436,10 +441,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
         activePopup = popup;
 
+        // Gestione Click Pulsanti Tipo
+        popup.querySelectorAll('.type-btn').forEach(btn => {
+            btn.onclick = () => {
+                popup.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                popup.querySelector('#v-tipo').value = btn.dataset.id;
+            };
+        });
+
+        // Gestione Click Colore
+        popup.querySelectorAll('.color-dot').forEach(dot => {
+            dot.onclick = () => {
+                popup.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+                dot.classList.add('selected');
+                popup.querySelector('#v-color').value = dot.dataset.color;
+            };
+        });
+
         popup.querySelector('#v-save').onclick = async () => {
             const ore = popup.querySelector('#v-ore').value;
             const tipo = popup.querySelector('#v-tipo').value;
             const note = popup.querySelector('#v-note').value;
+            const color = popup.querySelector('#v-color').value;
 
             const payload = {
                 id_personale_fk: personId,
@@ -447,7 +471,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 numero_ore: ore ? parseFloat(ore) : null,
                 id_tipo_presenza_fk: tipo ? parseInt(tipo) : null,
                 note: note,
-                colore: record.colore
+                colore: color
             };
             
             try {
