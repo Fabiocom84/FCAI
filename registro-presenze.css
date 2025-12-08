@@ -192,37 +192,54 @@ body {
 }
 
 /* --- MODALE SPLIT VIEW (Due Tabelle) --- */
-/* Applica questa classe al div .modal-content nell'HTML */
-.modal-content.wide-modal {
-    max-width: 1300px !important; /* Forza bruta per allargare */
-    width: 95% !important;
-    margin: 2% auto !important;
+#personnelDetailModal .modal-content {
+    max-width: 1400px !important; /* Molto largo */
+    width: 95vw !important;       /* Occupa il 95% della larghezza finestra */
+    margin: 2vh auto !important;  /* Centrato verticalmente */
+    height: 90vh !important;      /* Occupa il 90% dell'altezza */
+    display: flex;
+    flex-direction: column;
 }
 
+/* Header e Footer fissi, Body scrollabile */
+#personnelDetailModal .modal-header,
+#personnelDetailModal .detail-controls {
+    flex-shrink: 0; /* Non si restringono */
+}
+
+#personnelDetailModal .modal-body {
+    flex-grow: 1;
+    overflow-y: auto; /* Scroll verticale solo per il contenuto */
+    padding: 10px;
+}
+
+/* Contenitore a due colonne */
 .modal-split-container {
     display: flex;
-    gap: 40px; /* Spazio generoso tra le due colonne */
+    gap: 40px; /* Spazio tra le due tabelle */
     width: 100%;
+    align-items: flex-start; /* Allinea in alto */
 }
 
 .split-column {
-    flex: 1; 
-    min-width: 0; 
+    flex: 1; /* 50% larghezza ciascuno */
+    min-width: 0;
 }
 
+/* Tabella Dettaglio */
 .detail-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.95em; 
-    table-layout: fixed; 
+    table-layout: fixed; /* Fondamentale per rispettare le percentuali */
 }
 
 .detail-table th, .detail-table td {
-    padding: 8px 10px;
+    padding: 8px 12px; /* Più spazio interno */
     border: 1px solid #ddd;
     text-align: left;
     vertical-align: middle;
-    word-wrap: break-word; 
+    word-wrap: break-word; /* Testo a capo */
 }
 
 .detail-table th {
@@ -230,23 +247,27 @@ body {
     font-weight: 600;
     text-align: center;
     height: 45px;
+    position: sticky; /* Header sticky anche nel modale */
+    top: 0;
+    z-index: 5;
 }
 
-/* LARGHEZZE COLONNE MODALE OTTIMIZZATE */
-.detail-col-day { width: 12%; text-align: center; }   
-.detail-col-hours { width: 12%; text-align: center; } 
+/* LARGHEZZE COLONNE MODALE (Totale 100%) */
+.detail-col-day { width: 10%; text-align: center; }   
+.detail-col-hours { width: 10%; text-align: center; } 
 .detail-col-status { width: 15%; text-align: center; }
-.detail-col-notes { width: 61%; } /* Molto spazio per le note */
+.detail-col-notes { width: 65%; } /* Spazio enorme per le note */
 
 .detail-row-weekend {
     background-color: #fff3e0; 
 }
 
+/* Stile Note */
 .detail-note-text {
     font-size: 0.95em;
     line-height: 1.4;
     color: #333;
-    white-space: normal; 
+    white-space: normal; /* A capo normale */
 }
 
 .detail-controls {
