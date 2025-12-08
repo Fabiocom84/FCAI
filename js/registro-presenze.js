@@ -40,13 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeCell = null;
     let activeHeaderDate = null;
     
+    // Variabili Dettaglio
     let detailCurrentPerson = null;
     let detailCurrentDate = new Date();
 
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 75; // Aggiornato a 75px per match CSS
+    const COLUMN_WIDTH = 75;
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('search-notes');
     
     const detailModal = document.getElementById('personnelDetailModal');
-    const detailBody = document.getElementById('personnelDetailBody'); // Questo verrà sostituito dinamicamente
+    const detailBody = document.getElementById('personnelDetailBody'); 
     const detailTitle = document.getElementById('personnelDetailTitle');
     const detailMonthLabel = document.getElementById('detailMonthLabel');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -238,15 +239,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- MODALE DETTAGLIO: SPLIT VIEW ---
+    // --- MODALE DETTAGLIO ---
     function openPersonnelDetail(person) {
         detailCurrentPerson = person;
         detailCurrentDate = new Date(); 
         detailCurrentDate.setDate(1); 
-        
         detailTitle.textContent = person.nome_cognome;
         updateDetailModal(); 
-        
         detailModal.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
@@ -285,16 +284,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const recordMap = {};
             personRecords.forEach(r => recordMap[r.data] = r);
 
-            // Genera Due Tabelle HTML
             let leftRows = '';
             let rightRows = '';
             
-            // Punto di divisione: giorno 16
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
                 const dayNum = d.getDate();
-                const dateStr = formatDateISO(d);
+                const dateStr = formatDateISO(d); // Ora usa la versione locale corretta
                 const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+                
                 const rec = recordMap[dateStr] || {};
                 
                 let tipoHtml = '';
@@ -308,19 +306,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const rowHtml = `
                     <tr class="${isWeekend ? 'detail-row-weekend' : ''}">
-                        <td style="width:40px; text-align:center;"><strong>${dayNum}</strong></td>
-                        <td style="width:40px; color:#666;">${dayName}</td>
-                        <td style="width:40px; text-align:center;"><strong>${rec.numero_ore || ''}</strong></td>
-                        <td style="width:50px; text-align:center;">${tipoHtml}</td>
-                        <td><small>${rec.note || ''}</small></td>
+                        <td style="text-align:center;"><strong>${dayNum}</strong> <small>${dayName}</small></td>
+                        <td style="text-align:center;"><strong>${rec.numero_ore || ''}</strong></td>
+                        <td style="text-align:center;">${tipoHtml}</td>
+                        <td><div class="detail-note-text">${rec.note || ''}</div></td>
                     </tr>
                 `;
 
                 if (dayNum <= 15) leftRows += rowHtml; else rightRows += rowHtml;
             }
 
-            // Inserisce la struttura a due colonne
-            const tableHeader = `<thead><tr><th>G</th><th></th><th>H</th><th>St</th><th>Note</th></tr></thead>`;
+            const tableHeader = `<thead><tr><th class="detail-col-day">G</th><th class="detail-col-hours">H</th><th class="detail-col-status">St</th><th class="detail-col-notes">Note</th></tr></thead>`;
             
             modalBodyContainer.innerHTML = `
                 <div class="modal-split-container">
@@ -339,6 +335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // ... (Visual Popup e Handle Quick Edit rimangono identici a prima) ...
     // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
@@ -484,7 +481,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return {ore,idTipo,note};
     }
 
-    function formatDateISO(d) { return d.toISOString().split('T')[0]; }
+    // FIX CHIAVE: Data Locale Formattata Correttamente (YYYY-MM-DD)
+    // Evita l'uso di toISOString() che converte in UTC e causa sfasamenti di -1 giorno
+    function formatDateISO(d) {
+        const year = d.getFullYear();
+        // getMonth() è 0-based, quindi +1. padStart assicura lo 0 iniziale.
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     async function applyColumnColorPrompt(e, dateStr) {
         const color = prompt("Scrivi colore (red, yellow, green, blue, none):");

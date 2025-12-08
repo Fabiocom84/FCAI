@@ -193,7 +193,7 @@ body {
 
 /* --- MODALE SPLIT VIEW (Due Tabelle) --- */
 #personnelDetailModal .modal-content {
-    max-width: 1000px; /* Ancora più largo per il comfort */
+    max-width: 1500px; /* Ancora più largo per il comfort */
     width: 95%;
 }
 
@@ -227,13 +227,20 @@ body {
 }
 
 /* Larghezze specifiche per le colonne del modale */
-.detail-col-day { width: 15%; text-align: center; }
-.detail-col-hours { width: 15%; text-align: center; }
+.detail-col-day { width: 12%; text-align: center; }
+.detail-col-hours { width: 12%; text-align: center; }
 .detail-col-status { width: 10%; text-align: center; }
-.detail-col-notes { width: 60%; } /* Nota più larga */
+.detail-col-notes { width: 61%; } /* Nota più larga */
 
 .detail-row-weekend {
     background-color: #fff3e0; 
+}
+
+.detail-note-text {
+    font-size: 0.9em;
+    line-height: 1.3;
+    color: #333;
+    white-space: normal; /* Forza a capo */
 }
 
 .detail-controls {
