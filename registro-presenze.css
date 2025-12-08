@@ -192,7 +192,7 @@ body {
 }
 
 /* =================================================== */
-/* === MODALE SPLIT VIEW: VERSIONE COMPATTA + SCROLL === */
+/* === MODALE SPLIT VIEW: VERSIONE COMPATTA === */
 /* =================================================== */
 
 /* 1. IL GENITORE (OVERLAY SCURO) */
@@ -206,7 +206,6 @@ body {
     height: 100vh !important;
     background-color: rgba(0,0,0,0.6) !important;
     
-    /* Reset vincoli */
     transform: none !important;
     max-width: none !important;
     max-height: none !important;
@@ -214,16 +213,18 @@ body {
     padding: 0 !important;
 }
 
-/* 2. LA FINESTRA (IL BOX BIANCO) */
+/* 2. LA FINESTRA BIANCA */
 #personnelDetailModal .modal-content {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     
-    /* Usiamo il 90% dell'altezza, ma permettiamo lo scroll interno */
-    width: 95vw !important;
-    height: 90vh !important;
+    /* MODIFICA FONDAMENTALE: width auto per adattarsi al contenuto ridotto */
+    width: auto !important;
+    min-width: 800px !important; /* Larghezza minima di sicurezza */
+    max-width: 98vw !important;  /* Non uscire dallo schermo se troppo piccolo */
+    height: 90vh !important;     /* Manteniamo l'altezza */
     
     background-color: white !important;
     border-radius: 8px !important;
@@ -232,15 +233,13 @@ body {
     display: flex !important;
     flex-direction: column !important;
     padding: 0 !important;
-    overflow: hidden !important; /* Il box principale non scrolla, scrolla il body */
+    overflow: hidden !important; 
     margin: 0 !important;
-    max-width: none !important;
-    max-height: none !important;
 }
 
-/* --- HEADER PIÙ COMPATTO --- */
+/* --- HEADER --- */
 #personnelDetailModal .modal-header {
-    flex: 0 0 50px !important; /* Ridotto da 60 a 50px */
+    flex: 0 0 50px !important;
     width: 100%;
     padding: 0 15px;
     display: flex;
@@ -250,15 +249,11 @@ body {
     background: #fff;
     box-sizing: border-box;
 }
-/* Riduciamo leggermente il font del titolo */
-#personnelDetailTitle {
-    font-size: 1.3rem; 
-    margin: 0;
-}
+#personnelDetailTitle { font-size: 1.3rem; margin: 0; }
 
-/* --- CONTROLLI PIÙ COMPATTI --- */
+/* --- CONTROLLI --- */
 #personnelDetailModal .detail-controls {
-    flex: 0 0 40px !important; /* Ridotto da 50 a 40px */
+    flex: 0 0 40px !important;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -270,46 +265,41 @@ body {
     padding: 0 !important;
     box-sizing: border-box;
 }
-/* Font del mese più piccolo */
-#detailMonthLabel {
-    font-size: 1.1rem;
-    margin: 0;
-}
+#detailMonthLabel { font-size: 1.1rem; margin: 0; }
 
-/* --- CORPO CHE SCROLLA (LA SOLUZIONE) --- */
+/* --- CORPO (SCROLL VERTICALE) --- */
 #personnelDetailModal .modal-body {
-    flex: 1 1 auto !important; /* Prende tutto lo spazio restante */
+    flex: 1 1 auto !important;
     width: 100%;
-    padding: 10px 15px !important; /* Padding ridotto */
-    
-    /* QUI RIABILITIAMO LO SCROLL SOLO SE SERVE */
-    overflow-y: auto !important; 
-    
+    padding: 10px 15px !important;
+    overflow-y: auto !important; /* Scroll attivo */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    align-items: center; /* Centra le tabelle nel modale */
 }
 
 /* --- GRIGLIA --- */
 .modal-split-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    gap: 15px;
+    justify-content: center; /* Centra le due colonne */
+    gap: 20px;
     width: 100%;
-    /* Rimuoviamo height: 100% per lasciare che il contenuto decida l'altezza nello scroll */
     height: auto; 
 }
 
 .split-column {
-    flex: 1;
+    /* Rimuoviamo flex: 1 per non forzare l'allargamento */
     display: flex;
     flex-direction: column;
+    width: auto; /* Si adatta alla tabella */
 }
 
 /* --- TABELLE --- */
 .detail-table {
-    width: 100%;
+    /* Width auto invece di 100% per non allargarsi inutilmente */
+    width: auto; 
     border-collapse: separate;
     border-spacing: 0;
     table-layout: fixed;
@@ -317,10 +307,10 @@ body {
 
 .detail-table th {
     position: sticky;
-    top: 0; /* L'intestazione rimane fissa mentre scorri i giorni! */
+    top: 0;
     z-index: 5;
     background-color: #e9ecef;
-    height: 35px; /* Header tabella più basso */
+    height: 35px;
     border: 1px solid #dee2e6;
     font-size: 13px;
     font-weight: 600;
@@ -328,12 +318,11 @@ body {
     box-sizing: border-box;
 }
 
-/* CELLE PIÙ BASSE PER FARNE ENTRARE DI PIÙ */
 .detail-table td {
-    height: 30px; /* Ridotto drasticamente da 38px a 30px */
+    height: 30px; 
     border: 1px solid #dee2e6;
     padding: 0 6px;
-    font-size: 12px; /* Font leggermente più piccolo */
+    font-size: 12px;
     vertical-align: middle;
     box-sizing: border-box;
     white-space: nowrap !important;
@@ -341,14 +330,17 @@ body {
     text-overflow: ellipsis !important;
 }
 
-.detail-col-day    { width: 40px; text-align: center; } /* Leggermente più stretto */
+/* --- LARGHEZZE COLONNE AGGIORNATE --- */
+.detail-col-day    { width: 40px; text-align: center; }
 .detail-col-hours  { width: 40px; text-align: center; }
 .detail-col-status { width: 90px; text-align: center; }
-.detail-col-notes  { width: auto; }
+
+/* QUI IL CAMBIO: Larghezza fissa invece di auto */
+.detail-col-notes  { width: 220px; } 
 
 .detail-note-text {
     width: 100%;
-    line-height: 30px; /* Centratura verticale sulla nuova altezza */
+    line-height: 30px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
