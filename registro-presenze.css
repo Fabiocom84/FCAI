@@ -193,7 +193,7 @@ body {
 
 /* --- MODALE SPLIT VIEW (Due Tabelle) --- */
 #personnelDetailModal .modal-content {
-    max-width: 1500px; /* Ancora più largo per il comfort */
+    max-width: 2000px; /* Ancora più largo per il comfort */
     width: 95%;
 }
 
