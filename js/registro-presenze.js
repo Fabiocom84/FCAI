@@ -3,14 +3,12 @@ import { apiFetch } from './api-client.js';
 // --- ADAPTER LOCALE ---
 const apiClient = {
     async get(endpoint) {
-        // FIX: Assicuriamoci che l'endpoint inizi con /api se non c'è
         const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
         const response = await apiFetch(url, { method: 'GET' });
         if (!response.ok) throw new Error(`Errore API: ${response.status}`);
         return await response.json();
     },
     async post(endpoint, body) {
-        // FIX: Assicuriamoci che l'endpoint inizi con /api se non c'è
         const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
         const response = await apiFetch(url, {
             method: 'POST',
@@ -21,7 +19,6 @@ const apiClient = {
         return text ? JSON.parse(text) : null;
     }
 };
-// ------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -29,10 +26,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentDate = new Date();
     let currentData = [];
     let personnelData = [];
+    
+    // Mappe per la gestione dinamica dei tipi
+    let typesById = {};      // ID -> Oggetto Tipo (per renderizzare colore/icona)
+    let shortcutMap = {};    // Tasto (es. 'z') -> ID Tipo (per l'input rapido)
+    
+    // Variabili UI
     let activePopup = null;
-    let activeCell = null;
     let activeHeaderDate = null; 
+    let activeCell = null;
 
+    // Mappa Priorità Ruoli (Hardcoded come da richiesta)
     const ROLE_PRIORITY = {
         "addetto taglio": 1,
         "carpentiere": 2,
@@ -58,9 +62,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- INIZIALIZZAZIONE ---
     initMonthNavigation();
     initGlobalEvents();
+    
+    // 1. Carica i tipi di presenza (Ferie, Malattia, ecc.)
+    await loadTipiPresenza(); 
+    // 2. Carica i dati della griglia
     await loadData();
 
-    // --- NAVIGAZIONE MESE ---
+    // --- LOGICA TIPI & COMANDI RAPIDI ---
+    async function loadTipiPresenza() {
+        try {
+            // Chiama l'endpoint backend
+            const res = await apiClient.get('/presenze/tipi'); 
+            const tipiList = res || [];
+            
+            typesById = {};
+            shortcutMap = {};
+
+            tipiList.forEach(t => {
+                // Mappa per ID (visualizzazione veloce)
+                typesById[t.id_tipo] = t;
+
+                // Mappa per Shortcut (input rapido)
+                // Se nel DB c'è 'shortcut_key', lo usiamo.
+                if (t.shortcut_key) {
+                    const key = t.shortcut_key.toLowerCase().trim();
+                    shortcutMap[key] = t.id_tipo;
+                }
+            });
+            
+            console.log("Mappa Shortcut Caricata:", shortcutMap);
+        } catch (err) {
+            console.error("Errore caricamento tipi presenza:", err);
+        }
+    }
+
+    // --- NAVIGAZIONE ---
     function initMonthNavigation() {
         document.getElementById('prev-month-btn').addEventListener('click', () => changeMonth(-1));
         document.getElementById('next-month-btn').addEventListener('click', () => changeMonth(1));
@@ -72,15 +108,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initGlobalEvents() {
+        // Chiudi popup globali al click fuori
+        document.addEventListener('click', (e) => {
+            // Se clicco fuori da un popup visuale E fuori da una cella (per non chiudere l'input mentre scrivo)
+            if (!e.target.closest('.visual-popup') && !e.target.closest('td')) {
+                if (activePopup) { activePopup.remove(); activePopup = null; }
+            }
+        });
+
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el => {
             el.addEventListener('click', () => {
                 detailModal.style.display = 'none';
                 modalOverlay.style.display = 'none';
                 if(colorPickerPopup) colorPickerPopup.style.display = 'none';
-                if(activePopup) activePopup.remove();
             });
         });
 
+        // Color Picker (Header)
+        if(document.getElementById('closeColorPicker')) {
+            document.getElementById('closeColorPicker').addEventListener('click', () => {
+                colorPickerPopup.style.display = 'none';
+            });
+        }
+        
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', async (e) => {
                 const color = e.target.dataset.color;
@@ -93,12 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        if(document.getElementById('closeColorPicker')) {
-            document.getElementById('closeColorPicker').addEventListener('click', () => {
-                colorPickerPopup.style.display = 'none';
-            });
-        }
-
+        // Ricerca
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             document.querySelectorAll('.timeline-table td').forEach(td => {
@@ -118,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- CARICAMENTO DATI ---
+    // --- CARICAMENTO DATI GRIGLIA ---
     async function loadData() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -132,9 +177,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const endDateStr = formatDateISO(lastDay);
 
         try {
-            // FIX: Ora chiamiamo le API corrette con /api/ davanti
-            // L'adapter apiClient che ho scritto sopra lo aggiunge automaticamente se manca,
-            // ma per chiarezza qui lo scrivo esplicitamente.
             const [presenzeRes, personaleRes] = await Promise.all([
                 apiClient.get(`/presenze?startDate=${startDateStr}&endDate=${endDateStr}`),
                 apiClient.get('/personale?attivo=true&limit=1000') 
@@ -148,7 +190,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             console.error("Errore caricamento:", error);
-            // alert("Errore nel caricamento dei dati."); // Commentato per evitare spam di alert
         }
     }
 
@@ -156,10 +197,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         list.sort((a, b) => {
             const roleA = a.ruoli?.nome_ruolo?.toLowerCase() || '';
             const roleB = b.ruoli?.nome_ruolo?.toLowerCase() || '';
-
             const prioA = ROLE_PRIORITY[roleA] || 99;
             const prioB = ROLE_PRIORITY[roleB] || 99;
-
             if (prioA !== prioB) return prioA - prioB;
             return a.nome_cognome.localeCompare(b.nome_cognome);
         });
@@ -184,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.dataset.date = dateStr;
             
             if (isWeekend) th.classList.add('weekend-column');
-            th.addEventListener('click', (e) => openColorPicker(e, dateStr, 'column'));
+            th.addEventListener('click', (e) => openColorPicker(e, dateStr));
 
             headerRow.appendChild(th);
             daysInMonth.push({ dateStr, isWeekend });
@@ -193,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
-            
             const thName = document.createElement('th');
             thName.textContent = person.nome_cognome;
             thName.addEventListener('click', () => openPersonnelDetail(person));
@@ -203,44 +241,66 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const td = document.createElement('td');
                 td.dataset.date = dayInfo.dateStr;
                 td.dataset.personId = person.id_personale;
-                
                 if (dayInfo.isWeekend) td.classList.add('weekend-column');
 
                 const record = currentData.find(r => r.id_personale_fk === person.id_personale && r.data === dayInfo.dateStr);
+                if (record) renderCellContent(td, record);
 
-                if (record) {
-                    renderCellContent(td, record);
-                }
+                // CLICK SINISTRO: Modifica Rapida (Input nella cella)
+                td.addEventListener('click', (e) => handleQuickEdit(e, td, person.id_personale, dayInfo.dateStr));
+                
+                // CLICK DESTRO: Popup Visuale Completo
+                td.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    handleVisualEdit(e, td, person.id_personale, dayInfo.dateStr);
+                });
 
-                td.addEventListener('click', (e) => handleCellClick(e, td, person.id_personale, dayInfo.dateStr));
                 tr.appendChild(td);
             });
-
             timelineBody.appendChild(tr);
         });
     }
 
+    // --- VISUALIZZAZIONE CELLA ---
     function renderCellContent(td, record) {
         td.innerHTML = ''; 
-        
+        td.className = ''; // Reset classi
+        if (td.dataset.isWeekend) td.classList.add('weekend-column'); 
+
+        // 1. Colore Sfondo Custom
         if (record.colore && record.colore !== 'none') {
             td.classList.add(`cell-color-${record.colore}`);
         }
 
-        if (record.numero_ore) {
+        // 2. Badge Tipo Presenza (Se ID presente e diverso da "ordinario")
+        // Assumiamo che ID 1 sia Ordinario (da verificare nel tuo DB, o usare logica inversa)
+        // Se c'è un tipo associato:
+        if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
+            const tipoInfo = typesById[record.id_tipo_presenza_fk];
+            
+            // Mostriamo il badge solo se ha un colore o un'etichetta specifica
+            // (Assumiamo che "ordinario" o null non abbia badge o colore)
+            if (tipoInfo.colore_hex && tipoInfo.etichetta) {
+                const badge = document.createElement('span');
+                badge.className = 'chip';
+                badge.style.backgroundColor = tipoInfo.colore_hex;
+                badge.style.color = 'white'; // Assumiamo testo bianco per contrasto
+                badge.style.fontWeight = 'bold';
+                // Usa l'etichetta (es. "Fer") o l'icona
+                badge.textContent = tipoInfo.etichetta || tipoInfo.icona || '?';
+                td.appendChild(badge);
+            }
+        }
+
+        // 3. Ore (Mostrate sempre se presenti)
+        if (record.numero_ore !== null && record.numero_ore !== undefined) {
             const chip = document.createElement('span');
             chip.className = 'chip ore';
             chip.textContent = record.numero_ore;
             td.appendChild(chip);
         }
 
-        if (record.id_tipo_presenza_fk && record.id_tipo_presenza_fk !== 1) { 
-             const chip = document.createElement('span');
-             chip.className = 'chip';
-             chip.textContent = getTipoSymbol(record.id_tipo_presenza_fk); 
-             td.appendChild(chip);
-        }
-
+        // 4. Note (Triangolo rosso)
         if (record.note) {
             const indicator = document.createElement('div');
             indicator.className = 'note-indicator';
@@ -250,154 +310,233 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function getTipoSymbol(id) {
-        const map = { 2: 'F', 3: 'M', 4: 'P', 5: '104' }; 
-        return map[id] || '?';
-    }
-
-    // --- GESTIONE CLICK E MODALI ---
-
-    function openColorPicker(e, targetId, mode) {
-        e.stopPropagation();
-        colorPickerPopup.style.left = `${e.pageX}px`;
-        colorPickerPopup.style.top = `${e.pageY}px`;
-        colorPickerPopup.style.display = 'block';
-
-        if (mode === 'column') {
-            activeHeaderDate = targetId;
-            activeCell = null;
-        } else {
-            activeCell = targetId; 
-            activeHeaderDate = null;
-        }
-    }
-
-    async function applyColumnColor(dateStr, color) {
-        try {
-            await apiClient.post('/presenze/colore-colonna', {
-                data: dateStr,
-                colore: color
-            });
-            loadData(); 
-        } catch (err) {
-            alert('Errore aggiornamento colonna');
-        }
-    }
-
-    async function applyCellColor(td, color) {
-        const pid = td.dataset.personId;
-        const date = td.dataset.date;
-        
-        try {
-            const res = await apiClient.post('/presenze', {
-                id_personale_fk: pid,
-                data: date,
-                colore: color
-            });
-            
-            td.classList.forEach(c => { if(c.startsWith('cell-color-')) td.classList.remove(c); });
-            if (color !== 'none') td.classList.add(`cell-color-${color}`);
-            
-            let record = currentData.find(r => r.id_personale_fk == pid && r.data == date);
-            if(record) record.colore = color; else {
-                loadData();
-            }
-
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    function openPersonnelDetail(person) {
-        detailTitle.textContent = `Dettaglio: ${person.nome_cognome}`;
-        detailBody.innerHTML = '';
-        
-        const personRecords = currentData
-            .filter(r => r.id_personale_fk === person.id_personale)
-            .sort((a, b) => a.data.localeCompare(b.data));
-
-        if (personRecords.length === 0) {
-            detailBody.innerHTML = '<tr><td colspan="3">Nessuna presenza registrata in questo mese.</td></tr>';
-        } else {
-            personRecords.forEach(rec => {
-                const tr = document.createElement('tr');
-                const dateObj = new Date(rec.data);
-                const dayStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', weekday: 'short' });
-                
-                tr.innerHTML = `
-                    <td>${dayStr}</td>
-                    <td><strong>${rec.numero_ore || '-'}</strong></td>
-                    <td>${rec.note || ''}</td>
-                `;
-                detailBody.appendChild(tr);
-            });
-        }
-        
-        detailModal.style.display = 'block';
-        modalOverlay.style.display = 'block';
-    }
-
-    function handleCellClick(e, td, personId, dateStr) {
+    // --- MODIFICA RAPIDA (Input nella cella) ---
+    function handleQuickEdit(e, td, personId, dateStr) {
+        // Evita riapertura se già attivo
+        if (td.querySelector('input')) return;
         if (activePopup) activePopup.remove();
 
-        const rect = td.getBoundingClientRect();
         const record = currentData.find(r => r.id_personale_fk === personId && r.data === dateStr) || {};
+        
+        // Prepara valore iniziale dell'input per l'utente
+        let initialValue = "";
+        
+        // Se c'è un numero ore, lo mettiamo
+        if (record.numero_ore) initialValue += record.numero_ore;
+        
+        // Se c'è un tipo speciale, cerchiamo il suo shortcut per mostrarlo
+        // (Reverse lookup: ID -> Shortcut)
+        if (record.id_tipo_presenza_fk) {
+            const tipo = typesById[record.id_tipo_presenza_fk];
+            if (tipo && tipo.shortcut_key) {
+                initialValue += " \\" + tipo.shortcut_key;
+            }
+        }
+        
+        // Se c'è una nota
+        if (record.note) initialValue += " +" + record.note;
 
+        // Svuota cella e metti input
+        td.innerHTML = '';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'cell-input';
+        input.value = initialValue.trim();
+        
+        // Salva su Invio o Blur
+        const save = async () => {
+            const val = input.value.trim();
+            const parsed = parseQuickCommand(val);
+            
+            // Costruiamo il payload
+            const payload = {
+                id_personale_fk: personId,
+                data: dateStr,
+                numero_ore: parsed.ore, // Può essere null
+                id_tipo_presenza_fk: parsed.idTipo, // Può essere null (default ordinario backend)
+                note: parsed.note,
+                colore: record.colore // Preserva colore sfondo
+            };
+
+            try {
+                const res = await apiClient.post('/presenze', payload);
+                
+                // Aggiorna dati locali
+                const idx = currentData.findIndex(r => r.id_personale_fk === personId && r.data === dateStr);
+                if(idx >= 0) currentData[idx] = res; else currentData.push(res);
+                
+                renderCellContent(td, res);
+            } catch(err) {
+                console.error(err);
+                alert("Errore salvataggio");
+                renderCellContent(td, record); // Ripristina vecchio stato
+            }
+        };
+
+        input.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Enter') { 
+                input.blur(); // Scatena evento blur che salva
+            }
+        });
+
+        input.addEventListener('blur', save);
+        input.addEventListener('click', (ev) => ev.stopPropagation()); // Evita bubbling
+
+        td.appendChild(input);
+        input.focus();
+    }
+
+    // Parser Comandi Rapidi: "8 \z +nota"
+    function parseQuickCommand(text) {
+        let ore = null;
+        let idTipo = null; // Se null, il backend o il DB gestiranno il default (spesso ID 1)
+        let note = null;
+
+        if (!text) return { ore, idTipo, note };
+
+        // 1. Estrai Note (+...)
+        const noteMatch = text.match(/\+(.*)/);
+        if (noteMatch) {
+            note = noteMatch[1].trim();
+            text = text.replace(noteMatch[0], ''); 
+        }
+
+        // 2. Estrai Comando Shortcut (\x)
+        // Cerca backslash seguito da un carattere
+        const cmdMatch = text.match(/\\([a-zA-Z0-9])/);
+        if (cmdMatch) {
+            const code = cmdMatch[1].toLowerCase(); // Es. 'z'
+            
+            // Cerca nella mappa caricata dal DB
+            if (shortcutMap[code]) {
+                idTipo = shortcutMap[code];
+            } else {
+                console.warn(`Shortcut '\\${code}' non trovata nel DB.`);
+            }
+            text = text.replace(cmdMatch[0], '');
+        }
+
+        // 3. Estrai Ore (Numeri rimasti)
+        // Cerca numeri interi o decimali (es. 8, 4.5)
+        const numMatch = text.match(/(\d+(\.\d+)?)/);
+        if (numMatch) {
+            ore = parseFloat(numMatch[0]);
+        }
+
+        return { ore, idTipo, note };
+    }
+
+    // --- MODIFICA VISUALE (Tasto Destro) ---
+    function handleVisualEdit(e, td, personId, dateStr) {
+        if (activePopup) activePopup.remove();
+        
+        const record = currentData.find(r => r.id_personale_fk === personId && r.data === dateStr) || {};
         const popup = document.createElement('div');
         popup.className = 'visual-popup';
-        popup.style.top = `${window.scrollY + rect.bottom + 5}px`;
-        popup.style.left = `${window.scrollX + rect.left}px`;
-        
+        popup.style.top = `${e.pageY}px`;
+        popup.style.left = `${e.pageX}px`;
+
+        // Genera Select Tipi dinamicamente
+        let optionsHtml = '<option value="">(Ordinario)</option>';
+        Object.values(typesById).forEach(t => {
+            const sel = (record.id_tipo_presenza_fk === t.id_tipo) ? 'selected' : '';
+            optionsHtml += `<option value="${t.id_tipo}" ${sel}>${t.nome_tipo}</option>`;
+        });
+
         popup.innerHTML = `
             <h4>${dateStr}</h4>
-            <input type="number" id="edit-ore" step="0.5" placeholder="Ore" value="${record.numero_ore || ''}">
-            <textarea id="edit-note" placeholder="Note...">${record.note || ''}</textarea>
-            
+            <div style="margin-bottom:10px;">
+                <label>Ore:</label>
+                <input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label>Stato:</label>
+                <select id="v-tipo">${optionsHtml}</select>
+            </div>
+            <div style="margin-bottom:10px;">
+                <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
+            </div>
             <div class="popup-actions">
-                <button class="status-btn" id="btn-color-opts">🎨 Colore</button>
-                <div class="main-actions">
-                    <button class="save" id="btn-save">Salva</button>
-                    <button class="delete" id="btn-delete">🗑️</button>
-                </div>
+                <button id="v-save" class="save">Salva</button>
+                <button id="v-cancel" class="cancel">Chiudi</button>
             </div>
         `;
 
         document.body.appendChild(popup);
         activePopup = popup;
 
-        setTimeout(() => popup.querySelector('#edit-ore').focus(), 50);
+        popup.querySelector('#v-save').onclick = async () => {
+            const ore = popup.querySelector('#v-ore').value;
+            const tipo = popup.querySelector('#v-tipo').value;
+            const note = popup.querySelector('#v-note').value;
 
-        popup.querySelector('#btn-save').onclick = async () => {
-            const ore = popup.querySelector('#edit-ore').value;
-            const note = popup.querySelector('#edit-note').value;
+            const payload = {
+                id_personale_fk: personId,
+                data: dateStr,
+                numero_ore: ore ? parseFloat(ore) : null,
+                id_tipo_presenza_fk: tipo ? parseInt(tipo) : null,
+                note: note,
+                colore: record.colore
+            };
             
             try {
-                const res = await apiClient.post('/presenze', {
-                    id_personale_fk: personId,
-                    data: dateStr,
-                    numero_ore: ore ? parseFloat(ore) : null,
-                    note: note,
-                    colore: record.colore 
-                });
-                
-                renderCellContent(td, res);
+                const res = await apiClient.post('/presenze', payload);
                 const idx = currentData.findIndex(r => r.id_personale_fk === personId && r.data === dateStr);
                 if(idx >= 0) currentData[idx] = res; else currentData.push(res);
-                
+                renderCellContent(td, res);
                 popup.remove();
                 activePopup = null;
-            } catch(err) { alert("Errore salvataggio"); }
+            } catch(e) { alert("Errore"); }
         };
 
-        popup.querySelector('#btn-delete').onclick = async () => {
-             popup.remove();
-             activePopup = null;
-        };
-
-        popup.querySelector('#btn-color-opts').onclick = (evt) => {
+        popup.querySelector('#v-cancel').onclick = () => {
             popup.remove();
-            openColorPicker(e, td, 'cell');
+            activePopup = null;
         };
+    }
+
+    // --- UTILS ---
+    function openColorPicker(e, dateStr) {
+        e.stopPropagation();
+        colorPickerPopup.style.left = `${e.pageX}px`;
+        colorPickerPopup.style.top = `${e.pageY}px`;
+        colorPickerPopup.style.display = 'block';
+        activeHeaderDate = dateStr;
+        activeCell = null;
+    }
+
+    async function applyColumnColor(dateStr, color) {
+        try {
+            await apiClient.post('/presenze/colore-colonna', { data: dateStr, colore: color });
+            loadData();
+        } catch (err) { alert('Errore colonna'); }
+    }
+    
+    // Supporto per colorare singola cella (se necessario da qualche UI futura)
+    async function applyCellColor(td, color) {
+        // ... (implementazione analoga a applyColumnColor se servisse)
+    }
+
+    function openPersonnelDetail(person) {
+        detailTitle.textContent = person.nome_cognome;
+        detailBody.innerHTML = '';
+        const records = currentData.filter(r => r.id_personale_fk === person.id_personale).sort((a,b)=>a.data.localeCompare(b.data));
+        
+        if (records.length === 0) detailBody.innerHTML = "<tr><td colspan='3'>Nessun dato.</td></tr>";
+
+        records.forEach(r => {
+            const tr = document.createElement('tr');
+            // Cerca nome tipo
+            let tipoLabel = '';
+            if (r.id_tipo_presenza_fk && typesById[r.id_tipo_presenza_fk]) {
+                tipoLabel = typesById[r.id_tipo_presenza_fk].nome_tipo;
+            }
+            
+            tr.innerHTML = `<td>${r.data}</td><td>${r.numero_ore||''}</td><td>${tipoLabel} ${r.note||''}</td>`;
+            detailBody.appendChild(tr);
+        });
+        detailModal.style.display = 'block';
+        modalOverlay.style.display = 'block';
     }
 
     function formatDateISO(d) {
