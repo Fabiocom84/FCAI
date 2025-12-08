@@ -192,91 +192,103 @@ body {
 }
 
 /* =================================================== */
-/* === MODALE SPLIT VIEW: FIX DEFINITIVO === */
+/* === MODALE SPLIT VIEW: CENTRATURA ROBUSTA === */
 /* =================================================== */
 
-/* 1. IL CONTENITORE GRIGIO SCURO (WRAPPER) */
+/* 1. IL WRAPPER SCURO (Sfondo) */
 #personnelDetailModal {
-    /* Assicuriamoci che faccia da sfondo e basta */
+    display: none; /* Gestito da JS (block/none) */
+    position: fixed !important;
     z-index: 9999 !important;
-    overflow: hidden !important; /* Nessuno scroll sullo sfondo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important; 
+    background-color: rgba(0,0,0,0.6) !important; /* Sfondo scuro */
+    
+    /* TRUCCO PER LA CENTRATURA PERFETTA */
+    display: flex !important;
+    align-items: center; /* Centra verticalmente */
+    justify-content: center; /* Centra orizzontalmente */
 }
 
-/* 2. IL BOX BIANCO (LA FINESTRA) */
+/* 2. IL BOX BIANCO (Contenuto) */
 #personnelDetailModal .modal-content {
-    /* POSIZIONAMENTO AL CENTRO ESATTO */
-    position: fixed !important; 
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
+    /* RESET TOTALE DEL POSIZIONAMENTO */
+    position: relative !important; 
+    margin: 0 !important; 
+    transform: none !important;
+    top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
     
-    /* DIMENSIONI FISSE RELATIVE ALLO SCHERMO 
-       (Uso il 90% dello spazio disponibile: è "fisso" ma sicuro) */
-    width: 90vw !important;  
-    height: 90vh !important; 
+    /* DIMENSIONI "IDEALI" */
+    width: 1200px !important;
+    height: 85vh !important; /* 85% dell'altezza schermo */
+
+    /* LIMITI DI SICUREZZA (Anti-Collasso) */
+    max-width: 95vw !important;  /* Non uscire lateralmente su mobile */
+    min-height: 600px !important; /* IMPEDISCE IL COLLASSO: Altezza minima garantita */
     
-    /* RESET VINCOLI CHE CAUSANO IL COLLASSO */
-    max-width: none !important;
-    max-height: none !important;
-    min-height: 500px !important; /* Impedisce che diventi minuscolo */
+    /* STILE */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     
     /* LAYOUT INTERNO */
     display: flex !important;
     flex-direction: column !important;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     padding: 0 !important;
-    overflow: hidden !important; /* Blocchiamo scroll sul box principale */
 }
 
-/* Header (Titolo) - Altezza fissa */
+/* --- HEADER (Fisso) --- */
 #personnelDetailModal .modal-header {
-    flex: 0 0 60px !important; /* Altezza bloccata a 60px */
+    flex: 0 0 60px !important; /* Altezza fissa bloccata */
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #ddd;
     background: #fff;
+    box-sizing: border-box;
 }
 
-/* Controlli (Mese) - Altezza fissa */
+/* --- CONTROLLI MESE (Fisso) --- */
 #personnelDetailModal .detail-controls {
-    flex: 0 0 50px !important; /* Altezza bloccata a 50px */
+    flex: 0 0 50px !important; /* Altezza fissa bloccata */
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 20px;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
     margin: 0 !important;
+    box-sizing: border-box;
 }
 
-/* CORPO CENTRALE - SI ESPANDE */
+/* --- CORPO (Si espande) --- */
 #personnelDetailModal .modal-body {
     flex: 1 1 auto !important; /* Prende tutto lo spazio rimanente */
-    padding: 20px;
-    overflow: hidden !important; /* Importante: niente scroll qui */
+    padding: 20px !important;
+    overflow: hidden !important; /* Niente scroll sul contenitore */
     display: flex;
     flex-direction: column;
-    height: 100%; /* Forza altezza piena */
+    height: 100%;
+    box-sizing: border-box;
 }
 
-/* Contenitore delle due tabelle affiancate */
+/* --- GRIGLIA DOPPIA COLONNA --- */
 .modal-split-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     gap: 20px;
     width: 100%;
-    height: 100%; /* Usa tutta l'altezza del body */
+    height: 100%;
 }
 
 .split-column {
-    flex: 1; /* 50% width */
-    height: 100%; /* Altezza piena */
+    flex: 1; /* 50% larghezza */
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden; 
@@ -285,7 +297,7 @@ body {
 /* --- TABELLE --- */
 .detail-table {
     width: 100%;
-    border-collapse: separate; /* Migliora gestione bordi */
+    border-collapse: separate;
     border-spacing: 0;
     table-layout: fixed;
 }
@@ -293,39 +305,38 @@ body {
 .detail-table th {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background-color: #f3f4f6;
+    z-index: 5;
+    background-color: #eee;
     height: 40px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #ccc;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: bold;
+    box-sizing: border-box;
 }
 
 .detail-table td {
-    height: 35px; /* Altezza riga forzata */
-    border: 1px solid #e5e7eb;
+    height: 38px; /* Altezza riga sicura */
+    border: 1px solid #ccc;
     padding: 0 8px;
     font-size: 13px;
     vertical-align: middle;
+    box-sizing: border-box;
     
-    /* TRUCCO ANTI-SCROLL */
+    /* NO A CAPO */
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
 
-/* Colonne Larghezza Fissa */
+/* Larghezze Colonne */
 .detail-col-day    { width: 50px; text-align: center; }
-.detail-col-hours  { width: 40px; text-align: center; }
-.detail-col-status { width: 90px; text-align: center; }
-.detail-col-notes  { width: auto; } /* Si prende tutto il resto */
+.detail-col-hours  { width: 45px; text-align: center; }
+.detail-col-status { width: 100px; text-align: center; }
+.detail-col-notes  { width: auto; }
 
 .detail-note-text {
     width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 35px;
+    line-height: 38px;
 }
 
 .detail-controls {
