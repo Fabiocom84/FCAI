@@ -262,3 +262,74 @@ body {
 .popup-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px; }
 .btn-save { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
 .btn-close { background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+
+/* --- STILI MODALE DETTAGLIO --- */
+
+.detail-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.detail-controls h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #333;
+    text-transform: uppercase;
+    min-width: 150px;
+    text-align: center;
+}
+
+.nav-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.nav-btn:hover { background-color: #5a6268; }
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table th, .detail-table td {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.detail-table th {
+    background-color: #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+/* Evidenziazione Weekend nel modale */
+.detail-row-weekend {
+    background-color: #ffe8cc; /* Arancio chiarissimo per staccare */
+    font-weight: 500;
+    color: #555;
+}
+
+/* Stile per i badge nel dettaglio */
+.detail-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.85em;
+    font-weight: bold;
+}

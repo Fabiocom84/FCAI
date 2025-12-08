@@ -40,10 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeCell = null;
     let activeHeaderDate = null;
     
+    // Variabili per il Modale Dettaglio
+    let detailCurrentPerson = null;
+    let detailCurrentDate = new Date(); // Mese visualizzato nel modale
+
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 75; // Deve corrispondere al CSS (75px)
+    const COLUMN_WIDTH = 75;
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -56,9 +60,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const container = document.querySelector('.timeline-container');
     const currentMonthDisplay = document.getElementById('current-month-display');
     const searchInput = document.getElementById('search-notes');
+    
     const detailModal = document.getElementById('personnelDetailModal');
     const detailBody = document.getElementById('personnelDetailBody');
     const detailTitle = document.getElementById('personnelDetailTitle');
+    const detailMonthLabel = document.getElementById('detailMonthLabel');
     const modalOverlay = document.getElementById('modalOverlay');
     const colorPickerPopup = document.getElementById('colorPickerPopup');
 
@@ -70,34 +76,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- SCORRIMENTO & AGGIORNAMENTO ---
     container.addEventListener('scroll', () => {
         if (isLoading) return;
-
         updateVisibleMonthHeader();
-
         const scrollLeft = container.scrollLeft;
         const maxScroll = container.scrollWidth - container.clientWidth;
-
-        // Scroll Destro (Futuro)
-        if (scrollLeft >= maxScroll - 200) {
-            loadMoreDays('forward');
-        }
-        // Scroll Sinistro (Passato)
-        else if (scrollLeft < 50) { // Soglia bassa a sinistra
-            loadMoreDays('backward');
-        }
+        if (scrollLeft >= maxScroll - 200) loadMoreDays('forward');
+        else if (scrollLeft < 50) loadMoreDays('backward');
     });
 
     function updateVisibleMonthHeader() {
-        const checkPoint = container.scrollLeft + 180 + 20; // 180px è la colonna sticky
+        const checkPoint = container.scrollLeft + 180 + 20; 
         const headers = headerRow.querySelectorAll('th[data-date]');
         let targetDate = null;
-
         for (const th of headers) {
             if (th.offsetLeft + th.offsetWidth > checkPoint) {
                 targetDate = th.dataset.date;
                 break;
             }
         }
-
         if (targetDate) {
             const dateObj = new Date(targetDate);
             const monthLabel = dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -121,42 +116,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         sortPersonnel(personnelData);
 
         renderBaseGridRows();
-        
-        // Caricamento iniziale trattato come 'append' (forward)
         await fetchAndRenderData(currentStartDate, currentEndDate, 'forward');
-        
-        // Centra
-        setTimeout(() => {
-            scrollToToday();
-            updateVisibleMonthHeader();
-        }, 100);
+        setTimeout(() => { scrollToToday(); updateVisibleMonthHeader(); }, 100);
     }
 
     async function loadMoreDays(direction) {
         if (isLoading) return;
         isLoading = true;
-
         let start, end;
-
         if (direction === 'forward') {
-            start = new Date(currentEndDate);
-            start.setDate(start.getDate() + 1);
-            
-            end = new Date(start);
-            end.setDate(end.getDate() + LOAD_BATCH_DAYS);
-            
-            currentEndDate = end; // Aggiorna cursore fine
+            start = new Date(currentEndDate); start.setDate(start.getDate() + 1);
+            end = new Date(start); end.setDate(end.getDate() + LOAD_BATCH_DAYS);
+            currentEndDate = end;
         } else {
-            // Backward: calcola indietro da currentStartDate
-            end = new Date(currentStartDate);
-            end.setDate(end.getDate() - 1);
-            
-            start = new Date(end);
-            start.setDate(start.getDate() - LOAD_BATCH_DAYS);
-            
-            currentStartDate = start; // Aggiorna cursore inizio
+            end = new Date(currentStartDate); end.setDate(end.getDate() - 1);
+            start = new Date(end); start.setDate(start.getDate() - LOAD_BATCH_DAYS);
+            currentStartDate = start;
         }
-
         await fetchAndRenderData(start, end, direction);
         isLoading = false;
     }
@@ -164,21 +140,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchAndRenderData(start, end, direction) {
         const sStr = formatDateISO(start);
         const eStr = formatDateISO(end);
-        
         try {
             const presenzeRes = await apiClient.get(`/presenze?startDate=${sStr}&endDate=${eStr}`);
             const newData = presenzeRes || [];
-            
-            newData.forEach(rec => {
-                loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec;
-            });
-
-            if (direction === 'forward') {
-                appendColumns(start, end);
-            } else {
-                prependColumns(start, end);
-            }
-
+            newData.forEach(rec => { loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec; });
+            if (direction === 'forward') appendColumns(start, end);
+            else prependColumns(start, end);
         } catch (err) { console.error("Errore fetch dati:", err); }
     }
 
@@ -187,99 +154,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
             tr.dataset.personId = person.id_personale;
-            
             const th = document.createElement('th');
             th.textContent = person.nome_cognome;
             th.title = person.nome_cognome;
             th.addEventListener('click', () => openPersonnelDetail(person));
-            
             tr.appendChild(th);
             timelineBody.appendChild(tr);
         });
     }
 
-    // --- APPEND (Futuro) ---
     function appendColumns(start, end) {
         const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-
-        // 1. Header
-        datesToAdd.forEach(d => {
-            const th = createHeaderCell(d, todayStr);
-            headerRow.appendChild(th);
-        });
-
-        // 2. Body
+        datesToAdd.forEach(d => headerRow.appendChild(createHeaderCell(d, todayStr)));
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
         rows.forEach(tr => {
             const pid = parseInt(tr.dataset.personId);
-            datesToAdd.forEach(d => {
-                const td = createBodyCell(d, pid);
-                tr.appendChild(td);
-            });
+            datesToAdd.forEach(d => tr.appendChild(createBodyCell(d, pid)));
         });
     }
 
-    // --- PREPEND (Passato) ---
     function prependColumns(start, end) {
-        const datesToAdd = generateDateRange(start, end); // Arrivano in ordine cronologico
+        const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        
-        // Calcoliamo la larghezza totale aggiunta per correggere lo scroll
-        // (Num giorni * larghezza colonna + eventuali bordi/padding approssimati nel CSS fixed)
-        // Poiché usiamo table-layout: fixed e width: 75px, il calcolo è preciso.
         const addedWidth = datesToAdd.length * COLUMN_WIDTH; 
         const currentScroll = container.scrollLeft;
-
-        // 1. Header (Inserisci DOPO il primo elemento che è "Operatore")
-        // reverse() perché insertBefore inserisce prima del riferimento, quindi dobbiamo inserire l'ultimo giorno prima del primo giorno visibile
-        // Anzi, più semplice: iteriamo normalmente e inseriamo sempre prima del "vecchio" primo giorno (child[1])
-        
-        // Il child[0] è "Operatore". Il child[1] è il primo giorno attualmente visibile.
         const firstDayHeader = headerRow.children[1]; 
         
-        datesToAdd.forEach(d => {
-            const th = createHeaderCell(d, todayStr);
-            // Inseriamo sempre prima del riferimento corrente (che scala)
-            headerRow.insertBefore(th, firstDayHeader); 
-        });
+        datesToAdd.forEach(d => headerRow.insertBefore(createHeaderCell(d, todayStr), firstDayHeader));
         
-        // MA ATTENZIONE: Se inseriamo [1, 2, 3] prima di [4], facendo insertBefore(1, 4), poi insertBefore(2, 4), otteniamo [1, 2, 3, 4] SOLO SE l'ordine di inserimento è corretto.
-        // Se datesToAdd è [Gen 1, Gen 2], dobbiamo inserire Gen 1, poi Gen 2? No.
-        // Se inserisco Gen 1 prima di Gen 3 -> [Gen 1, Gen 3]
-        // Poi inserisco Gen 2 prima di Gen 3 -> [Gen 1, Gen 2, Gen 3]. Corretto.
-        // Quindi l'ordine di datesToAdd (cronologico) va bene se il target è fisso.
-        // NO, wait. Il target `firstDayHeader` è fisso.
-        // Se ho [3, 4] e voglio aggiungere [1, 2].
-        // Inserisco 1 prima di 3 -> [1, 3, 4]
-        // Inserisco 2 prima di 3 -> [1, 2, 3, 4]. 
-        // Perfetto. L'ordine cronologico funziona.
-
-        // 2. Body
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
         rows.forEach(tr => {
             const pid = parseInt(tr.dataset.personId);
-            const firstDataCell = tr.children[1]; // child[0] è il nome sticky
-
-            datesToAdd.forEach(d => {
-                const td = createBodyCell(d, pid);
-                tr.insertBefore(td, firstDataCell);
-            });
+            const firstDataCell = tr.children[1];
+            datesToAdd.forEach(d => tr.insertBefore(createBodyCell(d, pid), firstDataCell));
         });
-
-        // 3. Correggi Scroll
-        // Aggiungiamo la larghezza delle nuove colonne allo scroll attuale per mantenere la visuale ferma
         container.scrollLeft = currentScroll + addedWidth;
     }
 
-    // --- HELPER CREAZIONE CELLE ---
     function generateDateRange(start, end) {
         const arr = [];
         let dt = new Date(start);
-        while (dt <= end) {
-            arr.push(new Date(dt));
-            dt.setDate(dt.getDate() + 1);
-        }
+        while (dt <= end) { arr.push(new Date(dt)); dt.setDate(dt.getDate() + 1); }
         return arr;
     }
 
@@ -289,7 +205,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
         const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
         const isToday = (dateStr === todayStr);
-
         const th = document.createElement('th');
         th.innerHTML = `${dayNum}<br><small>${dayName}</small>`;
         th.dataset.date = dateStr;
@@ -302,20 +217,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function createBodyCell(d, pid) {
         const dateStr = formatDateISO(d);
         const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-        
         const td = document.createElement('td');
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
         if (isWeekend) td.classList.add('weekend-column');
-
         const record = loadedDataMap[`${pid}_${dateStr}`];
         if (record) renderCellContent(td, record);
-
         td.addEventListener('click', (e) => handleQuickEdit(e, td));
-        td.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            handleVisualEdit(e, td);
-        });
+        td.addEventListener('contextmenu', (e) => { e.preventDefault(); handleVisualEdit(e, td); });
         return td;
     }
 
@@ -330,39 +239,121 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- MODALE DETTAGLIO (Nuova Logica) ---
+    function openPersonnelDetail(person) {
+        detailCurrentPerson = person;
+        // Inizializza al mese corrente (o quello visibile nell'header se preferisci)
+        detailCurrentDate = new Date(); 
+        detailCurrentDate.setDate(1); // Primo del mese
+        
+        detailTitle.textContent = person.nome_cognome;
+        updateDetailModal(); // Carica e renderizza
+        
+        detailModal.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    }
+
+    // Gestione Navigazione Modale
+    document.getElementById('btnDetailPrev').addEventListener('click', () => {
+        detailCurrentDate.setMonth(detailCurrentDate.getMonth() - 1);
+        updateDetailModal();
+    });
+    
+    document.getElementById('btnDetailNext').addEventListener('click', () => {
+        detailCurrentDate.setMonth(detailCurrentDate.getMonth() + 1);
+        updateDetailModal();
+    });
+
+    async function updateDetailModal() {
+        if (!detailCurrentPerson) return;
+
+        // Aggiorna Titolo Mese
+        const monthLabel = detailCurrentDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
+        detailMonthLabel.textContent = monthLabel;
+        detailBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Caricamento...</td></tr>';
+
+        // Calcola inizio e fine mese
+        const year = detailCurrentDate.getFullYear();
+        const month = detailCurrentDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        const sStr = formatDateISO(firstDay);
+        const eStr = formatDateISO(lastDay);
+
+        try {
+            // Scarica dati specifici per il range
+            // Nota: Scarichiamo tutti per il range, poi filtriamo.
+            // Se l'API supportasse il filtro per id_personale sarebbe meglio, ma usiamo quello che abbiamo.
+            const res = await apiClient.get(`/presenze?startDate=${sStr}&endDate=${eStr}`);
+            const dataList = res || [];
+            
+            // Filtra solo per la persona selezionata
+            const personRecords = dataList.filter(r => r.id_personale_fk === detailCurrentPerson.id_personale);
+            
+            // Mappa rapida per data
+            const recordMap = {};
+            personRecords.forEach(r => recordMap[r.data] = r);
+
+            // Genera righe per ogni giorno del mese
+            let html = '';
+            for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+                const dateStr = formatDateISO(d);
+                const dayName = d.toLocaleString('it-IT', { weekday: 'long' });
+                const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+                
+                const rec = recordMap[dateStr] || {};
+                
+                // Formattazione Tipo
+                let tipoHtml = '';
+                if (rec.id_tipo_presenza_fk && typesById[rec.id_tipo_presenza_fk]) {
+                    const t = typesById[rec.id_tipo_presenza_fk];
+                    if (t.etichetta) {
+                        const bg = t.colore_hex || '#999';
+                        tipoHtml = `<span class="detail-badge" style="background-color:${bg}">${t.etichetta}</span>`;
+                    }
+                }
+
+                html += `
+                    <tr class="${isWeekend ? 'detail-row-weekend' : ''}">
+                        <td><strong>${d.getDate()}</strong> <small>${dayName}</small></td>
+                        <td>${rec.numero_ore ? `<strong>${rec.numero_ore}</strong>` : ''}</td>
+                        <td>${tipoHtml}</td>
+                        <td>${rec.note || ''}</td>
+                    </tr>
+                `;
+            }
+            detailBody.innerHTML = html;
+
+        } catch (err) {
+            console.error(err);
+            detailBody.innerHTML = '<tr><td colspan="4" style="color:red;">Errore caricamento dati.</td></tr>';
+        }
+    }
+
+    // ... (Codice Visual Popup, Edit, ecc. identico a prima) ...
     // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
-        
         const pid = td.dataset.personId;
         const date = td.dataset.date;
         const record = loadedDataMap[`${pid}_${date}`] || {};
-
         const popup = document.createElement('div');
         popup.className = 'visual-popup';
-        
         let leftPos = e.pageX;
         if (e.pageX + 300 > window.innerWidth) leftPos = e.pageX - 300;
         popup.style.top = `${e.pageY}px`;
         popup.style.left = `${leftPos}px`;
 
-        let gridHtml = `
-            <div class="type-option-btn ${!record.id_tipo_presenza_fk ? 'selected' : ''}" data-id="">
-                <span class="type-option-icon">⬜</span><span class="type-option-label">Standard</span>
-            </div>`;
-        
+        let gridHtml = `<div class="type-option-btn ${!record.id_tipo_presenza_fk ? 'selected' : ''}" data-id=""><span class="type-option-icon">⬜</span><span class="type-option-label">Standard</span></div>`;
         Object.values(typesById).sort((a,b)=>(a.etichetta||'').localeCompare(b.etichetta||'')).forEach(t => {
             const isSel = (record.id_tipo_presenza_fk === t.id_tipo);
             const icon = t.icona || '❓';
-            gridHtml += `
-                <div class="type-option-btn ${isSel ? 'selected' : ''}" data-id="${t.id_tipo}" title="${t.nome_tipo}">
-                    <span class="type-option-icon">${icon}</span><span class="type-option-label">${t.etichetta}</span>
-                </div>`;
+            gridHtml += `<div class="type-option-btn ${isSel ? 'selected' : ''}" data-id="${t.id_tipo}" title="${t.nome_tipo}"><span class="type-option-icon">${icon}</span><span class="type-option-label">${t.etichetta}</span></div>`;
         });
 
-        const colors = ['none', 'red', 'yellow', 'green', 'blue'];
         let colorHtml = '';
-        colors.forEach(c => {
+        ['none', 'red', 'yellow', 'green', 'blue'].forEach(c => {
             const sel = (record.colore === c || (!record.colore && c==='none')) ? 'selected' : '';
             colorHtml += `<div class="color-dot-sm ${sel}" data-color="${c}"></div>`;
         });
@@ -374,13 +365,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="popup-input-row"><label>Ore:</label><input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5"></div>
             <div class="popup-color-row" id="v-color-row">${colorHtml}</div>
             <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
-            <div class="popup-footer">
-                <button class="btn-save" id="v-save">Salva</button><button class="btn-close" id="v-close">Chiudi</button>
-            </div>
+            <div class="popup-footer"><button class="btn-save" id="v-save">Salva</button><button class="btn-close" id="v-close">Chiudi</button></div>
             <input type="hidden" id="v-tipo-val" value="${record.id_tipo_presenza_fk || ''}">
             <input type="hidden" id="v-color-val" value="${record.colore || 'none'}">
         `;
-
         document.body.appendChild(popup);
         activePopup = popup;
 
@@ -391,7 +379,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 popup.querySelector('#v-tipo-val').value = btn.dataset.id;
             };
         });
-
         popup.querySelectorAll('.color-dot-sm').forEach(dot => {
             dot.onclick = () => {
                 popup.querySelectorAll('.color-dot-sm').forEach(d => d.classList.remove('selected'));
@@ -399,7 +386,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 popup.querySelector('#v-color-val').value = dot.dataset.color;
             };
         });
-
         popup.querySelector('#v-save').onclick = async () => {
             const ore = popup.querySelector('#v-ore').value;
             const tipo = popup.querySelector('#v-tipo-val').value;
@@ -413,7 +399,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.querySelector('#v-close').onclick = () => { popup.remove(); activePopup = null; };
     }
 
-    // --- MODIFICA RAPIDA (INPUT) ---
     function handleQuickEdit(e, td) {
         if (td.querySelector('input')) return;
         if (activePopup) activePopup.remove();
@@ -451,7 +436,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.innerHTML = ''; td.className = '';
         if(td.dataset.isWeekend) td.classList.add('weekend-column'); 
         if(record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
-        
         const wrapper = document.createElement('div'); wrapper.className = 'cell-content-wrapper';
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
@@ -499,16 +483,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const color = prompt("Scrivi colore (red, yellow, green, blue, none):");
         if(color) { try { await apiClient.post('/presenze/colore-colonna', {data:dateStr, colore}); alert("Colore aggiornato. Scorri per aggiornare o ricarica."); } catch(e) { alert("Errore"); } }
     }
-
-    function openPersonnelDetail(p) { 
-        detailTitle.textContent = p.nome_cognome; detailModal.style.display = 'block'; modalOverlay.style.display = 'block';
-    }
     
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
-        // Click Header per color picker
-        // (Il listener è aggiunto dinamicamente in createHeaderCell)
+        document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', async (e) => { const color = e.target.dataset.color; if (activeHeaderDate) { try { await apiClient.post('/presenze/colore-colonna', {data:activeHeaderDate, colore: color}); location.reload(); } catch(e) { alert("Errore"); } } colorPickerPopup.style.display = 'none'; }); });
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
 });
