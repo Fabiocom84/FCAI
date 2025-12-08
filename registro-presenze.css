@@ -426,3 +426,18 @@ body {
                       linear-gradient(-45deg, #ccc 25%, transparent 25%);
     background-size: 8px 8px;
 }
+
+/* =================================================== */
+/* === COLORI RIGHE MODALE DETTAGLIO === */
+/* =================================================== */
+
+/* Weekend (Default) */
+.detail-row-weekend { 
+    background-color: #dbe4ea !important; 
+}
+
+/* Colori Manuali (Vincono sul weekend) */
+.detail-row-red     { background-color: #ffcccc !important; }
+.detail-row-yellow  { background-color: #fff3cd !important; }
+.detail-row-green   { background-color: #d4edda !important; }
+.detail-row-blue    { background-color: #d1ecf1 !important; }

@@ -325,6 +325,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
                 const rec = recordMap[dateStr] || {};
                 
+                // --- LOGICA COLORI ---
+                let rowClass = '';
+                
+                // 1. Se c'è un colore manuale, VINCE LUI
+                if (rec.colore && rec.colore !== 'none') {
+                    rowClass = `detail-row-${rec.colore}`;
+                } 
+                // 2. Altrimenti, se è weekend, metti il grigio
+                else if (isWeekend) {
+                    rowClass = 'detail-row-weekend';
+                }
+                
                 let tipoHtml = '';
                 if (rec.id_tipo_presenza_fk && typesById[rec.id_tipo_presenza_fk]) {
                     const t = typesById[rec.id_tipo_presenza_fk];
@@ -335,11 +347,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const rowHtml = `
-                    <tr class="${isWeekend ? 'detail-row-weekend' : ''}">
-                        <td style="text-align:center;"><strong>${dayNum}</strong> <small>${dayName}</small></td>
-                        <td style="text-align:center;"><strong>${rec.numero_ore || ''}</strong></td>
-                        <td style="text-align:center;">${tipoHtml}</td>
-                        <td><div class="detail-note-text">${rec.note || ''}</div></td>
+                    <tr class="${rowClass}">
+                        <td class="detail-col-day"><strong>${dayNum}</strong> <small>${dayName}</small></td>
+                        <td class="detail-col-hours"><strong>${rec.numero_ore || ''}</strong></td>
+                        <td class="detail-col-status">${tipoHtml}</td>
+                        <td class="detail-col-notes"><div class="detail-note-text">${rec.note || ''}</div></td>
                     </tr>
                 `;
 
