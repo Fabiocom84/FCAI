@@ -223,9 +223,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const td = document.createElement('td');
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
-        if (isWeekend) td.classList.add('weekend-column');
+        
+        if (isWeekend) {
+            td.classList.add('weekend-column');
+            td.dataset.isWeekend = "true"; // <--- AGGIUNGI QUESTA RIGA
+        }
+
         const record = loadedDataMap[`${pid}_${dateStr}`];
         if (record) renderCellContent(td, record);
+        
         td.addEventListener('click', (e) => handleQuickEdit(e, td));
         td.addEventListener('contextmenu', (e) => { e.preventDefault(); handleVisualEdit(e, td); });
         return td;
