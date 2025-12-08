@@ -14,7 +14,10 @@ const apiClient = {
             method: 'POST',
             body: JSON.stringify(body)
         });
-        if (!response.ok) throw new Error(`Errore API: ${response.status}`);
+        if (!response.ok) {
+            const errJson = await response.json().catch(() => ({}));
+            throw new Error(errJson.error || `Errore API: ${response.status}`);
+        }
         const text = await response.text();
         return text ? JSON.parse(text) : null;
     }
@@ -22,21 +25,18 @@ const apiClient = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // --- VARIABILI DI STATO ---
+    // --- VARIABILI ---
     let currentDate = new Date();
     let currentData = [];
     let personnelData = [];
     
-    // Mappe per la gestione dinamica dei tipi
-    let typesById = {};      // ID -> Oggetto Tipo (per renderizzare colore/icona)
-    let shortcutMap = {};    // Tasto (es. 'z') -> ID Tipo (per l'input rapido)
+    let typesById = {};      
+    let shortcutMap = {};    
     
-    // Variabili UI
     let activePopup = null;
     let activeHeaderDate = null; 
     let activeCell = null;
 
-    // Mappa Priorità Ruoli (Hardcoded come da richiesta)
     const ROLE_PRIORITY = {
         "addetto taglio": 1,
         "carpentiere": 2,
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "elettricista": 7
     };
 
-    // --- ELEMENTI DOM ---
+    // --- DOM ---
     const headerRow = document.getElementById('header-row');
     const timelineBody = document.getElementById('timeline-body');
     const currentMonthDisplay = document.getElementById('current-month-display');
@@ -59,19 +59,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalOverlay = document.getElementById('modalOverlay');
     const colorPickerPopup = document.getElementById('colorPickerPopup');
 
-    // --- INIZIALIZZAZIONE ---
+    // --- INIT ---
     initMonthNavigation();
     initGlobalEvents();
     
-    // 1. Carica i tipi di presenza (Ferie, Malattia, ecc.)
     await loadTipiPresenza(); 
-    // 2. Carica i dati della griglia
     await loadData();
 
-    // --- LOGICA TIPI & COMANDI RAPIDI ---
+    // --- LOGICA TIPI ---
     async function loadTipiPresenza() {
         try {
-            // Chiama l'endpoint backend
             const res = await apiClient.get('/presenze/tipi'); 
             const tipiList = res || [];
             
@@ -79,24 +76,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             shortcutMap = {};
 
             tipiList.forEach(t => {
-                // Mappa per ID (visualizzazione veloce)
                 typesById[t.id_tipo] = t;
-
-                // Mappa per Shortcut (input rapido)
-                // Se nel DB c'è 'shortcut_key', lo usiamo.
+                // Usa la colonna 'shortcut_key' da Supabase (es. 'z', 'a', 'q')
                 if (t.shortcut_key) {
-                    const key = t.shortcut_key.toLowerCase().trim();
-                    shortcutMap[key] = t.id_tipo;
+                    shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo;
                 }
             });
-            
             console.log("Mappa Shortcut Caricata:", shortcutMap);
         } catch (err) {
-            console.error("Errore caricamento tipi presenza:", err);
+            console.error("Errore caricamento tipi:", err);
         }
     }
 
-    // --- NAVIGAZIONE ---
+    // --- NAVIGATION ---
     function initMonthNavigation() {
         document.getElementById('prev-month-btn').addEventListener('click', () => changeMonth(-1));
         document.getElementById('next-month-btn').addEventListener('click', () => changeMonth(1));
@@ -108,9 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initGlobalEvents() {
-        // Chiudi popup globali al click fuori
         document.addEventListener('click', (e) => {
-            // Se clicco fuori da un popup visuale E fuori da una cella (per non chiudere l'input mentre scrivo)
             if (!e.target.closest('.visual-popup') && !e.target.closest('td')) {
                 if (activePopup) { activePopup.remove(); activePopup = null; }
             }
@@ -124,7 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Color Picker (Header)
         if(document.getElementById('closeColorPicker')) {
             document.getElementById('closeColorPicker').addEventListener('click', () => {
                 colorPickerPopup.style.display = 'none';
@@ -134,16 +123,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', async (e) => {
                 const color = e.target.dataset.color;
-                if (activeHeaderDate) {
-                    await applyColumnColor(activeHeaderDate, color);
-                } else if (activeCell) {
-                    await applyCellColor(activeCell, color);
-                }
+                if (activeHeaderDate) await applyColumnColor(activeHeaderDate, color);
                 colorPickerPopup.style.display = 'none';
             });
         });
 
-        // Ricerca
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             document.querySelectorAll('.timeline-table td').forEach(td => {
@@ -163,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- CARICAMENTO DATI GRIGLIA ---
+    // --- DATI ---
     async function loadData() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -204,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- RENDERING GRIGLIA ---
+    // --- RENDER ---
     function renderGrid(firstDay, lastDay) {
         headerRow.innerHTML = '<th style="position: sticky; left: 0; z-index: 15; background-color: #f8f9fa;">Operatore</th>';
         timelineBody.innerHTML = '';
@@ -221,10 +205,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const th = document.createElement('th');
             th.innerHTML = `${dayNum}<br><small>${dayName}</small>`;
             th.dataset.date = dateStr;
-            
             if (isWeekend) th.classList.add('weekend-column');
             th.addEventListener('click', (e) => openColorPicker(e, dateStr));
-
             headerRow.appendChild(th);
             daysInMonth.push({ dateStr, isWeekend });
             tempDate.setDate(tempDate.getDate() + 1);
@@ -246,10 +228,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const record = currentData.find(r => r.id_personale_fk === person.id_personale && r.data === dayInfo.dateStr);
                 if (record) renderCellContent(td, record);
 
-                // CLICK SINISTRO: Modifica Rapida (Input nella cella)
+                // Modifica Rapida (Click singolo)
                 td.addEventListener('click', (e) => handleQuickEdit(e, td, person.id_personale, dayInfo.dateStr));
                 
-                // CLICK DESTRO: Popup Visuale Completo
+                // Modifica Visuale (Tasto Destro)
                 td.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     handleVisualEdit(e, td, person.id_personale, dayInfo.dateStr);
@@ -261,10 +243,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- VISUALIZZAZIONE CELLA ---
     function renderCellContent(td, record) {
         td.innerHTML = ''; 
-        td.className = ''; // Reset classi
+        td.className = ''; 
         if (td.dataset.isWeekend) td.classList.add('weekend-column'); 
 
         // 1. Colore Sfondo Custom
@@ -272,27 +253,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             td.classList.add(`cell-color-${record.colore}`);
         }
 
-        // 2. Badge Tipo Presenza (Se ID presente e diverso da "ordinario")
-        // Assumiamo che ID 1 sia Ordinario (da verificare nel tuo DB, o usare logica inversa)
-        // Se c'è un tipo associato:
+        // 2. Badge Tipo Presenza (Etichetta es. "Fer", "Mal")
+        // Mostra solo se esiste e se c'è un'etichetta definita nel DB
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const tipoInfo = typesById[record.id_tipo_presenza_fk];
             
-            // Mostriamo il badge solo se ha un colore o un'etichetta specifica
-            // (Assumiamo che "ordinario" o null non abbia badge o colore)
-            if (tipoInfo.colore_hex && tipoInfo.etichetta) {
+            // Usa 'etichetta' dal DB (es. "Fer", "Cant")
+            if (tipoInfo.etichetta) {
                 const badge = document.createElement('span');
                 badge.className = 'chip';
-                badge.style.backgroundColor = tipoInfo.colore_hex;
-                badge.style.color = 'white'; // Assumiamo testo bianco per contrasto
-                badge.style.fontWeight = 'bold';
-                // Usa l'etichetta (es. "Fer") o l'icona
-                badge.textContent = tipoInfo.etichetta || tipoInfo.icona || '?';
+                
+                // Usa 'colore_hex' dal DB (es. #2196F3)
+                if (tipoInfo.colore_hex) {
+                    badge.style.backgroundColor = tipoInfo.colore_hex;
+                    badge.style.color = '#fff';
+                } else {
+                    badge.style.backgroundColor = '#ccc';
+                }
+                
+                badge.textContent = tipoInfo.etichetta;
+                
+                // SPAZIATURA: Aggiunge margine se ci sono anche le ore
+                if (record.numero_ore) {
+                    badge.style.marginRight = '5px'; 
+                }
+                
                 td.appendChild(badge);
             }
         }
 
-        // 3. Ore (Mostrate sempre se presenti)
+        // 3. Ore
         if (record.numero_ore !== null && record.numero_ore !== undefined) {
             const chip = document.createElement('span');
             chip.className = 'chip ore';
@@ -300,7 +290,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             td.appendChild(chip);
         }
 
-        // 4. Note (Triangolo rosso)
+        // 4. Note
         if (record.note) {
             const indicator = document.createElement('div');
             indicator.className = 'note-indicator';
@@ -310,114 +300,96 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- MODIFICA RAPIDA (Input nella cella) ---
+    // --- MODIFICA RAPIDA ---
     function handleQuickEdit(e, td, personId, dateStr) {
-        // Evita riapertura se già attivo
         if (td.querySelector('input')) return;
         if (activePopup) activePopup.remove();
 
         const record = currentData.find(r => r.id_personale_fk === personId && r.data === dateStr) || {};
         
-        // Prepara valore iniziale dell'input per l'utente
+        // Popola l'input con i valori attuali
         let initialValue = "";
-        
-        // Se c'è un numero ore, lo mettiamo
         if (record.numero_ore) initialValue += record.numero_ore;
         
-        // Se c'è un tipo speciale, cerchiamo il suo shortcut per mostrarlo
-        // (Reverse lookup: ID -> Shortcut)
         if (record.id_tipo_presenza_fk) {
             const tipo = typesById[record.id_tipo_presenza_fk];
+            // Mostra lo shortcut (es. \z) se disponibile
             if (tipo && tipo.shortcut_key) {
                 initialValue += " \\" + tipo.shortcut_key;
             }
         }
-        
-        // Se c'è una nota
         if (record.note) initialValue += " +" + record.note;
 
-        // Svuota cella e metti input
         td.innerHTML = '';
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'cell-input';
         input.value = initialValue.trim();
         
-        // Salva su Invio o Blur
         const save = async () => {
             const val = input.value.trim();
             const parsed = parseQuickCommand(val);
             
-            // Costruiamo il payload
             const payload = {
                 id_personale_fk: personId,
                 data: dateStr,
-                numero_ore: parsed.ore, // Può essere null
-                id_tipo_presenza_fk: parsed.idTipo, // Può essere null (default ordinario backend)
+                numero_ore: parsed.ore, 
+                id_tipo_presenza_fk: parsed.idTipo, 
                 note: parsed.note,
-                colore: record.colore // Preserva colore sfondo
+                colore: record.colore
             };
 
             try {
                 const res = await apiClient.post('/presenze', payload);
                 
-                // Aggiorna dati locali
                 const idx = currentData.findIndex(r => r.id_personale_fk === personId && r.data === dateStr);
                 if(idx >= 0) currentData[idx] = res; else currentData.push(res);
                 
                 renderCellContent(td, res);
             } catch(err) {
                 console.error(err);
-                alert("Errore salvataggio");
-                renderCellContent(td, record); // Ripristina vecchio stato
+                alert("Errore salvataggio: " + err.message);
+                renderCellContent(td, record); 
             }
         };
 
         input.addEventListener('keydown', (evt) => {
-            if (evt.key === 'Enter') { 
-                input.blur(); // Scatena evento blur che salva
-            }
+            if (evt.key === 'Enter') { input.blur(); }
         });
-
         input.addEventListener('blur', save);
-        input.addEventListener('click', (ev) => ev.stopPropagation()); // Evita bubbling
+        input.addEventListener('click', (ev) => ev.stopPropagation()); 
 
         td.appendChild(input);
         input.focus();
     }
 
-    // Parser Comandi Rapidi: "8 \z +nota"
+    // Parser: "8 \z +nota"
     function parseQuickCommand(text) {
         let ore = null;
-        let idTipo = null; // Se null, il backend o il DB gestiranno il default (spesso ID 1)
+        let idTipo = null;
         let note = null;
 
         if (!text) return { ore, idTipo, note };
 
-        // 1. Estrai Note (+...)
+        // Estrai Note
         const noteMatch = text.match(/\+(.*)/);
         if (noteMatch) {
             note = noteMatch[1].trim();
             text = text.replace(noteMatch[0], ''); 
         }
 
-        // 2. Estrai Comando Shortcut (\x)
-        // Cerca backslash seguito da un carattere
+        // Estrai Shortcut (\x)
         const cmdMatch = text.match(/\\([a-zA-Z0-9])/);
         if (cmdMatch) {
-            const code = cmdMatch[1].toLowerCase(); // Es. 'z'
-            
+            const code = cmdMatch[1].toLowerCase();
             // Cerca nella mappa caricata dal DB
             if (shortcutMap[code]) {
                 idTipo = shortcutMap[code];
-            } else {
-                console.warn(`Shortcut '\\${code}' non trovata nel DB.`);
             }
             text = text.replace(cmdMatch[0], '');
         }
 
-        // 3. Estrai Ore (Numeri rimasti)
-        // Cerca numeri interi o decimali (es. 8, 4.5)
+        // Estrai Ore
         const numMatch = text.match(/(\d+(\.\d+)?)/);
         if (numMatch) {
             ore = parseFloat(numMatch[0]);
@@ -426,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return { ore, idTipo, note };
     }
 
-    // --- MODIFICA VISUALE (Tasto Destro) ---
+    // --- MODIFICA VISUALE ---
     function handleVisualEdit(e, td, personId, dateStr) {
         if (activePopup) activePopup.remove();
         
@@ -436,11 +408,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.style.top = `${e.pageY}px`;
         popup.style.left = `${e.pageX}px`;
 
-        // Genera Select Tipi dinamicamente
         let optionsHtml = '<option value="">(Ordinario)</option>';
-        Object.values(typesById).forEach(t => {
+        Object.values(typesById).sort((a,b)=>(a.etichetta||'').localeCompare(b.etichetta||'')).forEach(t => {
             const sel = (record.id_tipo_presenza_fk === t.id_tipo) ? 'selected' : '';
-            optionsHtml += `<option value="${t.id_tipo}" ${sel}>${t.nome_tipo}</option>`;
+            optionsHtml += `<option value="${t.id_tipo}" ${sel}>${t.etichetta} (${t.shortcut_key})</option>`;
         });
 
         popup.innerHTML = `
@@ -486,7 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderCellContent(td, res);
                 popup.remove();
                 activePopup = null;
-            } catch(e) { alert("Errore"); }
+            } catch(e) { alert("Errore: " + e.message); }
         };
 
         popup.querySelector('#v-cancel').onclick = () => {
@@ -495,14 +466,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-    // --- UTILS ---
     function openColorPicker(e, dateStr) {
         e.stopPropagation();
         colorPickerPopup.style.left = `${e.pageX}px`;
         colorPickerPopup.style.top = `${e.pageY}px`;
         colorPickerPopup.style.display = 'block';
         activeHeaderDate = dateStr;
-        activeCell = null;
     }
 
     async function applyColumnColor(dateStr, color) {
@@ -511,27 +480,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadData();
         } catch (err) { alert('Errore colonna'); }
     }
-    
-    // Supporto per colorare singola cella (se necessario da qualche UI futura)
-    async function applyCellColor(td, color) {
-        // ... (implementazione analoga a applyColumnColor se servisse)
-    }
 
     function openPersonnelDetail(person) {
         detailTitle.textContent = person.nome_cognome;
         detailBody.innerHTML = '';
         const records = currentData.filter(r => r.id_personale_fk === person.id_personale).sort((a,b)=>a.data.localeCompare(b.data));
-        
-        if (records.length === 0) detailBody.innerHTML = "<tr><td colspan='3'>Nessun dato.</td></tr>";
-
         records.forEach(r => {
             const tr = document.createElement('tr');
-            // Cerca nome tipo
             let tipoLabel = '';
             if (r.id_tipo_presenza_fk && typesById[r.id_tipo_presenza_fk]) {
-                tipoLabel = typesById[r.id_tipo_presenza_fk].nome_tipo;
+                tipoLabel = typesById[r.id_tipo_presenza_fk].etichetta;
             }
-            
             tr.innerHTML = `<td>${r.data}</td><td>${r.numero_ore||''}</td><td>${tipoLabel} ${r.note||''}</td>`;
             detailBody.appendChild(tr);
         });
