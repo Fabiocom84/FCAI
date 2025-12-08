@@ -192,89 +192,87 @@ body {
 }
 
 /* =================================================== */
-/* === MODALE SPLIT VIEW: FIX POSIZIONAMENTO ASSOLUTO === */
+/* === MODALE SPLIT VIEW: FIX DEFINITIVO === */
 /* =================================================== */
 
-/* 1. IL WRAPPER SCURO (Sfondo) */
-/* Il JS imposterà display: block qui, quindi noi ci adattiamo */
+/* TRUCCO: Targettiamo l'ID specifico per vincere sulla classe generica .modal 
+   di style-v2.css. Non tocchiamo l'overlay, gestiamo solo la "finestra".
+*/
 #personnelDetailModal {
+    /* 1. DIMENSIONI E POSIZIONE */
     position: fixed !important;
-    z-index: 9999 !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100vw !important; /* Forza larghezza totale viewport */
-    height: 100vh !important; /* Forza altezza totale viewport */
-    background-color: rgba(0,0,0,0.6) !important;
-    overflow: hidden !important; 
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* 2. IL BOX BIANCO (Contenuto) */
-#personnelDetailModal .modal-content {
-    /* RESET: Annulliamo qualsiasi stile ereditato da style-v2.css */
-    position: absolute !important; /* Assoluto rispetto al wrapper scuro */
-    float: none !important;
-    margin: 0 !important;
-    
-    /* CENTRATURA MATEMATICA (Funziona sempre) */
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     
-    /* DIMENSIONI FORZATE */
-    width: 90vw !important;  /* 90% della larghezza schermo */
-    height: 90vh !important; /* 90% dell'altezza schermo */
-    min-width: 800px !important; /* Non diventa mai troppo stretto */
-    min-height: 600px !important; /* Non collassa mai in altezza */
+    /* Forza dimensioni giganti */
+    width: 95vw !important;
+    height: 90vh !important;
+    max-width: none !important; /* Disabilita il limite di 600px globale */
+    max-height: none !important;
     
-    /* LAYOUT INTERNO */
-    display: flex !important;
+    /* 2. LAYOUT E ASPETTO */
+    background-color: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+    z-index: 10001 !important;
+    
+    /* 3. GESTIONE INTERNA (Flessibile) */
+    /* Override fondamentale: il JS mette 'display: block', noi forziamo flex */
+    display: flex !important; 
     flex-direction: column !important;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    padding: 0 !important;
-    box-sizing: border-box !important;
+    padding: 0 !important; /* Rimuoviamo il padding globale per gestire tutto noi */
+    overflow: hidden !important; /* Nessuno scroll sulla finestra principale */
 }
 
 /* --- HEADER (Fisso in alto) --- */
 #personnelDetailModal .modal-header {
-    flex: 0 0 60px !important; /* Altezza fissa */
+    flex: 0 0 60px !important; /* Altezza bloccata */
     width: 100%;
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #dee2e6;
     background: #fff;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Include il padding nel calcolo larghezza */
 }
 
-/* --- CONTROLLI MESE (Fisso sotto header) --- */
+/* --- CONTROLLI MESE (Fissi sotto header) --- */
 #personnelDetailModal .detail-controls {
-    flex: 0 0 50px !important; /* Altezza fissa */
+    flex: 0 0 50px !important; /* Altezza bloccata */
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 20px;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box;
 }
 
-/* --- CORPO (Si espande e contiene le tabelle) --- */
+/* --- CORPO CENTRALE (Si espande) --- */
 #personnelDetailModal .modal-body {
-    flex: 1 1 auto !important; /* Occupa tutto lo spazio rimanente */
+    flex: 1 1 auto !important; /* Prende tutto lo spazio verticale rimanente */
     width: 100%;
     padding: 20px !important;
-    overflow: hidden !important; /* Blocca scroll sul contenitore */
+    overflow: hidden !important; /* Niente scroll qui, le tabelle si gestiscono da sole */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+}
+
+/* Wrapper interno per il contenuto che era in .modal-content nel vecchio CSS */
+#personnelDetailModal .modal-content {
+    /* Resettiamo eventuali stili globali che potrebbero interferire */
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* --- GRIGLIA DOPPIA COLONNA --- */
@@ -282,17 +280,17 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    gap: 20px;
+    gap: 20px; /* Spazio tra le due tabelle */
     width: 100%;
-    height: 100%; /* Altezza piena del body */
+    height: 100%; /* Occupa tutta l'altezza del body */
 }
 
 .split-column {
-    flex: 1; /* 50% larghezza esatta */
-    height: 100%; /* Altezza piena */
+    flex: 1; /* Ognuna prende il 50% */
+    height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden; 
+    overflow: hidden; /* Fondamentale */
 }
 
 /* --- TABELLE --- */
@@ -300,44 +298,48 @@ body {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    table-layout: fixed;
+    table-layout: fixed; /* Rispetta le larghezze colonne fissate */
 }
 
 .detail-table th {
-    position: sticky;
+    position: sticky; /* Intestazione fissa mentre scorri (se mai servisse scroll) */
     top: 0;
     z-index: 5;
-    background-color: #f1f3f5;
+    background-color: #e9ecef;
     height: 40px;
-    border: 1px solid #ddd;
+    border: 1px solid #dee2e6;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
+    padding: 0 5px;
     box-sizing: border-box;
 }
 
 .detail-table td {
-    height: 38px; /* Altezza riga fissa */
-    border: 1px solid #ddd;
+    height: 38px; /* Altezza riga controllata */
+    border: 1px solid #dee2e6;
     padding: 0 8px;
     font-size: 13px;
     vertical-align: middle;
     box-sizing: border-box;
     
-    /* NO A CAPO */
+    /* NO A CAPO - Questo elimina lo scroll verticale indesiderato */
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
 
-/* Larghezze Colonne */
+/* Larghezze Colonne Ottimizzate */
 .detail-col-day    { width: 50px; text-align: center; }
 .detail-col-hours  { width: 45px; text-align: center; }
 .detail-col-status { width: 100px; text-align: center; }
-.detail-col-notes  { width: auto; }
+.detail-col-notes  { width: auto; } /* Prende tutto lo spazio restante */
 
 .detail-note-text {
     width: 100%;
     line-height: 38px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .detail-controls {
