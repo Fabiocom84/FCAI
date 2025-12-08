@@ -28,22 +28,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- VARIABILI GLOBALI ---
     let typesById = {};
     let shortcutMap = {};
-    let personnelData = []; // Lista ordinata del personale
-    let loadedDataMap = {}; // Mappa veloce: "idPersonale_data" -> Oggetto Presenza
+    let personnelData = [];
+    let loadedDataMap = {}; 
     
-    // Date tracking per lo scroll infinito
-    let currentStartDate = new Date(); // Inizio caricato
-    let currentEndDate = new Date();   // Fine caricata
+    let currentStartDate = new Date();
+    let currentEndDate = new Date();   
     let isLoading = false;
 
-    // UI
     let activePopup = null;
     let activeCell = null;
     
-    // Configurazione
-    const LOAD_BATCH_DAYS = 30; // Giorni da caricare nello scroll
-    const PRE_LOAD_DAYS = 15;   // Giorni da caricare nel passato all'avvio
-    const POST_LOAD_DAYS = 45;  // Giorni da caricare nel futuro all'avvio
+    const LOAD_BATCH_DAYS = 30;
+    const PRE_LOAD_DAYS = 15;
+    const POST_LOAD_DAYS = 45;
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -68,8 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- SCORRIMENTO INFINITO ---
     container.addEventListener('scroll', () => {
         if (isLoading) return;
-        
-        // Soglia di attivazione (quando mancano 200px alla fine)
         if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 200) {
             loadMoreDays('forward');
         }
@@ -78,26 +73,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- CARICAMENTO INIZIALE ---
     async function initialLoad() {
         const today = new Date();
-        
-        // Imposta intervallo iniziale: Oggi - 15gg ... Oggi + 45gg
         currentStartDate = new Date(today);
         currentStartDate.setDate(today.getDate() - PRE_LOAD_DAYS);
-        
         currentEndDate = new Date(today);
         currentEndDate.setDate(today.getDate() + POST_LOAD_DAYS);
 
-        // 1. Carica Personale
         const persRes = await apiClient.get('/personale?attivo=true&limit=1000');
         personnelData = persRes.data || [];
         sortPersonnel(personnelData);
 
-        // 2. Prepara la griglia (Righe vuote)
         renderBaseGridRows();
-
-        // 3. Carica e Appende i dati
         await fetchAndAppendData(currentStartDate, currentEndDate);
-
-        // 4. Centra su Oggi
         setTimeout(scrollToToday, 100);
     }
 
@@ -108,12 +94,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         let start, end;
         if (direction === 'forward') {
             start = new Date(currentEndDate);
-            start.setDate(start.getDate() + 1); // Giorno dopo l'attuale fine
-            
+            start.setDate(start.getDate() + 1);
             end = new Date(start);
             end.setDate(end.getDate() + LOAD_BATCH_DAYS);
-            
-            // Aggiorna cursore globale
             currentEndDate = end;
         }
 
@@ -129,17 +112,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const presenzeRes = await apiClient.get(`/presenze?startDate=${sStr}&endDate=${eStr}`);
             const newData = presenzeRes || [];
             
-            // Aggiorna mappa dati
             newData.forEach(rec => {
                 loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec;
             });
 
-            // Genera le nuove colonne nel DOM
             appendColumns(start, end);
 
-        } catch (err) {
-            console.error("Errore fetch dati:", err);
-        }
+        } catch (err) { console.error("Errore fetch dati:", err); }
     }
 
     function renderBaseGridRows() {
@@ -150,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const th = document.createElement('th');
             th.textContent = person.nome_cognome;
-            th.title = person.nome_cognome; // Tooltip
+            th.title = person.nome_cognome;
             th.addEventListener('click', () => openPersonnelDetail(person));
             
             tr.appendChild(th);
@@ -161,15 +140,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     function appendColumns(start, end) {
         const tempDate = new Date(start);
         const todayStr = formatDateISO(new Date());
-
-        // Array di date da aggiungere
         const datesToAdd = [];
+        
         while (tempDate <= end) {
             datesToAdd.push(new Date(tempDate));
             tempDate.setDate(tempDate.getDate() + 1);
         }
 
-        // 1. Aggiungi Header
         datesToAdd.forEach(d => {
             const dateStr = formatDateISO(d);
             const dayNum = d.getDate();
@@ -181,15 +158,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.innerHTML = `${dayNum}<br><small>${dayName}</small>`;
             th.dataset.date = dateStr;
             if (isWeekend) th.classList.add('weekend-column');
-            if (isToday) th.classList.add('is-today'); // Stile per oggi
-            
-            // Click Header per Colore Colonna
+            if (isToday) th.classList.add('is-today');
             th.addEventListener('click', (e) => applyColumnColorPrompt(e, dateStr));
-
             headerRow.appendChild(th);
         });
 
-        // 2. Aggiungi Celle al Body
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
         rows.forEach(tr => {
             const personId = parseInt(tr.dataset.personId);
@@ -203,11 +176,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 td.dataset.personId = personId;
                 if (isWeekend) td.classList.add('weekend-column');
 
-                // Popola contenuto se esiste
                 const record = loadedDataMap[`${personId}_${dateStr}`];
                 if (record) renderCellContent(td, record);
 
-                // Eventi
                 td.addEventListener('click', (e) => handleQuickEdit(e, td));
                 td.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
@@ -221,15 +192,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function scrollToToday() {
         const todayStr = formatDateISO(new Date());
-        // Cerca l'header con la data di oggi
         const todayHeader = headerRow.querySelector(`th[data-date="${todayStr}"]`);
-        
         if (todayHeader) {
-            // Calcola la posizione per centrare
             const containerCenter = container.clientWidth / 2;
             const headerLeft = todayHeader.offsetLeft;
             const headerWidth = todayHeader.offsetWidth;
-            
             container.scrollLeft = headerLeft - containerCenter + (headerWidth / 2);
         }
     }
@@ -244,12 +211,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const popup = document.createElement('div');
         popup.className = 'visual-popup';
+        
+        // Posizionamento smart (evita bordo destro)
+        let leftPos = e.pageX;
+        if (e.pageX + 300 > window.innerWidth) leftPos = e.pageX - 300;
+        
         popup.style.top = `${e.pageY}px`;
-        popup.style.left = `${e.pageX}px`;
+        popup.style.left = `${leftPos}px`;
 
-        // Genera Griglia Icone
         let gridHtml = '';
-        // Opzione Reset/Ordinario
+        // Opzione Standard (Reset)
         gridHtml += `
             <div class="type-option-btn ${!record.id_tipo_presenza_fk ? 'selected' : ''}" data-id="">
                 <span class="type-option-icon">⬜</span>
@@ -257,7 +228,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
         
-        // Ordina e genera pulsanti
         Object.values(typesById).sort((a,b)=>(a.etichetta||'').localeCompare(b.etichetta||'')).forEach(t => {
             const isSel = (record.id_tipo_presenza_fk === t.id_tipo);
             const icon = t.icona || '❓';
@@ -269,7 +239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         });
 
-        // Color Picker Integrato
         const colors = ['none', 'red', 'yellow', 'green', 'blue'];
         let colorHtml = '';
         colors.forEach(c => {
@@ -279,24 +248,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         popup.innerHTML = `
             <h4>${date}</h4>
-            
-            <div class="type-grid-container" id="v-type-grid">
-                ${gridHtml}
-            </div>
-            
+            <div class="type-grid-container" id="v-type-grid">${gridHtml}</div>
             <hr style="margin: 5px 0; border:0; border-top:1px solid #eee;">
-
             <div class="popup-input-row">
                 <label>Ore:</label>
                 <input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5">
             </div>
-
-            <div class="popup-color-row" id="v-color-row">
-                ${colorHtml}
-            </div>
-
+            <div class="popup-color-row" id="v-color-row">${colorHtml}</div>
             <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
-
             <div class="popup-footer">
                 <button class="btn-save" id="v-save">Salva</button>
                 <button class="btn-close" id="v-close">Chiudi</button>
@@ -308,7 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
         activePopup = popup;
 
-        // Logica Selezione Tipo
         popup.querySelectorAll('.type-option-btn').forEach(btn => {
             btn.onclick = () => {
                 popup.querySelectorAll('.type-option-btn').forEach(b => b.classList.remove('selected'));
@@ -317,7 +275,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         });
 
-        // Logica Selezione Colore
         popup.querySelectorAll('.color-dot-sm').forEach(dot => {
             dot.onclick = () => {
                 popup.querySelectorAll('.color-dot-sm').forEach(d => d.classList.remove('selected'));
@@ -326,7 +283,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         });
 
-        // Salva
         popup.querySelector('#v-save').onclick = async () => {
             const ore = popup.querySelector('#v-ore').value;
             const tipo = popup.querySelector('#v-tipo-val').value;
@@ -394,13 +350,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function saveData(payload, td) {
         try {
             const res = await apiClient.post('/presenze', payload);
-            // Aggiorna cache
             loadedDataMap[`${payload.id_personale_fk}_${payload.data}`] = res;
             renderCellContent(td, res);
         } catch (err) {
             console.error(err);
             alert("Errore salvataggio");
-            // Ricarica la cella dal vecchio stato se fallisce
             const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`];
             if(old) renderCellContent(td, old); else td.innerHTML='';
         }
@@ -411,33 +365,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.innerHTML = '';
         td.className = '';
         if(td.classList.contains('weekend-column') || new Date(record.data).getDay()%6===0) td.classList.add('weekend-column');
+        if(record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
 
-        // Colore Sfondo
-        if (record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
+        // Wrapper per layout orizzontale
+        const wrapper = document.createElement('div');
+        wrapper.className = 'cell-content-wrapper';
 
-        // Icona Tipo
+        // 1. Etichetta Tipo (Solo se presente)
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
-            if (t.icona || t.etichetta) {
+            if (t.etichetta) {
                 const badge = document.createElement('span');
                 badge.className = 'chip';
-                badge.textContent = t.icona || t.etichetta;
-                // Colore
-                if(t.colore_hex) { badge.style.backgroundColor=t.colore_hex; badge.style.color='white'; }
-                else badge.style.backgroundColor='#ccc';
-                td.appendChild(badge);
+                badge.textContent = t.etichetta;
+                if(t.colore_hex) badge.style.backgroundColor = t.colore_hex;
+                else badge.style.backgroundColor = '#ccc';
+                wrapper.appendChild(badge);
             }
         }
 
-        // Ore
+        // 2. Ore (Solo se presenti)
         if (record.numero_ore) {
             const chip = document.createElement('span');
             chip.className = 'chip ore';
             chip.textContent = record.numero_ore;
-            td.appendChild(chip);
+            wrapper.appendChild(chip);
         }
 
-        // Note
+        td.appendChild(wrapper);
+
+        // 3. Nota (Indicatore fuori dal wrapper, posizionato assoluto)
         if (record.note) {
             const ind = document.createElement('div');
             ind.className = 'note-indicator';
@@ -487,15 +444,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function formatDateISO(d) { return d.toISOString().split('T')[0]; }
 
-    // Click Header (Colore Colonna) - Semplificato
     async function applyColumnColorPrompt(e, dateStr) {
-        // Implementazione rapida: prompt o riuso popup
         const color = prompt("Scrivi colore (red, yellow, green, blue, none):");
         if(color) {
             try {
                 await apiClient.post('/presenze/colore-colonna', {data:dateStr, colore});
-                // Ricarica la cella per tutti
-                // Per semplicità qui ricarichiamo la pagina o aggiorniamo manualmente le celle della colonna
                 alert("Colore aggiornato. Scorri per aggiornare o ricarica.");
             } catch(e) { alert("Errore"); }
         }
@@ -505,7 +458,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailTitle.textContent = p.nome_cognome;
         detailModal.style.display = 'block'; 
         modalOverlay.style.display = 'block';
-        // (Logica fetch dettaglio opzionale qui)
     }
     
     function initGlobalEvents() {
