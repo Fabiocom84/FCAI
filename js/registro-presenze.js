@@ -40,14 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeCell = null;
     let activeHeaderDate = null;
     
-    // Variabili per il Modale Dettaglio
     let detailCurrentPerson = null;
-    let detailCurrentDate = new Date(); // Mese visualizzato nel modale
+    let detailCurrentDate = new Date();
 
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 75;
+    const COLUMN_WIDTH = 45; // Aggiornato a 45px per match CSS
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('search-notes');
     
     const detailModal = document.getElementById('personnelDetailModal');
-    const detailBody = document.getElementById('personnelDetailBody');
+    const detailBody = document.getElementById('personnelDetailBody'); // Questo verrà sostituito dinamicamente
     const detailTitle = document.getElementById('personnelDetailTitle');
     const detailMonthLabel = document.getElementById('detailMonthLabel');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -239,21 +238,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- MODALE DETTAGLIO (Nuova Logica) ---
+    // --- MODALE DETTAGLIO: SPLIT VIEW ---
     function openPersonnelDetail(person) {
         detailCurrentPerson = person;
-        // Inizializza al mese corrente (o quello visibile nell'header se preferisci)
         detailCurrentDate = new Date(); 
-        detailCurrentDate.setDate(1); // Primo del mese
+        detailCurrentDate.setDate(1); 
         
         detailTitle.textContent = person.nome_cognome;
-        updateDetailModal(); // Carica e renderizza
+        updateDetailModal(); 
         
         detailModal.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
 
-    // Gestione Navigazione Modale
     document.getElementById('btnDetailPrev').addEventListener('click', () => {
         detailCurrentDate.setMonth(detailCurrentDate.getMonth() - 1);
         updateDetailModal();
@@ -267,12 +264,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function updateDetailModal() {
         if (!detailCurrentPerson) return;
 
-        // Aggiorna Titolo Mese
         const monthLabel = detailCurrentDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
         detailMonthLabel.textContent = monthLabel;
-        detailBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Caricamento...</td></tr>';
+        
+        // Pulisce il body del modale per inserire la nuova struttura
+        // (Nota: in registro-presenze.html usa un container vuoto, qui lo riempiamo)
+        const modalBodyContainer = document.querySelector('#personnelDetailModal .modal-body');
+        modalBodyContainer.innerHTML = '<div style="text-align:center; padding:20px;">Caricamento...</div>';
 
-        // Calcola inizio e fine mese
         const year = detailCurrentDate.getFullYear();
         const month = detailCurrentDate.getMonth();
         const firstDay = new Date(year, month, 1);
@@ -282,29 +281,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const eStr = formatDateISO(lastDay);
 
         try {
-            // Scarica dati specifici per il range
-            // Nota: Scarichiamo tutti per il range, poi filtriamo.
-            // Se l'API supportasse il filtro per id_personale sarebbe meglio, ma usiamo quello che abbiamo.
             const res = await apiClient.get(`/presenze?startDate=${sStr}&endDate=${eStr}`);
             const dataList = res || [];
-            
-            // Filtra solo per la persona selezionata
             const personRecords = dataList.filter(r => r.id_personale_fk === detailCurrentPerson.id_personale);
-            
-            // Mappa rapida per data
             const recordMap = {};
             personRecords.forEach(r => recordMap[r.data] = r);
 
-            // Genera righe per ogni giorno del mese
-            let html = '';
+            // Genera Due Tabelle HTML
+            let leftRows = '';
+            let rightRows = '';
+            
+            // Punto di divisione: giorno 16
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+                const dayNum = d.getDate();
                 const dateStr = formatDateISO(d);
-                const dayName = d.toLocaleString('it-IT', { weekday: 'long' });
+                const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-                
                 const rec = recordMap[dateStr] || {};
                 
-                // Formattazione Tipo
                 let tipoHtml = '';
                 if (rec.id_tipo_presenza_fk && typesById[rec.id_tipo_presenza_fk]) {
                     const t = typesById[rec.id_tipo_presenza_fk];
@@ -314,24 +308,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                html += `
+                const rowHtml = `
                     <tr class="${isWeekend ? 'detail-row-weekend' : ''}">
-                        <td><strong>${d.getDate()}</strong> <small>${dayName}</small></td>
-                        <td>${rec.numero_ore ? `<strong>${rec.numero_ore}</strong>` : ''}</td>
-                        <td>${tipoHtml}</td>
-                        <td>${rec.note || ''}</td>
+                        <td style="width:40px; text-align:center;"><strong>${dayNum}</strong></td>
+                        <td style="width:40px; color:#666;">${dayName}</td>
+                        <td style="width:40px; text-align:center;"><strong>${rec.numero_ore || ''}</strong></td>
+                        <td style="width:50px; text-align:center;">${tipoHtml}</td>
+                        <td><small>${rec.note || ''}</small></td>
                     </tr>
                 `;
+
+                if (dayNum <= 15) leftRows += rowHtml; else rightRows += rowHtml;
             }
-            detailBody.innerHTML = html;
+
+            // Inserisce la struttura a due colonne
+            const tableHeader = `<thead><tr><th>G</th><th></th><th>H</th><th>St</th><th>Note</th></tr></thead>`;
+            
+            modalBodyContainer.innerHTML = `
+                <div class="modal-split-container">
+                    <div class="split-column">
+                        <table class="detail-table">${tableHeader}<tbody>${leftRows}</tbody></table>
+                    </div>
+                    <div class="split-column">
+                        <table class="detail-table">${tableHeader}<tbody>${rightRows}</tbody></table>
+                    </div>
+                </div>
+            `;
 
         } catch (err) {
             console.error(err);
-            detailBody.innerHTML = '<tr><td colspan="4" style="color:red;">Errore caricamento dati.</td></tr>';
+            modalBodyContainer.innerHTML = '<div style="color:red; text-align:center;">Errore caricamento dati.</div>';
         }
     }
 
-    // ... (Codice Visual Popup, Edit, ecc. identico a prima) ...
     // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
@@ -483,7 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const color = prompt("Scrivi colore (red, yellow, green, blue, none):");
         if(color) { try { await apiClient.post('/presenze/colore-colonna', {data:dateStr, colore}); alert("Colore aggiornato. Scorri per aggiornare o ricarica."); } catch(e) { alert("Errore"); } }
     }
-    
+
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });

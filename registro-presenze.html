@@ -46,36 +46,21 @@
     </div>
 
     <div id="personnelDetailModal" class="modal" style="display: none;">
-         <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 id="personnelDetailTitle">Nome Operatore</h2>
+        <div class="modal-content" style="max-width: 950px;"> <div class="modal-header">
+                <h2 id="personnelDetailTitle"></h2>
                 <span class="close-button" id="closeDetailModal">&times;</span>
             </div>
-                
+            
             <div class="detail-controls">
                 <button id="btnDetailPrev" class="nav-btn">&lt;</button>
-                <h3 id="detailMonthLabel">GENNAIO 2025</h3>
+                <h3 id="detailMonthLabel"></h3>
                 <button id="btnDetailNext" class="nav-btn">&gt;</button>
             </div>
 
-            <div class="modal-body">
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table class="detail-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%">Giorno</th>
-                                <th style="width: 15%">Ore</th>
-                                <th style="width: 20%">Stato</th>
-                                <th style="width: 50%">Note</th>
-                            </tr>
-                        </thead>
-                        <tbody id="personnelDetailBody">
-                            </tbody>
-                    </table>
+            <div class="modal-body" id="personnelDetailBody">
                 </div>
-            </div>
         </div>
-    </div>   
+    </div> 
 
     <div id="colorPickerPopup" class="visual-popup" style="display: none; width: 200px;">
         <h4>Imposta Colore Sfondo</h4>
