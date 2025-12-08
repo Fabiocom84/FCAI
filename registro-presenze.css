@@ -8,7 +8,7 @@ body {
 }
 
 .main-content-wrapper {
-    max-width: 95%; /* Sfruttiamo più spazio per la griglia */
+    max-width: 98%; /* Sfruttiamo più spazio per la griglia */
     padding-top: 20px;
 }
 
@@ -17,8 +17,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    padding: 15px;
+    margin-bottom: 5px; /* Ridotto margine inferiore */
+    padding: 10px 15px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -35,7 +35,7 @@ body {
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 8px 12px;
+    padding: 6px 12px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -46,14 +46,14 @@ body {
 }
 
 #current-month-display {
-    font-size: 1.5em;
-    font-weight: 500;
+    font-size: 1.4em;
+    font-weight: 600;
     color: #333;
     margin: 0;
 }
 
 #search-notes {
-    padding: 8px 12px;
+    padding: 6px 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
     min-width: 250px;
@@ -66,293 +66,206 @@ body {
     border: 1px solid #dee2e6;
     border-radius: 8px;
     background-color: #fff;
-    max-height: 70vh; /* Limita l'altezza per evitare scroll della pagina intera */
+    max-height: 75vh; /* Altezza aumentata */
     overflow-y: auto;
 }
 
 .timeline-table {
-    border-collapse: collapse;
+    border-collapse: separate; /* Necessario per sticky headers */
+    border-spacing: 0;
     width: 100%;
 }
 
 .timeline-table th,
 .timeline-table td {
-    border: 1px solid #e9ecef;
-    padding: 8px 5px; /* Ridotto lo spazio laterale */
+    border: 1px solid #d1d9e6; /* Bordo leggermente più scuro per contrasto */
+    padding: 6px 4px;
     text-align: center;
-    min-width: 100px;  /* Ridotta la larghezza minima */
-    max-width: 100px;  /* Aggiunta per consistenza */
+    min-width: 90px;
+    max-width: 90px;
+    position: relative; /* Necessario per indicatori assoluti */
 }
 
-/* Stile per l'intestazione fissa (nomi e giorni) */
+/* Stile per l'intestazione fissa (giorni) */
 .timeline-table thead th {
-    position: -webkit-sticky;
     position: sticky;
     top: 0;
-    background-color: #f8f9fa;
+    background-color: #f1f3f5;
     z-index: 10;
-    font-weight: 500;
+    font-weight: 600;
     color: #495057;
+    cursor: pointer; /* Indica che è cliccabile per il colore */
+    user-select: none;
+    border-bottom: 2px solid #ced4da;
+}
+.timeline-table thead th:hover {
+    background-color: #e2e6ea; /* Feedback hover */
 }
 
 /* Stile per la colonna fissa a sinistra (nomi operatori) */
 .timeline-table tbody th {
-    position: -webkit-sticky;
     position: sticky;
     left: 0;
-    background-color: #f8f9fa;
+    background-color: #fff;
     z-index: 5;
     text-align: left;
     font-weight: 500;
-    min-width: 200px;
-    border-right: 2px solid #dee2e6; /* Linea più marcata per separare */
-}
-
-/* ============================================= */
-/* == Stili per l'Interfaccia di Modifica       == */
-/* ============================================= */
-
-/* Contenitore per l'input e il pulsante opzioni */
-.edit-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-/* Stile per l'input di testo nella cella */
-.cell-input {
-    width: 100%;
-    height: 100%;
-    border: 2px solid #007bff; /* Evidenzia la cella in modifica */
-    box-sizing: border-box;
-    font-size: 1em;
-    padding: 0 5px;
-    flex-grow: 1;
-}
-.cell-input:focus {
-    outline: none;
-}
-
-/* Pulsante "..." per le opzioni */
-.options-btn {
-    width: 25px;
-    height: 100%;
-    border: none;
-    background-color: #f0f0f0;
+    min-width: 220px;
+    border-right: 3px solid #ced4da; /* Separazione netta */
+    padding-left: 10px;
     cursor: pointer;
-    font-weight: bold;
-    padding: 0;
-    flex-shrink: 0;
+    color: #2c3e50;
+}
+.timeline-table tbody th:hover {
+    color: #007bff;
+    text-decoration: underline;
 }
 
-/* --- Stili per i "Chip" di visualizzazione dati --- */
-.chip {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.85em;
-    font-weight: 500;
-    margin: 1px;
-    white-space: nowrap;
+/* --- RIGHE ALTERNATE (ZEBRA STRIPING PIÙ FORTE) --- */
+.timeline-table tbody tr:nth-child(even) th,
+.timeline-table tbody tr:nth-child(even) td {
+    background-color: #e9ecef; /* Grigio più scuro rispetto a prima */
+}
+/* Importante: resetta background per le righe dispari */
+.timeline-table tbody tr:nth-child(odd) th {
+    background-color: #fff;
 }
 
+/* Evidenzia la riga al passaggio del mouse (override parziale) */
+.timeline-table tbody tr:hover th,
+.timeline-table tbody tr:hover td {
+    background-color: #dfe6ed !important;
+}
+
+/* --- WEEKEND EVIDENZIATO --- */
+.weekend-column {
+    background-color: #dbe4ea !important; /* Grigio-Bluastro distinto */
+    border-left: 2px solid #b0b8c1 !important; /* Bordi verticali per staccare */
+    border-right: 2px solid #b0b8c1 !important;
+}
+/* Header del weekend */
+.timeline-table thead th.weekend-column {
+    background-color: #cdd6dc !important;
+    color: #2c3e50;
+}
+
+/* --- COLORI PERSONALIZZATI CELLE --- */
+/* Override specifici per i colori utente */
+.cell-color-red { background-color: #ffcccc !important; }     /* Chiusura / Stop */
+.cell-color-yellow { background-color: #fff3cd !important; }  /* Attenzione / Parziale */
+.cell-color-green { background-color: #d4edda !important; }   /* Aperto / Speciale */
+.cell-color-blue { background-color: #d1ecf1 !important; }    /* Altro */
+
+/* --- COMPONENTI UI (Chip, Indicatori, Input) --- */
+
+/* Chip Ore */
 .chip.ore {
-    /* Aspetto del testo */
-    font-size: 1em;          /* Ingrandiamo leggermente il carattere */
-    font-weight: 700;        /* Grassetto per massima visibilità */
-    color: #212529;          /* Un nero più deciso */
-    
-    /* Aspetto del cerchio */
-    background-color: #dee2e6; /* Un grigio leggermente più scuro per maggior contrasto */
-    border-radius: 5%;      
-    
-    /* Dimensioni e allineamento */
-    min-width: 28px;         /* Larghezza minima fissa */
-    height: 28px;            /* Altezza fissa */
-    display: inline-flex;    /* Necessario per centrare il contenuto */
-    align-items: center;     /* Allinea il numero verticalmente */
-    justify-content: center; /* Allinea il numero orizzontalmente */
-    padding: 0;              /* Rimuoviamo il padding laterale non più necessario */
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #212529;
+    background-color: rgba(255,255,255, 0.6); /* Leggermente trasparente */
+    border: 1px solid #adb5bd;
+    border-radius: 4px;
+    min-width: 30px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }
 
-/* Assicura che la cella sia il contenitore di riferimento per l'indicatore */
-.timeline-table td {
-    position: relative;
-}
-
-/* Stile per l'indicatore di nota, ora un triangolo rosso più grande */
+/* Indicatore Nota (Triangolo) */
 .note-indicator {
     position: absolute;
     top: 0;
     right: 0;
     width: 0;
     height: 0;
-    /* Crea un triangolo usando i bordi: la dimensione è definita qui (12px) */
-    border-top: 24px solid #e74c3c; /* Un rosso vivo ma non aggressivo */
-    border-left: 24px solid transparent;
+    border-top: 10px solid #e74c3c; /* Ridotto leggermente per eleganza */
+    border-left: 10px solid transparent;
 }
 
-/* Stile per evidenziare la colonna del giorno corrente */
-.today-column {
-    background-color: #fcf8e3 !important; /* Un giallo paglierino molto tenue */
+/* Stile cella durante modifica */
+.cell-input {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #007bff;
+    box-sizing: border-box;
+    font-size: 1em;
+    padding: 0 5px;
 }
 
-/* ================================================= */
-/* == Stili per Intestazione Pagina (omogeneo)    == */
-/* ================================================= */
-
-/* Rimuove lo stile H1 globale che non serve più */
-.main-content-wrapper > h1 {
-    display: none;
+/* Pulsante opzioni '...' */
+.options-btn {
+    /* (Se usato nel vecchio layout, manteniamo per compatibilità) */
+    width: 25px; height: 100%; border: none; background: #f0f0f0; cursor: pointer;
 }
 
-/* Posiziona il pulsante di aiuto a destra */
-.page-header .help-button {
-    /* Lo stile del pulsante "?" è già definito in style-v2.css e va bene */
-}
+/* --- POPUP & MODALI --- */
 
-/* Riduce lo spazio sopra l'intestazione principale */
-.main-content-wrapper {
-    padding-top: 20px;
-}
-
-/* Riduce lo spazio SOTTO l'intestazione principale */
-.page-header {
-    margin-bottom: 5px; /* Era 25px */
-}
-
-/* Riduce lo spazio SOTTO la barra dei controlli del mese */
-.presenze-controls {
-    margin-bottom: 5px; /* Era 25px */
-}
-
-/* Colora le righe pari per una migliore leggibilità */
-.timeline-table tbody tr:nth-child(even) th,
-.timeline-table tbody tr:nth-child(even) td {
-    background-color: #f8f9fa;
-}
-
-/* Evidenzia la riga al passaggio del mouse */
-.timeline-table tbody tr:hover th,
-.timeline-table tbody tr:hover td {
-    background-color: #e9ecef;
-}
-
-/* ================================================= */
-/* == Stili per il Popup di Inserimento Guidato   == */
-/* ================================================= */
-
+/* Popup di Inserimento Guidato */
 .visual-popup {
-    position: absolute; /* Posizionato rispetto alla pagina */
+    position: absolute;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     z-index: 100;
-    width: 280px;
+    min-width: 250px;
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
+}
+.visual-popup h4 { margin: 0 0 5px 0; font-size: 0.9em; color: #333; }
+.visual-popup input, .visual-popup textarea {
+    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
 }
 
-.visual-popup h4 {
-    margin: 0 0 5px 0;
-    font-size: 0.9em;
-    color: #333;
-    font-weight: 500;
-}
-
-.visual-popup input,
-.visual-popup textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-.visual-popup textarea {
-    min-height: 60px;
-    resize: vertical;
-}
-
-.status-buttons-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.status-btn {
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    background-color: #f8f9fa;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 0.85em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s ease;
-}
-
-.status-btn.active {
-    border-width: 2px;
-    border-color: #007bff;
-    font-weight: bold;
-}
-
+/* Footer Popup */
 .popup-actions {
     display: flex;
-    justify-content: space-between; /* Allinea i gruppi ai lati opposti */
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
     margin-top: 10px;
 }
-.popup-actions button {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.popup-actions .save {
-    background-color: #28a745;
-    color: white;
-}
-.popup-actions .cancel {
-    background-color: #6c757d;
-    color: white;
-}
-.popup-actions .main-actions {
+.popup-actions .main-actions { display: flex; gap: 5px; }
+.popup-actions button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+.popup-actions .save { background-color: #28a745; color: white; }
+.popup-actions .delete { background-color: #dc3545; color: white; }
+.status-btn { background: #f8f9fa; border: 1px solid #ddd; }
+
+/* Nuovo Popup Scelta Colore */
+.color-picker-container {
     display: flex;
-    gap: 10px;
+    justify-content: space-around;
+    margin-top: 5px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+.color-dot {
+    width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;
+    transition: transform 0.2s;
+}
+.color-dot:hover { transform: scale(1.2); border-color: #666; }
+.color-dot[data-color="red"] { background-color: #ffcccc; }
+.color-dot[data-color="yellow"] { background-color: #fff3cd; }
+.color-dot[data-color="green"] { background-color: #d4edda; }
+.color-dot[data-color="blue"] { background-color: #d1ecf1; }
+.color-dot[data-color="none"] { 
+    background-color: #fff;
+    background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%);
+    background-size: 8px 8px;
 }
 
-/* Stile per il nuovo pulsante Elimina */
-.popup-actions .delete {
-    background-color: #e74c3c; /* Rosso */
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.popup-actions .delete:hover {
-    background-color: #c0392b;
-}
+/* Modale Dettaglio Personale (Tabella interna) */
+.agile-table { width: 100%; border-collapse: collapse; }
+.agile-table th, .agile-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.agile-table th { background-color: #f8f9fa; font-weight: 600; }
 
-/* Stile per le celle sfumate durante la ricerca */
-.timeline-table td.dimmed {
-    opacity: 0.2;
-    transition: opacity 0.3s ease;
-}
+/* Ricerca: celle non trovate */
+.timeline-table td.dimmed { opacity: 0.3; }
 
-/* Stile per evidenziare e restringere le colonne del weekend */
-.timeline-table .weekend-column {
-    background-color: #f8f9fa; /* Ora !important non è più necessario */
-    min-width: 60px;
-    max-width: 60px;
-}
+/* Intestazione (cleanup) */
+.main-content-wrapper > h1 { display: none; } /* Nasconde H1 duplicato */
+.page-header { margin-bottom: 5px; }

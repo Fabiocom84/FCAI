@@ -9,9 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style-v2.css">
-    
     <link rel="stylesheet" href="registro-presenze.css">
-
 </head>
 
 <body>
@@ -26,7 +24,11 @@
         </header>
 
         <div class="presenze-controls">
-            <h2 id="current-month-display">OTTOBRE 2025</h2>
+            <div class="month-navigation">
+                <button id="prev-month-btn">&lt;</button>
+                <h2 id="current-month-display">OTTOBRE 2025</h2>
+                <button id="next-month-btn">&gt;</button>
+            </div>
             <input type="search" id="search-notes" placeholder="Cerca nelle note...">
         </div>
 
@@ -34,7 +36,7 @@
             <table class="timeline-table">
                 <thead>
                     <tr id="header-row">
-                        <th style="position: -webkit-sticky; position: sticky; left: 0; z-index: 15;">Operatore</th>
+                        <th style="position: sticky; left: 0; z-index: 15; background-color: #f8f9fa;">Operatore</th>
                         </tr>
                 </thead>
                 <tbody id="timeline-body">
@@ -43,48 +45,56 @@
         </div>
     </div>
 
-    <div id="presenzeLegend" class="legend" style="display: none; max-width: 450px;">
-        <h3>Aiuto - Registro Presenze</h3>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Modifica una Cella:</strong> Fai clic su una cella qualsiasi per iniziare a inserire i dati.
+    <div id="personnelDetailModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="personnelDetailTitle">Dettaglio Operatore</h2>
+                <span class="close-button" id="closeDetailModal">&times;</span>
             </div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Salvataggio Rapido:</strong> Premi <strong>Invio</strong> o fai clic fuori dalla cella per salvare automaticamente.
-            </div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Annulla Modifica:</strong> Premi <strong>Esc</strong> per annullare le modifiche prima di salvare.
-            </div>
-        </div>
-        <hr>
-        <h4>Comandi Rapidi:</h4>
-        <div class="legend-item">
-            <div class="legend-text">
-                Puoi combinare più comandi separandoli con uno spazio (es. <strong><code>4 \q +Permesso mattina</code></strong>).
-            </div>
-        </div>
-        <div class="legend-item"><div class="legend-text"><strong><code>8</code></strong> o <strong><code>4.5</code></strong> : Inserisce le ore lavorate.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong><code>\z</code></strong> : Imposta lo stato su <strong>Ferie</strong>.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong><code>\a</code></strong> : Imposta lo stato su <strong>Malattia</strong>.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong><code>\q</code></strong> : Imposta lo stato su <strong>Permesso</strong>.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong><code>\w</code></strong> : Imposta lo stato su <strong>Cantiere</strong>.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong><code>+Testo...</code></strong> : Aggiunge una nota visualizzabile al passaggio del mouse.</div></div>
-        <hr>
-        <div class="legend-item">
-             <span style="font-size: 20px; margin-right: 10px;">🗑️</span>
-            <div class="legend-text">
-                <strong>Elimina Voce:</strong> Per eliminare, apri il popup con il pulsante <strong>"..."</strong> e clicca su <strong>"Elimina"</strong>.
+            <div class="modal-body">
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="agile-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Ore</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personnelDetailBody">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <script type="module" src="js/api-client.js"></script>
-    
-    <script type="module" src="js/registro-presenze.js"></script>
+    <div id="colorPickerPopup" class="visual-popup" style="display: none; width: 200px;">
+        <h4>Imposta Colore Sfondo</h4>
+        <div class="color-picker-container">
+            <div class="color-dot" data-color="red" title="Chiuso/Stop"></div>
+            <div class="color-dot" data-color="yellow" title="Attenzione"></div>
+            <div class="color-dot" data-color="green" title="Aperto"></div>
+            <div class="color-dot" data-color="blue" title="Info"></div>
+            <div class="color-dot" data-color="none" title="Nessuno"></div>
+        </div>
+        <div style="margin-top: 10px; text-align: right;">
+             <button class="status-btn" id="closeColorPicker" style="padding: 4px 8px;">Chiudi</button>
+        </div>
+    </div>
 
-    </body>
+    <div id="presenzeLegend" class="legend" style="display: none; max-width: 450px;">
+        <h3>Aiuto - Registro Presenze</h3>
+        <div class="legend-item"><div class="legend-text"><strong>Click su Nome:</strong> Apre il riepilogo mensile dell'operatore.</div></div>
+        <div class="legend-item"><div class="legend-text"><strong>Click su Giorno:</strong> Imposta un colore per tutta la colonna.</div></div>
+        <hr>
+        <div class="legend-item"><div class="legend-text"><strong>Modifica Cella:</strong> Click singolo su una cella.</div></div>
+        <div class="legend-item"><div class="legend-text"><strong>Comandi Rapidi:</strong> Es. <code>8</code> (ore), <code>\f</code> (ferie), <code>\m</code> (malattia).</div></div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <script type="module" src="js/api-client.js"></script>
+    <script type="module" src="js/registro-presenze.js"></script>
+</body>
 </html>
