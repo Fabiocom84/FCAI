@@ -192,55 +192,61 @@ body {
 }
 
 /* --- MODALE SPLIT VIEW (Due Tabelle) --- */
-#personnelDetailModal .modal-content {
-    max-width: 2000px; /* Ancora più largo per il comfort */
-    width: 95%;
+/* Applica questa classe al div .modal-content nell'HTML */
+.modal-content.wide-modal {
+    max-width: 1300px !important; /* Forza bruta per allargare */
+    width: 95% !important;
+    margin: 2% auto !important;
 }
 
 .modal-split-container {
     display: flex;
-    gap: 30px; /* Più spazio tra le due colonne */
+    gap: 40px; /* Spazio generoso tra le due colonne */
     width: 100%;
 }
 
 .split-column {
     flex: 1; 
+    min-width: 0; 
 }
 
 .detail-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 1em; /* Font aumentato nel modale */
+    font-size: 0.95em; 
+    table-layout: fixed; 
 }
 
 .detail-table th, .detail-table td {
-    padding: 6px 8px; /* Padding più comodo */
+    padding: 8px 10px;
     border: 1px solid #ddd;
     text-align: left;
+    vertical-align: middle;
+    word-wrap: break-word; 
 }
 
 .detail-table th {
     background-color: #e9ecef;
     font-weight: 600;
     text-align: center;
-    height: 40px; /* Altezza fissa header modale */
+    height: 45px;
 }
 
-/* Larghezze specifiche per le colonne del modale */
-.detail-col-day { width: 12%; text-align: center; }
-.detail-col-hours { width: 12%; text-align: center; }
-.detail-col-status { width: 10%; text-align: center; }
-.detail-col-notes { width: 61%; } /* Nota più larga */
+/* LARGHEZZE COLONNE MODALE OTTIMIZZATE */
+.detail-col-day { width: 12%; text-align: center; }   
+.detail-col-hours { width: 12%; text-align: center; } 
+.detail-col-status { width: 15%; text-align: center; }
+.detail-col-notes { width: 61%; } /* Molto spazio per le note */
 
 .detail-row-weekend {
     background-color: #fff3e0; 
 }
 
 .detail-note-text {
-    font-size: 0.9em;
-    line-height: 1.3;
+    font-size: 0.95em;
+    line-height: 1.4;
     color: #333;
-    white-space: normal; /* Forza a capo */
+    white-space: normal; 
 }
 
 .detail-controls {

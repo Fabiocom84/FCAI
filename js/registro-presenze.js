@@ -485,7 +485,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Evita l'uso di toISOString() che converte in UTC e causa sfasamenti di -1 giorno
     function formatDateISO(d) {
         const year = d.getFullYear();
-        // getMonth() è 0-based, quindi +1. padStart assicura lo 0 iniziale.
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
