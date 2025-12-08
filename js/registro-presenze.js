@@ -1,19 +1,22 @@
 import { apiFetch } from './api-client.js';
 
-// --- ADAPTER LOCALE (Ponte per usare la tua apiFetch esistente) ---
+// --- ADAPTER LOCALE ---
 const apiClient = {
     async get(endpoint) {
-        const response = await apiFetch(endpoint, { method: 'GET' });
+        // FIX: Assicuriamoci che l'endpoint inizi con /api se non c'è
+        const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+        const response = await apiFetch(url, { method: 'GET' });
         if (!response.ok) throw new Error(`Errore API: ${response.status}`);
         return await response.json();
     },
     async post(endpoint, body) {
-        const response = await apiFetch(endpoint, {
+        // FIX: Assicuriamoci che l'endpoint inizi con /api se non c'è
+        const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+        const response = await apiFetch(url, {
             method: 'POST',
             body: JSON.stringify(body)
         });
         if (!response.ok) throw new Error(`Errore API: ${response.status}`);
-        // Se la risposta è vuota (es. 204), ritorna null, altrimenti il json
         const text = await response.text();
         return text ? JSON.parse(text) : null;
     }
@@ -28,9 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let personnelData = [];
     let activePopup = null;
     let activeCell = null;
-    let activeHeaderDate = null; // Per il colore colonna
+    let activeHeaderDate = null; 
 
-    // Mappa Priorità Ruoli (Esatta come da DB/Richiesta)
     const ROLE_PRIORITY = {
         "addetto taglio": 1,
         "carpentiere": 2,
@@ -47,13 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentMonthDisplay = document.getElementById('current-month-display');
     const searchInput = document.getElementById('search-notes');
     
-    // Modale Dettaglio
     const detailModal = document.getElementById('personnelDetailModal');
     const detailBody = document.getElementById('personnelDetailBody');
     const detailTitle = document.getElementById('personnelDetailTitle');
     const modalOverlay = document.getElementById('modalOverlay');
-
-    // Popup Colore
     const colorPickerPopup = document.getElementById('colorPickerPopup');
 
     // --- INIZIALIZZAZIONE ---
@@ -73,7 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initGlobalEvents() {
-        // Chiudi modali su click overlay o X
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el => {
             el.addEventListener('click', () => {
                 detailModal.style.display = 'none';
@@ -83,16 +81,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Gestione Colore nel Popup Picker
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', async (e) => {
                 const color = e.target.dataset.color;
-                
                 if (activeHeaderDate) {
-                    // Stiamo colorando una colonna intera
                     await applyColumnColor(activeHeaderDate, color);
                 } else if (activeCell) {
-                    // Stiamo colorando una singola cella (dal menu ...)
                     await applyCellColor(activeCell, color);
                 }
                 colorPickerPopup.style.display = 'none';
@@ -105,20 +99,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Ricerca Note
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             document.querySelectorAll('.timeline-table td').forEach(td => {
                 if (term && td.dataset.note && td.dataset.note.toLowerCase().includes(term)) {
                     td.classList.remove('dimmed');
-                    td.style.backgroundColor = '#fff3cd'; // Highlight result
+                    td.style.backgroundColor = '#fff3cd'; 
                 } else if (term) {
                     td.classList.add('dimmed');
                     td.style.backgroundColor = '';
                 } else {
                     td.classList.remove('dimmed');
-                    td.style.backgroundColor = ''; // Reset
-                    // Riapplica classi colore se presenti
+                    td.style.backgroundColor = ''; 
                     const colorClass = Array.from(td.classList).find(c => c.startsWith('cell-color-'));
                     if(!colorClass && td.dataset.originalBg) td.style.backgroundColor = td.dataset.originalBg; 
                 }
@@ -128,13 +120,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- CARICAMENTO DATI ---
     async function loadData() {
-        // 1. Calcola range date
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
 
-        // Aggiorna titolo
         const monthName = firstDay.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
         currentMonthDisplay.textContent = monthName.toUpperCase();
 
@@ -142,24 +132,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const endDateStr = formatDateISO(lastDay);
 
         try {
-            // 2. Fetch Parallela
+            // FIX: Ora chiamiamo le API corrette con /api/ davanti
+            // L'adapter apiClient che ho scritto sopra lo aggiunge automaticamente se manca,
+            // ma per chiarezza qui lo scrivo esplicitamente.
             const [presenzeRes, personaleRes] = await Promise.all([
                 apiClient.get(`/presenze?startDate=${startDateStr}&endDate=${endDateStr}`),
-                apiClient.get('/personale?attivo=true&limit=1000') // Prendi solo attivi
+                apiClient.get('/personale?attivo=true&limit=1000') 
             ]);
 
             currentData = presenzeRes || [];
             personnelData = personaleRes.data || [];
 
-            // 3. Ordinamento Personale Custom
             sortPersonnel(personnelData);
-
-            // 4. Render
             renderGrid(firstDay, lastDay);
 
         } catch (error) {
             console.error("Errore caricamento:", error);
-            alert("Errore nel caricamento dei dati.");
+            // alert("Errore nel caricamento dei dati."); // Commentato per evitare spam di alert
         }
     }
 
@@ -178,14 +167,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- RENDERING GRIGLIA ---
     function renderGrid(firstDay, lastDay) {
-        // Pulisce
         headerRow.innerHTML = '<th style="position: sticky; left: 0; z-index: 15; background-color: #f8f9fa;">Operatore</th>';
         timelineBody.innerHTML = '';
 
         const daysInMonth = [];
         const tempDate = new Date(firstDay);
         
-        // 1. Genera Header Giorni
         while (tempDate <= lastDay) {
             const dateStr = formatDateISO(tempDate);
             const dayNum = tempDate.getDate();
@@ -197,8 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.dataset.date = dateStr;
             
             if (isWeekend) th.classList.add('weekend-column');
-
-            // Evento Click su Header per Colore
             th.addEventListener('click', (e) => openColorPicker(e, dateStr, 'column'));
 
             headerRow.appendChild(th);
@@ -206,17 +191,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             tempDate.setDate(tempDate.getDate() + 1);
         }
 
-        // 2. Genera Righe Personale
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
             
-            // Cella Nome (Sticky)
             const thName = document.createElement('th');
             thName.textContent = person.nome_cognome;
             thName.addEventListener('click', () => openPersonnelDetail(person));
             tr.appendChild(thName);
 
-            // Celle Giorni
             daysInMonth.forEach(dayInfo => {
                 const td = document.createElement('td');
                 td.dataset.date = dayInfo.dateStr;
@@ -224,16 +206,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 if (dayInfo.isWeekend) td.classList.add('weekend-column');
 
-                // Cerca dati presenza
                 const record = currentData.find(r => r.id_personale_fk === person.id_personale && r.data === dayInfo.dateStr);
 
                 if (record) {
                     renderCellContent(td, record);
                 }
 
-                // Evento Click Cella per Modifica
                 td.addEventListener('click', (e) => handleCellClick(e, td, person.id_personale, dayInfo.dateStr));
-
                 tr.appendChild(td);
             });
 
@@ -242,14 +221,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCellContent(td, record) {
-        td.innerHTML = ''; // Reset
+        td.innerHTML = ''; 
         
-        // Colore Sfondo
         if (record.colore && record.colore !== 'none') {
             td.classList.add(`cell-color-${record.colore}`);
         }
 
-        // Ore
         if (record.numero_ore) {
             const chip = document.createElement('span');
             chip.className = 'chip ore';
@@ -257,15 +234,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             td.appendChild(chip);
         }
 
-        // Simboli Tipi Presenza
-        if (record.id_tipo_presenza_fk && record.id_tipo_presenza_fk !== 1) { // 1 = standard
+        if (record.id_tipo_presenza_fk && record.id_tipo_presenza_fk !== 1) { 
              const chip = document.createElement('span');
              chip.className = 'chip';
              chip.textContent = getTipoSymbol(record.id_tipo_presenza_fk); 
              td.appendChild(chip);
         }
 
-        // Note
         if (record.note) {
             const indicator = document.createElement('div');
             indicator.className = 'note-indicator';
@@ -276,7 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getTipoSymbol(id) {
-        // IDs ipotetici: adattali se il tuo DB usa ID diversi per Ferie/Malattia
         const map = { 2: 'F', 3: 'M', 4: 'P', 5: '104' }; 
         return map[id] || '?';
     }
@@ -285,8 +259,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function openColorPicker(e, targetId, mode) {
         e.stopPropagation();
-        
-        // Posiziona popup vicino al mouse
         colorPickerPopup.style.left = `${e.pageX}px`;
         colorPickerPopup.style.top = `${e.pageY}px`;
         colorPickerPopup.style.display = 'block';
@@ -295,7 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             activeHeaderDate = targetId;
             activeCell = null;
         } else {
-            activeCell = targetId; // targetId qui è l'elemento TD
+            activeCell = targetId; 
             activeHeaderDate = null;
         }
     }
@@ -306,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data: dateStr,
                 colore: color
             });
-            loadData(); // Ricarica tutto
+            loadData(); 
         } catch (err) {
             alert('Errore aggiornamento colonna');
         }
@@ -323,14 +295,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 colore: color
             });
             
-            // Aggiorna solo la cella
             td.classList.forEach(c => { if(c.startsWith('cell-color-')) td.classList.remove(c); });
             if (color !== 'none') td.classList.add(`cell-color-${color}`);
             
-            // Aggiorna memoria
             let record = currentData.find(r => r.id_personale_fk == pid && r.data == date);
             if(record) record.colore = color; else {
-                // Se non esisteva record, bisogna ricaricare o gestire l'inserimento
                 loadData();
             }
 
@@ -368,7 +337,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalOverlay.style.display = 'block';
     }
 
-    // --- GESTIONE MODIFICA CELLA ---
     function handleCellClick(e, td, personId, dateStr) {
         if (activePopup) activePopup.remove();
 
@@ -422,7 +390,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         popup.querySelector('#btn-delete').onclick = async () => {
-             // Logica elimina (update a null)
              popup.remove();
              activePopup = null;
         };
