@@ -1,4 +1,24 @@
-import apiClient from './api-client.js';
+import { apiFetch } from './api-client.js';
+
+// --- ADAPTER LOCALE (Ponte per usare la tua apiFetch esistente) ---
+const apiClient = {
+    async get(endpoint) {
+        const response = await apiFetch(endpoint, { method: 'GET' });
+        if (!response.ok) throw new Error(`Errore API: ${response.status}`);
+        return await response.json();
+    },
+    async post(endpoint, body) {
+        const response = await apiFetch(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error(`Errore API: ${response.status}`);
+        // Se la risposta è vuota (es. 204), ritorna null, altrimenti il json
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+    }
+};
+// ------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -63,9 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Gestione Click per Colore Colonna (Header)
-        // Delegato nel rendering dell'header
-
         // Gestione Colore nel Popup Picker
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', async (e) => {
@@ -82,9 +99,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        document.getElementById('closeColorPicker').addEventListener('click', () => {
-            colorPickerPopup.style.display = 'none';
-        });
+        if(document.getElementById('closeColorPicker')) {
+            document.getElementById('closeColorPicker').addEventListener('click', () => {
+                colorPickerPopup.style.display = 'none';
+            });
+        }
 
         // Ricerca Note
         searchInput.addEventListener('input', (e) => {
@@ -238,8 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             td.appendChild(chip);
         }
 
-        // Simboli Tipi Presenza (es. Ferie, Malattia)
-        // (Qui assumiamo logica esistente o ID fissi, semplifico per brevità)
+        // Simboli Tipi Presenza
         if (record.id_tipo_presenza_fk && record.id_tipo_presenza_fk !== 1) { // 1 = standard
              const chip = document.createElement('span');
              chip.className = 'chip';
@@ -258,8 +276,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getTipoSymbol(id) {
-        // Mappa provvisoria, da sostituire con chiamata API se dinamico
-        const map = { 2: 'F', 3: 'M', 4: 'P', 5: '104' }; // IDs ipotetici
+        // IDs ipotetici: adattali se il tuo DB usa ID diversi per Ferie/Malattia
+        const map = { 2: 'F', 3: 'M', 4: 'P', 5: '104' }; 
         return map[id] || '?';
     }
 
@@ -288,8 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data: dateStr,
                 colore: color
             });
-            // Ricarica tutto per vedere l'effetto su tutti
-            loadData();
+            loadData(); // Ricarica tutto
         } catch (err) {
             alert('Errore aggiornamento colonna');
         }
@@ -299,23 +316,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pid = td.dataset.personId;
         const date = td.dataset.date;
         
-        // Upsert singolo
         try {
             const res = await apiClient.post('/presenze', {
                 id_personale_fk: pid,
                 data: date,
                 colore: color
-                // Nota: non mandiamo ore/note, il backend gestisce il merge (vedi presenze.py)
             });
             
             // Aggiorna solo la cella
-            // Rimuovi vecchie classi colore
             td.classList.forEach(c => { if(c.startsWith('cell-color-')) td.classList.remove(c); });
             if (color !== 'none') td.classList.add(`cell-color-${color}`);
             
-            // Aggiorna record in memoria locale per coerenza
+            // Aggiorna memoria
             let record = currentData.find(r => r.id_personale_fk == pid && r.data == date);
-            if(record) record.colore = color;
+            if(record) record.colore = color; else {
+                // Se non esisteva record, bisogna ricaricare o gestire l'inserimento
+                loadData();
+            }
 
         } catch (err) {
             console.error(err);
@@ -326,7 +343,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailTitle.textContent = `Dettaglio: ${person.nome_cognome}`;
         detailBody.innerHTML = '';
         
-        // Filtra dati del mese corrente per questa persona
         const personRecords = currentData
             .filter(r => r.id_personale_fk === person.id_personale)
             .sort((a, b) => a.data.localeCompare(b.data));
@@ -352,9 +368,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalOverlay.style.display = 'block';
     }
 
-    // --- GESTIONE MODIFICA CELLA (Popup Esistente + Opzione Colore) ---
+    // --- GESTIONE MODIFICA CELLA ---
     function handleCellClick(e, td, personId, dateStr) {
-        // Se si clicca su chip o indicatore, bubbola su TD
         if (activePopup) activePopup.remove();
 
         const rect = td.getBoundingClientRect();
@@ -382,10 +397,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
         activePopup = popup;
 
-        // Focus su ore
         setTimeout(() => popup.querySelector('#edit-ore').focus(), 50);
 
-        // Eventi Popup
         popup.querySelector('#btn-save').onclick = async () => {
             const ore = popup.querySelector('#edit-ore').value;
             const note = popup.querySelector('#edit-note').value;
@@ -396,12 +409,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     data: dateStr,
                     numero_ore: ore ? parseFloat(ore) : null,
                     note: note,
-                    colore: record.colore // Mantiene colore esistente
+                    colore: record.colore 
                 });
                 
-                // Aggiorna UI locale veloce
                 renderCellContent(td, res);
-                // Aggiorna array dati
                 const idx = currentData.findIndex(r => r.id_personale_fk === personId && r.data === dateStr);
                 if(idx >= 0) currentData[idx] = res; else currentData.push(res);
                 
@@ -411,23 +422,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         popup.querySelector('#btn-delete').onclick = async () => {
-             // Logica elimina (update a null o delete row)
-             // ... implementare se necessario, per ora chiude
+             // Logica elimina (update a null)
              popup.remove();
              activePopup = null;
         };
 
-        // Apre il color picker "sottostante" o lo integra
         popup.querySelector('#btn-color-opts').onclick = (evt) => {
-            popup.remove(); // Chiude popup edit
-            openColorPicker(e, td, 'cell'); // Apre color picker su cella
+            popup.remove();
+            openColorPicker(e, td, 'cell');
         };
-
-        // Chiudi se click fuori (gestito globalmente o qui)
-        // ...
     }
 
-    // Helper Date
     function formatDateISO(d) {
         return d.toISOString().split('T')[0];
     }
