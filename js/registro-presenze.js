@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentStartDate = new Date();
     let currentEndDate = new Date();   
     let isLoading = false;
-    let lastUpdatedMonth = ""; // Per evitare refresh inutili del DOM
+    let lastUpdatedMonth = ""; 
 
     let activePopup = null;
     let activeCell = null;
@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
+    const COLUMN_WIDTH = 75; // Deve corrispondere al CSS (75px)
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -66,42 +67,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadTypes();
     await initialLoad();
 
-    // --- SCORRIMENTO & AGGIORNAMENTO TITOLO ---
+    // --- SCORRIMENTO & AGGIORNAMENTO ---
     container.addEventListener('scroll', () => {
-        // 1. Aggiorna il titolo del mese
+        if (isLoading) return;
+
         updateVisibleMonthHeader();
 
-        // 2. Infinite Scroll
-        if (isLoading) return;
-        if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 200) {
+        const scrollLeft = container.scrollLeft;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+
+        // Scroll Destro (Futuro)
+        if (scrollLeft >= maxScroll - 200) {
             loadMoreDays('forward');
+        }
+        // Scroll Sinistro (Passato)
+        else if (scrollLeft < 50) { // Soglia bassa a sinistra
+            loadMoreDays('backward');
         }
     });
 
     function updateVisibleMonthHeader() {
-        // La colonna dei nomi è larga 180px ed è sticky.
-        // Vogliamo sapere qual è il primo giorno visibile subito DOPO la colonna nomi.
-        // Aggiungiamo un piccolo margine (es. 20px) per sicurezza.
-        const checkPoint = container.scrollLeft + 180 + 20;
-        
-        // Selezioniamo tutti gli header dei giorni
+        const checkPoint = container.scrollLeft + 180 + 20; // 180px è la colonna sticky
         const headers = headerRow.querySelectorAll('th[data-date]');
         let targetDate = null;
 
         for (const th of headers) {
-            // th.offsetLeft è la posizione assoluta orizzontale della cella all'interno dello scroll container
-            // Se la fine della cella (left + width) supera il checkpoint, è la nostra cella visibile
             if (th.offsetLeft + th.offsetWidth > checkPoint) {
                 targetDate = th.dataset.date;
                 break;
             }
         }
 
-        // Se abbiamo trovato una data, aggiorniamo il titolo
         if (targetDate) {
             const dateObj = new Date(targetDate);
             const monthLabel = dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
-            
             if (monthLabel !== lastUpdatedMonth) {
                 currentMonthDisplay.textContent = monthLabel;
                 lastUpdatedMonth = monthLabel;
@@ -109,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- CARICAMENTO INIZIALE ---
+    // --- CARICAMENTO ---
     async function initialLoad() {
         const today = new Date();
         currentStartDate = new Date(today);
@@ -122,9 +121,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         sortPersonnel(personnelData);
 
         renderBaseGridRows();
-        await fetchAndAppendData(currentStartDate, currentEndDate);
         
-        // Centra su Oggi e forza l'aggiornamento del titolo
+        // Caricamento iniziale trattato come 'append' (forward)
+        await fetchAndRenderData(currentStartDate, currentEndDate, 'forward');
+        
+        // Centra
         setTimeout(() => {
             scrollToToday();
             updateVisibleMonthHeader();
@@ -136,19 +137,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         isLoading = true;
 
         let start, end;
+
         if (direction === 'forward') {
             start = new Date(currentEndDate);
             start.setDate(start.getDate() + 1);
+            
             end = new Date(start);
             end.setDate(end.getDate() + LOAD_BATCH_DAYS);
-            currentEndDate = end;
+            
+            currentEndDate = end; // Aggiorna cursore fine
+        } else {
+            // Backward: calcola indietro da currentStartDate
+            end = new Date(currentStartDate);
+            end.setDate(end.getDate() - 1);
+            
+            start = new Date(end);
+            start.setDate(start.getDate() - LOAD_BATCH_DAYS);
+            
+            currentStartDate = start; // Aggiorna cursore inizio
         }
 
-        await fetchAndAppendData(start, end);
+        await fetchAndRenderData(start, end, direction);
         isLoading = false;
     }
 
-    async function fetchAndAppendData(start, end) {
+    async function fetchAndRenderData(start, end, direction) {
         const sStr = formatDateISO(start);
         const eStr = formatDateISO(end);
         
@@ -160,7 +173,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec;
             });
 
-            appendColumns(start, end);
+            if (direction === 'forward') {
+                appendColumns(start, end);
+            } else {
+                prependColumns(start, end);
+            }
 
         } catch (err) { console.error("Errore fetch dati:", err); }
     }
@@ -181,57 +198,125 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- APPEND (Futuro) ---
     function appendColumns(start, end) {
-        const tempDate = new Date(start);
+        const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        const datesToAdd = [];
-        
-        while (tempDate <= end) {
-            datesToAdd.push(new Date(tempDate));
-            tempDate.setDate(tempDate.getDate() + 1);
-        }
 
+        // 1. Header
         datesToAdd.forEach(d => {
-            const dateStr = formatDateISO(d);
-            const dayNum = d.getDate();
-            const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
-            const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-            const isToday = (dateStr === todayStr);
-
-            const th = document.createElement('th');
-            th.innerHTML = `${dayNum}<br><small>${dayName}</small>`;
-            th.dataset.date = dateStr;
-            if (isWeekend) th.classList.add('weekend-column');
-            if (isToday) th.classList.add('is-today');
-            th.addEventListener('click', (e) => applyColumnColorPrompt(e, dateStr));
+            const th = createHeaderCell(d, todayStr);
             headerRow.appendChild(th);
         });
 
+        // 2. Body
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
         rows.forEach(tr => {
-            const personId = parseInt(tr.dataset.personId);
-            
+            const pid = parseInt(tr.dataset.personId);
             datesToAdd.forEach(d => {
-                const dateStr = formatDateISO(d);
-                const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-                
-                const td = document.createElement('td');
-                td.dataset.date = dateStr;
-                td.dataset.personId = personId;
-                if (isWeekend) td.classList.add('weekend-column');
-
-                const record = loadedDataMap[`${personId}_${dateStr}`];
-                if (record) renderCellContent(td, record);
-
-                td.addEventListener('click', (e) => handleQuickEdit(e, td));
-                td.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    handleVisualEdit(e, td);
-                });
-
+                const td = createBodyCell(d, pid);
                 tr.appendChild(td);
             });
         });
+    }
+
+    // --- PREPEND (Passato) ---
+    function prependColumns(start, end) {
+        const datesToAdd = generateDateRange(start, end); // Arrivano in ordine cronologico
+        const todayStr = formatDateISO(new Date());
+        
+        // Calcoliamo la larghezza totale aggiunta per correggere lo scroll
+        // (Num giorni * larghezza colonna + eventuali bordi/padding approssimati nel CSS fixed)
+        // Poiché usiamo table-layout: fixed e width: 75px, il calcolo è preciso.
+        const addedWidth = datesToAdd.length * COLUMN_WIDTH; 
+        const currentScroll = container.scrollLeft;
+
+        // 1. Header (Inserisci DOPO il primo elemento che è "Operatore")
+        // reverse() perché insertBefore inserisce prima del riferimento, quindi dobbiamo inserire l'ultimo giorno prima del primo giorno visibile
+        // Anzi, più semplice: iteriamo normalmente e inseriamo sempre prima del "vecchio" primo giorno (child[1])
+        
+        // Il child[0] è "Operatore". Il child[1] è il primo giorno attualmente visibile.
+        const firstDayHeader = headerRow.children[1]; 
+        
+        datesToAdd.forEach(d => {
+            const th = createHeaderCell(d, todayStr);
+            // Inseriamo sempre prima del riferimento corrente (che scala)
+            headerRow.insertBefore(th, firstDayHeader); 
+        });
+        
+        // MA ATTENZIONE: Se inseriamo [1, 2, 3] prima di [4], facendo insertBefore(1, 4), poi insertBefore(2, 4), otteniamo [1, 2, 3, 4] SOLO SE l'ordine di inserimento è corretto.
+        // Se datesToAdd è [Gen 1, Gen 2], dobbiamo inserire Gen 1, poi Gen 2? No.
+        // Se inserisco Gen 1 prima di Gen 3 -> [Gen 1, Gen 3]
+        // Poi inserisco Gen 2 prima di Gen 3 -> [Gen 1, Gen 2, Gen 3]. Corretto.
+        // Quindi l'ordine di datesToAdd (cronologico) va bene se il target è fisso.
+        // NO, wait. Il target `firstDayHeader` è fisso.
+        // Se ho [3, 4] e voglio aggiungere [1, 2].
+        // Inserisco 1 prima di 3 -> [1, 3, 4]
+        // Inserisco 2 prima di 3 -> [1, 2, 3, 4]. 
+        // Perfetto. L'ordine cronologico funziona.
+
+        // 2. Body
+        const rows = Array.from(timelineBody.querySelectorAll('tr'));
+        rows.forEach(tr => {
+            const pid = parseInt(tr.dataset.personId);
+            const firstDataCell = tr.children[1]; // child[0] è il nome sticky
+
+            datesToAdd.forEach(d => {
+                const td = createBodyCell(d, pid);
+                tr.insertBefore(td, firstDataCell);
+            });
+        });
+
+        // 3. Correggi Scroll
+        // Aggiungiamo la larghezza delle nuove colonne allo scroll attuale per mantenere la visuale ferma
+        container.scrollLeft = currentScroll + addedWidth;
+    }
+
+    // --- HELPER CREAZIONE CELLE ---
+    function generateDateRange(start, end) {
+        const arr = [];
+        let dt = new Date(start);
+        while (dt <= end) {
+            arr.push(new Date(dt));
+            dt.setDate(dt.getDate() + 1);
+        }
+        return arr;
+    }
+
+    function createHeaderCell(d, todayStr) {
+        const dateStr = formatDateISO(d);
+        const dayNum = d.getDate();
+        const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
+        const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+        const isToday = (dateStr === todayStr);
+
+        const th = document.createElement('th');
+        th.innerHTML = `${dayNum}<br><small>${dayName}</small>`;
+        th.dataset.date = dateStr;
+        if (isWeekend) th.classList.add('weekend-column');
+        if (isToday) th.classList.add('is-today');
+        th.addEventListener('click', (e) => applyColumnColorPrompt(e, dateStr));
+        return th;
+    }
+
+    function createBodyCell(d, pid) {
+        const dateStr = formatDateISO(d);
+        const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+        
+        const td = document.createElement('td');
+        td.dataset.date = dateStr;
+        td.dataset.personId = pid;
+        if (isWeekend) td.classList.add('weekend-column');
+
+        const record = loadedDataMap[`${pid}_${dateStr}`];
+        if (record) renderCellContent(td, record);
+
+        td.addEventListener('click', (e) => handleQuickEdit(e, td));
+        td.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            handleVisualEdit(e, td);
+        });
+        return td;
     }
 
     function scrollToToday() {
@@ -241,22 +326,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const containerCenter = container.clientWidth / 2;
             const headerLeft = todayHeader.offsetLeft;
             const headerWidth = todayHeader.offsetWidth;
-            // 180 è l'offset della colonna sticky dei nomi
             container.scrollLeft = headerLeft - containerCenter + (headerWidth / 2) - 180; 
         }
     }
 
-    // --- NAVIGAZIONE PULSANTI ---
-    function initMonthNavigation() {
-        document.getElementById('prev-month-btn').addEventListener('click', () => {
-            container.scrollBy({ left: -800, behavior: 'smooth' }); // Scroll Indietro
-        });
-        document.getElementById('next-month-btn').addEventListener('click', () => {
-            container.scrollBy({ left: 800, behavior: 'smooth' }); // Scroll Avanti
-        });
-    }
-
-    // --- VISUAL POPUP (GRID MODE) ---
+    // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
         
@@ -343,21 +417,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     function handleQuickEdit(e, td) {
         if (td.querySelector('input')) return;
         if (activePopup) activePopup.remove();
-
         const pid = td.dataset.personId;
         const date = td.dataset.date;
         const record = loadedDataMap[`${pid}_${date}`] || {};
-
         let initVal = "";
         if (record.numero_ore) initVal += record.numero_ore;
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]?.shortcut_key) initVal += " \\" + typesById[record.id_tipo_presenza_fk].shortcut_key;
         if (record.note) initVal += " +" + record.note;
-
         td.innerHTML = '';
         const input = document.createElement('input');
         input.className = 'cell-input';
         input.value = initVal.trim();
-        
         input.onblur = async () => {
             const p = parseQuickCommand(input.value);
             const payload = { id_personale_fk: parseInt(pid), data: date, numero_ore: p.ore, id_tipo_presenza_fk: p.idTipo, note: p.note, colore: record.colore };
@@ -377,7 +447,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { console.error(err); alert("Errore salvataggio"); const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`]; if(old) renderCellContent(td, old); else td.innerHTML=''; }
     }
 
-    // --- RENDER CELLA ---
     function renderCellContent(td, record) {
         td.innerHTML = ''; td.className = '';
         if(td.dataset.isWeekend) td.classList.add('weekend-column'); 
@@ -427,12 +496,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function formatDateISO(d) { return d.toISOString().split('T')[0]; }
 
     async function applyColumnColorPrompt(e, dateStr) {
-        e.stopPropagation();
-        activeHeaderDate = dateStr;
-        // Posiziona il color picker vicino al mouse
-        colorPickerPopup.style.left = `${e.pageX}px`;
-        colorPickerPopup.style.top = `${e.pageY}px`;
-        colorPickerPopup.style.display = 'block';
+        const color = prompt("Scrivi colore (red, yellow, green, blue, none):");
+        if(color) { try { await apiClient.post('/presenze/colore-colonna', {data:dateStr, colore}); alert("Colore aggiornato. Scorri per aggiornare o ricarica."); } catch(e) { alert("Errore"); } }
     }
 
     function openPersonnelDetail(p) { 
@@ -442,23 +507,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
-        
-        // Listener per il color picker globale (Header)
-        document.querySelectorAll('.color-dot').forEach(dot => { 
-            dot.addEventListener('click', async (e) => { 
-                const color = e.target.dataset.color; 
-                if (activeHeaderDate) {
-                    try {
-                        await apiClient.post('/presenze/colore-colonna', {data:activeHeaderDate, colore: color});
-                        // Ricarica la vista
-                        alert("Colore aggiornato. La pagina verrà ricaricata.");
-                        location.reload(); 
-                    } catch(e) { alert("Errore"); }
-                }
-                colorPickerPopup.style.display = 'none'; 
-            }); 
-        });
-        
+        // Click Header per color picker
+        // (Il listener è aggiunto dinamicamente in createHeaderCell)
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
 });
