@@ -192,57 +192,56 @@ body {
 }
 
 /* =================================================== */
-/* === MODALE SPLIT VIEW: CENTRATURA ROBUSTA === */
+/* === MODALE SPLIT VIEW: FIX POSIZIONAMENTO ASSOLUTO === */
 /* =================================================== */
 
 /* 1. IL WRAPPER SCURO (Sfondo) */
+/* Il JS imposterà display: block qui, quindi noi ci adattiamo */
 #personnelDetailModal {
-    display: none; /* Gestito da JS (block/none) */
     position: fixed !important;
     z-index: 9999 !important;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important; /* Forza larghezza totale viewport */
+    height: 100vh !important; /* Forza altezza totale viewport */
+    background-color: rgba(0,0,0,0.6) !important;
     overflow: hidden !important; 
-    background-color: rgba(0,0,0,0.6) !important; /* Sfondo scuro */
-    
-    /* TRUCCO PER LA CENTRATURA PERFETTA */
-    display: flex !important;
-    align-items: center; /* Centra verticalmente */
-    justify-content: center; /* Centra orizzontalmente */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* 2. IL BOX BIANCO (Contenuto) */
 #personnelDetailModal .modal-content {
-    /* RESET TOTALE DEL POSIZIONAMENTO */
-    position: relative !important; 
-    margin: 0 !important; 
-    transform: none !important;
-    top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+    /* RESET: Annulliamo qualsiasi stile ereditato da style-v2.css */
+    position: absolute !important; /* Assoluto rispetto al wrapper scuro */
+    float: none !important;
+    margin: 0 !important;
     
-    /* DIMENSIONI "IDEALI" */
-    width: 1200px !important;
-    height: 85vh !important; /* 85% dell'altezza schermo */
-
-    /* LIMITI DI SICUREZZA (Anti-Collasso) */
-    max-width: 95vw !important;  /* Non uscire lateralmente su mobile */
-    min-height: 600px !important; /* IMPEDISCE IL COLLASSO: Altezza minima garantita */
+    /* CENTRATURA MATEMATICA (Funziona sempre) */
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     
-    /* STILE */
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    /* DIMENSIONI FORZATE */
+    width: 90vw !important;  /* 90% della larghezza schermo */
+    height: 90vh !important; /* 90% dell'altezza schermo */
+    min-width: 800px !important; /* Non diventa mai troppo stretto */
+    min-height: 600px !important; /* Non collassa mai in altezza */
     
     /* LAYOUT INTERNO */
     display: flex !important;
     flex-direction: column !important;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
-/* --- HEADER (Fisso) --- */
+/* --- HEADER (Fisso in alto) --- */
 #personnelDetailModal .modal-header {
-    flex: 0 0 60px !important; /* Altezza fissa bloccata */
+    flex: 0 0 60px !important; /* Altezza fissa */
+    width: 100%;
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
@@ -252,9 +251,10 @@ body {
     box-sizing: border-box;
 }
 
-/* --- CONTROLLI MESE (Fisso) --- */
+/* --- CONTROLLI MESE (Fisso sotto header) --- */
 #personnelDetailModal .detail-controls {
-    flex: 0 0 50px !important; /* Altezza fissa bloccata */
+    flex: 0 0 50px !important; /* Altezza fissa */
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -262,17 +262,18 @@ body {
     background-color: #f9f9f9;
     border-bottom: 1px solid #ddd;
     margin: 0 !important;
+    padding: 0 !important;
     box-sizing: border-box;
 }
 
-/* --- CORPO (Si espande) --- */
+/* --- CORPO (Si espande e contiene le tabelle) --- */
 #personnelDetailModal .modal-body {
-    flex: 1 1 auto !important; /* Prende tutto lo spazio rimanente */
+    flex: 1 1 auto !important; /* Occupa tutto lo spazio rimanente */
+    width: 100%;
     padding: 20px !important;
-    overflow: hidden !important; /* Niente scroll sul contenitore */
+    overflow: hidden !important; /* Blocca scroll sul contenitore */
     display: flex;
     flex-direction: column;
-    height: 100%;
     box-sizing: border-box;
 }
 
@@ -283,12 +284,12 @@ body {
     justify-content: space-between;
     gap: 20px;
     width: 100%;
-    height: 100%;
+    height: 100%; /* Altezza piena del body */
 }
 
 .split-column {
-    flex: 1; /* 50% larghezza */
-    height: 100%;
+    flex: 1; /* 50% larghezza esatta */
+    height: 100%; /* Altezza piena */
     display: flex;
     flex-direction: column;
     overflow: hidden; 
@@ -306,17 +307,17 @@ body {
     position: sticky;
     top: 0;
     z-index: 5;
-    background-color: #eee;
+    background-color: #f1f3f5;
     height: 40px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     font-size: 14px;
     font-weight: bold;
     box-sizing: border-box;
 }
 
 .detail-table td {
-    height: 38px; /* Altezza riga sicura */
-    border: 1px solid #ccc;
+    height: 38px; /* Altezza riga fissa */
+    border: 1px solid #ddd;
     padding: 0 8px;
     font-size: 13px;
     vertical-align: middle;
