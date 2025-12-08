@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let activePopup = null;
     let activeCell = null;
-    let activeHeaderDate = null;
+    let activeHeaderDate = null; // Traccia quale colonna stiamo colorando
     
     // Variabili Dettaglio
     let detailCurrentPerson = null;
@@ -210,7 +210,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         th.dataset.date = dateStr;
         if (isWeekend) th.classList.add('weekend-column');
         if (isToday) th.classList.add('is-today');
-        th.addEventListener('click', (e) => applyColumnColorPrompt(e, dateStr));
+        
+        // FIX CLICK HEADER: Apre il color picker invece del prompt
+        th.addEventListener('click', (e) => openColorPicker(e, dateStr));
+        
         return th;
     }
 
@@ -236,6 +239,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             const headerLeft = todayHeader.offsetLeft;
             const headerWidth = todayHeader.offsetWidth;
             container.scrollLeft = headerLeft - containerCenter + (headerWidth / 2) - 180; 
+        }
+    }
+
+    // --- FUNZIONI DI SERVIZIO (Color Picker) ---
+    function openColorPicker(e, dateStr) {
+        e.stopPropagation();
+        activeHeaderDate = dateStr; // Imposta la data attiva per il bulk update
+        
+        // Posiziona il popup
+        colorPickerPopup.style.left = `${e.pageX}px`;
+        colorPickerPopup.style.top = `${e.pageY + 10}px`;
+        colorPickerPopup.style.display = 'block';
+    }
+
+    async function applyColumnColor(dateStr, color) {
+        try {
+            await apiClient.post('/presenze/colore-colonna', { data: dateStr, colore: color });
+            alert("Colore aggiornato. La pagina verrà ricaricata.");
+            location.reload(); 
+        } catch(e) { 
+            console.error(e);
+            alert("Errore aggiornamento colonna."); 
         }
     }
 
@@ -289,10 +314,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
                 const dayNum = d.getDate();
-                const dateStr = formatDateISO(d); // Ora usa la versione locale corretta
+                const dateStr = formatDateISO(d); 
                 const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-                
                 const rec = recordMap[dateStr] || {};
                 
                 let tipoHtml = '';
@@ -497,8 +521,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
+        
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
-        document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', async (e) => { const color = e.target.dataset.color; if (activeHeaderDate) { try { await apiClient.post('/presenze/colore-colonna', {data:activeHeaderDate, colore: color}); location.reload(); } catch(e) { alert("Errore"); } } colorPickerPopup.style.display = 'none'; }); });
+        
+        // Listener sui pallini colorati del popup HEADER
+        document.querySelectorAll('.color-dot').forEach(dot => { 
+            dot.addEventListener('click', async (e) => { 
+                const color = e.target.dataset.color; 
+                if (activeHeaderDate) { 
+                    await applyColumnColor(activeHeaderDate, color); 
+                } 
+                colorPickerPopup.style.display = 'none'; 
+            }); 
+        });
+        
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
 });

@@ -193,19 +193,19 @@ body {
 
 /* --- MODALE SPLIT VIEW (Due Tabelle) --- */
 #personnelDetailModal .modal-content {
-    width: 98vw !important;       /* Occupa il 98% della larghezza schermo */
-    max-width: none !important;   /* Rimuove limiti in pixel (es. 1200px) */
-    height: 95vh !important;      /* Occupa il 95% dell'altezza */
-    margin: 2.5vh auto !important; /* Centratura verticale */
+    width: 96vw !important;       /* Largo ma con margine laterale */
+    height: 90vh !important;      /* Alto ma con margine verticale */
+    max-width: none !important;
+    margin: 5vh auto !important;  /* Centrato */
     display: flex;
     flex-direction: column;
-    padding: 0 !important;        /* Rimuove padding interno del contenitore */
-    overflow: hidden;             /* Impedisce scroll sul contenitore principale */
+    padding: 0 !important;
+    overflow: hidden;             /* VIETATO scroll sul contenitore esterno */
+    border-radius: 8px;
 }
 
-/* Header e Footer fissi */
 #personnelDetailModal .modal-header {
-    padding: 15px 20px;
+    padding: 10px 20px;
     background-color: #fff;
     border-bottom: 1px solid #dee2e6;
     flex-shrink: 0;
@@ -215,94 +215,87 @@ body {
     flex-shrink: 0;
     margin: 10px;
     background-color: #f8f9fa;
-    padding: 8px;
+    padding: 5px;
     border: 1px solid #eee;
-    border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 20px;
 }
 
-/* Corpo del modale che contiene le tabelle */
+/* Corpo scrollabile (solo verticalmente se necessario) */
 #personnelDetailModal .modal-body {
     flex-grow: 1;
-    overflow-y: auto;  /* Scroll verticale SI (se serve) */
-    overflow-x: hidden; /* Scroll orizzontale NO */
+    overflow-y: auto;  
+    overflow-x: hidden; /* BLOCCO scroll orizzontale */
     padding: 10px 20px;
     box-sizing: border-box;
 }
 
-/* Contenitore a due colonne affiancate */
+/* Contenitore Flex per le due tabelle */
 .modal-split-container {
     display: flex;
-    gap: 20px; /* Ridotto da 40px a 20px per guadagnare spazio */
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px; /* Spazio tra le colonne */
     width: 100%;
-    align-items: flex-start;
     box-sizing: border-box;
 }
 
 .split-column {
-    flex: 1;        /* Divide lo spazio esattamente a metà */
-    width: 50%;     /* Forza la larghezza */
-    min-width: 0;   /* Trucco Flexbox: impedisce alla colonna di espandersi oltre il contenitore */
+    flex: 1;        /* 50% esatto */
+    min-width: 0;   /* Impedisce overflow */
 }
 
-/* Tabella Dettaglio */
+/* Tabelle Interne */
 .detail-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.95em; 
-    table-layout: fixed; /* FONDAMENTALE: rispetta le percentuali larghezza colonne */
+    font-size: 0.9em; /* Font compatto */
+    table-layout: fixed; /* FONDAMENTALE per larghezze fisse */
 }
 
 .detail-table th, .detail-table td {
-    padding: 6px 8px;
+    padding: 4px 6px; /* Padding ridotto */
     border: 1px solid #ddd;
     text-align: left;
     vertical-align: middle;
-    word-wrap: break-word; /* Testo a capo obbligatorio */
-    word-break: break-word;
+    overflow: hidden;
+    white-space: normal; /* Testo a capo consentito nelle note */
+    word-wrap: break-word;
 }
 
 .detail-table th {
     background-color: #e9ecef;
     font-weight: 600;
     text-align: center;
-    height: 40px;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    box-shadow: 0 1px 0 #ddd; /* Bordo inferiore finto per sticky header */
+    height: 35px;
 }
 
-/* LARGHEZZE COLONNE MODALE (Totale 100%) */
+/* LARGHEZZE COLONNE CALCOLATE (Totale 100%) */
 .detail-col-day { width: 10%; text-align: center; }   
 .detail-col-hours { width: 10%; text-align: center; } 
-.detail-col-status { width: 12%; text-align: center; }
-.detail-col-notes { width: 68%; } /* Massimizza spazio note */
+.detail-col-status { width: 10%; text-align: center; }
+.detail-col-notes { width: 70%; } /* Tutto lo spazio rimanente alle note */
 
 .detail-row-weekend {
     background-color: #fff3e0; 
 }
 
-/* Stile Note */
-.detail-note-text {
-    font-size: 0.95em;
-    line-height: 1.3;
-    color: #333;
-    white-space: normal; /* A capo normale */
-}
-
-/* Badge nel dettaglio */
 .detail-badge {
     display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 1px 4px;
+    border-radius: 3px;
     color: white;
     font-size: 0.8em;
     font-weight: bold;
-    white-space: nowrap; /* Impedisce a capo dentro il badge */
+}
+
+.detail-note-text {
+    font-size: 0.9em;
+    line-height: 1.2;
+    max-height: 40px; /* Altezza massima per riga */
+    overflow: hidden; /* Taglia se troppo lungo, evita scroll */
 }
 
 .detail-controls {
