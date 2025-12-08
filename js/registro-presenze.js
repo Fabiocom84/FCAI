@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 45; // Aggiornato a 45px per match CSS
+    const COLUMN_WIDTH = 75; // Aggiornato a 75px per match CSS
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -267,8 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const monthLabel = detailCurrentDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
         detailMonthLabel.textContent = monthLabel;
         
-        // Pulisce il body del modale per inserire la nuova struttura
-        // (Nota: in registro-presenze.html usa un container vuoto, qui lo riempiamo)
         const modalBodyContainer = document.querySelector('#personnelDetailModal .modal-body');
         modalBodyContainer.innerHTML = '<div style="text-align:center; padding:20px;">Caricamento...</div>';
 
