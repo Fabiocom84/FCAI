@@ -31,7 +31,7 @@ const MobileHoursApp = {
     init: function() {
         console.log("Mobile Hours App Started");
 
-        // 0. Carica Nome Utente (NUOVO)
+        // 0. Carica Nome Utente
         this.loadUserName();
 
         // 1. Caricamento Iniziale Timeline
@@ -51,11 +51,8 @@ const MobileHoursApp = {
         this.dom.form.addEventListener('submit', (e) => this.handleSave(e));
     },
 
-    // --- NUOVA FUNZIONE PER IL NOME UTENTE ---
     loadUserName: function() {
         try {
-            // Recupera il profilo salvato nel localStorage dal login.js
-            // Se non esiste, prova a fare una chiamata API o metti un placeholder
             const storedProfile = localStorage.getItem('user_profile');
             if (storedProfile) {
                 const profile = JSON.parse(storedProfile);
@@ -64,12 +61,10 @@ const MobileHoursApp = {
                     nameEl.textContent = profile.nome_cognome;
                 }
             } else {
-                // Fallback se non c'è in locale (es. refresh pagina)
-                // Possiamo chiamare /api/me se necessario, o lasciare vuoto
                 document.getElementById('headerUserName').textContent = 'Utente';
             }
         } catch (e) {
-            console.error("Errore lettura profilo utente:", e);
+            console.error("Errore lettura profilo:", e);
         }
     },
 
@@ -83,7 +78,7 @@ const MobileHoursApp = {
             const res = await apiFetch(`/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`);
             const days = await res.json();
 
-            // Rimuovi loader iniziale se c'è
+            // Rimuovi loader iniziale
             const loader = this.dom.timelineContainer.querySelector('.loader-placeholder');
             if (loader) loader.remove();
 
@@ -92,12 +87,21 @@ const MobileHoursApp = {
                 return;
             }
 
+            // Ottieni la data di oggi formattata come quella del DB (YYYY-MM-DD)
+            // Attenzione al fuso orario, usiamo slice per sicurezza locale semplice
+            const todayStr = new Date().toISOString().split('T')[0];
+
             days.forEach(day => {
-                const row = this.createDayRow(day);
+                const row = this.createDayRow(day, todayStr);
                 this.dom.timelineContainer.appendChild(row);
             });
 
             this.state.offset += this.state.limit;
+
+            // Se è il primo caricamento, scrolla a Oggi
+            if (this.state.offset === this.state.limit) {
+                setTimeout(() => this.scrollToToday(), 100);
+            }
 
         } catch (error) {
             console.error("Timeline Error:", error);
@@ -107,11 +111,17 @@ const MobileHoursApp = {
         }
     },
 
-    createDayRow: function(day) {
+    createDayRow: function(day, todayStr) {
         const div = document.createElement('div');
         div.className = 'timeline-row';
         div.dataset.date = day.full_date;
         div.onclick = () => this.openDayDetail(day);
+
+        // CONTROLLO "OGGI": Se la data coincide, aggiungi la classe speciale
+        if (day.full_date === todayStr) {
+            div.classList.add('is-today');
+            div.id = "row-today"; // ID per lo scroll facile
+        }
 
         div.innerHTML = `
             <div class="timeline-status-bar status-${day.status}"></div>
@@ -128,6 +138,17 @@ const MobileHoursApp = {
         return div;
     },
 
+    // Funzione per centrare "Oggi"
+    scrollToToday: function() {
+        const todayRow = document.getElementById('row-today');
+        if (todayRow) {
+            todayRow.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center' // Centra verticalmente
+            });
+        }
+    },
+
     handleScroll: function() {
         const c = this.dom.timelineContainer;
         if (c.scrollTop + c.clientHeight >= c.scrollHeight - 100) {
@@ -135,14 +156,14 @@ const MobileHoursApp = {
         }
     },
 
-    // --- DETTAGLIO GIORNO ---
-
+    // --- DETTAGLIO GIORNO (Il resto rimane invariato) ---
+    // Copia qui il resto delle funzioni (openDayDetail, loadExistingWorks, etc.) 
+    // dal file precedente, non sono cambiate.
+    
     openDayDetail: function(day) {
         this.state.currentDate = day.full_date;
-        this.dom.dayDetailModal.style.display = 'flex'; // Flex per layout a colonna
+        this.dom.dayDetailModal.style.display = 'flex';
         document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${day.month_str}`;
-        
-        // Reset e Carica
         this.dom.form.reset();
         this.dom.activitySelect.innerHTML = '<option value="" disabled selected>Seleziona prima la commessa</option>';
         this.dom.activitySelect.disabled = true;
@@ -151,8 +172,6 @@ const MobileHoursApp = {
 
     closeDetail: function() {
         this.dom.dayDetailModal.style.display = 'none';
-        // Ricarica la timeline per aggiornare i totali
-        // (Ottimizzazione futura: aggiornare solo la riga specifica)
         this.dom.timelineContainer.innerHTML = '';
         this.state.offset = 0;
         this.state.isListFinished = false;
@@ -195,14 +214,10 @@ const MobileHoursApp = {
         }
     },
 
-    // --- FORM & API ---
-
     loadCommesseList: async function() {
         try {
-            // Usa endpoint 'view' filtrato o uno specifico se creato
             const res = await apiFetch('/api/commesse/view?status=In Lavorazione&limit=100');
             const data = await res.json();
-            
             let html = '<option value="" disabled selected>Seleziona Commessa...</option>';
             data.data.forEach(c => {
                 html += `<option value="${c.id_commessa}">${c.codice_commessa} ${c.impianto}</option>`;
@@ -253,15 +268,9 @@ const MobileHoursApp = {
             });
             if (!res.ok) throw new Error("Errore Salvataggio");
 
-            // Reset parziale (tieni la commessa se vuoi, qui resetto tutto per pulizia)
             this.dom.hoursInput.value = '';
             this.dom.noteInput.value = '';
-            this.dom.activitySelect.value = ''; // Reset attività ma non commessa?
-            // Per ora reset totale
-            // this.dom.form.reset(); 
-            // Meglio tenere la commessa selezionata per inserimenti multipli?
-            // Reset solo ore e note:
-            
+            this.dom.activitySelect.value = ''; 
             await this.loadExistingWorks(this.state.currentDate);
             
         } catch (error) {

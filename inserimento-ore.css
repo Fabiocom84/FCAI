@@ -1,121 +1,133 @@
-/* inserimento-ore.css */
+/* inserimento-ore.css - Stile "Commesse" Replicato */
 
-/* 1. LAYOUT GENERALE */
 body {
-    /* Lasciamo lo sfondo globale di style-v2.css */
+    background-color: #f4f7f9;
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    /* Impediamo lo scroll orizzontale causato dalla traslazione della card */
-    overflow-x: hidden; 
+    overflow-x: hidden;
 }
 
-/* 2. HEADER FISSO (Stile Scuro identico a Commesse) */
-.mobile-header-wrapper {
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    z-index: 100;
-    background-color: #4a5568; /* Grigio Scuro Commesse */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    color: white;
-    height: 65px;
-    box-sizing: border-box;
+/* --- CONTENITORE PRINCIPALE (Stile Commesse) --- */
+/* Questo crea lo spazio ai lati e stacca l'header dal bordo */
+.page-wrapper {
+    width: 95%;
+    max-width: 900px; /* Limite larghezza per desktop */
+    margin: 20px auto; /* 20px sopra, centrato orizzontalmente */
 }
 
+/* --- HEADER (Stile Card Scuro) --- */
 .mobile-nav-header {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    padding: 0 15px;
-    height: 100%;
-}
-
-.left-section {
-    display: flex; align-items: center; gap: 15px; flex-grow: 1;
-}
-
-/* Pulsante Home */
-.header-button {
-    background-color: rgba(255,255,255,0.15);
+    background-color: #4a5568; /* Grigio Scuro */
     color: white;
-    padding: 8px 14px; /* Un po' più grande */
+    padding: 15px 20px;
+    border-radius: 8px; /* Bordi arrotondati */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px; /* Spazio prima della timeline */
+    position: relative; /* Per gestire il layout */
+}
+
+/* Pulsante Home (Azzurro) */
+.header-button {
+    background-color: #3498db; /* Azzurro */
+    color: white;
+    padding: 8px 16px;
     font-size: 0.9rem;
-    border-radius: 6px;
+    font-weight: 500;
+    border-radius: 5px;
     text-decoration: none;
     display: flex; align-items: center; gap: 8px;
-    transition: background 0.2s;
-    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 10; /* Assicura che sia cliccabile sopra eventuali sovrapposizioni */
 }
-.header-button:hover { background-color: rgba(255,255,255,0.25); }
+.header-button:hover { background-color: #2980b9; }
 
+/* Contenitore Centrale Titolo */
 .title-container {
-    display: flex; flex-direction: column; justify-content: center; line-height: 1.2;
-}
-
-.mobile-nav-header h1 { 
-    font-size: 1.2rem; margin: 0; color: white; 
-    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
-}
-
-.header-username {
-    font-size: 0.85rem; color: #cbd5e0; font-weight: 400;
-}
-
-.header-actions span { 
-    font-size: 0.8rem; color: #fff; background-color: #2b6cb0; 
-    padding: 5px 10px; border-radius: 20px; font-weight: 600;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-/* 3. CONTENUTO SCROLLABILE */
-.mobile-content-wrapper {
-    margin-top: 65px; 
-    height: calc(100vh - 65px);
-    overflow-y: auto;
-    padding: 15px 10px; /* Padding laterale ridotto per allargare le card */
-    box-sizing: border-box;
-    width: 100%;
-    
-    /* Centra il contenuto ma lascialo largo */
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    
+    /* Trucco per centratura assoluta visiva */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    pointer-events: none; /* Lascia cliccare i bottoni sotto se si sovrappongono */
 }
+
+.mobile-nav-header h1 { 
+    font-size: 1.4rem; /* Più grande */
+    margin: 0; 
+    color: #3498db; /* Blu come richiesto */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Leggera ombra per contrasto */
+}
+
+.header-username {
+    font-size: 0.85rem;
+    color: #a0aec0; /* Grigio chiaro */
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* Badge a destra */
+.header-actions {
+    z-index: 10;
+}
+.header-actions span { 
+    font-size: 0.75rem; 
+    color: #fff; 
+    background-color: #2b6cb0; 
+    padding: 5px 10px; 
+    border-radius: 20px; 
+    font-weight: 600;
+}
+
+/* --- CONTENUTO SCROLLABILE (Timeline) --- */
+.mobile-content-wrapper {
+    /* Rimosso il margin-top fisso perché l'header non è più fixed */
+    height: calc(100vh - 120px); /* Altezza viewport meno header e margini */
+    overflow-y: auto;
+    padding: 5px; 
+    box-sizing: border-box;
+    width: 100%;
+    
+    /* Scrollbar nascosta per pulizia */
+    scrollbar-width: none; 
+}
+.mobile-content-wrapper::-webkit-scrollbar { display: none; }
 
 /* TIMELINE ROW (Card Giorno) */
 .timeline-row {
-    background: rgba(255, 255, 255, 0.95); /* Leggera trasparenza per lo sfondo */
+    background: rgba(255, 255, 255, 0.95);
     margin-bottom: 10px; 
     border-radius: 8px;
-    
-    /* LARGHEZZA AUMENTATA */
     width: 100%; 
-    max-width: 900px; /* Limite massimo per schermi grandi */
-    
+    box-sizing: border-box;
     display: flex; 
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08); 
     cursor: pointer;
     min-height: 75px; 
     border: 1px solid #e2e8f0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.1s;
 }
+.timeline-row:active { transform: scale(0.99); }
 
-.timeline-row:active { transform: scale(0.98); background-color: #fff; }
-
-/* --- STILE SPECIALE PER OGGI --- */
+/* Stile Oggi */
 .timeline-row.is-today {
-    /* Traslazione a destra */
-    transform: translateX(15px);
-    /* Larghezza ridotta per non uscire dallo schermo */
-    width: calc(100% - 15px); 
-    /* Bordo evidente */
-    border-left: 6px solid #2A76B8;
-    /* Ombra più marcata */
-    box-shadow: 0 6px 15px rgba(42, 118, 184, 0.25);
-    background-color: #fff; /* Bianco pieno per risaltare */
-    z-index: 10;
+    transform: translateX(10px); /* Traslazione a destra */
+    width: calc(100% - 10px);
+    border-left: 6px solid #3498db; /* Azzurro */
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    background-color: #fff;
 }
 
 .timeline-status-bar { width: 12px; flex-shrink: 0; }
@@ -139,16 +151,11 @@ body {
     min-width: 60px; text-align: center;
 }
 
-/* Modale Dettaglio (rimane invariato ma pulito) */
-.mobile-full-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #f4f7f9; z-index: 2000; display: flex; flex-direction: column;
-}
-/* ... resto degli stili del modale uguali a prima ... */
-/* Assicurati di copiare anche il resto del CSS per il form dal messaggio precedente se non ce l'hai */
+/* Modale Dettaglio (adatta i colori) */
+.mobile-full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f9; z-index: 2000; display: flex; flex-direction: column; }
 .mobile-header-secondary { padding: 0 15px; height: 60px; border-bottom: 1px solid #e2e8f0; background: #fff; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .mobile-header-secondary h2 { margin: 0; font-size: 1.2rem; color: #2d3748; }
-.back-button { background: none; border: none; font-size: 1rem; color: #3182ce; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.back-button { background: none; border: none; font-size: 1rem; color: #3182ce; font-weight: 500; cursor: pointer; }
 .mobile-body { flex-grow: 1; overflow-y: auto; padding: 20px; background-color: #f7fafc; width: 100%; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
 .existing-works-list { margin-bottom: 30px; }
 .work-item { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -162,11 +169,6 @@ body {
 .mobile-insert-form h4 { margin-top: 0; margin-bottom: 20px; color: #2d3748; font-size: 1.1rem; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
 .mobile-group { margin-bottom: 20px; }
 .mobile-group label { display: block; margin-bottom: 8px; font-size: 0.95rem; color: #4a5568; font-weight: 500; }
-.mobile-group select, .mobile-group input { width: 100%; height: 50px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; padding: 0 15px; box-sizing: border-box; background: #fff; -webkit-appearance: none; }
+.mobile-group select, .mobile-group input { width: 100%; height: 50px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; padding: 0 15px; box-sizing: border-box; background: #fff; }
 .mobile-group select:focus, .mobile-group input:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
-.mobile-group select:disabled { background: #f7fafc; color: #a0aec0; }
-.form-row-split { display: flex; gap: 15px; }
-.hours-group { flex: 1; }
-.note-group { flex: 2; }
-.mobile-save-btn { width: 100%; height: 55px; background-color: #3182ce; color: white; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3); transition: background 0.2s; }
-.mobile-save-btn:active { background-color: #2c5282; transform: translateY(2px); }
+.mobile-save-btn { width: 100%; height: 55px; background-color: #3182ce; color: white; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 8
