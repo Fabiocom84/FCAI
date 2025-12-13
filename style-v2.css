@@ -1757,3 +1757,90 @@ h2 {
     width: 16px;
     height: 16px;
 }
+
+/* =================================================== */
+/* == STILI MOBILE ORE (Timeline & Inserimento)     == */
+/* =================================================== */
+
+/* Modale a schermo intero su mobile */
+.mobile-full-modal {
+    padding: 0 !important;
+    z-index: 10000;
+}
+.mobile-full-modal .modal-content {
+    width: 100%; height: 100%; max-width: none; max-height: none;
+    border-radius: 0; display: flex; flex-direction: column;
+}
+
+/* Header specifico */
+.mobile-header {
+    background-color: #fff; border-bottom: 1px solid #eee;
+    padding: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+}
+.mobile-header h2 { font-size: 1.2rem; margin: 0; }
+.back-button { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
+
+/* Timeline Scroll Area */
+.timeline-scroll-area {
+    flex-grow: 1; overflow-y: auto; background-color: #f4f7f9; padding: 10px;
+}
+
+/* RIGA GIORNO (La Card) */
+.timeline-row {
+    background: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    display: flex;
+    overflow: hidden; /* Per la barra colorata */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    cursor: pointer;
+    position: relative;
+    min-height: 70px;
+}
+
+/* Striscia colorata a sinistra (Semaforo) */
+.timeline-status-bar { width: 8px; flex-shrink: 0; }
+.status-red { background-color: #ff6b6b; }     /* 0 ore */
+.status-yellow { background-color: #feca57; }  /* < 8 ore */
+.status-green { background-color: #1dd1a1; }   /* >= 8 ore */
+.status-weekend { background-color: #c8d6e5; } /* Weekend */
+
+.timeline-content {
+    flex-grow: 1; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
+}
+.timeline-date { display: flex; flex-direction: column; }
+.day-number { font-size: 1.4rem; font-weight: bold; color: #333; }
+.day-text { font-size: 0.9rem; color: #666; text-transform: uppercase; }
+
+.timeline-hours {
+    font-size: 1.3rem; font-weight: 600; color: #333;
+    background: #f1f2f6; padding: 5px 12px; border-radius: 20px;
+}
+
+/* DETTAGLIO GIORNO */
+.existing-works-list {
+    margin-bottom: 20px; max-height: 200px; overflow-y: auto;
+}
+.work-item {
+    background: #fff; border-bottom: 1px solid #eee; padding: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.work-info strong { display: block; color: #2A76B8; font-size: 0.95rem; }
+.work-info span { font-size: 0.85rem; color: #555; }
+.delete-work-btn { background: none; border: none; color: #ff6b6b; font-size: 1.2rem; padding: 10px; }
+
+/* FORM MOBILE */
+.mobile-insert-form {
+    background: #fff; padding: 15px; border-top: 4px solid #eee;
+}
+.mobile-group { margin-bottom: 15px; }
+.mobile-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; color: #666; }
+.mobile-group select, .mobile-group input {
+    width: 100%; height: 50px; /* Touch friendly */
+    border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; padding: 0 10px; background: #fff;
+}
+.form-row-split { display: flex; gap: 10px; }
+.mobile-save-btn {
+    width: 100%; height: 55px; background-color: #2A76B8; color: white;
+    font-size: 1.1rem; border-radius: 8px; font-weight: bold; border: none; margin-top: 10px;
+}
