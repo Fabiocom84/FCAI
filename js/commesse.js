@@ -12,6 +12,8 @@ const App = {
         searchTerm: '',
         sortBy: 'data_commessa',
         sortOrder: 'desc',
+        allStatuses: [],
+        allPhases: []
     },
     
     // Le funzioni ora sono definite come metodi dell'oggetto App
@@ -25,13 +27,19 @@ const App = {
             addBtn: document.getElementById('add-commessa-btn'),
         };
         try {
-            // Carica tutti gli stati possibili e li salva nello stato dell'app
-            const response = await apiFetch('/api/simple/status_commessa');
-            this.state.allStatuses = await response.json();
+            // Carichiamo Stati E Fasi in parallelo
+            const [statusRes, phasesRes] = await Promise.all([
+                apiFetch('/api/simple/status_commessa'),
+                apiFetch('/api/commesse/fasi') // <--- Chiamata alla nuova rotta
+            ]);
+            
+            this.state.allStatuses = await statusRes.json();
+            this.state.allPhases = await phasesRes.json(); // Salviamo le fasi
+            
         } catch (error) {
-            console.error("Errore nel caricamento degli stati delle commesse:", error);
-            this.state.allStatuses = []; // Imposta un array vuoto in caso di errore
+            console.error("Errore caricamento dati init:", error);
         }
+        
         this.addEventListeners();
         this.fetchCommesse(true);
     },
@@ -133,6 +141,31 @@ const App = {
             ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
                 | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
             : `<p><strong>Registrazioni:</strong> 0</p>`;
+        let phasesHtml = '';
+        if (this.state.allPhases && this.state.allPhases.length > 0) {
+            phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
+            
+            // Array delle fasi attive per questa commessa (o vuoto se null)
+            const activePhases = commessa.ids_fasi_attive || [];
+
+            this.state.allPhases.forEach(phase => {
+                const isChecked = activePhases.includes(phase.id_fase) ? 'checked' : '';
+                phasesHtml += `
+                    <div class="phase-item">
+                        <span>${phase.nome_fase}</span>
+                        <label class="mini-switch">
+                            <input type="checkbox" 
+                                   data-action="toggle-phase" 
+                                   data-commessa-id="${commessa.id_commessa}" 
+                                   data-phase-id="${phase.id_fase}" 
+                                   ${isChecked}>
+                            <span class="mini-slider"></span>
+                        </label>
+                    </div>
+                `;
+            });
+            phasesHtml += `</div></div>`;
+        }
 
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
@@ -160,6 +193,7 @@ const App = {
                     <p><strong>Data:</strong> ${formattedDate}</p>
                     <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
                 </div>
+                ${phasesHtml}
                 <div class="registrazioni-section">
                     ${registrazioniSummary}
                 </div>
@@ -192,6 +226,10 @@ const App = {
                 this.handleStatusToggle(e);
             });
         }
+
+        card.querySelectorAll('[data-action="toggle-phase"]').forEach(toggle => {
+            toggle.addEventListener('change', (e) => this.handlePhaseToggle(e));
+        });
 
         return card;
     },
@@ -310,6 +348,50 @@ const App = {
         
         if (clientHeight + scrollTop >= scrollHeight - 100 && loadedCommesse < this.state.totalCount) {
             this.fetchCommesse(false);
+        }
+    },
+
+    handlePhaseToggle: async function(event) {
+        const checkbox = event.target;
+        const commessaId = checkbox.dataset.commessaId;
+        const phaseId = parseInt(checkbox.dataset.phaseId);
+        const isChecked = checkbox.checked;
+
+        try {
+            // 1. Trova la commessa nello stato locale per aggiornare l'array
+            // (Utile per non dover ricaricare tutta la pagina)
+            // Nota: Nella vista 'view', i dati sono in rendering, non salvati uno per uno in state.tableData come in gestione.js.
+            // Ma possiamo fare un trucco: leggere lo stato attuale delle checkbox della card.
+            
+            const card = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
+            const allCheckboxes = card.querySelectorAll('[data-action="toggle-phase"]');
+            
+            // Ricostruiamo il nuovo array di ID basandoci su quello che vediamo a video
+            const newActiveIds = [];
+            allCheckboxes.forEach(cb => {
+                if (cb.checked) newActiveIds.push(parseInt(cb.dataset.phaseId));
+            });
+
+            // 2. Chiama l'API
+            checkbox.disabled = true; // Previeni doppi click
+            
+            const response = await apiFetch(`/api/commesse/${commessaId}/fasi`, {
+                method: 'PUT',
+                body: JSON.stringify({ ids_fasi_attive: newActiveIds })
+            });
+
+            if (!response.ok) throw new Error("Errore aggiornamento fasi");
+
+            // Feedback visivo non necessario perché lo switch si è già mosso, 
+            // ma potremmo mettere un piccolo "toast" se vuoi.
+            console.log(`Fasi aggiornate per commessa ${commessaId}:`, newActiveIds);
+
+        } catch (error) {
+            console.error(error);
+            checkbox.checked = !isChecked; // Torna indietro in caso di errore
+            showModal({ title: 'Errore', message: 'Impossibile aggiornare la fase.', confirmText: 'OK' });
+        } finally {
+            checkbox.disabled = false;
         }
     }
 };
