@@ -155,81 +155,73 @@ body {
 /* == MODALE DETTAGLIO (Fix Posizionamento)         == */
 /* =================================================== */
 
-/* Contenitore Esterno (Overlay) */
-.mobile-full-modal {
-    display: none; /* Gestito da JS */
-    
-    /* Sovrascrivi posizionamento globale */
-    position: fixed !important; 
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100vw !important; 
-    height: 100vh !important;
-    
-    /* Reset trasformazioni globali */
-    transform: none !important; 
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    
-    background-color: #f4f7f9 !important; 
-    z-index: 2000 !important; 
-    
-    /* Layout interno */
-    flex-direction: column;
-}
-
-/* Contenitore Interno */
-.mobile-full-modal .modal-content {
-    /* Reset stili globali .modal-content */
-    position: static !important; /* Non relativo o assoluto */
-    transform: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-    
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header del Modale */
+/* --- Header del Modale Dettaglio (Stile Uniformato) --- */
 .mobile-header-secondary {
-    flex-shrink: 0; /* Non rimpicciolire l'header */
-    padding: 0 15px; 
-    height: 60px; 
-    border-bottom: 1px solid #e2e8f0; 
-    background: #fff;
+    flex-shrink: 0;
+    padding: 15px 20px; 
+    height: auto; /* Lasciamo che si adatti al contenuto */
+    min-height: 60px;
+    
+    /* Stile Scuro uguale alla Home */
+    background-color: #4a5568; 
+    color: white;
+    border-bottom: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    
     display: flex; 
     align-items: center; 
-    gap: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    justify-content: space-between;
+    position: relative; /* Per la centratura assoluta del titolo */
+    z-index: 10;
 }
 
+/* Titolo del Modale (La Data) */
 .mobile-header-secondary h2 { 
     margin: 0; 
     font-size: 1.2rem; 
-    color: #2d3748; 
+    color: #3498db; /* Blu come il titolo principale */
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+    
+    /* Centratura Assoluta */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%; /* Evita che si sovrapponga ai pulsanti se il testo è lungo */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Pulsante Indietro (Stile Tasto Home) */
 .back-button {
-    background: none; border: none; font-size: 1rem; color: #3182ce; 
-    font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 5px;
+    background-color: #3498db; /* Azzurro */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    gap: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 20; /* Sopra il titolo */
+    transition: background-color 0.2s;
 }
 
-/* Corpo del Modale */
-.mobile-body {
-    flex-grow: 1; 
-    overflow-y: auto; 
-    padding: 20px; 
-    background-color: #f7fafc;
-    width: 100%; 
-    max-width: 800px; /* Centra su schermi grandi */
-    margin: 0 auto; 
-    box-sizing: border-box;
+.back-button:hover {
+    background-color: #2980b9;
+}
+
+.back-button:active {
+    transform: translateY(1px);
+}
+
+/* Rimuovi bordo superiore del form per continuità */
+.mobile-insert-form {
+    border-top: none; 
 }

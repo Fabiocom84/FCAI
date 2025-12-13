@@ -40,12 +40,23 @@
 
     </div>
 
-    <!-- MODALI (Day Detail e Alert) - Restano fuori dal wrapper -->
+    <!-- MODALE DETTAGLIO GIORNO -->
     <div id="dayDetailModal" class="modal mobile-full-modal" style="display: none;">
         <div class="modal-content mobile-content">
+            
+            <!-- HEADER AGGIORNATO -->
             <div class="modal-header mobile-header-secondary">
-                <button class="back-button" id="closeDetailBtn">&larr; Indietro</button>
-                <h2 id="selectedDayTitle">Dettaglio Giorno</h2>
+                <button class="back-button" id="closeDetailBtn">
+                    <!-- Icona freccia stilizzata -->
+                    <span style="font-size: 1.2em; line-height: 0;">&#8249;</span> 
+                    <span>Indietro</span>
+                </button>
+                
+                <!-- Il titolo (Data) sarà centrato dal CSS -->
+                <h2 id="selectedDayTitle">DATA GIORNO</h2>
+                
+                <!-- Elemento vuoto invisibile a destra per bilanciare visivamente se necessario -->
+                <div style="width: 80px;"></div> 
             </div>
             <div class="modal-body mobile-body">
                 <div id="existingWorksSection">
