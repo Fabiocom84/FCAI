@@ -31,6 +31,9 @@ const MobileHoursApp = {
     init: function() {
         console.log("Mobile Hours App Started");
 
+        // 0. Carica Nome Utente (NUOVO)
+        this.loadUserName();
+
         // 1. Caricamento Iniziale Timeline
         this.loadTimelineBatch();
 
@@ -46,6 +49,28 @@ const MobileHoursApp = {
         
         // Submit
         this.dom.form.addEventListener('submit', (e) => this.handleSave(e));
+    },
+
+    // --- NUOVA FUNZIONE PER IL NOME UTENTE ---
+    loadUserName: function() {
+        try {
+            // Recupera il profilo salvato nel localStorage dal login.js
+            // Se non esiste, prova a fare una chiamata API o metti un placeholder
+            const storedProfile = localStorage.getItem('user_profile');
+            if (storedProfile) {
+                const profile = JSON.parse(storedProfile);
+                const nameEl = document.getElementById('headerUserName');
+                if (nameEl && profile.nome_cognome) {
+                    nameEl.textContent = profile.nome_cognome;
+                }
+            } else {
+                // Fallback se non c'è in locale (es. refresh pagina)
+                // Possiamo chiamare /api/me se necessario, o lasciare vuoto
+                document.getElementById('headerUserName').textContent = 'Utente';
+            }
+        } catch (e) {
+            console.error("Errore lettura profilo utente:", e);
+        }
     },
 
     // --- TIMELINE ---

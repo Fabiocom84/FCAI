@@ -1,4 +1,4 @@
-/* inserimento-ore.css */
+/* inserimento-ore.css - Header e Layout Aggiornati */
 
 body {
     background-color: #f4f7f9;
@@ -6,36 +6,94 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-/* Header Fisso */
+/* --- HEADER FISSO (Stile Commesse) --- */
 .mobile-header-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
-    background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #4a5568; /* Grigio Scuro come Commesse */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    color: white;
 }
 
 .mobile-nav-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 15px;
+    padding: 12px 15px; /* Un po' più di spazio */
 }
-.mobile-nav-header h1 { font-size: 1.2rem; margin: 0; color: #2A76B8; }
-.header-actions span { font-size: 0.9rem; color: #666; font-weight: 500; }
 
-/* Contenuto Scrollabile */
+/* Titolo e Nome Utente */
+.title-container {
+    display: flex;
+    flex-direction: column; /* Impila Titolo e Nome */
+    align-items: flex-start;
+}
+
+.mobile-nav-header h1 { 
+    font-size: 1.1rem; 
+    margin: 0; 
+    color: white; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.header-username {
+    font-size: 0.85rem;
+    color: #cbd5e0; /* Grigio chiaro per il nome */
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* Pulsante Home */
+.header-button {
+    background-color: rgba(255,255,255,0.15); /* Sfondo semitrasparente */
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 6px;
+}
+.header-button:hover { background-color: rgba(255,255,255,0.25); }
+
+/* Badge "Ultimi 30gg" */
+.header-actions span { 
+    font-size: 0.8rem; 
+    color: #fff; /* Bianco pieno per leggibilità */
+    background-color: #2b6cb0; /* Blu scuro per risaltare sul grigio */
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* --- CONTENUTO SCROLLABILE (Timeline Allargata) --- */
 .mobile-content-wrapper {
-    margin-top: 60px; /* Spazio per l'header fisso */
-    padding: 10px;
-    height: calc(100vh - 60px);
+    margin-top: 65px; /* Adattato alla nuova altezza header */
+    padding: 10px 0; /* ZERO padding laterale per massima larghezza */
+    height: calc(100vh - 65px);
     overflow-y: auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* TIMELINE ROW (Card Giorno) */
 .timeline-row {
-    background: white; margin-bottom: 12px; border-radius: 10px;
+    background: white; 
+    margin-bottom: 8px; /* Spazio ridotto tra le card */
+    border-radius: 0; /* Niente bordi arrotondati laterali, stile "lista" */
+    
+    /* Larghezza quasi totale ma con un minimo margine estetico */
+    width: 96%; 
+    border-radius: 6px; 
+
     display: flex; overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
-    min-height: 75px; transition: transform 0.1s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    cursor: pointer;
+    min-height: 70px; 
+    transition: background-color 0.1s;
 }
-.timeline-row:active { transform: scale(0.98); }
+.timeline-row:active { background-color: #f8f9fa; }
 
 .timeline-status-bar { width: 10px; flex-shrink: 0; }
 .status-red { background-color: #ff5252; }
