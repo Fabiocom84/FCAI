@@ -17,49 +17,62 @@ body {
 
 /* --- HEADER (Stile Card Scuro) --- */
 .mobile-nav-header {
-    background-color: #4a5568; /* Grigio Scuro */
+    background-color: #4a5568;
     color: white;
-    padding: 15px 20px;
-    border-radius: 8px; /* Bordi arrotondati */
+    padding: 15px 15px; /* Riduciamo leggermente il padding laterale */
+    border-radius: 8px;
+    
+    /* FLEXBOX CONFIG */
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: flex-start; /* Allinea tutto a sinistra di base */
+    gap: 10px; /* Spazio minimo tra pulsante e titolo */
+    
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 20px; /* Spazio prima della timeline */
-    position: relative; /* Per gestire il layout */
+    margin-bottom: 20px;
+    position: relative;
 }
 
 /* Pulsante Home (Azzurro) */
 .header-button {
-    background-color: #3498db; /* Azzurro */
+    background-color: #3498db;
     color: white;
-    padding: 8px 16px;
+    padding: 8px 12px; /* Leggermente più compatto */
     font-size: 0.9rem;
     font-weight: 500;
     border-radius: 5px;
     text-decoration: none;
-    display: flex; align-items: center; gap: 8px;
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
     transition: background-color 0.2s ease;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    z-index: 10; /* Assicura che sia cliccabile sopra eventuali sovrapposizioni */
+    
+    /* IMPORTANTE: Impedisce al pulsante di schiacciarsi */
+    flex-shrink: 0; 
+    z-index: 10;
 }
 .header-button:hover { background-color: #2980b9; }
 
 /* Contenitore Centrale Titolo */
 .title-container {
+    /* RESETPOSIZIONAMENTO ASSOLUTO (Rimuovi/Sovrascrivi le vecchie regole) */
+    position: static; 
+    transform: none;
+    left: auto;
+    width: auto;
+    
+    /* NUOVA LOGICA: Occupa tutto lo spazio rimanente */
+    flex-grow: 1; 
+    
+    /* Centra il contenuto all'interno dello spazio rimanente */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: center;     /* Centra orizzontalmente */
+    justify-content: center; /* Centra verticalmente */
     
-    /* Centratura Assoluta MODIFICATA */
-    position: absolute;
-    /* Prima era 50%. Lo portiamo al 58% per spostarlo a destra e non sovrapporlo al tasto Home */
-    left: 58%; 
-    transform: translateX(-50%);
-    width: auto; /* Lasciamo che la larghezza si adatti al contenuto */
-    min-width: 200px;
-    pointer-events: none;
+    /* Per sicurezza, evitiamo che il testo vada sopra il pulsante */
+    overflow: hidden; 
 }
 
 .mobile-nav-header h1 { 
@@ -82,7 +95,6 @@ body {
 /* Badge a destra */
 .header-actions {
     display: none; /* Nasconde "Ultimi 30gg" */
-    z-index: 10;
 }
 .header-actions span { 
     font-size: 0.75rem; 
