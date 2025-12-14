@@ -147,16 +147,16 @@ body {
 
 /* --- COMPORTAMENTO DESKTOP (Default) --- */
 .full-screen-page {
-    display: none; /* Nascosto JS */
+    display: none;
     position: fixed;
     z-index: 2000;
     
-    /* Centratura al centro dello schermo */
+    /* Centratura */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     
-    /* Dimensioni Finestra */
+    /* Dimensioni */
     width: 90%;
     max-width: 600px;
     height: 85vh;
@@ -165,33 +165,43 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.25);
     
-    /* [IMPORTANTE] Questo Padding crea lo spazio bianco attorno alla barra del titolo */
-    padding: 20px;
-    box-sizing: border-box;
-
-    /* Layout Flex Verticale */
+    /* [CORREZIONE] Rimuoviamo il padding qui per far toccare i bordi all'header */
+    padding: 0;
+    
+    overflow: hidden; /* Importante: taglia il contenuto che esce dagli angoli */
     flex-direction: column;
 }
 
-/* Sovrascrittura Header dentro il Modale Desktop */
+/* Stile Header Desktop */
 .full-screen-page .mobile-nav-header {
-    /* Rimuove il margine bottom perché qui gestiamo lo spazio diversamente */
-    margin-bottom: 0;
-    /* L'header eredita il border-radius base (8px) definito sopra */
+    /* [CORREZIONE] Larghezza piena, zero margini */
+    width: 100%;
+    margin: 0;
+    
+    /* [CORREZIONE] Arrotonda SOLO gli angoli sopra per combaciare con la finestra */
+    border-radius: 12px 12px 0 0;
+    
+    /* Stile piatto per integrarsi meglio */
+    box-shadow: none; 
+    border-bottom: 1px solid #3a4b5f;
+    
+    /* Assicura che riempia lo spazio */
+    box-sizing: border-box; 
+    padding: 15px 20px;
 }
 
-/* Corpo scrollabile del Modale */
+/* Corpo scrollabile */
 .full-screen-page .mobile-content-wrapper {
     height: auto;
     flex-grow: 1;
-    padding: 15px 5px; /* Spazio interno */
+    /* [CORREZIONE] Il padding lo mettiamo qui, così il form non tocca i bordi */
+    padding: 20px; 
     overflow-y: auto;
 }
 
 /* --- 5. COMPORTAMENTO MOBILE (Schermi < 768px) --- */
 @media (max-width: 768px) {
     .full-screen-page {
-        /* Occupa tutto lo schermo */
         top: 0;
         left: 0;
         transform: none;
@@ -199,63 +209,17 @@ body {
         height: 100vh;
         max-width: none;
         max-height: none;
-        
         border-radius: 0;
-        box-shadow: none;
-        
-        /* [IMPORTANTE] Rimuoviamo il padding su mobile per attaccare la barra ai bordi */
         padding: 0;
     }
 
     .full-screen-page .mobile-nav-header {
-        border-radius: 0; /* Angoli quadrati */
+        border-radius: 0; /* Angoli quadrati su mobile */
         margin: 0;
+        padding: 15px;
     }
     
     .full-screen-page .mobile-content-wrapper {
-        padding: 15px; /* Ripristina padding contenuto */
+        padding: 15px;
     }
 }
-
-/* --- 6. ELEMENTI DEL FORM (CONDIVISI) --- */
-.mobile-insert-form {
-    margin-top: 20px;
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.mobile-insert-form h4 {
-    margin-top: 0; color: #4a5568; border-bottom: 1px solid #eee; padding-bottom: 10px;
-}
-.form-group.mobile-group {
-    margin-bottom: 15px;
-}
-.form-group.mobile-group label {
-    display: block; font-size: 0.85rem; color: #718096; margin-bottom: 5px; font-weight: 500;
-}
-.form-group.mobile-group select, 
-.form-group.mobile-group input {
-    width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
-    background-color: #fff; box-sizing: border-box;
-}
-.form-row-split { display: flex; gap: 15px; }
-.hours-group { flex: 0 0 80px; }
-.note-group { flex-grow: 1; }
-
-.mobile-save-btn {
-    width: 100%; padding: 15px; background-color: #48bb78; color: white; font-weight: bold;
-    border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 10px;
-}
-
-/* Lista lavori esistenti */
-.work-item {
-    background: white; border-left: 4px solid #4299e1; padding: 10px 15px;
-    margin-bottom: 10px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    display: flex; justify-content: space-between; align-items: center;
-}
-.work-info strong { display: block; color: #2d3748; }
-.work-info span { font-size: 0.9em; color: #718096; }
-.work-actions { display: flex; align-items: center; gap: 10px; }
-.work-hours-badge { background: #edf2f7; padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.85em; }
-.delete-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; opacity: 0.6; }
