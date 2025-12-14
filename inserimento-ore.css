@@ -152,6 +152,7 @@ body {
     
     background-color: #fff;
     z-index: 5; /* Assicura che stia sopra agli altri elementi se vicini */
+}
 
 .timeline-status-bar { width: 12px; flex-shrink: 0; }
 .status-red     { background-color: #e53e3e; }
