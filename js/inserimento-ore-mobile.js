@@ -9,16 +9,20 @@ const MobileHoursApp = {
         limit: 30,
         isLoading: false,
         isListFinished: false,
-        currentDate: null
+        currentDate: null,
+        
+        // Cache per l'albero delle opzioni (Macro -> Componenti)
+        currentOptionsTree: [] 
     },
 
     dom: {
         timelineContainer: document.getElementById('mobileTimelineContainer'),
         dayDetailModal: document.getElementById('dayDetailModal'),
         
-        // Form
+        // Form Elements
         commessaSelect: document.getElementById('mobileCommessaSelect'),
-        activitySelect: document.getElementById('mobileActivitySelect'),
+        macroSelect: document.getElementById('mobileMacroSelect'),       // NUOVO
+        componentSelect: document.getElementById('mobileComponentSelect'), // EX Activity
         hoursInput: document.getElementById('mobileHoursInput'),
         noteInput: document.getElementById('mobileNoteInput'),
         form: document.getElementById('mobileHoursForm'),
@@ -29,23 +33,23 @@ const MobileHoursApp = {
     },
 
     init: function() {
-        console.log("Mobile Hours App Started");
+        console.log("Mobile Hours App Started v3 (Hierarchical)");
 
-        // 0. Carica Nome Utente
         this.loadUserName();
-
-        // 1. Caricamento Iniziale Timeline
         this.loadTimelineBatch();
-
-        // 2. Caricamento Iniziale Commesse
         this.loadCommesseList();
 
-        // 3. Event Listeners
+        // Listeners
         this.dom.timelineContainer.addEventListener('scroll', () => this.handleScroll());
         this.dom.closeDetailBtn.addEventListener('click', () => this.closeDetail());
         
-        // Smart Filter
-        this.dom.commessaSelect.addEventListener('change', (e) => this.loadActivities(e.target.value));
+        // --- LOGICA A CASCATA (Cascading Dropdowns) ---
+        
+        // 1. Cambio Commessa -> Carica Macro Categorie
+        this.dom.commessaSelect.addEventListener('change', (e) => this.loadSmartOptions(e.target.value));
+        
+        // 2. Cambio Macro -> Popola Componenti (dal cache locale)
+        this.dom.macroSelect.addEventListener('change', (e) => this.renderComponentOptions(e.target.value));
         
         // Submit
         this.dom.form.addEventListener('submit', (e) => this.handleSave(e));
@@ -60,16 +64,11 @@ const MobileHoursApp = {
                 if (nameEl && profile.nome_cognome) {
                     nameEl.textContent = profile.nome_cognome;
                 }
-            } else {
-                document.getElementById('headerUserName').textContent = 'Utente';
             }
-        } catch (e) {
-            console.error("Errore lettura profilo:", e);
-        }
+        } catch (e) { console.error(e); }
     },
 
-    // --- TIMELINE ---
-
+    // --- TIMELINE (Invariata) ---
     loadTimelineBatch: async function() {
         if (this.state.isLoading || this.state.isListFinished) return;
         this.state.isLoading = true;
@@ -78,7 +77,6 @@ const MobileHoursApp = {
             const res = await apiFetch(`/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`);
             const days = await res.json();
 
-            // Rimuovi loader iniziale
             const loader = this.dom.timelineContainer.querySelector('.loader-placeholder');
             if (loader) loader.remove();
 
@@ -87,25 +85,18 @@ const MobileHoursApp = {
                 return;
             }
 
-            // Ottieni la data di oggi formattata come quella del DB (YYYY-MM-DD)
-            // Attenzione al fuso orario, usiamo slice per sicurezza locale semplice
             const todayStr = new Date().toISOString().split('T')[0];
-
             days.forEach(day => {
                 const row = this.createDayRow(day, todayStr);
                 this.dom.timelineContainer.appendChild(row);
             });
 
             this.state.offset += this.state.limit;
-
-            // Se è il primo caricamento, scrolla a Oggi
             if (this.state.offset === this.state.limit) {
                 setTimeout(() => this.scrollToToday(), 100);
             }
-
         } catch (error) {
             console.error("Timeline Error:", error);
-            this.dom.timelineContainer.innerHTML = '<p style="text-align:center; padding:20px;">Errore caricamento.</p>';
         } finally {
             this.state.isLoading = false;
         }
@@ -117,10 +108,9 @@ const MobileHoursApp = {
         div.dataset.date = day.full_date;
         div.onclick = () => this.openDayDetail(day);
 
-        // CONTROLLO "OGGI": Se la data coincide, aggiungi la classe speciale
         if (day.full_date === todayStr) {
             div.classList.add('is-today');
-            div.id = "row-today"; // ID per lo scroll facile
+            div.id = "row-today";
         }
 
         div.innerHTML = `
@@ -130,23 +120,15 @@ const MobileHoursApp = {
                     <span class="day-text">${day.weekday}</span>
                     <span class="day-number">${day.day_num} ${day.month_str}</span>
                 </div>
-                <div class="timeline-hours">
-                    ${day.total_hours}h
-                </div>
+                <div class="timeline-hours">${day.total_hours}h</div>
             </div>
         `;
         return div;
     },
 
-    // Funzione per centrare "Oggi"
     scrollToToday: function() {
         const todayRow = document.getElementById('row-today');
-        if (todayRow) {
-            todayRow.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center' // Centra verticalmente
-            });
-        }
+        if (todayRow) todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
 
     handleScroll: function() {
@@ -156,17 +138,21 @@ const MobileHoursApp = {
         }
     },
 
-    // --- DETTAGLIO GIORNO (Il resto rimane invariato) ---
-    // Copia qui il resto delle funzioni (openDayDetail, loadExistingWorks, etc.) 
-    // dal file precedente, non sono cambiate.
-    
+    // --- DETTAGLIO GIORNO ---
     openDayDetail: function(day) {
         this.state.currentDate = day.full_date;
         this.dom.dayDetailModal.style.display = 'flex';
         document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${day.month_str}`;
+        
+        // Reset Form
         this.dom.form.reset();
-        this.dom.activitySelect.innerHTML = '<option value="" disabled selected>Seleziona prima la commessa</option>';
-        this.dom.activitySelect.disabled = true;
+        
+        // Reset Selects a Cascata
+        this.dom.macroSelect.innerHTML = '<option value="" disabled selected>-- Seleziona prima Commessa --</option>';
+        this.dom.macroSelect.disabled = true;
+        this.dom.componentSelect.innerHTML = '<option value="" disabled selected>-- Seleziona prima Reparto --</option>';
+        this.dom.componentSelect.disabled = true;
+
         this.loadExistingWorks(day.full_date);
     },
 
@@ -178,6 +164,7 @@ const MobileHoursApp = {
         this.loadTimelineBatch();
     },
 
+    // --- LOGICA LISTA LAVORI ESISTENTI (Aggiornata per Componenti) ---
     loadExistingWorks: async function(dateStr) {
         this.dom.existingList.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Caricamento...</div>';
         try {
@@ -193,10 +180,15 @@ const MobileHoursApp = {
             works.forEach(w => {
                 const div = document.createElement('div');
                 div.className = 'work-item';
+                
+                // Nota: w.componenti?.nome_componente viene dalla nuova query backend
+                const componenteNome = w.componenti?.nome_componente || w.catalogo_attivita?.descrizione || '???';
+                const codiceComp = w.componenti?.codice_componente ? `(${w.componenti.codice_componente})` : '';
+
                 div.innerHTML = `
                     <div class="work-info">
                         <strong>${w.commesse?.impianto || 'Commessa ???'}</strong>
-                        <span>${w.catalogo_attivita?.descrizione || 'Attività ???'}</span>
+                        <span>${componenteNome} ${codiceComp}</span>
                         ${w.note ? `<div class="note">${w.note}</div>` : ''}
                     </div>
                     <div class="work-actions">
@@ -214,6 +206,7 @@ const MobileHoursApp = {
         }
     },
 
+    // --- GESTIONE DROPDOWN ---
     loadCommesseList: async function() {
         try {
             const res = await apiFetch('/api/commesse/view?status=In Lavorazione&limit=100');
@@ -226,28 +219,62 @@ const MobileHoursApp = {
         } catch (e) { console.error("Error loading commesse", e); }
     },
 
-    loadActivities: async function(commessaId) {
-        this.dom.activitySelect.innerHTML = '<option>Caricamento...</option>';
-        this.dom.activitySelect.disabled = true;
+    // 1. Carica l'albero completo Macro -> Componenti dal Backend
+    loadSmartOptions: async function(commessaId) {
+        this.dom.macroSelect.innerHTML = '<option>Caricamento...</option>';
+        this.dom.macroSelect.disabled = true;
+        this.dom.componentSelect.innerHTML = '<option value="" disabled selected>-- Seleziona prima Reparto --</option>';
+        this.dom.componentSelect.disabled = true;
+        
         try {
             const res = await apiFetch(`/api/ore/options?id_commessa=${commessaId}`);
-            const acts = await res.json();
+            const tree = await res.json();
             
-            if (acts.length === 0) {
-                this.dom.activitySelect.innerHTML = '<option disabled>Nessuna attività per il tuo ruolo/fase</option>';
+            this.state.currentOptionsTree = tree; // Salviamo in stato per usarlo dopo
+            
+            if (tree.length === 0) {
+                this.dom.macroSelect.innerHTML = '<option disabled>Nessun reparto disponibile</option>';
                 return;
             }
 
-            let html = '<option value="" disabled selected>Seleziona Attività...</option>';
-            acts.forEach(a => {
-                html += `<option value="${a.id_attivita}">${a.descrizione}</option>`;
+            let html = '<option value="" disabled selected>Seleziona Reparto...</option>';
+            tree.forEach(macro => {
+                // macro.icona è opzionale, se c'è la mostriamo
+                const icon = macro.icona ? `${macro.icona} ` : '';
+                html += `<option value="${macro.id_macro}">${icon}${macro.nome_macro}</option>`;
             });
-            this.dom.activitySelect.innerHTML = html;
-            this.dom.activitySelect.disabled = false;
+            
+            this.dom.macroSelect.innerHTML = html;
+            this.dom.macroSelect.disabled = false;
 
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            this.dom.macroSelect.innerHTML = '<option disabled>Errore caricamento</option>';
+        }
     },
 
+    // 2. Renderizza i componenti in base alla Macro selezionata (senza chiamare il server)
+    renderComponentOptions: function(macroId) {
+        // Trova la macro selezionata nell'albero in memoria
+        // Nota: macroId dal value è stringa, id_macro nel JSON è numero
+        const selectedMacro = this.state.currentOptionsTree.find(m => m.id_macro == macroId);
+        
+        if (!selectedMacro || !selectedMacro.componenti || selectedMacro.componenti.length === 0) {
+            this.dom.componentSelect.innerHTML = '<option disabled>Nessun componente</option>';
+            this.dom.componentSelect.disabled = true;
+            return;
+        }
+
+        let html = '<option value="" disabled selected>Seleziona Lavorazione...</option>';
+        selectedMacro.componenti.forEach(comp => {
+            html += `<option value="${comp.id}">${comp.nome} ${comp.codice ? '('+comp.codice+')' : ''}</option>`;
+        });
+        
+        this.dom.componentSelect.innerHTML = html;
+        this.dom.componentSelect.disabled = false;
+    },
+
+    // --- SALVATAGGIO ---
     handleSave: async function(e) {
         e.preventDefault();
         const btn = this.dom.form.querySelector('button');
@@ -256,7 +283,7 @@ const MobileHoursApp = {
         const payload = {
             data: this.state.currentDate,
             id_commessa: this.dom.commessaSelect.value,
-            id_attivita: this.dom.activitySelect.value,
+            id_componente: this.dom.componentSelect.value, // Ora inviamo il componente!
             ore: this.dom.hoursInput.value,
             note: this.dom.noteInput.value
         };
@@ -268,9 +295,11 @@ const MobileHoursApp = {
             });
             if (!res.ok) throw new Error("Errore Salvataggio");
 
+            // Reset parziale per inserimento rapido
             this.dom.hoursInput.value = '';
             this.dom.noteInput.value = '';
-            this.dom.activitySelect.value = ''; 
+            // Non resettiamo commessa/macro per facilitare inserimenti consecutivi
+            
             await this.loadExistingWorks(this.state.currentDate);
             
         } catch (error) {

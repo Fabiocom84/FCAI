@@ -66,14 +66,30 @@
                 <div class="mobile-insert-form">
                     <h4>Nuova Registrazione</h4>
                     <form id="mobileHoursForm">
+                        <!-- 1. LIVELLO: COMMESSA -->
                         <div class="form-group mobile-group">
                             <label>Commessa *</label>
-                            <select id="mobileCommessaSelect" required><option value="" disabled selected>Caricamento...</option></select>
+                            <select id="mobileCommessaSelect" required>
+                                <option value="" disabled selected>Caricamento...</option>
+                            </select>
                         </div>
+
+                        <!-- 2. LIVELLO: MACRO CATEGORIA (Nuovo) -->
                         <div class="form-group mobile-group">
-                            <label>Attività *</label>
-                            <select id="mobileActivitySelect" required disabled><option value="" disabled selected>Seleziona prima la commessa</option></select>
+                            <label>Reparto / Macro *</label>
+                            <select id="mobileMacroSelect" required disabled>
+                                <option value="" disabled selected>-- Seleziona prima Commessa --</option>
+                            </select>
                         </div>
+
+                        <!-- 3. LIVELLO: COMPONENTE / ATTIVITÀ -->
+                        <div class="form-group mobile-group">
+                            <label>Componente / Lavorazione *</label>
+                            <select id="mobileComponentSelect" required disabled>
+                                <option value="" disabled selected>-- Seleziona prima Reparto --</option>
+                            </select>
+                        </div>
+
                         <div class="form-row-split">
                             <div class="form-group mobile-group hours-group">
                                 <label>Ore *</label>
