@@ -17,6 +17,7 @@
         .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         .data-table th { background: #f8f9fa; }
+        .data-table td { overflow: visible; }
         
         .edit-row { background-color: #f0f7ff; }
         .action-btn { padding: 5px 10px; background: #3498db; color: white; border-radius: 4px; cursor: pointer; border: none; }
@@ -24,6 +25,7 @@
         
         /* Stile Choices compatto per la tabella */
         .choices__inner { min-height: 35px; padding: 2px 5px; }
+        .choices__list--dropdown { z-index: 100 !important; /* Forza il menu sopra tutto */ }
     </style>
 </head>
 <body>

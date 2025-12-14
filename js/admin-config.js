@@ -104,78 +104,114 @@ const App = {
         }
     },
 
-    // 2. Carica e Renderizza (Modificato per Editing Inline)
+    // 2. Carica e Renderizza (Versione Robusta v2)
     loadComponents: async function(page) {
         this.data.componentiPage = page;
-        document.getElementById('compPageIndicator').innerText = `Pagina ${page}`;
+        const indicator = document.getElementById('compPageIndicator');
+        if(indicator) indicator.innerText = `Pagina ${page}`;
         
-        const res = await apiFetch(`/api/admin/componenti?page=${page}`);
-        const { data } = await res.json();
-        const tbody = document.querySelector('#componentsTable tbody');
-        tbody.innerHTML = '';
+        try {
+            const res = await apiFetch(`/api/admin/componenti?page=${page}`);
+            const { data } = await res.json();
+            const tbody = document.querySelector('#componentsTable tbody');
+            tbody.innerHTML = '';
 
-        data.forEach(comp => {
-            const tr = document.createElement('tr');
-            
-            // NOTA: Qui inseriamo input text invece di testo statico
-            tr.innerHTML = `
-                <td>
-                    <input type="text" class="edit-name" value="${comp.nome_componente || ''}" style="width: 100%; margin-bottom: 5px; font-weight:bold;">
-                    <input type="text" class="edit-code" value="${comp.codice_componente || ''}" placeholder="Codice" style="width: 100%; font-size: 0.8em; color: #666;">
-                </td>
-                <td><select class="choice-macro" multiple></select></td>
-                <td><select class="choice-ruoli" multiple></select></td>
-                <td><select class="choice-fasi" multiple></select></td>
-                <td><button class="action-btn save-btn">💾 Salva</button></td>
-            `;
-            tbody.appendChild(tr);
+            data.forEach(comp => {
+                const tr = document.createElement('tr');
+                
+                // Usiamo classi, NON ID, per evitare conflitti
+                tr.innerHTML = `
+                    <td style="vertical-align: top;">
+                        <input type="text" class="edit-name" value="${comp.nome_componente || ''}" style="width: 100%; margin-bottom: 5px; font-weight:bold;">
+                        <input type="text" class="edit-code" value="${comp.codice_componente || ''}" placeholder="Codice" style="width: 100%; font-size: 0.8em; color: #666;">
+                    </td>
+                    <td style="vertical-align: top;"><select class="choice-macro" multiple></select></td>
+                    <td style="vertical-align: top;"><select class="choice-ruoli" multiple></select></td>
+                    <td style="vertical-align: top;"><select class="choice-fasi" multiple></select></td>
+                    <td style="vertical-align: top; text-align: center;">
+                        <button class="action-btn save-btn" data-id="${comp.id_componente}">💾</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
 
-            // Init Choices (come prima)
-            const macroSelect = new Choices(tr.querySelector('.choice-macro'), { removeItemButton: true, itemSelectText: '' });
-            const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), { removeItemButton: true, itemSelectText: '' });
-            const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), { removeItemButton: true, itemSelectText: '' });
+                // --- INIZIALIZZAZIONE CHOICES ---
+                // Nota: Configuriamo position: 'bottom' per evitare problemi di layout
+                const choicesConfig = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: false };
+                
+                const macroSelect = new Choices(tr.querySelector('.choice-macro'), choicesConfig);
+                const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), choicesConfig);
+                const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), choicesConfig);
 
-            // Popola Opzioni (come prima)
-            macroSelect.setChoices(this.data.macros.map(m => ({ value: m.id_macro_categoria, label: m.nome, selected: (comp.ids_macro_categorie || []).includes(m.id_macro_categoria) })), 'value', 'label', false);
-            ruoliSelect.setChoices(this.data.ruoli.map(r => ({ value: r.id_ruolo, label: r.nome_ruolo, selected: (comp.ids_ruoli_abilitati || []).includes(r.id_ruolo) })), 'value', 'label', false);
-            fasiSelect.setChoices(this.data.fasi.map(f => ({ value: f.id_fase, label: f.nome_fase, selected: (comp.ids_fasi_abilitate || []).includes(f.id_fase) })), 'value', 'label', false);
-
-            // LOGICA SALVATAGGIO (Aggiornata)
-            tr.querySelector('.save-btn').addEventListener('click', async (e) => {
-                const btn = e.target;
-                const originalText = btn.textContent;
-                btn.textContent = "⏳";
-                btn.disabled = true;
-
-                // Preleviamo anche il nome e il codice dagli input
-                const newName = tr.querySelector('.edit-name').value;
-                const newCode = tr.querySelector('.edit-code').value;
-
-                const payload = {
-                    nome_componente: newName,
-                    codice_componente: newCode,
-                    ids_macro_categorie: macroSelect.getValue(true),
-                    ids_ruoli_abilitati: ruoliSelect.getValue(true),
-                    ids_fasi_abilitate: fasiSelect.getValue(true)
+                // --- POPOLAMENTO DATI ---
+                // Helper per mappare i dati
+                const mapOptions = (sourceData, valueKey, labelKey, selectedArray) => {
+                    return sourceData.map(item => ({
+                        value: item[valueKey],
+                        label: item[labelKey],
+                        selected: (selectedArray || []).includes(item[valueKey])
+                    }));
                 };
 
-                try {
-                    await apiFetch(`/api/admin/componenti/${comp.id_componente}`, { method: 'PUT', body: JSON.stringify(payload) });
+                macroSelect.setChoices(mapOptions(this.data.macros, 'id_macro_categoria', 'nome', comp.ids_macro_categorie), 'value', 'label', false);
+                ruoliSelect.setChoices(mapOptions(this.data.ruoli, 'id_ruolo', 'nome_ruolo', comp.ids_ruoli_abilitati), 'value', 'label', false);
+                fasiSelect.setChoices(mapOptions(this.data.fasi, 'id_fase', 'nome_fase', comp.ids_fasi_abilitate), 'value', 'label', false);
+
+                // --- GESTIONE SALVATAGGIO ---
+                const saveBtn = tr.querySelector('.save-btn');
+                
+                saveBtn.addEventListener('click', async (e) => {
+                    // Usa currentTarget per essere sicuri di prendere il bottone e non l'icona interna
+                    const btn = e.currentTarget; 
+                    const compId = btn.dataset.id;
                     
-                    // Feedback visivo temporaneo
-                    btn.textContent = "✅";
-                    setTimeout(() => { 
-                        btn.textContent = originalText; 
-                        btn.disabled = false; 
-                    }, 1000);
-                    
-                } catch (err) {
-                    alert("Errore salvataggio: " + err.message);
-                    btn.textContent = "❌";
-                    btn.disabled = false;
-                }
+                    console.log(`Tentativo di salvataggio per componente ID: ${compId}`);
+
+                    btn.textContent = "⏳";
+                    btn.disabled = true;
+
+                    // Leggiamo i valori ATTUALI dagli input e dai menu
+                    const newName = tr.querySelector('.edit-name').value;
+                    const newCode = tr.querySelector('.edit-code').value;
+                    const valMacros = macroSelect.getValue(true);
+                    const valRuoli = ruoliSelect.getValue(true);
+                    const valFasi = fasiSelect.getValue(true);
+
+                    // Debug payload
+                    const payload = {
+                        nome_componente: newName,
+                        codice_componente: newCode,
+                        ids_macro_categorie: valMacros,
+                        ids_ruoli_abilitati: valRuoli,
+                        ids_fasi_abilitate: valFasi
+                    };
+                    console.log("Payload inviato:", payload);
+
+                    try {
+                        const response = await apiFetch(`/api/admin/componenti/${compId}`, { 
+                            method: 'PUT', 
+                            body: JSON.stringify(payload) 
+                        });
+
+                        if (!response.ok) throw new Error("Errore API");
+                        
+                        btn.textContent = "✅";
+                        setTimeout(() => { 
+                            btn.textContent = "💾"; 
+                            btn.disabled = false; 
+                        }, 1000);
+                        
+                    } catch (err) {
+                        console.error(err);
+                        alert("Errore salvataggio: " + err.message);
+                        btn.textContent = "❌";
+                        btn.disabled = false;
+                    }
+                });
             });
-        });
+        } catch (error) {
+            console.error("Errore caricamento componenti:", error);
+            alert("Impossibile caricare i componenti.");
+        }
     },
 
     changeCompPage: function(delta) {
