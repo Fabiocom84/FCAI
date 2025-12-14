@@ -316,51 +316,66 @@ body {
 }
 
 /* ========================================================== */
-/* == VISTA FULL SCREEN REALE (Override Totale Modale)     == */
+/* == VISTA DETTAGLIO: RESPONSIVE (Desktop vs Mobile)      == */
 /* ========================================================== */
 
-/* Classe applicata al contenitore principale del dettaglio */
+/* --- COMPORTAMENTO BASE (Desktop / Tablet) --- */
+/* Il modale appare come una scheda centrata e fluttuante */
 .full-screen-page {
+    display: none; /* Nascosto di default */
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    z-index: 2000;
+    
+    /* Centratura perfetta */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* Dimensioni finestra */
+    width: 90%;
+    max-width: 600px; /* Non diventa mai più largo di così */
+    height: 85vh;     /* Occupa l'85% dell'altezza schermo */
+    
+    /* Stile finestra */
     background-color: #f4f7f9;
-    z-index: 2000; /* Sopra a tutto, anche all'header della home */
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25); /* Ombra profonda per staccarlo dallo sfondo */
+    overflow: hidden; /* Assicura che i figli non escano dai bordi arrotondati */
     
-    display: flex;
+    /* Layout interno */
     flex-direction: column;
-    
-    /* Reset proprietà ereditate dalla classe .modal generica */
-    transform: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    max-width: none !important;
-    max-height: none !important;
-    box-shadow: none !important;
 }
 
-/* Stile specifico per l'header fisso in questa vista */
-.mobile-nav-header.fixed-top {
-    border-radius: 0; /* Rimuove angoli arrotondati */
-    margin-bottom: 0; /* Rimuove margine sotto */
-    flex-shrink: 0;   /* Non si schiaccia */
+/* Stile Header Desktop */
+.full-screen-page .mobile-nav-header {
+    border-radius: 0; /* L'arrotondamento lo gestisce il genitore */
+    margin: 0;
+    padding: 15px 20px;
+    cursor: default; /* Non sembra cliccabile/trascinabile */
 }
 
-/* Corpo scrollabile che occupa tutto lo spazio sotto l'header */
-.mobile-content-wrapper.full-screen-body {
+/* Corpo scrollabile */
+.full-screen-page .mobile-content-wrapper {
     height: auto;
     flex-grow: 1;
-    padding: 15px; /* Padding interno per il contenuto */
+    padding: 20px;
     overflow-y: auto;
 }
 
-/* Assicuriamoci che il titolo h1 nel dettaglio abbia la stessa dimensione visiva */
-#dayDetailModal h1 {
-    font-size: 1.4rem;
-    color: #3498db;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin: 0;
+/* --- COMPORTAMENTO MOBILE (Schermi stretti < 768px) --- */
+/* Qui forziamo il full screen totale, sovrascrivendo le regole sopra */
+@media (max-width: 768px) {
+    .full-screen-page {
+        top: 0;
+        left: 0;
+        transform: none; /* Rimuove centratura */
+        
+        width: 100vw;
+        height: 100vh; /* 100% altezza viewport mobile */
+        max-width: none;
+        max-height: none;
+        
+        border-radius: 0; /* Spigoli vivi su mobile */
+        box-shadow: none;
+    }
 }
