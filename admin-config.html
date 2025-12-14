@@ -54,23 +54,33 @@
                 </table>
             </div>
 
-            <!-- TAB 2: COMPONENTI -->
+            <!-- TAB 2: COMPONENTI (Aggiornato) -->
             <div id="tab-components" class="tab-content">
-                <h3>Associa Componenti a Macro, Ruoli e Fasi</h3>
-                <p>Configura chi può fare cosa e quando.</p>
-                <div class="pagination-controls" style="margin: 10px 0;">
-                    <button id="prevCompPage">Precedente</button>
-                    <span id="compPageIndicator">Pagina 1</span>
-                    <button id="nextCompPage">Successiva</button>
+                <h3>Gestione Componenti & Associazioni</h3>
+                
+                <!-- BARRA INSERIMENTO NUOVO -->
+                <div style="background: #f1f8ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid #cce5ff;">
+                    <strong>Nuovo:</strong>
+                    <input type="text" id="newCompName" placeholder="Nome Componente (es. Albero Motore)" style="flex-grow: 1; padding: 10px;">
+                    <input type="text" id="newCompCode" placeholder="Codice (opz.)" style="width: 150px; padding: 10px;">
+                    <button id="addCompBtn" class="button button--primary" style="white-space: nowrap;">+ Aggiungi Componente</button>
                 </div>
+
+                <!-- Controlli Paginazione -->
+                <div class="pagination-controls" style="margin: 10px 0; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="prevCompPage" class="action-btn">Precedente</button>
+                    <span id="compPageIndicator" style="font-weight: bold;">Pagina 1</span>
+                    <button id="nextCompPage" class="action-btn">Successiva</button>
+                </div>
+
                 <table class="data-table" id="componentsTable">
                     <thead>
                         <tr>
-                            <th width="20%">Componente</th>
+                            <th width="25%">Nome & Codice</th>
                             <th width="20%">Macro Categoria</th>
-                            <th width="25%">Ruoli Abilitati</th>
-                            <th width="25%">Fasi Abilitate</th>
-                            <th width="10%">Salva</th>
+                            <th width="20%">Ruoli Abilitati</th>
+                            <th width="20%">Fasi Abilitate</th>
+                            <th width="15%">Azioni</th>
                         </tr>
                     </thead>
                     <tbody></tbody>

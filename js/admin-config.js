@@ -22,6 +22,7 @@ const App = {
         document.getElementById('addMacroBtn').addEventListener('click', () => this.addMacro());
         document.getElementById('prevCompPage').addEventListener('click', () => this.changeCompPage(-1));
         document.getElementById('nextCompPage').addEventListener('click', () => this.changeCompPage(1));
+        document.getElementById('addCompBtn').addEventListener('click', () => this.addComponent());
     },
 
     loadRefData: async function() {
@@ -67,6 +68,43 @@ const App = {
     },
 
     // --- COMPONENTI ---
+
+    // 1. Aggiungi Nuovo Componente
+    addComponent: async function() {
+        const nome = document.getElementById('newCompName').value;
+        const codice = document.getElementById('newCompCode').value;
+        
+        if (!nome) return alert("Inserisci almeno il nome del componente.");
+        
+        const btn = document.getElementById('addCompBtn');
+        btn.disabled = true;
+        btn.textContent = "Salvataggio...";
+
+        try {
+            await apiFetch('/api/admin/componenti', {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    nome_componente: nome, 
+                    codice_componente: codice 
+                })
+            });
+            
+            // Pulisci e ricarica
+            document.getElementById('newCompName').value = '';
+            document.getElementById('newCompCode').value = '';
+            
+            // Ricarica la pagina 1 (dove appaiono i nuovi se ordinati per ID desc)
+            this.loadComponents(1); 
+            
+        } catch (error) {
+            alert("Errore creazione: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "+ Aggiungi Componente";
+        }
+    },
+
+    // 2. Carica e Renderizza (Modificato per Editing Inline)
     loadComponents: async function(page) {
         this.data.componentiPage = page;
         document.getElementById('compPageIndicator').innerText = `Pagina ${page}`;
@@ -78,34 +116,64 @@ const App = {
 
         data.forEach(comp => {
             const tr = document.createElement('tr');
+            
+            // NOTA: Qui inseriamo input text invece di testo statico
             tr.innerHTML = `
-                <td><strong>${comp.nome_componente}</strong></td>
+                <td>
+                    <input type="text" class="edit-name" value="${comp.nome_componente || ''}" style="width: 100%; margin-bottom: 5px; font-weight:bold;">
+                    <input type="text" class="edit-code" value="${comp.codice_componente || ''}" placeholder="Codice" style="width: 100%; font-size: 0.8em; color: #666;">
+                </td>
                 <td><select class="choice-macro" multiple></select></td>
                 <td><select class="choice-ruoli" multiple></select></td>
                 <td><select class="choice-fasi" multiple></select></td>
-                <td><button class="action-btn save-btn">💾</button></td>
+                <td><button class="action-btn save-btn">💾 Salva</button></td>
             `;
             tbody.appendChild(tr);
 
-            // Init Choices
-            const macroSelect = new Choices(tr.querySelector('.choice-macro'), { removeItemButton: true });
-            const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), { removeItemButton: true });
-            const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), { removeItemButton: true });
+            // Init Choices (come prima)
+            const macroSelect = new Choices(tr.querySelector('.choice-macro'), { removeItemButton: true, itemSelectText: '' });
+            const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), { removeItemButton: true, itemSelectText: '' });
+            const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), { removeItemButton: true, itemSelectText: '' });
 
-            // Popola Opzioni
+            // Popola Opzioni (come prima)
             macroSelect.setChoices(this.data.macros.map(m => ({ value: m.id_macro_categoria, label: m.nome, selected: (comp.ids_macro_categorie || []).includes(m.id_macro_categoria) })), 'value', 'label', false);
             ruoliSelect.setChoices(this.data.ruoli.map(r => ({ value: r.id_ruolo, label: r.nome_ruolo, selected: (comp.ids_ruoli_abilitati || []).includes(r.id_ruolo) })), 'value', 'label', false);
             fasiSelect.setChoices(this.data.fasi.map(f => ({ value: f.id_fase, label: f.nome_fase, selected: (comp.ids_fasi_abilitate || []).includes(f.id_fase) })), 'value', 'label', false);
 
-            // Salva Button
-            tr.querySelector('.save-btn').addEventListener('click', async () => {
+            // LOGICA SALVATAGGIO (Aggiornata)
+            tr.querySelector('.save-btn').addEventListener('click', async (e) => {
+                const btn = e.target;
+                const originalText = btn.textContent;
+                btn.textContent = "⏳";
+                btn.disabled = true;
+
+                // Preleviamo anche il nome e il codice dagli input
+                const newName = tr.querySelector('.edit-name').value;
+                const newCode = tr.querySelector('.edit-code').value;
+
                 const payload = {
+                    nome_componente: newName,
+                    codice_componente: newCode,
                     ids_macro_categorie: macroSelect.getValue(true),
                     ids_ruoli_abilitati: ruoliSelect.getValue(true),
                     ids_fasi_abilitate: fasiSelect.getValue(true)
                 };
-                await apiFetch(`/api/admin/componenti/${comp.id_componente}`, { method: 'PUT', body: JSON.stringify(payload) });
-                alert("Salvato!");
+
+                try {
+                    await apiFetch(`/api/admin/componenti/${comp.id_componente}`, { method: 'PUT', body: JSON.stringify(payload) });
+                    
+                    // Feedback visivo temporaneo
+                    btn.textContent = "✅";
+                    setTimeout(() => { 
+                        btn.textContent = originalText; 
+                        btn.disabled = false; 
+                    }, 1000);
+                    
+                } catch (err) {
+                    alert("Errore salvataggio: " + err.message);
+                    btn.textContent = "❌";
+                    btn.disabled = false;
+                }
             });
         });
     },
