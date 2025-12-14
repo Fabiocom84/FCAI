@@ -1,131 +1,107 @@
-/* inserimento-ore.css - Stile "Commesse" Replicato */
+/* ==========================================================================
+   inserimento-ore.css - Refactoring Completo e Pulito
+   ========================================================================== */
 
+/* --- 1. IMPOSTAZIONI BASE E LAYOUT PAGINA --- */
 body {
     background-color: #f4f7f9;
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Previene scroll orizzontale accidentale */
 }
 
-/* --- CONTENITORE PRINCIPALE (Stile Commesse) --- */
-/* Questo crea lo spazio ai lati e stacca l'header dal bordo */
+/* Contenitore che limita la larghezza su Desktop */
 .page-wrapper {
     width: 95%;
-    max-width: 900px; /* Limite larghezza per desktop */
-    margin: 20px auto; /* 20px sopra, centrato orizzontalmente */
+    max-width: 900px;
+    margin: 20px auto;
 }
 
-/* --- HEADER (Stile Card Scuro) --- */
+/* --- 2. COMPONENTE HEADER (Usato in Home e nel Modale) --- */
+/* Questa è la "Barra" scura. Su desktop fluttua grazie al padding del contenitore padre */
 .mobile-nav-header {
-    background-color: #4a5568;
+    background-color: #4a5568; /* Grigio Scuro */
     color: white;
-    padding: 15px 15px; /* Riduciamo leggermente il padding laterale */
-    border-radius: 8px;
+    padding: 15px;
+    border-radius: 8px; /* Angoli arrotondati standard */
     
-    /* FLEXBOX CONFIG */
+    /* Layout Flexbox */
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Allinea tutto a sinistra di base */
-    gap: 10px; /* Spazio minimo tra pulsante e titolo */
+    justify-content: flex-start;
+    gap: 15px;
     
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    position: relative;
+    flex-shrink: 0; /* Impedisce alla barra di schiacciarsi */
+    margin-bottom: 20px; /* Spazio sotto la barra nella Home */
 }
 
-/* Pulsante Home (Azzurro) */
+/* Pulsante (Home / Indietro) */
 .header-button {
     background-color: #3498db;
     color: white;
-    padding: 8px 12px; /* Leggermente più compatto */
+    padding: 8px 12px;
     font-size: 0.9rem;
     font-weight: 500;
     border-radius: 5px;
     text-decoration: none;
+    border: none;
+    cursor: pointer;
+    
     display: flex; 
     align-items: center; 
     gap: 8px;
-    transition: background-color 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     
-    /* IMPORTANTE: Impedisce al pulsante di schiacciarsi */
-    flex-shrink: 0; 
-    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    flex-shrink: 0; /* Dimensione fissa */
+    transition: background-color 0.2s ease;
 }
 .header-button:hover { background-color: #2980b9; }
 
-/* Contenitore Centrale Titolo */
+/* Contenitore Titolo (Occupa tutto lo spazio centrale) */
 .title-container {
-    /* RESETPOSIZIONAMENTO ASSOLUTO (Rimuovi/Sovrascrivi le vecchie regole) */
-    position: static; 
-    transform: none;
-    left: auto;
-    width: auto;
-    
-    /* NUOVA LOGICA: Occupa tutto lo spazio rimanente */
-    flex-grow: 1; 
-    
-    /* Centra il contenuto all'interno dello spazio rimanente */
+    flex-grow: 1; /* Si espande */
     display: flex;
     flex-direction: column;
-    align-items: center;     /* Centra orizzontalmente */
-    justify-content: center; /* Centra verticalmente */
-    
-    /* Per sicurezza, evitiamo che il testo vada sopra il pulsante */
-    overflow: hidden; 
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Protezione */
 }
 
-.mobile-nav-header h1 { 
-    font-size: 1.4rem; /* Più grande */
+.mobile-nav-header h1, 
+.mobile-nav-header h2 { 
+    font-size: 1.3rem;
     margin: 0; 
-    color: #3498db; /* Blu come richiesto */
+    color: #3498db;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Leggera ombra per contrasto */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    white-space: nowrap;
 }
 
 .header-username {
     font-size: 0.85rem;
-    color: #a0aec0; /* Grigio chiaro */
+    color: #a0aec0;
     font-weight: 400;
     margin-top: 2px;
 }
 
-/* Badge a destra */
-.header-actions {
-    display: none; /* Nasconde "Ultimi 30gg" */
-}
-.header-actions span { 
-    font-size: 0.75rem; 
-    color: #fff; 
-    background-color: #2b6cb0; 
-    padding: 5px 10px; 
-    border-radius: 20px; 
-    font-weight: 600;
-}
-
-/* --- CONTENUTO SCROLLABILE (Timeline) --- */
+/* --- 3. TIMELINE (Lista Giorni) --- */
 .mobile-content-wrapper {
-    /* Rimosso il margin-top fisso perché l'header non è più fixed */
-    height: calc(100vh - 120px); /* Altezza viewport meno header e margini */
+    height: calc(100vh - 120px); /* Altezza calcolata per lo scroll */
     overflow-y: auto;
-    padding: 5px; 
+    padding: 5px;
     box-sizing: border-box;
     width: 100%;
-    
-    /* Scrollbar nascosta per pulizia */
-    scrollbar-width: none; 
+    scrollbar-width: none; /* Firefox */
 }
-.mobile-content-wrapper::-webkit-scrollbar { display: none; }
+.mobile-content-wrapper::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
 
-/* TIMELINE ROW (Card Giorno) */
 .timeline-row {
     background: rgba(255, 255, 255, 0.95);
     margin-bottom: 10px; 
     border-radius: 8px;
-    width: 100%; 
-    box-sizing: border-box;
     display: flex; 
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.08); 
@@ -136,24 +112,17 @@ body {
 }
 .timeline-row:active { transform: scale(0.99); }
 
-/* Stile Oggi */
+/* Stile Giorno Corrente (Più evidente) */
 .timeline-row.is-today {
-    /* Aumentiamo lo spostamento a destra (indentazione) */
-    transform: translateX(25px); 
-    
-    /* Riduciamo la larghezza per compensare lo spostamento ed evitare lo scroll orizzontale */
+    transform: translateX(25px);
     width: calc(100% - 25px);
-    
-    /* Rendiamo il bordo azzurro un po' più spesso */
-    border-left: 8px solid #3498db; 
-    
-    /* Ombra più marcata per staccarlo dallo sfondo */
+    border-left: 8px solid #3498db;
     box-shadow: 0 4px 15px rgba(52, 152, 219, 0.25);
-    
     background-color: #fff;
-    z-index: 5; /* Assicura che stia sopra agli altri elementi se vicini */
+    z-index: 5;
 }
 
+/* Indicatori Colore Status */
 .timeline-status-bar { width: 12px; flex-shrink: 0; }
 .status-red     { background-color: #e53e3e; }
 .status-yellow  { background-color: #ecc94b; }
@@ -164,225 +133,65 @@ body {
     flex-grow: 1; padding: 10px 20px;
     display: flex; justify-content: space-between; align-items: center;
 }
-
-.timeline-date { display: flex; flex-direction: column; }
 .day-number { font-size: 1.4rem; font-weight: 700; color: #2d3748; }
 .day-text { font-size: 0.9rem; color: #718096; text-transform: uppercase; font-weight: 500; }
-
 .timeline-hours {
     font-size: 1.3rem; font-weight: 700; color: #2d3748;
     background: #edf2f7; padding: 8px 16px; border-radius: 8px;
     min-width: 60px; text-align: center;
 }
 
-/* =================================================== */
-/* == MODALE DETTAGLIO (Fix Posizionamento)         == */
-/* =================================================== */
-
-/* --- Header del Modale Dettaglio (Stile Uniformato) --- */
-.mobile-header-secondary {
-    flex-shrink: 0;
-    padding: 15px 20px; 
-    height: auto; /* Lasciamo che si adatti al contenuto */
-    min-height: 60px;
-    
-    /* Stile Scuro uguale alla Home */
-    background-color: #4a5568; 
-    color: white;
-    border-bottom: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between;
-    position: relative; /* Per la centratura assoluta del titolo */
-    z-index: 10;
-}
-
-/* Titolo del Modale (La Data) */
-.mobile-header-secondary h2 { 
-    margin: 0; 
-    font-size: 1.2rem; 
-    color: #3498db; /* Blu come il titolo principale */
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-align: center;
-    
-    /* Centratura Assoluta */
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%; /* Evita che si sovrapponga ai pulsanti se il testo è lungo */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Pulsante Indietro (Stile Tasto Home) */
-.back-button {
-    background-color: #3498db; /* Azzurro */
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex; 
-    align-items: center; 
-    gap: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    z-index: 20; /* Sopra il titolo */
-    transition: background-color 0.2s;
-}
-
-.back-button:hover {
-    background-color: #2980b9;
-}
-
-.back-button:active {
-    transform: translateY(1px);
-}
-
-/* Rimuovi bordo superiore del form per continuità */
-.mobile-insert-form {
-    border-top: none; 
-}
-
 /* ========================================================== */
-/* == VISTA FULL SCREEN PER IL DETTAGLIO GIORNO (Mobile) == */
+/* == 4. VISTA DETTAGLIO (MODALE) - LOGICA RESPONSIVE      == */
 /* ========================================================== */
 
-/* Il contenitore esterno del modale diventa full screen */
-#dayDetailModal {
-    padding: 0 !important; /* Rimuove padding esterno */
-    background-color: #f4f7f9; /* Stesso sfondo del body per continuità */
-    align-items: flex-start; /* Allinea in alto invece che al centro */
-}
-
-/* Il contenuto interno occupa tutto lo spazio disponibile */
-#dayDetailModal .modal-content {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 0 !important; /* Niente angoli curvi */
-    margin: 0 !important;
-    box-shadow: none !important; /* Niente ombre, è una pagina piatta */
-    border: none;
-    
-    /* Layout Flex per gestire header fisso e corpo scrollabile */
-    display: flex;
-    flex-direction: column;
-}
-
-/* L'header diventa la barra di navigazione superiore */
-#dayDetailModal .modal-header {
-    background-color: #4a5568; /* Stesso colore dell'header principale */
-    color: white;
-    padding: 15px;
-    flex-shrink: 0; /* Non si rimpicciolisce */
-    border-radius: 0;
-    
-    /* Per posizionare il titolo al centro e il tasto indietro a sinistra */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* Il titolo nel modale (Data) */
-#dayDetailModal .modal-header h2 {
-    color: white !important; /* Forza bianco su sfondo scuro */
-    font-size: 1.1rem;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: auto;
-    margin: 0;
-}
-
-/* Il corpo del modale diventa l'area scrollabile */
-#dayDetailModal .modal-body {
-    flex-grow: 1;
-    overflow-y: auto; /* Abilita lo scroll solo qui dentro */
-    padding: 15px;
-    background-color: #f4f7f9;
-}
-
-/* Nascondiamo eventuali barre di scorrimento native per pulizia */
-#dayDetailModal .modal-body::-webkit-scrollbar {
-    display: none;
-}
-
-/* ========================================================== */
-/* == VISTA DETTAGLIO: RESPONSIVE (Desktop vs Mobile)      == */
-/* ========================================================== */
-
-/* --- COMPORTAMENTO BASE (Desktop / Tablet) --- */
+/* --- COMPORTAMENTO DESKTOP (Default) --- */
 .full-screen-page {
-    display: none;
+    display: none; /* Nascosto JS */
     position: fixed;
     z-index: 2000;
     
-    /* Centratura Finestra */
+    /* Centratura al centro dello schermo */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     
-    /* Dimensioni */
+    /* Dimensioni Finestra */
     width: 90%;
     max-width: 600px;
     height: 85vh;
     
-    background-color: #f4f7f9; /* Sfondo generale */
+    background-color: #f4f7f9;
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.25);
     
-    /* TRUCCO PER LO SPAZIO ATTORNO ALLA BARRA */
-    /* Questo padding crea lo spazio bianco tra i bordi della finestra e la barra del titolo */
-    padding: 20px; 
+    /* [IMPORTANTE] Questo Padding crea lo spazio bianco attorno alla barra del titolo */
+    padding: 20px;
     box-sizing: border-box;
 
-    /* Layout Flex verticale */
+    /* Layout Flex Verticale */
     flex-direction: column;
 }
 
-/* Stile Header Desktop (Stile "Capsula") */
+/* Sovrascrittura Header dentro il Modale Desktop */
 .full-screen-page .mobile-nav-header {
-    /* Si adatta alla larghezza disponibile (che è ridotta dal padding del genitore) */
-    width: auto; 
-    
-    /* Ripristina gli angoli arrotondati ovunque */
-    border-radius: 8px; 
-    
-    /* Stacca l'header dal contenuto sottostante */
-    margin-bottom: 15px; 
-    margin-top: 0;
-    
-    /* Assicuriamoci che non sia fisso */
-    position: relative;
-    top: auto; 
-    left: auto;
-    
-    /* Stile visivo */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 15px 20px;
-    cursor: default;
+    /* Rimuove il margine bottom perché qui gestiamo lo spazio diversamente */
+    margin-bottom: 0;
+    /* L'header eredita il border-radius base (8px) definito sopra */
 }
 
-/* Corpo scrollabile */
+/* Corpo scrollabile del Modale */
 .full-screen-page .mobile-content-wrapper {
     height: auto;
     flex-grow: 1;
-    /* Rimuoviamo padding extra qui perché c'è già quello del genitore */
-    padding: 0 5px; 
+    padding: 15px 5px; /* Spazio interno */
     overflow-y: auto;
 }
 
-/* --- COMPORTAMENTO MOBILE (Reset totale per Full Screen) --- */
+/* --- 5. COMPORTAMENTO MOBILE (Schermi < 768px) --- */
 @media (max-width: 768px) {
     .full-screen-page {
+        /* Occupa tutto lo schermo */
         top: 0;
         left: 0;
         transform: none;
@@ -390,21 +199,63 @@ body {
         height: 100vh;
         max-width: none;
         max-height: none;
+        
         border-radius: 0;
         box-shadow: none;
         
-        /* SU MOBILE TOGLIAMO LO SPAZIO */
-        padding: 0; 
+        /* [IMPORTANTE] Rimuoviamo il padding su mobile per attaccare la barra ai bordi */
+        padding: 0;
     }
 
     .full-screen-page .mobile-nav-header {
-        border-radius: 0; /* Barra piatta attaccata ai bordi */
-        margin-bottom: 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 15px;
+        border-radius: 0; /* Angoli quadrati */
+        margin: 0;
     }
     
     .full-screen-page .mobile-content-wrapper {
-        padding: 15px; /* Rimettiamo il padding interno su mobile */
+        padding: 15px; /* Ripristina padding contenuto */
     }
 }
+
+/* --- 6. ELEMENTI DEL FORM (CONDIVISI) --- */
+.mobile-insert-form {
+    margin-top: 20px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.mobile-insert-form h4 {
+    margin-top: 0; color: #4a5568; border-bottom: 1px solid #eee; padding-bottom: 10px;
+}
+.form-group.mobile-group {
+    margin-bottom: 15px;
+}
+.form-group.mobile-group label {
+    display: block; font-size: 0.85rem; color: #718096; margin-bottom: 5px; font-weight: 500;
+}
+.form-group.mobile-group select, 
+.form-group.mobile-group input {
+    width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+    background-color: #fff; box-sizing: border-box;
+}
+.form-row-split { display: flex; gap: 15px; }
+.hours-group { flex: 0 0 80px; }
+.note-group { flex-grow: 1; }
+
+.mobile-save-btn {
+    width: 100%; padding: 15px; background-color: #48bb78; color: white; font-weight: bold;
+    border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 10px;
+}
+
+/* Lista lavori esistenti */
+.work-item {
+    background: white; border-left: 4px solid #4299e1; padding: 10px 15px;
+    margin-bottom: 10px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.work-info strong { display: block; color: #2d3748; }
+.work-info span { font-size: 0.9em; color: #718096; }
+.work-actions { display: flex; align-items: center; gap: 10px; }
+.work-hours-badge { background: #edf2f7; padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.85em; }
+.delete-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; opacity: 0.6; }
