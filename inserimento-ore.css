@@ -320,62 +320,91 @@ body {
 /* ========================================================== */
 
 /* --- COMPORTAMENTO BASE (Desktop / Tablet) --- */
-/* Il modale appare come una scheda centrata e fluttuante */
 .full-screen-page {
-    display: none; /* Nascosto di default */
+    display: none;
     position: fixed;
     z-index: 2000;
     
-    /* Centratura perfetta */
+    /* Centratura Finestra */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     
-    /* Dimensioni finestra */
+    /* Dimensioni */
     width: 90%;
-    max-width: 600px; /* Non diventa mai più largo di così */
-    height: 85vh;     /* Occupa l'85% dell'altezza schermo */
+    max-width: 600px;
+    height: 85vh;
     
-    /* Stile finestra */
-    background-color: #f4f7f9;
+    background-color: #f4f7f9; /* Sfondo generale */
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.25); /* Ombra profonda per staccarlo dallo sfondo */
-    overflow: hidden; /* Assicura che i figli non escano dai bordi arrotondati */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
     
-    /* Layout interno */
+    /* TRUCCO PER LO SPAZIO ATTORNO ALLA BARRA */
+    /* Questo padding crea lo spazio bianco tra i bordi della finestra e la barra del titolo */
+    padding: 20px; 
+    box-sizing: border-box;
+
+    /* Layout Flex verticale */
     flex-direction: column;
 }
 
-/* Stile Header Desktop */
+/* Stile Header Desktop (Stile "Capsula") */
 .full-screen-page .mobile-nav-header {
-    border-radius: 0; /* L'arrotondamento lo gestisce il genitore */
-    margin: 0;
+    /* Si adatta alla larghezza disponibile (che è ridotta dal padding del genitore) */
+    width: auto; 
+    
+    /* Ripristina gli angoli arrotondati ovunque */
+    border-radius: 8px; 
+    
+    /* Stacca l'header dal contenuto sottostante */
+    margin-bottom: 15px; 
+    margin-top: 0;
+    
+    /* Assicuriamoci che non sia fisso */
+    position: relative;
+    top: auto; 
+    left: auto;
+    
+    /* Stile visivo */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     padding: 15px 20px;
-    cursor: default; /* Non sembra cliccabile/trascinabile */
+    cursor: default;
 }
 
 /* Corpo scrollabile */
 .full-screen-page .mobile-content-wrapper {
     height: auto;
     flex-grow: 1;
-    padding: 20px;
+    /* Rimuoviamo padding extra qui perché c'è già quello del genitore */
+    padding: 0 5px; 
     overflow-y: auto;
 }
 
-/* --- COMPORTAMENTO MOBILE (Schermi stretti < 768px) --- */
-/* Qui forziamo il full screen totale, sovrascrivendo le regole sopra */
+/* --- COMPORTAMENTO MOBILE (Reset totale per Full Screen) --- */
 @media (max-width: 768px) {
     .full-screen-page {
         top: 0;
         left: 0;
-        transform: none; /* Rimuove centratura */
-        
+        transform: none;
         width: 100vw;
-        height: 100vh; /* 100% altezza viewport mobile */
+        height: 100vh;
         max-width: none;
         max-height: none;
-        
-        border-radius: 0; /* Spigoli vivi su mobile */
+        border-radius: 0;
         box-shadow: none;
+        
+        /* SU MOBILE TOGLIAMO LO SPAZIO */
+        padding: 0; 
+    }
+
+    .full-screen-page .mobile-nav-header {
+        border-radius: 0; /* Barra piatta attaccata ai bordi */
+        margin-bottom: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 15px;
+    }
+    
+    .full-screen-page .mobile-content-wrapper {
+        padding: 15px; /* Rimettiamo il padding interno su mobile */
     }
 }
