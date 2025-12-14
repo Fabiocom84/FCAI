@@ -52,12 +52,14 @@ body {
     align-items: center;
     justify-content: center;
     
-    /* Trucco per centratura assoluta visiva */
+    /* Centratura Assoluta MODIFICATA */
     position: absolute;
-    left: 50%;
+    /* Prima era 50%. Lo portiamo al 58% per spostarlo a destra e non sovrapporlo al tasto Home */
+    left: 58%; 
     transform: translateX(-50%);
-    width: 100%;
-    pointer-events: none; /* Lascia cliccare i bottoni sotto se si sovrappongono */
+    width: auto; /* Lasciamo che la larghezza si adatti al contenuto */
+    min-width: 200px;
+    pointer-events: none;
 }
 
 .mobile-nav-header h1 { 
@@ -79,6 +81,7 @@ body {
 
 /* Badge a destra */
 .header-actions {
+    display: none; /* Nasconde "Ultimi 30gg" */
     z-index: 10;
 }
 .header-actions span { 
