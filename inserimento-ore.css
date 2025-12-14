@@ -138,12 +138,20 @@ body {
 
 /* Stile Oggi */
 .timeline-row.is-today {
-    transform: translateX(10px); /* Traslazione a destra */
-    width: calc(100% - 10px);
-    border-left: 6px solid #3498db; /* Azzurro */
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    /* Aumentiamo lo spostamento a destra (indentazione) */
+    transform: translateX(25px); 
+    
+    /* Riduciamo la larghezza per compensare lo spostamento ed evitare lo scroll orizzontale */
+    width: calc(100% - 25px);
+    
+    /* Rendiamo il bordo azzurro un po' più spesso */
+    border-left: 8px solid #3498db; 
+    
+    /* Ombra più marcata per staccarlo dallo sfondo */
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.25);
+    
     background-color: #fff;
-}
+    z-index: 5; /* Assicura che stia sopra agli altri elementi se vicini */
 
 .timeline-status-bar { width: 12px; flex-shrink: 0; }
 .status-red     { background-color: #e53e3e; }
