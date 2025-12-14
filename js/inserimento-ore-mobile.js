@@ -6,7 +6,7 @@ import { showModal } from './shared-ui.js';
 const MobileHoursApp = {
     state: {
         offset: 0,
-        limit: 30,
+        limit: 14,
         isLoading: false,
         isListFinished: false,
         currentDate: null,

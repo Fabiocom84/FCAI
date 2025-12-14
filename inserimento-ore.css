@@ -249,3 +249,68 @@ body {
 .mobile-insert-form {
     border-top: none; 
 }
+
+/* ========================================================== */
+/* == VISTA FULL SCREEN PER IL DETTAGLIO GIORNO (Mobile) == */
+/* ========================================================== */
+
+/* Il contenitore esterno del modale diventa full screen */
+#dayDetailModal {
+    padding: 0 !important; /* Rimuove padding esterno */
+    background-color: #f4f7f9; /* Stesso sfondo del body per continuità */
+    align-items: flex-start; /* Allinea in alto invece che al centro */
+}
+
+/* Il contenuto interno occupa tutto lo spazio disponibile */
+#dayDetailModal .modal-content {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important; /* Niente angoli curvi */
+    margin: 0 !important;
+    box-shadow: none !important; /* Niente ombre, è una pagina piatta */
+    border: none;
+    
+    /* Layout Flex per gestire header fisso e corpo scrollabile */
+    display: flex;
+    flex-direction: column;
+}
+
+/* L'header diventa la barra di navigazione superiore */
+#dayDetailModal .modal-header {
+    background-color: #4a5568; /* Stesso colore dell'header principale */
+    color: white;
+    padding: 15px;
+    flex-shrink: 0; /* Non si rimpicciolisce */
+    border-radius: 0;
+    
+    /* Per posizionare il titolo al centro e il tasto indietro a sinistra */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Il titolo nel modale (Data) */
+#dayDetailModal .modal-header h2 {
+    color: white !important; /* Forza bianco su sfondo scuro */
+    font-size: 1.1rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    margin: 0;
+}
+
+/* Il corpo del modale diventa l'area scrollabile */
+#dayDetailModal .modal-body {
+    flex-grow: 1;
+    overflow-y: auto; /* Abilita lo scroll solo qui dentro */
+    padding: 15px;
+    background-color: #f4f7f9;
+}
+
+/* Nascondiamo eventuali barre di scorrimento native per pulizia */
+#dayDetailModal .modal-body::-webkit-scrollbar {
+    display: none;
+}
