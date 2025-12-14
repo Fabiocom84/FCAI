@@ -141,8 +141,16 @@ const MobileHoursApp = {
     // --- DETTAGLIO GIORNO ---
     openDayDetail: function(day) {
         this.state.currentDate = day.full_date;
-        this.dom.dayDetailModal.style.display = 'flex';
+            
+        // Mostra la vista full screen
+        this.dom.dayDetailModal.style.display = 'flex'; // Importante: flex per gestire il layout verticale
+            
+        // Imposta Titolo Data
         document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${day.month_str}`;
+            
+        // --- NUOVO: Imposta Nome Utente (copia quello dell'header principale) ---
+        const mainUser = document.getElementById('headerUserName').textContent;
+        document.getElementById('detailUserName').textContent = mainUser;
         
         // Reset Form
         this.dom.form.reset();

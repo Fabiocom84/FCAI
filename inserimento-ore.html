@@ -36,64 +36,62 @@
 
     </div>
 
-    <!-- MODALE DETTAGLIO GIORNO -->
-    <div id="dayDetailModal" class="modal mobile-full-modal" style="display: none;">
-        <div class="modal-content mobile-content">
+    <!-- MODALE DETTAGLIO GIORNO (VISTA FULL SCREEN) -->
+    <div id="dayDetailModal" class="full-screen-page" style="display: none;">
+        
+        <!-- HEADER (Identico alla Home) -->
+        <header class="mobile-nav-header fixed-top">
+            <!-- Tasto Indietro -->
+            <button id="closeDetailBtn" class="header-button">
+                <img src="img/log-out.png" style="width:14px; filter: brightness(0) invert(1); transform: rotate(180deg);"> 
+                <span>Indietro</span>
+            </button>
             
-            <!-- HEADER AGGIORNATO -->
-            <div class="modal-header mobile-header-secondary">
-                <button class="back-button" id="closeDetailBtn">
-                    <span style="font-size: 1.2em; line-height: 0;">&#8249;</span> 
-                    <span>Indietro</span>
-                </button>
-                <h2 id="selectedDayTitle">DATA GIORNO</h2>
-                <div style="width: 80px;"></div> 
+            <!-- Titolo Centrale + Nome Utente -->
+            <div class="title-container">
+                <h1 id="selectedDayTitle" style="font-size: 1.2rem;">DATA</h1>
+                <span id="detailUserName" class="header-username">Utente</span>
             </div>
-            <div class="modal-body mobile-body">
-                <div id="existingWorksSection">
-                    <h4>Attività Registrate</h4>
-                    <div id="existingWorksList" class="existing-works-list"></div>
-                </div>
-                <div class="mobile-insert-form">
-                    <h4>Nuova Registrazione</h4>
-                    <form id="mobileHoursForm">
-                        <!-- 1. LIVELLO: COMMESSA -->
-                        <div class="form-group mobile-group">
-                            <label>Commessa *</label>
-                            <select id="mobileCommessaSelect" required>
-                                <option value="" disabled selected>Caricamento...</option>
-                            </select>
-                        </div>
+        </header>
 
-                        <!-- 2. LIVELLO: MACRO CATEGORIA (Nuovo) -->
-                        <div class="form-group mobile-group">
-                            <label>Reparto / Macro *</label>
-                            <select id="mobileMacroSelect" required disabled>
-                                <option value="" disabled selected>-- Seleziona prima Commessa --</option>
-                            </select>
+        <!-- CORPO SCROLLABILE -->
+        <div class="mobile-content-wrapper full-screen-body">
+            <div id="existingWorksSection">
+                <h4 style="margin-top: 0; padding-top: 15px;">Attività Registrate</h4>
+                <div id="existingWorksList" class="existing-works-list"></div>
+            </div>
+            
+            <div class="mobile-insert-form">
+                <h4>Nuova Registrazione</h4>
+                <form id="mobileHoursForm">
+                    <!-- 1. COMMESSA -->
+                    <div class="form-group mobile-group">
+                        <label>Commessa *</label>
+                        <select id="mobileCommessaSelect" required><option value="" disabled selected>Caricamento...</option></select>
+                    </div>
+                    <!-- 2. MACRO -->
+                    <div class="form-group mobile-group">
+                        <label>Reparto / Macro *</label>
+                        <select id="mobileMacroSelect" required disabled><option value="" disabled selected>-- Seleziona prima Commessa --</option></select>
+                    </div>
+                    <!-- 3. COMPONENTE -->
+                    <div class="form-group mobile-group">
+                        <label>Componente / Lavorazione *</label>
+                        <select id="mobileComponentSelect" required disabled><option value="" disabled selected>-- Seleziona prima Reparto --</option></select>
+                    </div>
+                    <!-- ORE E NOTE -->
+                    <div class="form-row-split">
+                        <div class="form-group mobile-group hours-group">
+                            <label>Ore *</label>
+                            <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24" placeholder="0.0" required>
                         </div>
-
-                        <!-- 3. LIVELLO: COMPONENTE / ATTIVITÀ -->
-                        <div class="form-group mobile-group">
-                            <label>Componente / Lavorazione *</label>
-                            <select id="mobileComponentSelect" required disabled>
-                                <option value="" disabled selected>-- Seleziona prima Reparto --</option>
-                            </select>
+                        <div class="form-group mobile-group note-group">
+                            <label>Note</label>
+                            <input type="text" id="mobileNoteInput" placeholder="Dettagli...">
                         </div>
-
-                        <div class="form-row-split">
-                            <div class="form-group mobile-group hours-group">
-                                <label>Ore *</label>
-                                <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24" placeholder="0.0" required>
-                            </div>
-                            <div class="form-group mobile-group note-group">
-                                <label>Note</label>
-                                <input type="text" id="mobileNoteInput" placeholder="Dettagli...">
-                            </div>
-                        </div>
-                        <button type="submit" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
-                    </form>
-                </div>
+                    </div>
+                    <button type="submit" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
+                </form>
             </div>
         </div>
     </div>
