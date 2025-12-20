@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.6 FINAL)
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.7 FINAL LAYOUT FIX)
    ========================================================================== */
 
 /* --- 1. RESET & GLOBALI --- */
@@ -134,12 +134,13 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
 .button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
 
-/* --- 4. FORM & INPUT --- */
+/* --- 4. FORM & INPUT (Globali) --- */
 .form-group, .form-section { margin-bottom: 5px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: left; }
 .form-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
 .form-section-header img { width: 24px; height: 24px; opacity: 0.7; }
 .form-section-header h3 { margin: 0; font-size: 1.1em; font-weight: 500; color: #333; }
 
+/* Regola globale (che aveva rotto la ricerca, fixata sotto) */
 input[type="text"], input[type="password"], input[type="file"], input[type="date"], input[type="number"], select, textarea {
     width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 6px;
     box-sizing: border-box; font-size: 1em; font-family: 'Roboto', sans-serif; color: #333;
@@ -231,7 +232,6 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 .logout-button-horizontal:hover { background: #e57373; transform: translateY(-2px); }
-/* FIX CRITICO: Dimensione icona logout */
 .logout-button-horizontal img { width: 18px; height: 18px; }
 .logout-button-horizontal span { font-size: 0.8em; font-weight: 500; }
 
@@ -260,32 +260,60 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
    AGGIUNTE SPECIFICHE MODALE COMMESSE (RIPRISTINO LAYOUT)
    ========================================================================== */
 
-/* Wrapper che contiene la griglia */
 #newOrderForm .form-fields-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spazio tra le righe */
+    gap: 15px; 
 }
 
-/* Griglia per due campi affiancati (es. VO e Rif Tecnico) */
 #newOrderForm .fields-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Due colonne uguali */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-/* Griglia per dettagli aggiuntivi (Provincia, Paese, Anno, Matricola) */
 #newOrderForm .additional-details-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Due colonne */
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
 }
 
-/* Forza i campi di testo nel modale commesse ad essere larghi e marcati */
 #newOrderForm input[type="text"],
 #newOrderForm input[type="number"] {
     font-weight: 700;
     width: 100%;
+}
+
+/* ==========================================================================
+   FIX LAYOUT PAGINE (Barra Ricerca Commesse)
+   ========================================================================== */
+
+/* Ripristina il layout orizzontale (Flexbox) per la barra di ricerca commesse */
+.search-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Annulla il width: 100% globale solo per questi input specifici */
+.search-sort-group input[type="text"],
+.search-sort-group select {
+    width: auto !important; 
+    min-width: 200px;
+    margin: 0;
+}
+
+.deep-search-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.deep-search-label input[type="checkbox"] {
+    width: auto !important;
+    margin: 0;
 }
 
 /* --- 7. RESPONSIVE --- */
@@ -296,6 +324,10 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     .modal { width: calc(100% - 20px); }
     h1 { margin-top: 50px; font-size: 1.8em; }
     .login-container { width: 90%; padding: 30px 25px; }
+    
+    /* Gestione barra ricerca su mobile */
+    .search-sort-group { flex-direction: column; align-items: stretch; }
+    .search-sort-group input[type="text"], .search-sort-group select { width: 100% !important; }
 }
 
 @media (max-width: 800px) {
