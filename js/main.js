@@ -85,10 +85,20 @@ function setupUI() {
         window.location.href = 'login.html';
     });
 
-    // Binding Modali Esistenti
-    document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
-    document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);   
-    document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
+    // Binding Modali Esistenti (Con preventDefault)
+    const bindModal = (btnId, openFn) => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openFn();
+            });
+        }
+    };
+
+    bindModal('openInsertDataModalBtn', openInsertDataModal);
+    bindModal('openChatModalBtn', openChatModal);
+    bindModal('openTrainingModalBtn', openTrainingModal);
 
     // Overlay Close
     if (modalOverlay) {
@@ -115,14 +125,38 @@ function setupUI() {
 function openInsertDataModal() {
     const m = document.getElementById('insertDataModal');
     const o = document.getElementById('modalOverlay');
-    if(m) { m.style.display = 'block'; o.style.display = 'block'; if(window.prepareInsertDataModal) window.prepareInsertDataModal(); }
+    if(m) { 
+        m.style.display = 'block'; 
+        o.style.display = 'block'; 
+        document.body.classList.add('modal-open');
+        if(window.prepareInsertDataModal) window.prepareInsertDataModal(); 
+    }
 }
 function closeInsertDataModal() {
     const m = document.getElementById('insertDataModal');
     const o = document.getElementById('modalOverlay');
-    if(m) m.style.display = 'none'; if(o) o.style.display = 'none'; if(window.cleanupInsertDataModal) window.cleanupInsertDataModal();
+    if(m) m.style.display = 'none'; 
+    if(o) o.style.display = 'none'; 
+    document.body.classList.remove('modal-open');
+    if(window.cleanupInsertDataModal) window.cleanupInsertDataModal();
 }
-function openChatModal() { document.getElementById('chatModal').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; }
-function closeChatModal() { document.getElementById('chatModal').style.display = 'none'; document.getElementById('modalOverlay').style.display = 'none'; }
-function openTrainingModal() { document.getElementById('trainingModal').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; }
-function closeTrainingModal() { document.getElementById('trainingModal').style.display = 'none'; document.getElementById('modalOverlay').style.display = 'none'; }
+function openChatModal() { 
+    document.getElementById('chatModal').style.display = 'block'; 
+    document.getElementById('modalOverlay').style.display = 'block'; 
+    document.body.classList.add('modal-open');
+}
+function closeChatModal() { 
+    document.getElementById('chatModal').style.display = 'none'; 
+    document.getElementById('modalOverlay').style.display = 'none'; 
+    document.body.classList.remove('modal-open');
+}
+function openTrainingModal() { 
+    document.getElementById('trainingModal').style.display = 'block'; 
+    document.getElementById('modalOverlay').style.display = 'block'; 
+    document.body.classList.add('modal-open');
+}
+function closeTrainingModal() { 
+    document.getElementById('trainingModal').style.display = 'none'; 
+    document.getElementById('modalOverlay').style.display = 'none'; 
+    document.body.classList.remove('modal-open');
+}
