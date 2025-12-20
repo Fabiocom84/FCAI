@@ -1,20 +1,37 @@
-/* inserisci-dati.css - Layout Definitivo */
+/* inserisci-dati.css - Layout Wide Fix */
 
-/* --- LAYOUT GENERALE --- */
-.insert-container {
-    width: 95%;
-    max-width: 1600px; /* Limite massimo per schermi giganti */
-    margin: 0 auto;
-    padding-bottom: 40px;
-    margin-top: 20px;
+/* --- 0. RESET CRITICO PER PAGINA FULL WIDTH --- */
+/* Sovrascrive il flex centrale di style-v2.css che schiacciava la pagina */
+body {
+    display: block !important; /* Torna al comportamento standard a blocchi */
+    overflow-y: auto; /* Abilita lo scroll normale */
 }
 
-/* Card Generica */
+/* Wrapper per coprire l'intera larghezza */
+.page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 40px;
+}
+
+/* --- 1. LAYOUT GENERALE --- */
+.insert-container {
+    /* Occupa quasi tutto lo schermo */
+    width: 96%;
+    max-width: 1800px; 
+    margin: 20px auto; /* Centrato orizzontalmente */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Card generica */
 .card-section {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border: 1px solid #e0e0e0;
     display: flex;
     flex-direction: column;
@@ -24,15 +41,15 @@
     margin: 0;
     font-size: 1rem;
     color: #4a5568;
-    font-weight: 600;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 15px;
 }
 
-/* --- SINISTRA: STRUMENTI --- */
+/* --- COLONNA SINISTRA (STRUMENTI) --- */
 .recording-ui {
     display: flex;
     flex-direction: column;
@@ -46,8 +63,10 @@
     font-size: 0.9em;
     margin: 0;
     min-height: 1.2em;
+    font-weight: 500;
 }
 
+/* Bottoni Voce */
 .voice-controls-stacked {
     display: flex;
     flex-direction: column;
@@ -88,11 +107,11 @@
 .audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
 .audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
-/* Allegati */
+/* Area Allegati */
 .file-drop-zone {
     border: 2px dashed #cbd5e0;
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -101,101 +120,79 @@
     cursor: pointer;
     transition: background 0.2s;
     text-align: center;
-    flex-grow: 1; /* Si espande per riempire la card */
-    min-height: 100px;
+    flex-grow: 1; 
     background-color: #fcfcfc;
+    min-height: 120px;
 }
 .file-drop-zone:hover { background-color: #f0f7ff; border-color: #3498db; }
 .drop-icon { font-size: 1.8em; }
 .drop-text strong { display: block; color: #2d3748; font-size: 0.9em; margin-bottom: 2px; }
 .file-name { color: #718096; font-size: 0.8em; word-break: break-all; }
 
-/* --- DESTRA: EDITOR --- */
+/* --- COLONNA DESTRA (EDITOR) --- */
 .editor-card {
     height: 100%;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box; /* Importante per l'altezza */
 }
 
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px; font-size: 0.85em; text-transform: uppercase; }
 
-.editor-group {
-    flex-grow: 1; /* La textarea prende tutto lo spazio rimanente */
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0;
-}
-
+/* Textarea Mobile */
 textarea#voiceTranscription {
     width: 100%;
-    flex-grow: 1; /* Espansione verticale */
-    min-height: 300px;
-    padding: 20px;
+    min-height: 250px;
+    padding: 15px;
     border: 1px solid #cbd5e0;
     border-radius: 8px;
     font-family: 'Roboto', sans-serif;
-    font-size: 1.1em;
+    font-size: 1.05em;
     line-height: 1.6;
     color: #2d3748;
-    resize: none; 
+    resize: vertical; 
     box-sizing: border-box;
+    flex-grow: 1; 
 }
 textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
 
-/* --- FOOTER --- */
-.form-actions-footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-}
+.commessa-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; }
 
+/* --- FOOTER --- */
+.form-actions-footer { margin-top: 5px; display: flex; justify-content: center; }
 .big-save-btn {
+    width: 100%;
     background-color: #28a745; color: white;
     font-size: 1em; font-weight: 700;
-    padding: 15px 40px; border: none; border-radius: 6px;
+    padding: 12px 20px; border: none; border-radius: 6px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
     transition: transform 0.2s, background-color 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
 .big-save-btn img { width: 18px; filter: invert(1); }
 
 
 /* ==========================================================================
-   LAYOUT RESPONSIVE (Griglia vs Flex)
+   DESKTOP VIEW (Layout Griglia Espansa)
    ========================================================================== */
 
-/* MOBILE (Default) */
-.columns-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-.left-panel { display: flex; flex-direction: column; gap: 20px; }
-.right-panel { display: flex; flex-direction: column; }
-.big-save-btn { width: 100%; } /* Bottone largo su mobile */
-
-
-/* DESKTOP (Larghezza > 900px) */
+/* Attiva il layout desktop prima (già dai tablet grandi) */
 @media (min-width: 900px) {
     
     .columns-wrapper {
         display: grid;
-        /* Colonna Sinistra fissa a 300px, Destra flessibile */
+        /* Colonna Sinistra fissa a 300px, Destra prende tutto il resto (1fr) */
         grid-template-columns: 300px 1fr; 
         gap: 25px;
-        /* Allinea l'altezza delle due colonne */
-        align-items: stretch;
+        align-items: stretch; /* Le colonne avranno la stessa altezza */
     }
 
-    /* Il pannello sinistro si comporta come colonna flessibile per distribuire i box */
+    /* Il pannello sinistro distribuisce i box */
     .left-panel {
         display: flex;
         flex-direction: column;
-        justify-content: space-between; /* Spinge i box agli estremi o usa gap */
         gap: 20px;
         height: 100%;
     }
@@ -203,10 +200,49 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
     .recording-section { flex: 0 0 auto; } /* Altezza naturale */
     
     .attachment-section { 
-        flex: 1; /* Riempie lo spazio verticale per allinearsi al fondo */
+        flex: 1; /* Si espande per riempire lo spazio fino in fondo */
         display: flex; 
         flex-direction: column; 
     }
+    
+    /* La drop zone riempie la card allegati */
+    .file-drop-zone {
+        flex-grow: 1;
+        justify-content: center;
+    }
 
-    .big-save-btn { width: auto; min-width: 250px; }
+    /* Il pannello destro (Editor) */
+    .right-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .editor-group {
+        flex-grow: 1; /* La textarea deve crescere */
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+    }
+
+    textarea#voiceTranscription {
+        height: 100%; /* Occupa tutto lo spazio del genitore */
+        min-height: 500px; /* Altezza minima importante per desktop */
+        font-size: 1.15em; /* Testo più grande e leggibile */
+        padding: 25px;
+    }
+
+    /* Footer allineato a destra */
+    .form-actions-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .big-save-btn {
+        width: auto;
+        min-width: 250px;
+        padding: 15px 40px;
+        font-size: 1.1em;
+    }
 }
