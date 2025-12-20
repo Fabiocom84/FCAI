@@ -1,311 +1,269 @@
-/* inserisci-dati.css */
+/* inserisci-dati.css - Refactored Layout */
 
-/* --- STILI BASE (MOBILE FIRST) --- */
-
-/* Contenitore principale */
+/* --- LAYOUT GENERALE --- */
 .insert-container {
     width: 100%;
-    max-width: 600px; /* Default stretto per mobile */
+    max-width: 1100px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding-bottom: 40px;
+    padding-bottom: 60px; /* Spazio per il footer */
 }
 
-/* Card generica per le sezioni */
+/* Griglia Desktop: 35% Sinistra, 65% Destra */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 25px;
+    align-items: start;
+}
+
+/* Card Stile Base */
 .card-section {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px; /* Margine per il mobile */
 }
 
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.section-header img {
-    width: 24px;
-    height: 24px;
-    opacity: 0.8;
-}
-
+/* Header delle sezioni */
 .section-header h3 {
     margin: 0;
     font-size: 1.1em;
-    color: #2c3e50;
+    color: #4a5568;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-/* --- SEZIONE REGISTRAZIONE --- */
-.recording-ui {
+/* --- COLONNA SINISTRA (STRUMENTI) --- */
+.input-column {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 10px 0;
+    gap: 20px;
 }
 
-.status-text {
-    font-size: 1em;
-    color: #666;
-    margin-bottom: 20px;
-    min-height: 1.2em;
-    font-weight: 500;
-    text-align: center;
-}
-
-.voice-controls-large {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-    justify-content: center;
-}
-
-.record-btn, .stop-btn {
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: none;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    flex: 1; /* Pulsanti uguali su mobile */
-}
-
-.record-btn {
-    background-color: #ffffff;
-    color: #28a745;
-    border: 2px solid #28a745;
-}
-.record-btn:hover:not(:disabled) {
-    background-color: #28a745;
-    color: white;
-    transform: translateY(-2px);
-}
-
-.stop-btn {
-    background-color: #ffffff;
-    color: #dc3545;
-    border: 2px solid #dc3545;
-}
-.stop-btn:hover:not(:disabled) {
-    background-color: #dc3545;
-    color: white;
-    transform: translateY(-2px);
-}
-
-.record-btn:disabled, .stop-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #f0f0f0;
-    border-color: #ccc;
-    color: #999;
-    box-shadow: none;
-    transform: none;
-}
-
-.icon { font-style: normal; }
-
-/* Visualizer */
+/* Visualizer Audio */
 .audio-visualizer {
     display: flex;
-    gap: 5px;
+    justify-content: center;
+    gap: 4px;
     height: 30px;
     align-items: flex-end;
     margin-bottom: 10px;
-    opacity: 0;
+    opacity: 0.2;
     transition: opacity 0.3s;
 }
 .audio-visualizer.active { opacity: 1; }
 .bar {
     width: 6px;
-    background-color: #e74c3c;
-    border-radius: 4px;
+    background-color: #28a745;
+    border-radius: 3px;
+    height: 5px;
+}
+.audio-visualizer.active .bar {
     animation: sound 0ms -800ms linear infinite alternate;
 }
-@keyframes sound { 0% { height: 5px; opacity: .5; } 100% { height: 100%; opacity: 1; } }
-.audio-visualizer.active .bar { animation-duration: 400ms; }
-.audio-visualizer.active .bar:nth-child(odd) { animation-duration: 474ms; }
-.audio-visualizer.active .bar:nth-child(even) { animation-duration: 433ms; }
+@keyframes sound { 0% { height: 5px; } 100% { height: 100%; } }
+.audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
+.audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
-
-/* --- SEZIONE CONTENUTO --- */
-.form-group {
+.status-text {
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
     margin-bottom: 15px;
+    font-weight: 500;
+    min-height: 1.2em;
+}
+
+/* Bottoni Voce Impilati */
+.voice-controls-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.record-btn, .stop-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.record-btn {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+.record-btn:hover:not(:disabled) {
+    background-color: #2e7d32;
+    color: white;
+}
+
+.stop-btn {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+.stop-btn:hover:not(:disabled) {
+    background-color: #c62828;
+    color: white;
+}
+
+.record-btn:disabled, .stop-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+    color: #aaa;
+    border-color: #ddd;
+}
+
+/* Area Allegati */
+.file-drop-zone {
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.file-drop-zone:hover {
+    background-color: #f7fafc;
+    border-color: #3498db;
+}
+.drop-icon { font-size: 1.8em; }
+.drop-text {
     display: flex;
     flex-direction: column;
 }
+.drop-text strong { color: #2d3748; font-size: 0.95em; }
+.file-name { color: #718096; font-size: 0.85em; word-break: break-all; }
+
+
+/* --- COLONNA DESTRA (EDITOR) --- */
+.editor-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.editor-card {
+    flex-grow: 1; /* Occupa tutta l'altezza disponibile */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .form-group label {
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: #555;
+    display: block;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
     font-size: 0.9em;
+}
+
+/* Input Select (Choices override) */
+.commessa-select-group .choices__inner {
+    background-color: #f8f9fa;
+    border: 1px solid #cbd5e0;
+    min-height: 45px;
+}
+
+/* Textarea stile "Foglio" */
+.editor-group {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 textarea#voiceTranscription {
     width: 100%;
-    min-height: 150px;
+    flex-grow: 1; /* Si espande per riempire la card */
+    min-height: 300px; /* Altezza minima decente */
     padding: 15px;
-    border: 1px solid #ccc;
+    border: 1px solid #cbd5e0;
     border-radius: 8px;
-    font-size: 1em;
     font-family: 'Roboto', sans-serif;
-    line-height: 1.5;
-    resize: vertical;
+    font-size: 1.05em;
+    line-height: 1.6;
+    color: #2d3748;
+    resize: none; /* Disabilita resize manuale per layout pulito */
     box-sizing: border-box;
 }
 textarea#voiceTranscription:focus {
-    border-color: #2A76B8;
-    box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.1);
     outline: none;
-}
-
-/* Choices Custom Override */
-.styled-choices-container .choices__inner {
-    background-color: #fff;
-    border-radius: 8px;
-    min-height: 45px;
-    display: flex;
-    align-items: center;
-}
-
-/* --- SEZIONE ALLEGATI --- */
-.file-drop-zone {
-    border: 2px dashed #b0b0b0;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    background-color: #fcfcfc;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-.file-drop-zone:hover {
     border-color: #3498db;
-    background-color: #f0f7ff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
-.drop-icon { font-size: 2em; }
-.file-name { font-weight: 500; color: #555; word-break: break-all; }
 
-/* --- FOOTER AZIONI --- */
-.form-actions {
+
+/* --- FOOTER (SALVA) --- */
+.form-actions-footer {
+    grid-column: 1 / -1;
     margin-top: 10px;
+    display: flex;
+    justify-content: flex-end; /* Pulsante a destra */
 }
+
 .big-save-btn {
-    width: 100%;
-    padding: 15px;
+    background-color: #28a745;
+    color: white;
     font-size: 1.1em;
     font-weight: 700;
+    padding: 15px 40px;
+    border: none;
     border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
-    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
 }
-.big-save-btn img { width: 20px; height: 20px; filter: invert(1); }
+.big-save-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+.big-save-btn img {
+    width: 20px;
+    filter: invert(1);
+}
 
 
-/* ============================================= */
-/* == STILI DESKTOP (Layout a 2 Colonne)      == */
-/* ============================================= */
-
-@media (min-width: 992px) {
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 900px) {
+    .layout-grid {
+        grid-template-columns: 1fr; /* Colonna singola */
+        gap: 15px;
+    }
     
-    /* Allarghiamo il contenitore */
-    .insert-container {
-        max-width: 1200px;
-        margin-top: 20px;
+    .input-column {
+        flex-direction: row; /* Su mobile mettiamo Mic e File affiancati se c'è spazio, o impilati */
+        flex-wrap: wrap;
     }
-
-    /* Trasformiamo il form in una griglia */
-    #insertDataForm {
-        display: grid;
-        grid-template-columns: 350px 1fr; /* Colonna SX fissa, DX flessibile */
-        grid-template-rows: auto auto 1fr; /* Righe adattive */
-        gap: 25px;
-        align-items: start;
-    }
-
-    /* COLONNA SINISTRA (Strumenti) */
     
-    /* 1. Registrazione in alto a sinistra */
-    .recording-section {
-        grid-column: 1;
-        grid-row: 1;
+    .input-column > .card-section {
+        flex: 1 1 300px; /* Minimo 300px larghezza */
+        margin-bottom: 0;
     }
 
-    /* 2. Allegati sotto la registrazione */
-    .attachment-section {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    /* COLONNA DESTRA (Area di lavoro) */
-    
-    /* 3. Contenuto (Testo) a tutta altezza */
-    .content-section {
-        grid-column: 2;
-        grid-row: 1 / span 2; /* Occupa l'altezza delle due card a sinistra */
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Fai espandere la textarea per riempire lo spazio vuoto */
-    .content-section .form-group:first-of-type {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
     textarea#voiceTranscription {
-        flex-grow: 1;
-        min-height: 400px; /* Altezza minima importante su desktop */
-        font-size: 1.1em; /* Testo leggermente più grande per leggibilità */
+        min-height: 200px; /* Meno alto su mobile */
     }
 
-    /* FOOTER */
-    .form-actions {
-        grid-column: 1 / -1; /* Occupa tutta la larghezza in basso */
-        grid-row: 3;
-        display: flex;
-        justify-content: flex-end; /* Allinea a destra */
-        padding-top: 10px;
-        border-top: 1px solid #e0e0e0;
-    }
-
-    .big-save-btn {
-        width: auto; /* Non più full width */
-        min-width: 250px;
-        padding: 15px 40px;
-        font-size: 1.2em;
-    }
-
-    /* Ritocchi estetici desktop */
-    .file-drop-zone {
-        flex-direction: column;
-        padding: 40px;
+    .form-actions-footer {
+        justify-content: center;
     }
     
-    .voice-controls-large {
-        flex-direction: row;
+    .big-save-btn {
+        width: 100%; /* Bottone largo su mobile */
     }
 }

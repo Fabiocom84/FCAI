@@ -14,84 +14,92 @@
 <body>
 
     <div class="page-wrapper">
-        <!-- Header standard coerente con le altre pagine -->
         <header class="page-header">
             <a href="index.html" class="header-button">
                 <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
                 <span>Home</span>
             </a>
             <h1>Inserimento Dati</h1>
-            <!-- Pulsante Aiuto -->
             <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
         </header>
 
         <div class="insert-container">
             <form id="insertDataForm">
                 
-                <!-- SEZIONE 1: REGISTRAZIONE VOCALE -->
-                <div class="card-section recording-section">
-                    <div class="section-header">
-                        <img src="img/mic.png" alt="Mic">
-                        <h3>Registrazione Vocale</h3>
-                    </div>
+                <!-- GRIGLIA PRINCIPALE -->
+                <div class="layout-grid">
                     
-                    <div class="recording-ui">
-                        <div id="visualizer" class="audio-visualizer">
-                            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                            <div class="bar"></div><div class="bar"></div>
-                        </div>
-                        <p id="recordingStatus" class="status-text">Pronto per registrare</p>
+                    <!-- COLONNA SINISTRA: INPUT (Strumenti) -->
+                    <div class="input-column">
                         
-                        <div class="voice-controls-large">
-                            <button type="button" id="startButton" class="record-btn">
-                                <span class="icon">🎙️</span> Avvia
-                            </button>
-                            <button type="button" id="stopButton" class="stop-btn" disabled>
-                                <span class="icon">⏹️</span> Ferma & Trascrivi
-                            </button>
+                        <!-- Card 1: Microfono -->
+                        <div class="card-section recording-section">
+                            <div class="section-header">
+                                <h3>🎤 Registrazione Vocale</h3>
+                            </div>
+                            <div class="recording-ui">
+                                <div id="visualizer" class="audio-visualizer">
+                                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                    <div class="bar"></div><div class="bar"></div>
+                                </div>
+                                <p id="recordingStatus" class="status-text">Pronto per registrare</p>
+                                
+                                <div class="voice-controls-stacked">
+                                    <button type="button" id="startButton" class="record-btn">
+                                        Avvia Registrazione
+                                    </button>
+                                    <button type="button" id="stopButton" class="stop-btn" disabled>
+                                        Ferma & Trascrivi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Allegati -->
+                        <div class="card-section attachment-section">
+                            <div class="section-header">
+                                <h3>📎 Allegati</h3>
+                            </div>
+                            <label for="fileUpload" class="file-drop-zone">
+                                <span class="drop-icon">📂</span>
+                                <div class="drop-text">
+                                    <strong>Carica un file</strong>
+                                    <span class="file-name">Nessun file selezionato</span>
+                                </div>
+                                <input type="file" id="fileUpload" name="fileUpload" hidden>
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <!-- COLONNA DESTRA: EDITOR (Risultato) -->
+                    <div class="editor-column">
+                        <div class="card-section editor-card">
+                            
+                            <!-- Selezione Commessa (Spostata in alto come "Oggetto") -->
+                            <div class="form-group styled-choices-container commessa-select-group">
+                                <label for="riferimentoDropdown">Riferimento Commessa</label>
+                                <select id="riferimentoDropdown" name="id_commessa_fk">
+                                    <option value="" selected>Nessuna associazione</option>
+                                </select>
+                            </div>
+
+                            <!-- Area di Testo -->
+                            <div class="form-group editor-group">
+                                <label for="voiceTranscription">Contenuto / Trascrizione</label>
+                                <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                            </div>
+
                         </div>
                     </div>
+
                 </div>
 
-                <!-- SEZIONE 2: TESTO E RIFERIMENTO -->
-                <div class="card-section content-section">
-                    <div class="section-header">
-                        <img src="img/chat.png" alt="Edit">
-                        <h3>Contenuto e Riferimento</h3>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="voiceTranscription">Note / Trascrizione</label>
-                        <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o digitato apparirà qui..."></textarea>
-                    </div>
-
-                    <div class="form-group styled-choices-container">
-                        <label for="riferimentoDropdown">Associa a Commessa (Opzionale)</label>
-                        <select id="riferimentoDropdown" name="id_commessa_fk">
-                            <option value="" selected>Nessuna associazione</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- SEZIONE 3: ALLEGATI -->
-                <div class="card-section attachment-section">
-                    <div class="section-header">
-                        <img src="img/file.png" alt="File">
-                        <h3>Allegati</h3>
-                    </div>
-                    
-                    <label for="fileUpload" class="file-drop-zone">
-                        <span class="drop-icon">📂</span>
-                        <span class="file-name">Clicca per caricare un file...</span>
-                        <input type="file" id="fileUpload" name="fileUpload" hidden>
-                    </label>
-                </div>
-
-                <!-- FOOTER AZIONI -->
-                <div class="form-actions">
-                    <button type="submit" id="saveDataBtn" class="button button--primary big-save-btn">
+                <!-- FOOTER: SALVATAGGIO -->
+                <div class="form-actions-footer">
+                    <button type="submit" id="saveDataBtn" class="big-save-btn">
                         <img src="img/save.png" alt="Save">
-                        <span>SALVA DATI</span>
+                        SALVA DATI NEL DATABASE
                     </button>
                 </div>
 
@@ -99,15 +107,7 @@
         </div>
     </div>
 
-    <!-- LEGENDA AIUTO -->
-    <div id="insertLegend" class="legend" style="display: none;">
-        <h3>Guida Inserimento</h3>
-        <div class="legend-item"><div class="legend-text"><strong>Vocale:</strong> Premi "Avvia" e parla. Premi "Ferma" per trascrivere automaticamente.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong>Testo:</strong> Puoi modificare manualmente la trascrizione o scrivere direttamente.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong>Salvataggio:</strong> I dati verranno salvati nella tabella 'Registrazioni'.</div></div>
-    </div>
-
-    <!-- Modale Feedback (riutilizziamo quello standard) -->
+    <!-- Modale Feedback -->
     <div id="success-feedback-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header"><h2 id="feedback-modal-title"></h2><div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div></div>
