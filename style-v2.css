@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.2 Final)
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.3 STABLE)
    ========================================================================== */
 
 /* --- 1. RESET & GLOBALI --- */
@@ -9,10 +9,9 @@ body {
     min-height: 100vh;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: relative; background-color: #f0f2f5;
-    overflow-x: hidden; /* Previene scroll orizzontale indesiderato */
+    overflow-x: hidden; 
 }
 
-/* Blocca lo scroll di sfondo quando un modale è aperto */
 body.modal-open { overflow: hidden; }
 
 body::before {
@@ -27,7 +26,6 @@ body::after {
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInModal { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
-@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
 
 h1 { font-weight: 700; font-size: 2.2em; color: #2A76B8; margin-bottom: 0; text-transform: uppercase; letter-spacing: 2px; }
 h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
@@ -38,7 +36,7 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
     width: 100%; max-width: 900px;
     margin: 0 auto; padding: 60px 20px;
     text-align: center; display: flex; flex-direction: column; gap: 25px;
-    box-sizing: border-box; /* Essenziale per il responsive */
+    box-sizing: border-box;
     animation: fadeIn 0.8s ease-out;
 }
 
@@ -68,7 +66,7 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
     gap: 15px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;
 }
 
-/* Stile Base Pulsante (Quadrato) */
+/* Stile Base Pulsante Dashboard (Quadrato) */
 .button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 15px 10px; text-align: center; text-decoration: none; color: white;
@@ -80,43 +78,47 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .button span { display: block; font-size: 1em; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
 
 /* Colori Pulsanti Dashboard */
-.insert-data-button { background-color: #2ecc71; } /* Verde */
+.insert-data-button { background-color: #2ecc71; }
 .insert-data-button:hover { background-color: #27ae60; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.chat-ai-button { background-color: #f1c40f; } /* Giallo */
+.chat-ai-button { background-color: #f1c40f; }
 .chat-ai-button:hover { background-color: #f39c12; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.commesse-button, .dashboard-button { background-color: #9b59b6; } /* Viola */
+.commesse-button, .dashboard-button { background-color: #9b59b6; }
 .commesse-button:hover, .dashboard-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.insert-orders-button { background-color: #e67e22; } /* Arancione */
+.insert-orders-button { background-color: #e67e22; }
 .insert-orders-button:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.insert-hours-button { background-color: #ff7f50; } /* Corallo */
+.insert-hours-button { background-color: #ff7f50; }
 .insert-hours-button:hover { background-color: #ff8c00; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.print-button { background-color: #00838F; } /* Ciano Scuro (Stampa) */
+.print-button { background-color: #00838F; }
 .print-button:hover { background-color: #006064; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.attendance-button, .orders-view-button { background-color: #3498db; } /* Blu */
+.attendance-button, .orders-view-button { background-color: #3498db; }
 .attendance-button:hover, .orders-view-button:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.agile-view-button, .manage-data-button, .config-button { background-color: #34495e; } /* Grigio Blu (Admin/Tools) */
+.agile-view-button, .manage-data-button, .config-button { background-color: #34495e; }
 .agile-view-button:hover, .manage-data-button:hover, .config-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.task-button { background-color: #00796B; } /* Verde Scuro */
+.task-button { background-color: #00796B; }
 .task-button:hover { background-color: #004D40; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Pulsante Training (Largo) - FIX ALLINEAMENTO */
+.placeholder-button { background-color: #e0e0e0; color: #999; cursor: default; border: 1px dashed #ccc; box-shadow: none; }
+.placeholder-button:hover { background-color: #e0e0e0; transform: none; box-shadow: none; }
+.placeholder-button img { filter: grayscale(100%); opacity: 0.4; }
+
+/* Pulsante Training (Largo) */
 .training-button {
     width: 100%; height: 60px;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     padding: 6px 10px; border-radius: 5px;
     font-weight: 500; text-decoration: none; color: white;
-    background-color: #8c96a3; /* Grigio originale */
+    background-color: #8c96a3; 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
-    box-sizing: border-box; /* CRUCIALE: Previene lo sbordo */
+    box-sizing: border-box; /* FIX: Previene sbordo laterale */
     margin-top: 5px;
 }
 .training-button:hover { background-color: #7a8491; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
@@ -174,15 +176,28 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 #newOrderModal .modal-header h2 { color: #6f42c1; }
 #insertHoursModal .modal-header h2 { color: #ff7f50; }
 
-/* Modali Specifici */
+/* FIX CONTROLLI VOCALI (Risolve problema immagini giganti) */
+.voice-controls-modern { display: flex; justify-content: center; gap: 15px; }
+.voice-controls-modern button { 
+    width: auto; height: auto; min-height: 40px; 
+    padding: 10px 20px; border-radius: 5px; 
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px; 
+    background: white; border: 1px solid #ccc; color: #333;
+}
+.voice-controls-modern button img { width: 18px; height: 18px; max-width: 18px; margin: 0; }
+
+#startButton { border-color: #28a745; color: #28a745; }
+#startButton:hover { background-color: #28a745; color: white; }
+#stopButton { border-color: #dc3545; color: #dc3545; }
+#stopButton:hover:not(:disabled) { background-color: #dc3545; color: white; }
+
+/* Chat UI */
 .chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 10px; height: 300px; overflow-y: auto; background: #fff; }
 .chat-message { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 0.9em; }
 .chat-message.user { align-self: flex-end; background: #dcf8c6; }
 .chat-message.ai { align-self: flex-start; background: #f1f0f0; }
-.voice-controls-modern { display: flex; justify-content: center; gap: 15px; }
-.voice-controls-modern button { padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-/* Custom Confirm Modal */
+/* Custom Modals */
 #custom-modal-overlay { z-index: 1000; background-color: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center; }
 .custom-modal { background: white; padding: 25px 30px; border-radius: 12px; max-width: 450px; text-align: center; }
 .custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
@@ -199,4 +214,65 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .modal-top-section { display: flex; gap: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
 .personnel-list-container { flex: 1.5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #f8f9fa; }
 #personnel-feedback-list { list-style: none; padding: 0; column-count: 3; column-gap: 15px; }
-.entry-count-badge { background: #2A76B8; color: white; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; visib
+.entry-count-badge { background: #2A76B8; color: white; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; visibility: hidden; }
+.entry-count-badge.visible { visibility: visible; }
+.insert-form-container-new { flex: 2; display: flex; flex-direction: column; justify-content: space-between; }
+.form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 15px; }
+.form-grid .form-group:nth-child(1) { grid-column: span 3; }
+.form-grid .form-group:nth-child(2) { grid-column: span 6; }
+.form-grid .form-group:nth-child(3) { grid-column: span 3; }
+.form-grid .form-group:nth-child(4) { grid-column: span 12; }
+.form-grid .form-group:nth-child(5) { grid-column: span 8; }
+.form-grid .form-group:nth-child(6) { grid-column: span 4; }
+#provisional-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+#provisional-table th, #provisional-table td { padding: 10px 12px; border-bottom: 1px solid #dee2e6; text-align: left; }
+.delete-row-btn img { width: 1.5em; height: 1.5em; }
+
+/* --- 6. UTILITY (Login, Help, Footer) --- */
+.login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
+.login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
+
+.logout-button-horizontal { background: #ef9a9a; color: white; padding: 6px 10px; border-radius: 5px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
+.logout-button-horizontal:hover { background: #e57373; }
+
+.help-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 1.1em; }
+
+.legend { position: absolute; top: 70px; right: 20px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; z-index: 100; display: none; text-align: left; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.legend-icon { width: 30px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center; padding: 4px; box-sizing: border-box; }
+.legend-icon img { max-width: 100%; max-height: 100%; }
+.legend-text { font-size: 0.9em; color: #555; }
+
+/* Utility Classes per Icone Legenda */
+.legend-icon.insert-data-button { background-color: #2ecc71; }
+.legend-icon.chat-ai-button { background-color: #f1c40f; }
+.legend-icon.commesse-button { background-color: #9b59b6; }
+.legend-icon.agile-view-button { background-color: #34495e; }
+.legend-icon.insert-hours-button { background-color: #ff7f50; }
+.legend-icon.print-button { background-color: #00838F; }
+.legend-icon.dashboard-button { background-color: #9b59b6; }
+.legend-icon.attendance-button { background-color: #3498db; }
+.legend-icon.config-button { background-color: #34495e; }
+
+.release-info { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; color: #777; text-align: center; padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5; }
+
+/* --- 7. RESPONSIVE --- */
+@media (max-width: 600px) {
+    .main-content-wrapper { padding: 60px 15px; }
+    .button-container { flex-direction: column; gap: 12px; }
+    .button, .training-button { width: 100%; max-width: 100%; flex-basis: auto; min-height: 70px; }
+    .modal { width: calc(100% - 20px); }
+    h1 { margin-top: 50px; font-size: 1.8em; }
+    .login-container { width: 90%; padding: 30px 25px; }
+}
+
+@media (max-width: 800px) {
+    #insertHoursModal .modal-top-section { flex-direction: column; height: auto; }
+    #insertHoursModal .personnel-list-container { display: none; }
+    #insertHoursModal .form-grid { grid-template-columns: 1fr; gap: 12px; }
+    #insertHoursModal .form-grid .form-group:nth-child(n) { grid-column: span 1; }
+    #insertHoursModal #provisional-table thead { display: none; }
+    #insertHoursModal #provisional-table tr { display: block; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 8px; }
+    #insertHoursModal #provisional-table td { display: flex; justify-content: flex-end; align-items: center; border: none; border-bottom: 1px dashed #eee; text-align: right; padding-left: 45%; position: relative; }
+    #insertHoursModal #provisional-table td::before { content: attr(data-label); position: absolute; left: 10px; width: 40%; text-align: left; font-weight: 500; }
+}
