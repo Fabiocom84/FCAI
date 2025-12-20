@@ -1,4 +1,4 @@
-/* inserisci-dati.css */
+/* inserisci-dati.css - Layout "Wide Screen" */
 
 /* --- STILI BASE (MOBILE FIRST) --- */
 .insert-container {
@@ -160,24 +160,25 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
 
 
 /* ==========================================================================
-   DESKTOP VIEW (Layout a Griglia Ottimizzato)
+   DESKTOP VIEW (Layout Wide Screen)
    ========================================================================== */
 
 @media (min-width: 992px) {
     
     .insert-container {
-        max-width: 1400px; /* Molto più largo */
+        /* CAMBIO CRUCIALE: Allarga al 95% della larghezza o max 1800px */
+        width: 95%;
+        max-width: 1800px;
         margin-top: 20px;
     }
 
     #insertDataForm {
         display: grid;
-        /* Colonna Sinistra fissa a 320px, Destra si prende tutto il resto */
-        grid-template-columns: 320px 1fr; 
-        /* Due righe automatiche: la destra si estenderà per coprirle entrambe */
+        /* Colonna Sinistra fissa un po' più larga (400px), Destra flessibile */
+        grid-template-columns: 400px 1fr; 
         grid-template-rows: auto 1fr auto; 
-        gap: 20px;
-        align-items: stretch; /* Forza altezza uguale */
+        gap: 30px; /* Aumentato il gap tra le colonne */
+        align-items: stretch;
     }
 
     /* --- COLONNA SINISTRA (Input Tools) --- */
@@ -193,16 +194,14 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
         flex-direction: column;
     }
     
-    /* Fa sì che la drop zone riempia la card */
     .attachment-section .file-drop-zone {
         flex-grow: 1; 
-        min-height: 120px; /* Altezza minima dignitosa */
+        min-height: 150px;
     }
 
     /* --- COLONNA DESTRA (Editor & Contesto) --- */
     .editor-column {
         grid-column: 2;
-        /* Spanna dalla riga 1 alla 2 (allineandosi al fondo della colonna sinistra) */
         grid-row: 1 / span 2; 
         height: 100%;
         display: flex;
@@ -210,40 +209,40 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
     }
 
     .editor-card {
-        height: 100%;        /* Occupa tutta l'altezza della griglia definita a sinistra */
+        height: 100%;        
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
 
-    /* Ordine visivo interno alla card di destra */
     .commessa-select-group {
-        flex-shrink: 0; /* Altezza fissa */
+        flex-shrink: 0;
     }
 
     .editor-group {
-        flex-grow: 1; /* Prende tutto lo spazio rimanente */
+        flex-grow: 1; 
         display: flex;
         flex-direction: column;
     }
 
     textarea#voiceTranscription {
-        flex-grow: 1; /* Si espande fino al fondo della card */
+        flex-grow: 1; 
         height: 100%;
-        font-size: 1.1em; /* Testo più grande su desktop */
-        padding: 20px;
+        /* Font leggermente più grande su schermi larghi */
+        font-size: 1.15em; 
+        padding: 25px;
     }
 
     /* --- FOOTER --- */
     .form-actions-footer {
-        grid-column: 2; /* Allineato solo sotto la colonna di destra */
+        grid-column: 2; 
         grid-row: 3;
-        justify-content: flex-end; /* Allineato a destra */
+        justify-content: flex-end; 
         margin-top: 0;
     }
 
     .big-save-btn {
         width: auto;
-        min-width: 200px;
+        min-width: 250px;
     }
 }
