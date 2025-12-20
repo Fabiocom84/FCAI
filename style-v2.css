@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.7 FINAL LAYOUT FIX)
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.9 LOGIN & LEGEND FIX)
    ========================================================================== */
 
 /* --- 1. RESET & GLOBALI --- */
@@ -134,13 +134,12 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
 .button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
 
-/* --- 4. FORM & INPUT (Globali) --- */
+/* --- 4. FORM & INPUT --- */
 .form-group, .form-section { margin-bottom: 5px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: left; }
 .form-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
 .form-section-header img { width: 24px; height: 24px; opacity: 0.7; }
 .form-section-header h3 { margin: 0; font-size: 1.1em; font-weight: 500; color: #333; }
 
-/* Regola globale (che aveva rotto la ricerca, fixata sotto) */
 input[type="text"], input[type="password"], input[type="file"], input[type="date"], input[type="number"], select, textarea {
     width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 6px;
     box-sizing: border-box; font-size: 1em; font-family: 'Roboto', sans-serif; color: #333;
@@ -169,12 +168,6 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .save-button { padding: 15px 20px; border: none; border-radius: 8px; background: #28a745; color: white; font-size: 1.1em; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; }
 .save-button:hover { background: #1e7e34; }
 .save-button img { width: 20px; filter: invert(1); }
-
-/* Header Colori Modali */
-#insertDataModal .modal-header h2 { color: #28a745; }
-#chatModal .modal-header h2 { color: #ffc107; }
-#newOrderModal .modal-header h2 { color: #6f42c1; }
-#insertHoursModal .modal-header h2 { color: #ff7f50; }
 
 /* FIX CONTROLLI VOCALI */
 .voice-controls-modern { display: flex; justify-content: center; gap: 15px; }
@@ -226,14 +219,15 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
 .login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
 
-/* FIX IMMAGINE GIGANTE LOGIN */
-.login-container img {
-    max-width: 100%; /* L'immagine non supererà mai la larghezza del box */
-    height: auto;    /* Mantiene le proporzioni */
-    margin-bottom: 20px; /* Spazio sotto l'immagine */
-    display: block;  /* Evita comportamenti inline strani */
-    margin-left: auto;
-    margin-right: auto;
+/* FIX IMMAGINE LOGIN */
+.login-container > img {
+    max-width: 100%; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;
+}
+
+/* FIX ICONA OCCHIO PASSWORD */
+.password-wrapper .toggle-password {
+    width: 20px !important; max-width: 20px !important; height: auto !important; margin: 0 !important;
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-block !important;
 }
 
 .logout-button-horizontal {
@@ -242,12 +236,19 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 .logout-button-horizontal:hover { background: #e57373; transform: translateY(-2px); }
-.logout-button-horizontal img { width: 18px; height: 18px; margin: 0; } /* Reset specifico per logout */
+.logout-button-horizontal img { width: 18px; height: 18px; margin: 0; }
 .logout-button-horizontal span { font-size: 0.8em; font-weight: 500; }
 
+/* Help Button & Legend */
 .help-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 1.1em; }
 
-.legend { position: absolute; top: 70px; right: 20px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; z-index: 100; display: none; text-align: left; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.legend { 
+    position: absolute; top: 80px; right: 20px; 
+    background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; 
+    z-index: 1000; /* Z-index elevato per sicurezza */
+    display: none; text-align: left; max-width: 350px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+}
 .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .legend-icon { width: 30px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center; padding: 4px; box-sizing: border-box; }
 .legend-icon img { max-width: 100%; max-height: 100%; }
@@ -267,64 +268,19 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .release-info { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; color: #777; text-align: center; padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5; }
 
 /* ==========================================================================
-   AGGIUNTE SPECIFICHE MODALE COMMESSE (RIPRISTINO LAYOUT)
+   LAYOUT PAGINE AGGIUNTIVE
    ========================================================================== */
 
-#newOrderForm .form-fields-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-}
+#newOrderForm .form-fields-wrapper { display: flex; flex-direction: column; gap: 15px; }
+#newOrderForm .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+#newOrderForm .additional-details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+#newOrderForm input[type="text"], #newOrderForm input[type="number"] { font-weight: 700; width: 100%; }
 
-#newOrderForm .fields-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-#newOrderForm .additional-details-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-#newOrderForm input[type="text"],
-#newOrderForm input[type="number"] {
-    font-weight: 700;
-    width: 100%;
-}
-
-/* ==========================================================================
-   FIX LAYOUT PAGINE (Barra Ricerca Commesse)
-   ========================================================================== */
-
-/* Ripristina il layout orizzontale (Flexbox) per la barra di ricerca commesse */
-.search-sort-group {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Annulla il width: 100% globale solo per questi input specifici */
-.search-sort-group input[type="text"],
-.search-sort-group select {
-    width: auto !important; 
-    min-width: 200px;
-    margin: 0;
-}
-
-.deep-search-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    white-space: nowrap;
-}
-
-.deep-search-label input[type="checkbox"] {
-    width: auto !important;
-    margin: 0;
-}
+/* FIX LAYOUT PAGINE (Barra Ricerca Commesse) */
+.search-sort-group { display: flex; align-items: center; gap: 15px; }
+.search-sort-group input[type="text"], .search-sort-group select { width: auto !important; min-width: 200px; margin: 0; }
+.deep-search-label { display: flex; align-items: center; gap: 5px; font-size: 0.9em; white-space: nowrap; }
+.deep-search-label input[type="checkbox"] { width: auto !important; margin: 0; }
 
 /* --- 7. RESPONSIVE --- */
 @media (max-width: 600px) {
@@ -335,7 +291,6 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     h1 { margin-top: 50px; font-size: 1.8em; }
     .login-container { width: 90%; padding: 30px 25px; }
     
-    /* Gestione barra ricerca su mobile */
     .search-sort-group { flex-direction: column; align-items: stretch; }
     .search-sort-group input[type="text"], .search-sort-group select { width: 100% !important; }
 }
