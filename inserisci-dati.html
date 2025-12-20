@@ -26,80 +26,70 @@
         <div class="insert-container">
             <form id="insertDataForm">
                 
-                <!-- GRIGLIA PRINCIPALE -->
-                <div class="layout-grid">
-                    
-                    <!-- COLONNA SINISTRA: INPUT (Strumenti) -->
-                    <div class="input-column">
+                <!-- Card 1: Registrazione (Sinistra Alto) -->
+                <div class="card-section recording-section">
+                    <div class="section-header">
+                        <h3>🎤 Registrazione Vocale</h3>
+                    </div>
+                    <div class="recording-ui">
+                        <div id="visualizer" class="audio-visualizer">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <p id="recordingStatus" class="status-text">Pronto per registrare</p>
                         
-                        <!-- Card 1: Microfono -->
-                        <div class="card-section recording-section">
-                            <div class="section-header">
-                                <h3>🎤 Registrazione Vocale</h3>
-                            </div>
-                            <div class="recording-ui">
-                                <div id="visualizer" class="audio-visualizer">
-                                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                                    <div class="bar"></div><div class="bar"></div>
-                                </div>
-                                <p id="recordingStatus" class="status-text">Pronto per registrare</p>
-                                
-                                <div class="voice-controls-stacked">
-                                    <button type="button" id="startButton" class="record-btn">
-                                        Avvia Registrazione
-                                    </button>
-                                    <button type="button" id="stopButton" class="stop-btn" disabled>
-                                        Ferma & Trascrivi
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Card 2: Allegati -->
-                        <div class="card-section attachment-section">
-                            <div class="section-header">
-                                <h3>📎 Allegati</h3>
-                            </div>
-                            <label for="fileUpload" class="file-drop-zone">
-                                <span class="drop-icon">📂</span>
-                                <div class="drop-text">
-                                    <strong>Carica un file</strong>
-                                    <span class="file-name">Nessun file selezionato</span>
-                                </div>
-                                <input type="file" id="fileUpload" name="fileUpload" hidden>
-                            </label>
-                        </div>
-
-                    </div>
-
-                    <!-- COLONNA DESTRA: EDITOR (Risultato) -->
-                    <div class="editor-column">
-                        <div class="card-section editor-card">
-                            
-                            <!-- Selezione Commessa (Spostata in alto come "Oggetto") -->
-                            <div class="form-group styled-choices-container commessa-select-group">
-                                <label for="riferimentoDropdown">Riferimento Commessa</label>
-                                <select id="riferimentoDropdown" name="id_commessa_fk">
-                                    <option value="" selected>Nessuna associazione</option>
-                                </select>
-                            </div>
-
-                            <!-- Area di Testo -->
-                            <div class="form-group editor-group">
-                                <label for="voiceTranscription">Contenuto / Trascrizione</label>
-                                <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
-                            </div>
-
+                        <div class="voice-controls-stacked">
+                            <button type="button" id="startButton" class="record-btn">
+                                Avvia Registrazione
+                            </button>
+                            <button type="button" id="stopButton" class="stop-btn" disabled>
+                                Ferma & Trascrivi
+                            </button>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- FOOTER: SALVATAGGIO -->
+                <!-- Card 2: Allegati (Sinistra Basso) -->
+                <div class="card-section attachment-section">
+                    <div class="section-header">
+                        <h3>📎 Allegati</h3>
+                    </div>
+                    <label for="fileUpload" class="file-drop-zone">
+                        <span class="drop-icon">📂</span>
+                        <div class="drop-text">
+                            <strong>Carica un file</strong>
+                            <span class="file-name">Nessun file selezionato</span>
+                        </div>
+                        <input type="file" id="fileUpload" name="fileUpload" hidden>
+                    </label>
+                </div>
+
+                <!-- Card 3: Editor (Colonna Destra - Tutta Altezza) -->
+                <div class="editor-column">
+                    <div class="card-section editor-card">
+                        
+                        <!-- 1. Scelta Commessa -->
+                        <div class="form-group commessa-select-group styled-choices-container">
+                            <label for="riferimentoDropdown">Riferimento Commessa</label>
+                            <select id="riferimentoDropdown" name="id_commessa_fk">
+                                <option value="" selected>Nessuna associazione</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. Area di Testo -->
+                        <div class="form-group editor-group">
+                            <label for="voiceTranscription">Contenuto / Trascrizione</label>
+                            <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Pulsante Salva (Posizionato via CSS Grid) -->
                 <div class="form-actions-footer">
                     <button type="submit" id="saveDataBtn" class="big-save-btn">
                         <img src="img/save.png" alt="Save">
-                        SALVA DATI NEL DATABASE
+                        SALVA DATI
                     </button>
                 </div>
 
@@ -117,7 +107,6 @@
     </div>
     <div id="modalOverlay" class="modal-overlay"></div>
 
-    <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/auth-guard.js"></script>

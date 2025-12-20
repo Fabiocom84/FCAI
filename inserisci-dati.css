@@ -1,32 +1,25 @@
-/* inserisci-dati.css - Refactored Layout */
+/* inserisci-dati.css */
 
-/* --- LAYOUT GENERALE --- */
+/* --- STILI BASE (MOBILE FIRST) --- */
 .insert-container {
     width: 100%;
-    max-width: 1100px;
+    max-width: 600px;
     margin: 0 auto;
-    padding-bottom: 60px; /* Spazio per il footer */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 40px;
 }
 
-/* Griglia Desktop: 35% Sinistra, 65% Destra */
-.layout-grid {
-    display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 25px;
-    align-items: start;
-}
-
-/* Card Stile Base */
+/* Card generica */
 .card-section {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border: 1px solid #e9ecef;
-    margin-bottom: 20px; /* Margine per il mobile */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0;
 }
 
-/* Header delle sezioni */
 .section-header h3 {
     margin: 0;
     font-size: 1.1em;
@@ -38,36 +31,12 @@
 }
 
 /* --- COLONNA SINISTRA (STRUMENTI) --- */
-.input-column {
+.recording-ui {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    align-items: center;
+    padding: 10px 0;
 }
-
-/* Visualizer Audio */
-.audio-visualizer {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    height: 30px;
-    align-items: flex-end;
-    margin-bottom: 10px;
-    opacity: 0.2;
-    transition: opacity 0.3s;
-}
-.audio-visualizer.active { opacity: 1; }
-.bar {
-    width: 6px;
-    background-color: #28a745;
-    border-radius: 3px;
-    height: 5px;
-}
-.audio-visualizer.active .bar {
-    animation: sound 0ms -800ms linear infinite alternate;
-}
-@keyframes sound { 0% { height: 5px; } 100% { height: 100%; } }
-.audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
-.audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
 .status-text {
     text-align: center;
@@ -78,11 +47,12 @@
     min-height: 1.2em;
 }
 
-/* Bottoni Voce Impilati */
+/* Bottoni Voce */
 .voice-controls-stacked {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .record-btn, .stop-btn {
@@ -94,74 +64,59 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.record-btn {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-}
-.record-btn:hover:not(:disabled) {
-    background-color: #2e7d32;
-    color: white;
-}
+.record-btn { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.record-btn:hover:not(:disabled) { background-color: #2e7d32; color: white; }
 
-.stop-btn {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #ffcdd2;
-}
-.stop-btn:hover:not(:disabled) {
-    background-color: #c62828;
-    color: white;
-}
+.stop-btn { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+.stop-btn:hover:not(:disabled) { background-color: #c62828; color: white; }
 
-.record-btn:disabled, .stop-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #f5f5f5;
-    color: #aaa;
-    border-color: #ddd;
+.record-btn:disabled, .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f5f5f5; color: #aaa; border-color: #ddd; }
+
+/* Visualizer */
+.audio-visualizer {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    height: 30px;
+    align-items: flex-end;
+    margin-bottom: 10px;
+    opacity: 0.2;
+    transition: opacity 0.3s;
 }
+.audio-visualizer.active { opacity: 1; }
+.bar { width: 6px; background-color: #28a745; border-radius: 3px; height: 5px; }
+.audio-visualizer.active .bar { animation: sound 0ms -800ms linear infinite alternate; }
+@keyframes sound { 0% { height: 5px; } 100% { height: 100%; } }
+.audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
+.audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
 /* Area Allegati */
 .file-drop-zone {
     border: 2px dashed #cbd5e0;
     border-radius: 8px;
-    padding: 20px;
+    padding: 30px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    gap: 10px;
     cursor: pointer;
     transition: background 0.2s;
+    text-align: center;
+    height: 100%; /* Si adatta all'altezza della card */
+    box-sizing: border-box;
 }
-.file-drop-zone:hover {
-    background-color: #f7fafc;
-    border-color: #3498db;
-}
-.drop-icon { font-size: 1.8em; }
-.drop-text {
-    display: flex;
-    flex-direction: column;
-}
-.drop-text strong { color: #2d3748; font-size: 0.95em; }
+.file-drop-zone:hover { background-color: #f7fafc; border-color: #3498db; }
+.drop-icon { font-size: 2em; }
 .file-name { color: #718096; font-size: 0.85em; word-break: break-all; }
 
-
 /* --- COLONNA DESTRA (EDITOR) --- */
-.editor-column {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.editor-card {
-    flex-grow: 1; /* Occupa tutta l'altezza disponibile */
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
 .form-group label {
     display: block;
     font-weight: 600;
@@ -170,24 +125,10 @@
     font-size: 0.9em;
 }
 
-/* Input Select (Choices override) */
-.commessa-select-group .choices__inner {
-    background-color: #f8f9fa;
-    border: 1px solid #cbd5e0;
-    min-height: 45px;
-}
-
-/* Textarea stile "Foglio" */
-.editor-group {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
+/* Textarea Mobile */
 textarea#voiceTranscription {
     width: 100%;
-    flex-grow: 1; /* Si espande per riempire la card */
-    min-height: 300px; /* Altezza minima decente */
+    min-height: 250px;
     padding: 15px;
     border: 1px solid #cbd5e0;
     border-radius: 8px;
@@ -195,75 +136,114 @@ textarea#voiceTranscription {
     font-size: 1.05em;
     line-height: 1.6;
     color: #2d3748;
-    resize: none; /* Disabilita resize manuale per layout pulito */
+    resize: none; 
     box-sizing: border-box;
 }
-textarea#voiceTranscription:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
+textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
 
+.commesse-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 45px; }
 
-/* --- FOOTER (SALVA) --- */
-.form-actions-footer {
-    grid-column: 1 / -1;
-    margin-top: 10px;
-    display: flex;
-    justify-content: flex-end; /* Pulsante a destra */
-}
-
+/* --- FOOTER --- */
+.form-actions-footer { margin-top: 10px; display: flex; justify-content: center; }
 .big-save-btn {
-    background-color: #28a745;
-    color: white;
-    font-size: 1.1em;
-    font-weight: 700;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 8px;
+    width: 100%;
+    background-color: #28a745; color: white;
+    font-size: 1.1em; font-weight: 700;
+    padding: 15px 40px; border: none; border-radius: 8px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
     transition: transform 0.2s, background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
 }
-.big-save-btn:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-}
-.big-save-btn img {
-    width: 20px;
-    filter: invert(1);
-}
+.big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
+.big-save-btn img { width: 20px; filter: invert(1); }
 
 
-/* --- RESPONSIVE MOBILE --- */
-@media (max-width: 900px) {
-    .layout-grid {
-        grid-template-columns: 1fr; /* Colonna singola */
-        gap: 15px;
+/* ==========================================================================
+   DESKTOP VIEW (Layout a Griglia Ottimizzato)
+   ========================================================================== */
+
+@media (min-width: 992px) {
+    
+    .insert-container {
+        max-width: 1400px; /* Molto più largo */
+        margin-top: 20px;
+    }
+
+    #insertDataForm {
+        display: grid;
+        /* Colonna Sinistra fissa a 320px, Destra si prende tutto il resto */
+        grid-template-columns: 320px 1fr; 
+        /* Due righe automatiche: la destra si estenderà per coprirle entrambe */
+        grid-template-rows: auto 1fr auto; 
+        gap: 20px;
+        align-items: stretch; /* Forza altezza uguale */
+    }
+
+    /* --- COLONNA SINISTRA (Input Tools) --- */
+    .recording-section {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .attachment-section {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
     }
     
-    .input-column {
-        flex-direction: row; /* Su mobile mettiamo Mic e File affiancati se c'è spazio, o impilati */
-        flex-wrap: wrap;
+    /* Fa sì che la drop zone riempia la card */
+    .attachment-section .file-drop-zone {
+        flex-grow: 1; 
+        min-height: 120px; /* Altezza minima dignitosa */
     }
-    
-    .input-column > .card-section {
-        flex: 1 1 300px; /* Minimo 300px larghezza */
-        margin-bottom: 0;
+
+    /* --- COLONNA DESTRA (Editor & Contesto) --- */
+    .editor-column {
+        grid-column: 2;
+        /* Spanna dalla riga 1 alla 2 (allineandosi al fondo della colonna sinistra) */
+        grid-row: 1 / span 2; 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .editor-card {
+        height: 100%;        /* Occupa tutta l'altezza della griglia definita a sinistra */
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Ordine visivo interno alla card di destra */
+    .commessa-select-group {
+        flex-shrink: 0; /* Altezza fissa */
+    }
+
+    .editor-group {
+        flex-grow: 1; /* Prende tutto lo spazio rimanente */
+        display: flex;
+        flex-direction: column;
     }
 
     textarea#voiceTranscription {
-        min-height: 200px; /* Meno alto su mobile */
+        flex-grow: 1; /* Si espande fino al fondo della card */
+        height: 100%;
+        font-size: 1.1em; /* Testo più grande su desktop */
+        padding: 20px;
     }
 
+    /* --- FOOTER --- */
     .form-actions-footer {
-        justify-content: center;
+        grid-column: 2; /* Allineato solo sotto la colonna di destra */
+        grid-row: 3;
+        justify-content: flex-end; /* Allineato a destra */
+        margin-top: 0;
     }
-    
+
     .big-save-btn {
-        width: 100%; /* Bottone largo su mobile */
+        width: auto;
+        min-width: 200px;
     }
 }
