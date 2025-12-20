@@ -140,7 +140,7 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .form-section-header img { width: 24px; height: 24px; opacity: 0.7; }
 .form-section-header h3 { margin: 0; font-size: 1.1em; font-weight: 500; color: #333; }
 
-input[type="text"], input[type="password"], input[type="file"], input[type="date"], input[type="number"], select, textarea {
+input[type="text"], input[type="password"], input[type="file"], input[type="email"], input[type="date"], input[type="number"], select, textarea {
     width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 6px;
     box-sizing: border-box; font-size: 1em; font-family: 'Roboto', sans-serif; color: #333;
     transition: border-color 0.3s;
@@ -216,18 +216,57 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .delete-row-btn img { width: 1.5em; height: 1.5em; }
 
 /* --- 6. UTILITY (Login, Help, Footer) --- */
-.login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
-.login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
-
-/* FIX IMMAGINE LOGIN */
-.login-container > img {
-    max-width: 100%; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;
+.login-container { 
+    background: rgba(255,255,255,0.95); 
+    padding: 40px; 
+    border-radius: 12px; 
+    width: 100%; 
+    max-width: 450px; 
+    text-align: center; 
 }
 
-/* FIX ICONA OCCHIO PASSWORD */
+.login-container .form-group {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.login-container button { 
+    width: 100%; 
+    padding: 14px; 
+    margin-top: 20px; 
+    background: #2A76B8; 
+    color: white; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1.2em; 
+    border: none; 
+}
+
+/* FIX POSIZIONAMENTO OCCHIO PASSWORD */
+.password-wrapper {
+    position: relative; /* Fondamentale per contenere l'occhio */
+    width: 100%;
+    display: block;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Lascia spazio al testo per non andare sotto l'icona */
+}
+
 .password-wrapper .toggle-password {
-    width: 20px !important; max-width: 20px !important; height: auto !important; margin: 0 !important;
-    position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-block !important;
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: auto;
+    cursor: pointer;
+    opacity: 0.6;
+    z-index: 5;
+    margin: 0;
 }
 
 .logout-button-horizontal {
