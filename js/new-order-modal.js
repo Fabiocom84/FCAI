@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nomeCommessaInput: document.getElementById('nome-commessa'),
         voInput: document.getElementById('vo-offerta'),
         rifTecnicoInput: document.getElementById('riferimento-tecnico'),
-        descrizioneInput: document.getElementById('descrizione-commessa'), // ID HTML
+        descrizioneInput: document.getElementById('descrizione-commessa'), 
         provinciaInput: document.getElementById('provincia-commessa'),
         paeseInput: document.getElementById('paese-commessa'),
         annoInput: document.getElementById('anno-commessa'),
@@ -67,10 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elements.modal) elements.modal.style.display = 'block';
         if (elements.overlay) elements.overlay.style.display = 'block';
-        if (elements.saveBtn) elements.saveBtn.disabled = true; // Disabilita tasto salva durante il caricamento
+        
+        // Blocca scroll body
+        document.body.classList.add('modal-open');
+
+        if (elements.saveBtn) elements.saveBtn.disabled = true; 
 
         try {
-            // 1. Carica le opzioni per le tendine (Clienti, Modelli, Status)
+            // 1. Carica le opzioni per le tendine
             const dropdownData = await loadAndPopulateDropdowns();
 
             if (isEditMode && commessaId) {
@@ -78,13 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.title.textContent = 'MODIFICA COMMESSA';
                 elements.saveBtnText.textContent = 'Salva Modifiche';
 
-                // 2. Recupera i dati della commessa specifica
                 const response = await apiFetch(`/api/commesse/${commessaId}`);
                 if (!response.ok) throw new Error('Impossibile recuperare i dati della commessa.');
                 
                 const commessaData = await response.json();
-                
-                // 3. Popola i campi del form
                 populateForm(commessaData);
 
             } else {
@@ -92,13 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.title.textContent = 'NUOVA COMMESSA';
                 elements.saveBtnText.textContent = 'Crea Commessa';
                 
-                // Imposta anno corrente
+                // Anno Corrente
                 if (elements.annoInput) elements.annoInput.value = new Date().getFullYear();
 
-                // Imposta default status "In Lavorazione"
-                const inLavorazioneStatus = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
-                if (inLavorazioneStatus && statusChoices) {
-                    statusChoices.setChoiceByValue(String(inLavorazioneStatus.id_status));
+                // IMPOSTA DEFAULT STATUS "In Lavorazione"
+                if (dropdownData && dropdownData.status) {
+                    const inLavorazione = dropdownData.status.find(s => s.nome_status === 'In Lavorazione');
+                    if (inLavorazione && statusChoices) {
+                        statusChoices.setChoiceByValue(String(inLavorazione.id_status));
+                    }
                 }
             }
 
@@ -114,13 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeAndCleanup() {
         if (elements.modal) elements.modal.style.display = 'none';
         if (elements.overlay) elements.overlay.style.display = 'none';
+        document.body.classList.remove('modal-open');
         resetFormVisuals();
     }
 
     function resetFormVisuals() {
         if (elements.form) elements.form.reset();
         
-        // Resetta i Choices (rimuove la selezione attiva ma mantiene le opzioni se non facciamo clearStore)
         if (clienteChoices) clienteChoices.removeActiveItems();
         if (modelloChoices) modelloChoices.removeActiveItems();
         if (statusChoices) statusChoices.removeActiveItems();
@@ -136,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemSelectText: '',
             noResultsText: 'Nessun risultato trovato',
             noChoicesText: 'Nessuna opzione disponibile',
-            shouldSort: false, // Mantiene l'ordine restituito dal server (spesso alfabetico)
+            shouldSort: false,
         };
 
         if (elements.clienteSelect) {
@@ -151,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadAndPopulateDropdowns() {
-        // Esegue le chiamate in parallelo per velocità
         const [clientiRes, modelliRes, statusRes] = await Promise.all([
             apiFetch('/api/simple/clienti'),
             apiFetch('/api/simple/modelli'),
@@ -162,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modelli = await modelliRes.json();
         const status = await statusRes.json();
 
-        // Popola le istanze di Choices
         updateChoicesOptions(clienteChoices, clienti, 'id_cliente', 'ragione_sociale');
         updateChoicesOptions(modelloChoices, modelli, 'id_modello', 'nome_modello');
         updateChoicesOptions(statusChoices, status, 'id_status', 'nome_status');
@@ -172,16 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateChoicesOptions(instance, data, valueKey, labelKey) {
         if (!instance) return;
-        
-        // Mappa i dati nel formato richiesto da Choices.js
         const choicesData = data.map(item => ({
-            value: String(item[valueKey]), // Converti ID in stringa per sicurezza
+            value: String(item[valueKey]), 
             label: item[labelKey],
             selected: false,
             disabled: false,
         }));
-
-        // Sostituisce tutte le opzioni esistenti
         instance.setChoices(choicesData, 'value', 'label', true);
     }
 
@@ -191,8 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.nomeCommessaInput) elements.nomeCommessaInput.value = data.impianto || '';
         if (elements.voInput) elements.voInput.value = data.vo || '';
         if (elements.rifTecnicoInput) elements.rifTecnicoInput.value = data.riferimento_tecnico || '';
-        
-        // CORREZIONE FONDAMENTALE: Mappa 'data.note' (dal DB) dentro l'input descrizione (HTML)
         if (elements.descrizioneInput) elements.descrizioneInput.value = data.note || '';
         
         if (elements.provinciaInput) elements.provinciaInput.value = data.provincia || '';
@@ -200,9 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.annoInput) elements.annoInput.value = data.anno || '';
         if (elements.matricolaInput) elements.matricolaInput.value = data.matricola || '';
         
-        // Gestione nome file immagine
         if (elements.fileNameDisplay && data.immagine) {
-            // Estrae il nome del file dall'URL completo
             try {
                 const urlParts = data.immagine.split('/');
                 elements.fileNameDisplay.textContent = urlParts[urlParts.length - 1];
@@ -211,17 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Imposta i valori delle select Choices
-        // Nota: i valori devono essere stringhe perché in updateChoicesOptions li abbiamo convertiti in stringhe
-        if (clienteChoices && data.id_cliente_fk) {
-            clienteChoices.setChoiceByValue(String(data.id_cliente_fk));
-        }
-        if (modelloChoices && data.id_modello_fk) {
-            modelloChoices.setChoiceByValue(String(data.id_modello_fk));
-        }
-        if (statusChoices && data.id_status_fk) {
-            statusChoices.setChoiceByValue(String(data.id_status_fk));
-        }
+        if (clienteChoices && data.id_cliente_fk) clienteChoices.setChoiceByValue(String(data.id_cliente_fk));
+        if (modelloChoices && data.id_modello_fk) modelloChoices.setChoiceByValue(String(data.id_modello_fk));
+        if (statusChoices && data.id_status_fk) statusChoices.setChoiceByValue(String(data.id_status_fk));
     }
 
     // --- SALVATAGGIO ---
@@ -229,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function saveOrder(event) {
         event.preventDefault();
 
-        // Validazione HTML5 standard
         if (!elements.form.checkValidity()) {
             elements.form.reportValidity();
             return;
@@ -249,23 +233,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.error || 'Errore durante il salvataggio.');
             }
             
-            // Aggiorna la vista principale se la funzione esiste
             if (window.refreshCommesseView) {
                 window.refreshCommesseView();
             }
 
             closeAndCleanup();
             
-            // Mostra feedback positivo
-            // Nota: showSuccessFeedbackModal è in shared-ui.js, usiamo showModal per consistenza o quello se importato
-            // Se showSuccessFeedbackModal non è importato qui, usiamo showModal
             await showModal({ title: 'Successo', message: 'Commessa salvata correttamente!', confirmText: 'OK' });
 
         } catch (error) {
             console.error("Errore salvataggio:", error);
             let msg = error.message;
             if (msg.includes('id_cliente_fk')) msg = 'Seleziona un cliente valido.';
-            if (msg.includes('id_modello_fk')) msg = 'Seleziona un modello valido.';
             
             showModal({ title: 'Errore Salvataggio', message: msg, confirmText: 'OK' });
         } finally {
@@ -273,12 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- FORMATTERS & UTILITY ---
+    // --- FORMATTERS ---
 
     function formatVO(event) {
-        let value = event.target.value.replace(/[^0-9]/g, ''); // Solo numeri
-        if (value.length > 6) value = value.substring(0, 6); // Max 6 cifre totali (2+4)
-        
+        let value = event.target.value.replace(/[^0-9]/g, ''); 
+        if (value.length > 6) value = value.substring(0, 6); 
         if (value.length > 2) {
             value = value.substring(0, 2) + '-' + value.substring(2);
         }
@@ -287,8 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function formatRifTecnico(event) {
         let value = event.target.value.toUpperCase();
-        // Permette solo lettera iniziale + numeri
-        // Logica semplificata: forza prima lettera char, resto numeri
         if (value.length > 0) {
             const charPart = value.charAt(0).replace(/[^A-Z]/g, '');
             const numPart = value.substring(1).replace(/[^0-9]/g, '');
