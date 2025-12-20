@@ -15,7 +15,6 @@
 
     <div class="page-wrapper">
         <header class="page-header">
-            <!-- Contenitore interno per allineare il contenuto con il body -->
             <div class="header-content-wrapper">
                 <a href="index.html" class="header-button">
                     <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
@@ -31,10 +30,10 @@
                 
                 <div class="columns-wrapper">
                     
-                    <!-- COLONNA SINISTRA: STRUMENTI (Mic in alto, File in basso) -->
+                    <!-- COLONNA SINISTRA -->
                     <div class="left-panel">
                         
-                        <!-- Box Vocale -->
+                        <!-- Box 1: Vocale -->
                         <div class="card-section recording-section">
                             <div class="section-header">
                                 <h3>🎤 Registrazione Vocale</h3>
@@ -57,22 +56,29 @@
                             </div>
                         </div>
 
-                        <!-- Pulsante Allegati (Compatto e in fondo) -->
-                        <div class="card-section attachment-section-compact">
-                            <label for="fileUpload" class="file-btn-compact">
+                        <!-- Box 2: Allegati (RIPRISTINATA PALETTA COMPLETA) -->
+                        <div class="card-section attachment-section">
+                            <div class="section-header">
+                                <h3>📎 Allegati</h3>
+                            </div>
+                            <!-- L'area di drop ora riempirà questo spazio -->
+                            <label for="fileUpload" class="file-drop-zone-expanded">
                                 <span class="drop-icon">📂</span>
-                                <span class="file-name">Carica un file (Opzionale)</span>
+                                <div class="drop-text">
+                                    <strong>Carica un file</strong>
+                                    <span class="file-name">Nessun file selezionato</span>
+                                </div>
                                 <input type="file" id="fileUpload" name="fileUpload" hidden>
                             </label>
                         </div>
 
                     </div> <!-- Fine Left Panel -->
 
-                    <!-- COLONNA DESTRA: CONTESTO + EDITOR + SALVA -->
+                    <!-- COLONNA DESTRA -->
                     <div class="right-panel">
                         <div class="card-section editor-card">
                             
-                            <!-- 1. Scelta Commessa -->
+                            <!-- Scelta Commessa -->
                             <div class="form-group styled-choices-container commessa-select-group">
                                 <label for="riferimentoDropdown">Riferimento Commessa</label>
                                 <select id="riferimentoDropdown" name="id_commessa_fk">
@@ -80,13 +86,13 @@
                                 </select>
                             </div>
 
-                            <!-- 2. Area di Testo (Si espande) -->
+                            <!-- Area di Testo -->
                             <div class="form-group editor-group">
                                 <label for="voiceTranscription">Contenuto / Trascrizione</label>
                                 <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
                             </div>
 
-                            <!-- 3. Pulsante Salva (Integrato qui per allineamento) -->
+                            <!-- Pulsante Salva -->
                             <div class="save-btn-container">
                                 <button type="submit" id="saveDataBtn" class="big-save-btn">
                                     <img src="img/save.png" alt="Save">

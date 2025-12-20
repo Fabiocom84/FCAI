@@ -1,119 +1,50 @@
-/* inserisci-dati.css - Layout Allineato e Pulito */
+/* inserisci-dati.css - Layout Bilanciato */
 
 /* --- 0. RESET & STRUTTURA --- */
-body {
-    display: block !important;
-    overflow-y: auto;
-}
+body { display: block !important; overflow-y: auto; }
+.page-wrapper { width: 100%; min-height: 100vh; box-sizing: border-box; padding-bottom: 40px; }
 
-.page-wrapper {
-    width: 100%;
-    min-height: 100vh;
-    box-sizing: border-box;
-    padding-bottom: 40px;
-}
-
-/* --- 1. HEADER ALLINEATO --- */
-/* Questo wrapper interno replica le dimensioni del contenitore principale */
-.header-content-wrapper {
-    width: 95%;
-    max-width: 1800px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.page-header {
-    /* Rimuoviamo il padding laterale standard perché usiamo il wrapper interno */
-    padding: 15px 0; 
-    display: flex;
-    justify-content: center;
-}
+/* --- 1. HEADER --- */
+.header-content-wrapper { width: 95%; max-width: 1800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.page-header { padding: 15px 0; display: flex; justify-content: center; }
 
 /* --- 2. CONTENITORE PRINCIPALE --- */
 .insert-container {
-    width: 95%;
-    max-width: 1800px;
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    width: 95%; max-width: 1800px; margin: 20px auto;
+    display: flex; flex-direction: column; gap: 20px;
 }
 
 /* Card generica */
 .card-section {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;
+    display: flex; flex-direction: column;
 }
 
 .section-header h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #4a5568;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #f0f0f0;
-    margin-bottom: 15px;
+    margin: 0; font-size: 1rem; color: #4a5568; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; margin-bottom: 15px;
 }
 
 /* --- COLONNA SINISTRA: REGISTRAZIONE --- */
-.recording-ui {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.status-text {
-    text-align: center;
-    color: #666;
-    font-size: 0.9em;
-    margin: 0;
-    min-height: 1.2em;
-    font-weight: 500;
-}
-
-.voice-controls-stacked {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-}
+.recording-ui { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+.status-text { text-align: center; color: #666; font-size: 0.9em; margin: 0; min-height: 1.2em; font-weight: 500; }
+.voice-controls-stacked { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 
 .record-btn, .stop-btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    border: none;
-    font-size: 0.95em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%; padding: 12px; border-radius: 6px; border: none;
+    font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
 }
-
 .record-btn { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
 .record-btn:hover:not(:disabled) { background-color: #2e7d32; color: white; }
-
 .stop-btn { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 .stop-btn:hover:not(:disabled) { background-color: #c62828; color: white; }
-
 .record-btn:disabled, .stop-btn:disabled { opacity: 0.6; cursor: not-allowed; background-color: #f5f5f5; color: #aaa; border-color: #ddd; }
 
 /* Visualizer */
-.audio-visualizer {
-    display: flex; justify-content: center; gap: 4px; height: 25px; align-items: flex-end; opacity: 0.3; transition: opacity 0.3s;
-}
+.audio-visualizer { display: flex; justify-content: center; gap: 4px; height: 25px; align-items: flex-end; opacity: 0.3; transition: opacity 0.3s; }
 .audio-visualizer.active { opacity: 1; }
 .bar { width: 5px; background-color: #28a745; border-radius: 2px; height: 4px; }
 .audio-visualizer.active .bar { animation: sound 0ms -800ms linear infinite alternate; }
@@ -121,106 +52,45 @@ body {
 .audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
 .audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
-/* --- COLONNA SINISTRA: FILE (Compatto) --- */
-/* Rimuoviamo l'header per il file, lo rendiamo solo un pulsante */
-.attachment-section-compact {
-    padding: 0; 
-    border: none; 
-    background: transparent;
-    box-shadow: none;
-    margin-top: auto; /* Spinge verso il basso se c'è spazio */
-}
-
-.file-btn-compact {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 15px;
-    background-color: white;
-    border: 2px dashed #cbd5e0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+/* --- COLONNA SINISTRA: ALLEGATI (Espansa) --- */
+/* Stile per l'area di drop che deve riempire la card */
+.file-drop-zone-expanded {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; cursor: pointer; text-align: center;
+    border: 2px dashed #cbd5e0; border-radius: 8px;
+    background-color: #fcfcfc;
+    transition: background 0.2s;
+    padding: 20px;
+    height: 100%; /* Occupa tutta l'altezza disponibile */
     box-sizing: border-box;
 }
-
-.file-btn-compact:hover {
-    border-color: #3498db;
-    background-color: #f0f7ff;
-}
-
-.drop-icon { font-size: 1.4em; }
-.file-name { 
-    color: #4a5568; 
-    font-weight: 500; 
-    font-size: 0.95em; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-}
+.file-drop-zone-expanded:hover { background-color: #f0f7ff; border-color: #3498db; }
+.drop-icon { font-size: 2em; }
+.drop-text strong { display: block; color: #2d3748; font-size: 0.9em; margin-bottom: 2px; }
+.file-name { color: #718096; font-size: 0.8em; word-break: break-all; }
 
 /* --- COLONNA DESTRA: EDITOR E SALVA --- */
-.editor-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    /* Un unico box bianco per tutto */
-}
-
+.editor-card { height: 100%; display: flex; flex-direction: column; box-sizing: border-box; }
 .form-group { margin-bottom: 15px; }
-.form-group label { 
-    display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px; font-size: 0.85em; text-transform: uppercase; 
-}
+.form-group label { display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px; font-size: 0.85em; text-transform: uppercase; }
+.commessa-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; }
 
-.commessa-select-group .choices__inner { 
-    background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; 
-}
-
-/* Textarea che riempie lo spazio */
-.editor-group {
-    flex-grow: 1; /* Prende tutto lo spazio verticale disponibile */
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px; /* Spazio prima del bottone salva */
-}
-
+/* Textarea */
+.editor-group { flex-grow: 1; display: flex; flex-direction: column; margin-bottom: 20px; }
 textarea#voiceTranscription {
-    width: 100%;
-    flex-grow: 1;
-    min-height: 250px;
-    padding: 20px;
-    border: 1px solid #cbd5e0;
-    border-radius: 8px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 1.1em;
-    line-height: 1.6;
-    color: #2d3748;
-    resize: none; 
-    box-sizing: border-box;
+    width: 100%; flex-grow: 1; min-height: 250px; padding: 20px;
+    border: 1px solid #cbd5e0; border-radius: 8px;
+    font-family: 'Roboto', sans-serif; font-size: 1.1em; line-height: 1.6; color: #2d3748;
+    resize: none; box-sizing: border-box;
 }
-textarea#voiceTranscription:focus { 
-    outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); 
-}
+textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
 
 /* Pulsante Salva */
-.save-btn-container {
-    margin-top: auto; /* Assicura che stia in fondo */
-}
-
+.save-btn-container { margin-top: auto; }
 .big-save-btn {
-    width: 100%;
-    background-color: #28a745; 
-    color: white;
-    font-size: 1.1em; font-weight: 700;
-    padding: 15px; 
-    border: none; border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
-    transition: transform 0.2s, background-color 0.2s;
+    width: 100%; background-color: #28a745; color: white; font-size: 1.1em; font-weight: 700;
+    padding: 15px; border: none; border-radius: 8px; cursor: pointer;
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3); transition: transform 0.2s, background-color 0.2s;
     display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
@@ -228,60 +98,52 @@ textarea#voiceTranscription:focus {
 
 
 /* ==========================================================================
-   LAYOUT GRID RESPONSIVE
+   LAYOUT GRID RESPONSIVE (Bilanciamento Altezze)
    ========================================================================== */
 
 /* MOBILE (Default) */
-.columns-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+.columns-wrapper { display: flex; flex-direction: column; gap: 20px; }
 .left-panel { display: flex; flex-direction: column; gap: 20px; }
-/* Su mobile il salva è già largo 100% e sotto la textarea */
-
+.attachment-section { min-height: 150px; } /* Altezza fissa minima su mobile */
 
 /* DESKTOP (Larghezza > 900px) */
 @media (min-width: 900px) {
     
     .columns-wrapper {
         display: grid;
-        /* Colonna Sinistra fissa a 320px, Destra flessibile */
-        grid-template-columns: 320px 1fr; 
+        /* Colonna Sinistra 300px, Destra resto */
+        grid-template-columns: 300px 1fr; 
         gap: 25px;
-        align-items: stretch; /* Forza altezza uguale per le due colonne */
+        align-items: stretch; /* Stira le colonne alla stessa altezza */
     }
 
-    /* Il pannello sinistro distribuisce i box agli estremi verticali */
     .left-panel {
         display: flex;
         flex-direction: column;
-        justify-content: space-between; /* Vocale in alto, File in fondo */
         gap: 20px;
         height: 100%;
     }
 
-    .recording-section { flex: 0 0 auto; } /* Altezza naturale per il box vocale */
+    .recording-section { flex: 0 0 auto; } /* Altezza fissa in base al contenuto */
     
-    .attachment-section-compact {
-        /* Il box file sta in fondo alla colonna sinistra, allineato al bottone salva */
-        margin-top: auto; 
+    /* LA CHIAVE: La sezione allegati cresce per riempire lo spazio */
+    .attachment-section { 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
     }
     
-    /* Il pannello destro è un blocco unico che si estende */
     .right-panel {
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
-    .editor-card {
-        height: 100%; /* Occupa tutta l'altezza della griglia */
-    }
+    .editor-card { height: 100%; }
 
-    /* La textarea si stira per riempire il buco centrale */
+    /* Ridotto min-height per non forzare la colonna sinistra a diventare enorme */
     textarea#voiceTranscription {
         height: 100%; 
-        min-height: 400px;
+        min-height: 350px; /* Ridotto da 500px */
     }
 }
