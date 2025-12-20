@@ -41,11 +41,11 @@ function setupUI() {
     // Controllo permessi Admin
     const isAdmin = window.currentUserProfile?.is_admin === true;
     
-    // 1. Training Button
+    // 1. Training Button (Solo Admin)
     const trainingButton = document.getElementById('openTrainingModalBtn');
     if (trainingButton && !isAdmin) trainingButton.style.display = 'none';
 
-    // 2. Config Button
+    // 2. Config Button (Solo Admin)
     const configButton = document.getElementById('openConfigBtn');
     if (configButton && !isAdmin) {
         configButton.style.display = 'none';

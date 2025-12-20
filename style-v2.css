@@ -1,27 +1,19 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.1 Refactored)
-   ========================================================================== 
-   1. RESET & GLOBALI
-   2. LAYOUT & HEADER
-   3. GRIGLIA PULSANTI (Dashboard)
-   4. FORM & INPUT
-   5. MODALI
-   6. UTILITY (Login, Help, Footer)
-   7. RESPONSIVE
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.2 Final)
    ========================================================================== */
 
-/* ============================================= */
-/* == 1. RESET & GLOBALI                      == */
-/* ============================================= */
+/* --- 1. RESET & GLOBALI --- */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0; padding: 0;
     min-height: 100vh;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: relative; background-color: #f0f2f5;
-    /* Previene scroll orizzontale imprevisto */
-    overflow-x: hidden; 
+    overflow-x: hidden; /* Previene scroll orizzontale indesiderato */
 }
+
+/* Blocca lo scroll di sfondo quando un modale è aperto */
+body.modal-open { overflow: hidden; }
 
 body::before {
     content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -40,15 +32,13 @@ body::after {
 h1 { font-weight: 700; font-size: 2.2em; color: #2A76B8; margin-bottom: 0; text-transform: uppercase; letter-spacing: 2px; }
 h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
-/* ============================================= */
-/* == 2. LAYOUT & HEADER                      == */
-/* ============================================= */
+/* --- 2. LAYOUT & HEADER --- */
 .main-content-wrapper {
     position: relative; z-index: 1;
     width: 100%; max-width: 900px;
     margin: 0 auto; padding: 60px 20px;
     text-align: center; display: flex; flex-direction: column; gap: 25px;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Essenziale per il responsive */
     animation: fadeIn 0.8s ease-out;
 }
 
@@ -72,14 +62,13 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .header-button:hover { background-color: #2980b9; }
 .header-button img { width: 16px; height: 16px; }
 
-/* ============================================= */
-/* == 3. GRIGLIA PULSANTI (Dashboard)         == */
-/* ============================================= */
+/* --- 3. DASHBOARD & PULSANTI --- */
 .button-container {
     margin-bottom: 5px; display: flex; flex-wrap: wrap; justify-content: center;
     gap: 15px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;
 }
 
+/* Stile Base Pulsante (Quadrato) */
 .button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 15px 10px; text-align: center; text-decoration: none; color: white;
@@ -90,56 +79,35 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .button img { max-width: 45px; max-height: 45px; margin-bottom: 8px; }
 .button span { display: block; font-size: 1em; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
 
-/* -- Colori Pulsanti -- */
-/* Input */
-.insert-data-button { background-color: #2ecc71; }
+/* Colori Pulsanti Dashboard */
+.insert-data-button { background-color: #2ecc71; } /* Verde */
 .insert-data-button:hover { background-color: #27ae60; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* AI & Chat */
-.chat-ai-button { background-color: #f1c40f; }
+.chat-ai-button { background-color: #f1c40f; } /* Giallo */
 .chat-ai-button:hover { background-color: #f39c12; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Commesse & Dati */
-.commesse-button { background-color: #9b59b6; }
-.commesse-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.commesse-button, .dashboard-button { background-color: #9b59b6; } /* Viola */
+.commesse-button:hover, .dashboard-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.agile-view-button, .manage-data-button { background-color: #34495e; }
-.agile-view-button:hover, .manage-data-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-/* Ordini */
-.insert-orders-button { background-color: #e67e22; }
+.insert-orders-button { background-color: #e67e22; } /* Arancione */
 .insert-orders-button:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.orders-view-button { background-color: #2980b9; }
-.orders-view-button:hover { background-color: #226b99; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-/* Ore & Stampa */
-.insert-hours-button { background-color: #ff7f50; }
+.insert-hours-button { background-color: #ff7f50; } /* Corallo */
 .insert-hours-button:hover { background-color: #ff8c00; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.print-button { background-color: #00838F; } /* Ciano Scuro / Teal */
+.print-button { background-color: #00838F; } /* Ciano Scuro (Stampa) */
 .print-button:hover { background-color: #006064; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Dashboard & HR */
-.dashboard-button { background-color: #9b59b6; }
-.dashboard-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.attendance-button, .orders-view-button { background-color: #3498db; } /* Blu */
+.attendance-button:hover, .orders-view-button:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.attendance-button { background-color: #3498db; }
-.attendance-button:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.agile-view-button, .manage-data-button, .config-button { background-color: #34495e; } /* Grigio Blu (Admin/Tools) */
+.agile-view-button:hover, .manage-data-button:hover, .config-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Config & Task */
-.config-button { background-color: #34495e; }
-.config-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-.task-button { background-color: #00796B; }
+.task-button { background-color: #00796B; } /* Verde Scuro */
 .task-button:hover { background-color: #004D40; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Placeholder */
-.placeholder-button { background-color: #e0e0e0; color: #999; cursor: default; border: 1px dashed #ccc; box-shadow: none; }
-.placeholder-button:hover { background-color: #e0e0e0; transform: none; box-shadow: none; }
-.placeholder-button img { filter: grayscale(100%); opacity: 0.4; }
-
-/* Pulsante Training (Addestramento) - Full Width Fix */
+/* Pulsante Training (Largo) - FIX ALLINEAMENTO */
 .training-button {
     width: 100%; height: 60px;
     display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -148,16 +116,24 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
     background-color: #8c96a3; /* Grigio originale */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
-    /* FIX LAYOUT: Assicura che rientri nel contenitore */
-    box-sizing: border-box; 
+    box-sizing: border-box; /* CRUCIALE: Previene lo sbordo */
     margin-top: 5px;
 }
 .training-button:hover { background-color: #7a8491; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
 .training-button img { max-width: 24px; max-height: 24px; filter: invert(1); margin: 0; }
 
-/* ============================================= */
-/* == 4. FORM & INPUT                         == */
-/* ============================================= */
+/* Classi Utility Bottoni */
+.button.disabled { opacity: 0.6; cursor: not-allowed; background-color: #95a5a6; }
+.button.disabled:hover { transform: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+
+.button--primary { background-color: #28a745; border-color: #218838; color: white; }
+.button--primary:hover { background-color: #218838; }
+.button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
+.button--secondary:hover { background-color: #0069d9; }
+.button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
+.button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
+
+/* --- 4. FORM & INPUT --- */
 .form-group, .form-section { margin-bottom: 5px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: left; }
 .form-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
 .form-section-header img { width: 24px; height: 24px; opacity: 0.7; }
@@ -170,7 +146,6 @@ input[type="text"], input[type="password"], input[type="file"], input[type="date
 }
 input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); outline: none; }
 
-/* Custom Inputs */
 .custom-file-upload { border: 2px dashed #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
 .custom-file-upload:hover { border-color: #2A76B8; background: #f8faff; }
 .custom-file-upload.compact { padding: 10px; flex-direction: row; justify-content: flex-start; gap: 15px; border-style: solid; }
@@ -179,11 +154,9 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 
 .styled-choices-container .choices__inner { min-height: 45px; background: #fff; border-radius: 8px; display: flex; align-items: center; }
 
-/* ============================================= */
-/* == 5. MODALI                               == */
-/* ============================================= */
+/* --- 5. MODALI --- */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20; }
-.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); width: 95%; max-width: 600px; max-height: 90%; overflow-y: auto; z-index: 30; animation: fadeInModal 0.3s; display: flex; flex-direction: column; }
+.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); width: 95%; max-width: 600px; max-height: 90%; overflow-y: auto; z-index: 30; animation: fadeInModal 0.3s; display: flex; flex-direction: column; box-sizing: border-box; }
 .modal-content { display: flex; flex-direction: column; height: 100%; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; }
 .close-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.5em; transition: 0.2s; }
@@ -195,7 +168,13 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .save-button:hover { background: #1e7e34; }
 .save-button img { width: 20px; filter: invert(1); }
 
-/* Specific Modals */
+/* Header Colori Modali */
+#insertDataModal .modal-header h2 { color: #28a745; }
+#chatModal .modal-header h2 { color: #ffc107; }
+#newOrderModal .modal-header h2 { color: #6f42c1; }
+#insertHoursModal .modal-header h2 { color: #ff7f50; }
+
+/* Modali Specifici */
 .chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 10px; height: 300px; overflow-y: auto; background: #fff; }
 .chat-message { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 0.9em; }
 .chat-message.user { align-self: flex-end; background: #dcf8c6; }
@@ -203,44 +182,21 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .voice-controls-modern { display: flex; justify-content: center; gap: 15px; }
 .voice-controls-modern button { padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-/* ============================================= */
-/* == 6. UTILITY (Login, Help, Footer)        == */
-/* ============================================= */
-.login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
-.login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
+/* Custom Confirm Modal */
+#custom-modal-overlay { z-index: 1000; background-color: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center; }
+.custom-modal { background: white; padding: 25px 30px; border-radius: 12px; max-width: 450px; text-align: center; }
+.custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
+.custom-modal-buttons .button { min-height: unset; width: auto; padding: 10px 25px; flex-direction: row; }
 
-.logout-button-horizontal { background: #ef9a9a; color: white; padding: 6px 10px; border-radius: 5px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
-.logout-button-horizontal:hover { background: #e57373; }
+/* Success Modal */
+#success-feedback-modal .feedback-body { text-align: center; padding: 5px 0; }
+#success-feedback-modal h3 { color: #28a745; }
+#success-feedback-modal h3::after { content: '✅'; margin-left: 10px; }
+#success-feedback-modal .save-button { width: auto; padding: 10px 30px; margin: 0 auto; }
 
-.help-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 1.1em; }
-
-.legend { position: absolute; top: 70px; right: 20px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; z-index: 100; display: none; text-align: left; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.legend-icon { width: 30px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center; padding: 4px; box-sizing: border-box; }
-.legend-icon img { max-width: 100%; max-height: 100%; }
-.legend-text { font-size: 0.9em; color: #555; }
-
-/* Utility Classes per Legenda Icone (Riuso colori) */
-.legend-icon.insert-data-button { background-color: #2ecc71; }
-.legend-icon.chat-ai-button { background-color: #f1c40f; }
-.legend-icon.commesse-button { background-color: #9b59b6; }
-.legend-icon.agile-view-button { background-color: #34495e; }
-.legend-icon.insert-hours-button { background-color: #ff7f50; }
-.legend-icon.print-button { background-color: #00838F; }
-.legend-icon.dashboard-button { background-color: #9b59b6; }
-.legend-icon.attendance-button { background-color: #3498db; }
-.legend-icon.config-button { background-color: #34495e; }
-
-.release-info { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; color: #777; text-align: center; padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5; }
-
-/* ============================================= */
-/* == 7. RESPONSIVE                           == */
-/* ============================================= */
-@media (max-width: 600px) {
-    .main-content-wrapper { padding: 60px 15px; }
-    .button-container { flex-direction: column; gap: 12px; }
-    .button, .training-button { width: 100%; max-width: 100%; flex-basis: auto; min-height: 70px; }
-    .modal { width: calc(100% - 20px); }
-    h1 { margin-top: 50px; font-size: 1.8em; }
-    .login-container { width: 90%; padding: 30px 25px; }
-}
+/* Insert Hours Responsive Elements */
+.modal.large { width: 90vw; max-width: 1400px; max-height: 85vh; }
+.modal-top-section { display: flex; gap: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
+.personnel-list-container { flex: 1.5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #f8f9fa; }
+#personnel-feedback-list { list-style: none; padding: 0; column-count: 3; column-gap: 15px; }
+.entry-count-badge { background: #2A76B8; color: white; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; visib
