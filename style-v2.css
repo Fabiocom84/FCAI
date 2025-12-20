@@ -1,474 +1,246 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.0 Refactored)
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.1 Refactored)
    ========================================================================== 
-   INDICE:
-   1.  RESET & STILI BASE GLOBALI
-   2.  LAYOUT PRINCIPALE & HEADER
-   3.  DASHBOARD & GRIGLIA PULSANTI
-   4.  FORM & INPUT (Stili Generici)
-   5.  MODALI (Struttura Base & Overlay)
-   6.  MODALI SPECIFICI (Chat, Insert, Feedback)
-   7.  PULSANTI AUSILIARI (Help, Logout, Footer)
-   8.  MEDIA QUERIES (Responsive)
+   1. RESET & GLOBALI
+   2. LAYOUT & HEADER
+   3. GRIGLIA PULSANTI (Dashboard)
+   4. FORM & INPUT
+   5. MODALI
+   6. UTILITY (Login, Help, Footer)
+   7. RESPONSIVE
    ========================================================================== */
 
 /* ============================================= */
-/* == 1. RESET & STILI BASE GLOBALI           == */
+/* == 1. RESET & GLOBALI                      == */
 /* ============================================= */
-
 body {
     font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    background-color: #f0f2f5;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: relative; background-color: #f0f2f5;
+    /* Previene scroll orizzontale imprevisto */
+    overflow-x: hidden; 
 }
 
-/* Sfondo sfocato */
 body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-image: url('img/logo.png');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    filter: blur(8px); -webkit-filter: blur(8px);
-    transform: scale(1.05);
-    z-index: -2;
+    content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('img/logo.png'); background-size: cover; background-position: center;
+    background-attachment: fixed; filter: blur(8px); transform: scale(1.05); z-index: -2;
 }
-
-/* Overlay bianco */
 body::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(255, 255, 255, 0.6);
-    z-index: -1;
+    content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(255, 255, 255, 0.6); z-index: -1;
 }
 
-/* Animazioni */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInModal { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
 @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
 
-/* Tipografia */
-h1 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 700;
-    font-size: 2.2em;
-    color: #2A76B8;
-    margin-bottom: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-h2 {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    color: #333333;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+h1 { font-weight: 700; font-size: 2.2em; color: #2A76B8; margin-bottom: 0; text-transform: uppercase; letter-spacing: 2px; }
+h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* ============================================= */
-/* == 2. LAYOUT PRINCIPALE & HEADER           == */
+/* == 2. LAYOUT & HEADER                      == */
 /* ============================================= */
-
-/* Contenitore Login */
-.login-container {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    width: 100%; max-width: 450px;
-    text-align: center;
-    animation: fadeIn 0.8s ease-out;
-}
-
-/* Contenitore Home Page */
 .main-content-wrapper {
     position: relative; z-index: 1;
     width: 100%; max-width: 900px;
     margin: 0 auto; padding: 60px 20px;
-    text-align: center;
-    animation: fadeIn 0.8s ease-out;
-    display: flex; flex-direction: column; gap: 25px;
+    text-align: center; display: flex; flex-direction: column; gap: 25px;
     box-sizing: border-box;
+    animation: fadeIn 0.8s ease-out;
 }
 
-/* Header delle pagine interne (es. Commesse) */
-.page-header {
-    background-color: #4a5568;
-    color: white;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 20px; margin-bottom: 25px;
-    border-radius: 8px;
+.top-controls-wrapper {
+    position: absolute; top: 20px; left: 20px; right: 20px;
+    display: flex; justify-content: space-between; align-items: center; width: auto;
 }
-.page-header h1 { font-size: 1.4em; font-weight: 500; color: white; margin: 0; letter-spacing: 1px; }
+
+.page-header {
+    background-color: #4a5568; color: white;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; margin-bottom: 25px; border-radius: 8px;
+}
+.page-header h1 { font-size: 1.4em; color: white; margin: 0; }
 
 .header-button {
-    background-color: #3498db; color: white;
-    padding: 8px 16px; font-size: 0.9em; font-weight: 500;
-    border-radius: 5px; text-decoration: none;
-    display: flex; align-items: center; gap: 8px;
-    transition: background-color 0.2s ease;
+    background-color: #3498db; color: white; padding: 8px 16px;
+    font-size: 0.9em; font-weight: 500; border-radius: 5px; text-decoration: none;
+    display: flex; align-items: center; gap: 8px; transition: background-color 0.2s;
 }
 .header-button:hover { background-color: #2980b9; }
 .header-button img { width: 16px; height: 16px; }
 
-/* Controlli in alto (Logout/Help) */
-.top-controls-wrapper {
-    position: absolute; top: 20px; left: 20px; right: 20px;
-    display: flex; justify-content: space-between; align-items: center;
-    width: auto;
-}
-
 /* ============================================= */
-/* == 3. DASHBOARD & GRIGLIA PULSANTI         == */
+/* == 3. GRIGLIA PULSANTI (Dashboard)         == */
 /* ============================================= */
-
 .button-container {
-    margin-bottom: 5px;
-    display: flex; flex-wrap: wrap; justify-content: center;
-    gap: 15px;
-    width: 100%; max-width: 600px;
-    margin-left: auto; margin-right: auto;
+    margin-bottom: 5px; display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 15px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;
 }
 
-/* Stile Base Pulsante Quadrato */
 .button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 15px 10px;
-    text-align: center; text-decoration: none; color: white;
-    border: none; border-radius: 5px;
-    box-sizing: border-box;
-    flex-basis: calc(50% - 7.5px);
-    max-width: calc(50% - 7.5px);
-    min-height: 100px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
+    padding: 15px 10px; text-align: center; text-decoration: none; color: white;
+    border: none; border-radius: 5px; box-sizing: border-box;
+    flex-basis: calc(50% - 7.5px); max-width: calc(50% - 7.5px); min-height: 100px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;
 }
 .button img { max-width: 45px; max-height: 45px; margin-bottom: 8px; }
 .button span { display: block; font-size: 1em; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
 
-/* --- Varianti Colore Pulsanti --- */
-
-/* Verde/Azzurro (Input) */
+/* -- Colori Pulsanti -- */
+/* Input */
 .insert-data-button { background-color: #2ecc71; }
 .insert-data-button:hover { background-color: #27ae60; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.insert-hours-button { background-color: #ff7f50; } /* Arancione Corallo */
-.insert-hours-button:hover { background-color: #ff8c00; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+/* AI & Chat */
+.chat-ai-button { background-color: #f1c40f; }
+.chat-ai-button:hover { background-color: #f39c12; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Arancione (Ordini) */
-.insert-orders-button { background-color: #e67e22; }
-.insert-orders-button:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-/* Viola/Blu (Analisi & Visualizzazione) */
+/* Commesse & Dati */
 .commesse-button { background-color: #9b59b6; }
 .commesse-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.dashboard-button { background-color: #9b59b6; } /* Viola (Analisi) */
-.dashboard-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+.agile-view-button, .manage-data-button { background-color: #34495e; }
+.agile-view-button:hover, .manage-data-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+/* Ordini */
+.insert-orders-button { background-color: #e67e22; }
+.insert-orders-button:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
 .orders-view-button { background-color: #2980b9; }
 .orders-view-button:hover { background-color: #226b99; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Grigio/Blu Scuro (Gestione Tecnica & Config) */
-.agile-view-button, 
-.manage-data-button,
-.config-button { background-color: #34495e; }
-.agile-view-button:hover, 
-.manage-data-button:hover,
-.config-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+/* Ore & Stampa */
+.insert-hours-button { background-color: #ff7f50; }
+.insert-hours-button:hover { background-color: #ff8c00; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Blu Chiaro (Presenze) */
+.print-button { background-color: #00838F; } /* Ciano Scuro / Teal */
+.print-button:hover { background-color: #006064; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
+/* Dashboard & HR */
+.dashboard-button { background-color: #9b59b6; }
+.dashboard-button:hover { background-color: #8e44ad; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+
 .attendance-button { background-color: #3498db; }
 .attendance-button:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Giallo/Verde Scuro (AI & Task) */
-.chat-ai-button { background-color: #f1c40f; }
-.chat-ai-button:hover { background-color: #f39c12; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+/* Config & Task */
+.config-button { background-color: #34495e; }
+.config-button:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-.task-button { background-color: #00796B; } /* Verde Foglia */
+.task-button { background-color: #00796B; }
 .task-button:hover { background-color: #004D40; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
 
-/* Rosso (Addestramento) */
-.training-button { background-color: #e74c3c; }
-.training-button:hover { background-color: #c0392b; transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-/* Placeholder (Grigio Spento) */
-.placeholder-button { 
-    background-color: #e0e0e0;
-    color: #999;
-    cursor: default;
-    border: 1px dashed #ccc;
-    box-shadow: none;
-}
+/* Placeholder */
+.placeholder-button { background-color: #e0e0e0; color: #999; cursor: default; border: 1px dashed #ccc; box-shadow: none; }
 .placeholder-button:hover { background-color: #e0e0e0; transform: none; box-shadow: none; }
 .placeholder-button img { filter: grayscale(100%); opacity: 0.4; }
 
-/* Pulsante Training Largo */
+/* Pulsante Training (Addestramento) - Full Width Fix */
 .training-button {
     width: 100%; height: 60px;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     padding: 6px 10px; border-radius: 5px;
     font-weight: 500; text-decoration: none; color: white;
+    background-color: #8c96a3; /* Grigio originale */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
+    /* FIX LAYOUT: Assicura che rientri nel contenitore */
+    box-sizing: border-box; 
+    margin-top: 5px;
 }
+.training-button:hover { background-color: #7a8491; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
 .training-button img { max-width: 24px; max-height: 24px; filter: invert(1); margin: 0; }
 
-/* Classi utility bottoni */
-.button.disabled { opacity: 0.6; cursor: not-allowed; background-color: #95a5a6; }
-.button.disabled:hover { transform: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-
-/* Classi Modificatrici Colori (es. nei modali) */
-.button--primary { background-color: #28a745; border-color: #218838; color: white; }
-.button--primary:hover { background-color: #218838; }
-.button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
-.button--secondary:hover { background-color: #0069d9; }
-.button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
-.button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
-
 /* ============================================= */
-/* == 4. FORM & INPUT (Stili Generici)        == */
+/* == 4. FORM & INPUT                         == */
 /* ============================================= */
+.form-group, .form-section { margin-bottom: 5px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: left; }
+.form-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.form-section-header img { width: 24px; height: 24px; opacity: 0.7; }
+.form-section-header h3 { margin: 0; font-size: 1.1em; font-weight: 500; color: #333; }
 
-.form-group {
-    margin-bottom: 5px; text-align: left;
-    background-color: #f8f9fa; padding: 15px;
-    border-radius: 8px; border: 1px solid #e9ecef;
+input[type="text"], input[type="password"], input[type="file"], input[type="date"], input[type="number"], select, textarea {
+    width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 6px;
+    box-sizing: border-box; font-size: 1em; font-family: 'Roboto', sans-serif; color: #333;
+    transition: border-color 0.3s;
 }
+input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); outline: none; }
 
-.form-group input, .form-group select, .form-group textarea,
-.form-section input, .form-section select, .form-section textarea {
-    width: 100%; padding: 12px 15px;
-    border: 1px solid #cccccc; border-radius: 6px;
-    box-sizing: border-box; font-size: 1em;
-    font-family: 'Roboto', sans-serif; color: #333;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus,
-.form-section input:focus, .form-section select:focus, .form-section textarea:focus {
-    border-color: #2A76B8; box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); outline: none;
-}
-
-/* Stili specifici login */
-.login-container button {
-    width: 100%; padding: 14px 20px; margin-top: 20px;
-    font-size: 1.2em; font-weight: 500;
-    background-color: #2A76B8; color: white;
-    border: none; border-radius: 8px; cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-.login-container button:hover { background-color: #1a5c96; transform: translateY(-2px); }
-
-/* Password eye toggle */
-.password-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
-.toggle-password { position: absolute; right: 15px; cursor: pointer; width: 20px; height: auto; opacity: 0.6; }
-
-/* Choices.js Customization */
-.styled-choices-container .choices__inner {
-    min-height: 45px; height: 45px;
-    background-color: #fff; border: 1px solid #b0b0b0; border-radius: 8px;
-    padding: 1px 15px; display: flex; align-items: center; font-size: 1.05em;
-}
-.styled-choices-container .choices.is-focused .choices__inner { border-color: #2A76B8; box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2); }
-
-/* File Upload Custom */
-.custom-file-upload {
-    border: 2px dashed #e0e0e0; border-radius: 8px; padding: 20px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; cursor: pointer; transition: all 0.3s ease;
-}
-.custom-file-upload:hover { border-color: #2A76B8; background-color: #f8faff; }
+/* Custom Inputs */
+.custom-file-upload { border: 2px dashed #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+.custom-file-upload:hover { border-color: #2A76B8; background: #f8faff; }
 .custom-file-upload.compact { padding: 10px; flex-direction: row; justify-content: flex-start; gap: 15px; border-style: solid; }
 .custom-file-upload-icon { font-size: 2em; margin-bottom: 8px; }
 .custom-file-upload.compact .custom-file-upload-icon { font-size: 1.5em; margin-bottom: 0; }
 
+.styled-choices-container .choices__inner { min-height: 45px; background: #fff; border-radius: 8px; display: flex; align-items: center; }
+
 /* ============================================= */
-/* == 5. MODALI (Struttura Base & Overlay)    == */
+/* == 5. MODALI                               == */
 /* ============================================= */
-
-.modal-overlay {
-    display: none; position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 20;
-}
-
-.modal {
-    display: none; position: fixed; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white; padding: 20px; border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-    width: 95%; max-width: 600px; max-height: 90%;
-    overflow-y: auto; z-index: 30;
-    animation: fadeInModal 0.3s ease-out;
-    flex-direction: column;
-}
-
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20; }
+.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); width: 95%; max-width: 600px; max-height: 90%; overflow-y: auto; z-index: 30; animation: fadeInModal 0.3s; display: flex; flex-direction: column; }
 .modal-content { display: flex; flex-direction: column; height: 100%; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; }
+.close-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.5em; transition: 0.2s; }
+.close-button:hover { transform: rotate(90deg); background: #5a6268; }
+.modal-body { flex-grow: 1; overflow-y: auto; padding: 5px 0; }
+.modal-footer { padding-top: 10px; margin-top: 10px; border-top: 1px solid #f0f0f0; display: flex; justify-content: center; }
 
-.modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 15px; flex-shrink: 0;
-}
-.modal-header h2 { margin: 0; font-size: 1.6em; text-align: center; letter-spacing: 1.5px; }
-.modal-header-buttons { display: flex; align-items: center; gap: 10px; }
+.save-button { padding: 15px 20px; border: none; border-radius: 8px; background: #28a745; color: white; font-size: 1.1em; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; }
+.save-button:hover { background: #1e7e34; }
+.save-button img { width: 20px; filter: invert(1); }
 
-.close-button {
-    background-color: #6c757d; color: white; border-radius: 50%;
-    width: 35px; height: 35px; display: flex; justify-content: center;
-    align-items: center; cursor: pointer; font-size: 1.5em;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-.close-button:hover { transform: rotate(90deg); background-color: #5a6268; }
-
-.modal-body { margin-bottom: 10px; display: flex; flex-direction: column; gap: 15px; padding: 10px 0; }
-
-.modal-footer {
-    padding: 10px 0 0 0; margin-top: 10px; border-top: 1px solid #f0f0f0;
-    display: flex; justify-content: center;
-}
-
-.save-button {
-    padding: 15px 20px; border: none; border-radius: 8px;
-    background-color: #28a745; color: white; font-size: 1.1em; font-weight: 500;
-    cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-.save-button:hover { background-color: #1e7e34; transform: translateY(-2px); }
-.save-button img { width: 20px; height: 20px; filter: invert(1); }
-
-/* Header Colors */
-#insertDataModal .modal-header h2 { color: #28a745; }
-#chatModal .modal-header h2 { color: #ffc107; }
-#newOrderModal .modal-header h2 { color: #6f42c1; }
-#insertHoursModal .modal-header h2 { color: #ff7f50; }
+/* Specific Modals */
+.chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 10px; height: 300px; overflow-y: auto; background: #fff; }
+.chat-message { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 0.9em; }
+.chat-message.user { align-self: flex-end; background: #dcf8c6; }
+.chat-message.ai { align-self: flex-start; background: #f1f0f0; }
+.voice-controls-modern { display: flex; justify-content: center; gap: 15px; }
+.voice-controls-modern button { padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
 /* ============================================= */
-/* == 6. MODALI SPECIFICI                     == */
+/* == 6. UTILITY (Login, Help, Footer)        == */
 /* ============================================= */
+.login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
+.login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
 
-/* Chat Modal */
-.chat-modal-body { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; }
-.chat-messages { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
-.chat-message { display: flex; flex-direction: column; max-width: 80%; }
-.chat-message.user { align-self: flex-end; align-items: flex-end; }
-.chat-message.ai { align-self: flex-start; }
-.message-content { padding: 10px 15px; border-radius: 18px; line-height: 1.4; }
-.chat-message.user .message-content { background-color: #dcf8c6; color: #000; }
-.chat-message.ai .message-content { background-color: #f1f0f0; color: #000; }
-.typing-indicator { display: flex; align-items: center; padding: 10px 15px; background: #f1f0f0; border-radius: 18px; width: fit-content; margin: 10px; }
-.typing-indicator span { height: 8px; width: 8px; background: #8e8e8e; border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-.chat-input-area { display: flex; flex-direction: column; width: 100%; border-top: 1px solid #eee; padding-top: 10px; }
-#chatInput { width: 100%; min-height: 40px; padding: 10px 12px; border-radius: 20px; border: 1px solid #ccc; resize: none; margin-bottom: 10px; }
-.chat-controls { display: flex; justify-content: flex-end; gap: 10px; }
-.chat-controls button { width: 45px; height: 45px; border-radius: 50%; background: #2A76B8; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.chat-voice-button.recording-active { background-color: #dc3545; }
+.logout-button-horizontal { background: #ef9a9a; color: white; padding: 6px 10px; border-radius: 5px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
+.logout-button-horizontal:hover { background: #e57373; }
 
-/* Insert Hours Modal (Large) */
-.modal.large { width: 90vw; max-width: 1400px; max-height: 85vh; }
-.modal-top-section { display: flex; gap: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
-.personnel-list-container { flex: 1.5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #f8f9fa; }
-#personnel-feedback-list { list-style: none; padding: 0; column-count: 3; column-gap: 15px; }
-.entry-count-badge { background: #2A76B8; color: white; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; visibility: hidden; }
-.entry-count-badge.visible { visibility: visible; }
-.insert-form-container-new { flex: 2; display: flex; flex-direction: column; justify-content: space-between; }
-.form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 15px; }
-.form-grid .form-group:nth-child(1) { grid-column: span 3; }
-.form-grid .form-group:nth-child(2) { grid-column: span 6; }
-.form-grid .form-group:nth-child(3) { grid-column: span 3; }
-.form-grid .form-group:nth-child(4) { grid-column: span 12; }
-.form-grid .form-group:nth-child(5) { grid-column: span 8; }
-.form-grid .form-group:nth-child(6) { grid-column: span 4; }
-#provisional-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-#provisional-table th, #provisional-table td { padding: 10px 12px; border-bottom: 1px solid #dee2e6; text-align: left; }
-.delete-row-btn img { width: 1.5em; height: 1.5em; }
+.help-button { background: #6c757d; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 1.1em; }
 
-/* Custom Confirm/Alert Modal */
-#custom-modal-overlay { z-index: 1000; background-color: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center; }
-.custom-modal { background: white; padding: 25px 30px; border-radius: 12px; max-width: 450px; text-align: center; }
-.custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
-.custom-modal-buttons .button { min-height: unset; width: auto; padding: 10px 25px; flex-direction: row; }
-
-/* Success Feedback Modal */
-#success-feedback-modal .feedback-body { text-align: center; padding: 5px 0; }
-#success-feedback-modal h3 { color: #28a745; }
-#success-feedback-modal h3::after { content: '✅'; margin-left: 10px; }
-#success-feedback-modal .save-button { width: auto; padding: 10px 30px; margin: 0 auto; }
-
-/* ============================================= */
-/* == 7. PULSANTI AUSILIARI (Help, Footer)    == */
-/* ============================================= */
-
-.logout-button-horizontal {
-    background-color: #ef9a9a; color: white; padding: 6px 10px; border-radius: 5px;
-    text-decoration: none; display: flex; align-items: center; gap: 5px; height: 30px;
-    transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-}
-.logout-button-horizontal:hover { background-color: #e57373; transform: translateY(-2px); }
-.logout-button-horizontal img { max-width: 18px; max-height: 18px; }
-.logout-button-horizontal span { font-size: 0.8em; font-weight: 500; }
-
-.help-button {
-    background-color: #6c757d; color: white; border: none; border-radius: 50%;
-    width: 35px; height: 35px; font-size: 1.1em; display: flex; justify-content: center;
-    align-items: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-    transition: all 0.3s ease;
-}
-.help-button:hover { background-color: #5a6268; transform: translateY(-2px); }
-
-.legend {
-    position: absolute; top: 70px; right: 20px; background-color: white;
-    border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 100; display: none; text-align: left; max-width: 350px;
-}
+.legend { position: absolute; top: 70px; right: 20px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; z-index: 100; display: none; text-align: left; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.legend-text { font-size: 0.95em; color: #555; }
+.legend-icon { width: 30px; height: 30px; border-radius: 4px; display: flex; justify-content: center; align-items: center; padding: 4px; box-sizing: border-box; }
+.legend-icon img { max-width: 100%; max-height: 100%; }
+.legend-text { font-size: 0.9em; color: #555; }
 
-.release-info {
-    position: fixed; bottom: 0; left: 0; width: 100%;
-    background-color: #f8f9fa; color: #777; text-align: center;
-    padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5;
-}
+/* Utility Classes per Legenda Icone (Riuso colori) */
+.legend-icon.insert-data-button { background-color: #2ecc71; }
+.legend-icon.chat-ai-button { background-color: #f1c40f; }
+.legend-icon.commesse-button { background-color: #9b59b6; }
+.legend-icon.agile-view-button { background-color: #34495e; }
+.legend-icon.insert-hours-button { background-color: #ff7f50; }
+.legend-icon.print-button { background-color: #00838F; }
+.legend-icon.dashboard-button { background-color: #9b59b6; }
+.legend-icon.attendance-button { background-color: #3498db; }
+.legend-icon.config-button { background-color: #34495e; }
+
+.release-info { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; color: #777; text-align: center; padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5; }
 
 /* ============================================= */
-/* == 8. MEDIA QUERIES (Responsive)           == */
+/* == 7. RESPONSIVE                           == */
 /* ============================================= */
-
 @media (max-width: 600px) {
-    body { overflow-x: hidden; }
-    h1 { margin-top: 50px; font-size: 1.8em; }
-    .login-container { width: 90%; padding: 30px 25px; }
     .main-content-wrapper { padding: 60px 15px; }
     .button-container { flex-direction: column; gap: 12px; }
-    .button, .training-button { width: 100%; max-width: 100%; min-height: 70px; flex-basis: auto; }
-    .modal { width: calc(100% - 20px); padding: 15px; }
-    .chat-controls button { width: 40px; height: 40px; }
-}
-
-@media (max-width: 800px) {
-    /* Insert Hours Modal Responsive */
-    #insertHoursModal .modal-top-section { flex-direction: column; height: auto; }
-    #insertHoursModal .personnel-list-container { display: none; }
-    #insertHoursModal .form-grid { grid-template-columns: 1fr; gap: 12px; }
-    #insertHoursModal .form-grid .form-group:nth-child(n) { grid-column: span 1; }
-    #insertHoursModal #provisional-table thead { display: none; }
-    #insertHoursModal #provisional-table tr { display: block; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 8px; }
-    #insertHoursModal #provisional-table td { display: flex; justify-content: flex-end; align-items: center; border: none; border-bottom: 1px dashed #eee; text-align: right; padding-left: 45%; position: relative; }
-    #insertHoursModal #provisional-table td::before { content: attr(data-label); position: absolute; left: 10px; width: 40%; text-align: left; font-weight: 500; }
+    .button, .training-button { width: 100%; max-width: 100%; flex-basis: auto; min-height: 70px; }
+    .modal { width: calc(100% - 20px); }
+    h1 { margin-top: 50px; font-size: 1.8em; }
+    .login-container { width: 90%; padding: 30px 25px; }
 }

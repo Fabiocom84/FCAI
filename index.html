@@ -56,16 +56,15 @@
                 <span>Vista Ordini</span>
             </a>
 
-            <!-- RIGA 4: ORE & PLACEHOLDER -->
+            <!-- RIGA 4: ORE & STAMPA -->
             <a href="inserimento-ore.html" class="button insert-hours-button">
                 <img src="img/disciplinary.png" alt="Inserimento Ore">
                 <span>Inserimento Ore</span>
             </a>
-            <!-- Pulsante Vuoto / Segnaposto -->
-            <div class="button placeholder-button">
-                <img src="img/more.png" alt="..." style="opacity: 0.3;">
-                <span>Presto disponibile</span>
-            </div>
+            <a href="#" class="button print-button" id="openPrintHoursBtn">
+                <img src="img/printer.png" alt="Stampa">
+                <span>Stampa Ore</span>
+            </a>
 
             <!-- RIGA 5: DASHBOARD & PRESENZE -->
             <a href="#" class="button dashboard-button" id="openDashboardBtn">
@@ -230,11 +229,22 @@
         </div>
     </div>
 
-    <!-- LEGENDE -->
+    <!-- LEGENDE AGGIORNATE -->
     <div id="mainPageLegend" class="legend">
         <h3>Aiuto - Pagina Principale</h3>
-        <div class="legend-item"><div class="legend-text">Usa la <strong>Dashboard Analisi</strong> per consultare i grafici (presto disponibile).</div></div>
-        <div class="legend-item"><div class="legend-text">Usa la <strong>Configurazione Logica</strong> per gestire macro categorie e componenti (Solo Admin).</div></div>
+        <div class="legend-item"><div class="legend-icon insert-data-button"><img src="img/plus.png"></div><div class="legend-text"><strong>Inserisci Dati:</strong> Carica note vocali, testo o file.</div></div>
+        <div class="legend-item"><div class="legend-icon chat-ai-button"><img src="img/chat.png"></div><div class="legend-text"><strong>Chat AI:</strong> Chiedi informazioni all'assistente.</div></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+        <div class="legend-item"><div class="legend-icon commesse-button"><img src="img/view-orders.png"></div><div class="legend-text"><strong>Commesse:</strong> Visualizza e gestisci le commesse.</div></div>
+        <div class="legend-item"><div class="legend-icon agile-view-button"><img src="img/table.png"></div><div class="legend-text"><strong>Vista Agile:</strong> Gestione tabellare dei dati.</div></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+        <div class="legend-item"><div class="legend-icon insert-hours-button"><img src="img/disciplinary.png"></div><div class="legend-text"><strong>Ore:</strong> Inserimento massivo ore di lavoro.</div></div>
+        <div class="legend-item"><div class="legend-icon print-button"><img src="img/printer.png"></div><div class="legend-text"><strong>Stampa:</strong> Report ore mensili (in arrivo).</div></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+        <div class="legend-item"><div class="legend-icon dashboard-button"><img src="img/dashboard.png"></div><div class="legend-text"><strong>Dashboard:</strong> Analisi dati (in arrivo).</div></div>
+        <div class="legend-item"><div class="legend-icon attendance-button"><img src="img/attendance.png"></div><div class="legend-text"><strong>Presenze:</strong> Registro presenze mensile.</div></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+        <div class="legend-item"><div class="legend-icon config-button"><img src="img/settings.png"></div><div class="legend-text"><strong>Config:</strong> Impostazioni tecniche (Admin).</div></div>
     </div>
 
     <div id="insertDataLegend" class="legend" style="display: none;">
@@ -248,7 +258,7 @@
     </div>
 
     <footer class="release-info">
-        Release 2.0 - Rilasciata il 20 Dicembre 2025
+        Release 1.3 - Rilasciata il 20 Dicembre 2025
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>

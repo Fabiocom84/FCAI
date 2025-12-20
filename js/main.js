@@ -41,17 +41,17 @@ function setupUI() {
     // Controllo permessi Admin
     const isAdmin = window.currentUserProfile?.is_admin === true;
     
-    // Gestione visibilità pulsanti protetti
+    // 1. Training Button
     const trainingButton = document.getElementById('openTrainingModalBtn');
     if (trainingButton && !isAdmin) trainingButton.style.display = 'none';
 
-    // --- NUOVO: Gestione pulsante Configurazione Logica ---
+    // 2. Config Button
     const configButton = document.getElementById('openConfigBtn');
     if (configButton && !isAdmin) {
         configButton.style.display = 'none';
     }
 
-    // Gestione click Dashboard (Placeholder Analisi)
+    // 3. Dashboard Placeholder
     const dashboardBtn = document.getElementById('openDashboardBtn');
     if (dashboardBtn) {
         dashboardBtn.addEventListener('click', (e) => {
@@ -60,6 +60,19 @@ function setupUI() {
                 title: 'In Sviluppo', 
                 message: 'La Dashboard Analisi dei Dati sarà disponibile prossimamente.', 
                 confirmText: 'OK' 
+            });
+        });
+    }
+
+    // 4. Stampa Ore Placeholder (NUOVO)
+    const printBtn = document.getElementById('openPrintHoursBtn');
+    if (printBtn) {
+        printBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showModal({
+                title: 'Stampa Ore',
+                message: 'La funzionalità di generazione report PDF e invio email è in fase di sviluppo.',
+                confirmText: 'OK'
             });
         });
     }
