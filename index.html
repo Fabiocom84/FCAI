@@ -27,7 +27,7 @@
 
         <div class="button-container">
             <!-- RIGA 1: INPUT DATI & CHAT -->
-            <a href="#" class="button insert-data-button" id="openInsertDataModalBtn">
+            <a href="inserisci-dati.html" class="button insert-data-button">
                 <img src="img/plus.png" alt="Inserisci">
                 <span>Inserisci Dati</span>
             </a>
@@ -93,73 +93,6 @@
             </a>
         </div>
     </div> 
-
-    <!-- MODALE INSERIMENTO DATI (Nascosto di default con inline style per sicurezza) -->
-    <div class="modal" id="insertDataModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-header-buttons">
-                    <button class="help-button" id="insertDataHelpBtn">?</button>
-                </div>
-                <h2>INSERISCI DATI</h2>
-                <div class="modal-header-buttons">
-                    <button class="close-button">&times;</button>
-                </div>
-            </div>
-
-            <div class="modal-body">
-                <form id="insertDataForm">
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <img src="img/mic.png" alt="Mic Icon">
-                            <h3>Registra Vocale</h3>
-                        </div>
-                        <p id="recordingStatus" class="recording-status">Pronto per registrare</p>
-                        <div class="voice-controls-modern">
-                            <button id="startButton">
-                                <img src="img/play.png" alt="Start">
-                                <span>Avvia</span>
-                            </button>
-                            <button id="stopButton" disabled>
-                                <img src="img/stop.png" alt="Stop">
-                                <span>Ferma</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-section styled-choices-container"> 
-                        <div class="form-section-header">
-                            <img src="img/chat.png" alt="Edit Icon">
-                            <h3>Testo e Riferimento</h3>
-                        </div>
-                        <textarea id="voiceTranscription" name="transcription" placeholder="La trascrizione della registrazione o il testo del file appariranno qui..."></textarea>
-                        <select id="riferimentoDropdown" name="riferimento">
-                            <option value="" selected>Nessuna commessa associata</option>
-                        </select>
-                    </div>
-
-                    <div class="form-section"> 
-                        <div class="form-section-header">
-                            <img src="img/file.png" alt="Upload Icon">
-                            <h3>Carica File (Opzionale)</h3>
-                        </div>
-                        <label for="fileUpload" class="custom-file-upload compact">
-                            <span class="custom-file-upload-icon">&#128193;</span>
-                            <span class="file-name">Seleziona un file...</span>
-                        </label>
-                        <input type="file" id="fileUpload" name="fileUpload" hidden>
-                    </div>
-                </form>
-            </div>
-
-            <div class="modal-footer">
-                <button class="save-button" type="submit" form="insertDataForm">
-                    <img src="img/save.png" alt="Save Icon">
-                    <span>Salva Dati</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODALE CHAT -->
     <div id="chatModal" class="modal" style="display: none;">
