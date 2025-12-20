@@ -15,24 +15,26 @@
 
     <div class="page-wrapper">
         <header class="page-header">
-            <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                <span>Home</span>
-            </a>
-            <h1>Inserimento Dati</h1>
-            <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
+            <!-- Contenitore interno per allineare il contenuto con il body -->
+            <div class="header-content-wrapper">
+                <a href="index.html" class="header-button">
+                    <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                    <span>Home</span>
+                </a>
+                <h1>Inserimento Dati</h1>
+                <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
+            </div>
         </header>
 
         <div class="insert-container">
             <form id="insertDataForm">
                 
-                <!-- WRAPPER PER LE DUE COLONNE (SX e DX) -->
                 <div class="columns-wrapper">
                     
-                    <!-- COLONNA SINISTRA: STRUMENTI -->
+                    <!-- COLONNA SINISTRA: STRUMENTI (Mic in alto, File in basso) -->
                     <div class="left-panel">
                         
-                        <!-- Box 1: Vocale -->
+                        <!-- Box Vocale -->
                         <div class="card-section recording-section">
                             <div class="section-header">
                                 <h3>🎤 Registrazione Vocale</h3>
@@ -55,53 +57,47 @@
                             </div>
                         </div>
 
-                        <!-- Box 2: Allegati (Si espande per riempire lo spazio a sinistra) -->
-                        <div class="card-section attachment-section">
-                            <div class="section-header">
-                                <h3>📎 Allegati</h3>
-                            </div>
-                            <label for="fileUpload" class="file-drop-zone">
+                        <!-- Pulsante Allegati (Compatto e in fondo) -->
+                        <div class="card-section attachment-section-compact">
+                            <label for="fileUpload" class="file-btn-compact">
                                 <span class="drop-icon">📂</span>
-                                <div class="drop-text">
-                                    <strong>Carica un file</strong>
-                                    <span class="file-name">Nessun file selezionato</span>
-                                </div>
+                                <span class="file-name">Carica un file (Opzionale)</span>
                                 <input type="file" id="fileUpload" name="fileUpload" hidden>
                             </label>
                         </div>
 
                     </div> <!-- Fine Left Panel -->
 
-                    <!-- COLONNA DESTRA: EDITOR (Si espande per pareggiare l'altezza) -->
+                    <!-- COLONNA DESTRA: CONTESTO + EDITOR + SALVA -->
                     <div class="right-panel">
                         <div class="card-section editor-card">
                             
-                            <!-- Scelta Commessa -->
-                            <div class="form-group styled-choices-container">
+                            <!-- 1. Scelta Commessa -->
+                            <div class="form-group styled-choices-container commessa-select-group">
                                 <label for="riferimentoDropdown">Riferimento Commessa</label>
                                 <select id="riferimentoDropdown" name="id_commessa_fk">
                                     <option value="" selected>Nessuna associazione</option>
                                 </select>
                             </div>
 
-                            <!-- Area di Testo (Flex grow) -->
+                            <!-- 2. Area di Testo (Si espande) -->
                             <div class="form-group editor-group">
                                 <label for="voiceTranscription">Contenuto / Trascrizione</label>
                                 <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                            </div>
+
+                            <!-- 3. Pulsante Salva (Integrato qui per allineamento) -->
+                            <div class="save-btn-container">
+                                <button type="submit" id="saveDataBtn" class="big-save-btn">
+                                    <img src="img/save.png" alt="Save">
+                                    SALVA DATI
+                                </button>
                             </div>
 
                         </div>
                     </div> <!-- Fine Right Panel -->
 
                 </div> <!-- Fine Columns Wrapper -->
-
-                <!-- FOOTER: SALVATAGGIO (Fuori dalle colonne) -->
-                <div class="form-actions-footer">
-                    <button type="submit" id="saveDataBtn" class="big-save-btn">
-                        <img src="img/save.png" alt="Save">
-                        SALVA DATI NEL DATABASE
-                    </button>
-                </div>
 
             </form>
         </div>
