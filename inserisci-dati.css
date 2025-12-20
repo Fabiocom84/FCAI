@@ -1,13 +1,13 @@
-/* inserisci-dati.css - Layout "Wide Screen" */
+/* inserisci-dati.css - Layout Wide Ottimizzato */
 
-/* --- STILI BASE (MOBILE FIRST) --- */
+/* --- STILI BASE (MOBILE / DEFAULT) --- */
 .insert-container {
-    width: 100%;
-    max-width: 600px;
+    width: 95%; /* Mobile: usa quasi tutto lo schermo */
+    max-width: 600px; /* Ma non diventare troppo largo su tablet verticali */
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     padding-bottom: 40px;
 }
 
@@ -16,8 +16,10 @@
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
 }
 
 .section-header h3 {
@@ -28,6 +30,9 @@
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 10px;
     margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
 }
 
 /* --- COLONNA SINISTRA (STRUMENTI) --- */
@@ -35,14 +40,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 0;
+    gap: 15px;
 }
 
 .status-text {
     text-align: center;
     color: #666;
     font-size: 0.9em;
-    margin-bottom: 15px;
+    margin: 0;
     font-weight: 500;
     min-height: 1.2em;
 }
@@ -58,16 +63,15 @@
 .record-btn, .stop-btn {
     width: 100%;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
-    font-size: 1em;
+    font-size: 0.95em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
 }
 
 .record-btn { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
@@ -76,23 +80,22 @@
 .stop-btn { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 .stop-btn:hover:not(:disabled) { background-color: #c62828; color: white; }
 
-.record-btn:disabled, .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f5f5f5; color: #aaa; border-color: #ddd; }
+.record-btn:disabled, .stop-btn:disabled { opacity: 0.6; cursor: not-allowed; background-color: #f5f5f5; color: #aaa; border-color: #ddd; }
 
 /* Visualizer */
 .audio-visualizer {
     display: flex;
     justify-content: center;
     gap: 4px;
-    height: 30px;
+    height: 25px;
     align-items: flex-end;
-    margin-bottom: 10px;
-    opacity: 0.2;
+    opacity: 0.3;
     transition: opacity 0.3s;
 }
 .audio-visualizer.active { opacity: 1; }
-.bar { width: 6px; background-color: #28a745; border-radius: 3px; height: 5px; }
+.bar { width: 5px; background-color: #28a745; border-radius: 2px; height: 4px; }
 .audio-visualizer.active .bar { animation: sound 0ms -800ms linear infinite alternate; }
-@keyframes sound { 0% { height: 5px; } 100% { height: 100%; } }
+@keyframes sound { 0% { height: 4px; } 100% { height: 100%; } }
 .audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
 .audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
@@ -100,29 +103,40 @@
 .file-drop-zone {
     border: 2px dashed #cbd5e0;
     border-radius: 8px;
-    padding: 30px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     transition: background 0.2s;
     text-align: center;
-    height: 100%; /* Si adatta all'altezza della card */
-    box-sizing: border-box;
+    flex-grow: 1; /* Riempie lo spazio verticale disponibile */
+    background-color: #fcfcfc;
 }
-.file-drop-zone:hover { background-color: #f7fafc; border-color: #3498db; }
-.drop-icon { font-size: 2em; }
-.file-name { color: #718096; font-size: 0.85em; word-break: break-all; }
+.file-drop-zone:hover { background-color: #f0f7ff; border-color: #3498db; }
+.drop-icon { font-size: 1.8em; }
+.drop-text strong { display: block; color: #2d3748; font-size: 0.9em; margin-bottom: 2px; }
+.file-name { color: #718096; font-size: 0.8em; word-break: break-all; }
 
 /* --- COLONNA DESTRA (EDITOR) --- */
+.editor-card {
+    height: 100%; /* Importante per layout desktop */
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
 .form-group label {
     display: block;
     font-weight: 600;
     color: #4a5568;
-    margin-bottom: 8px;
-    font-size: 0.9em;
+    margin-bottom: 6px;
+    font-size: 0.85em;
+    text-transform: uppercase;
 }
 
 /* Textarea Mobile */
@@ -133,116 +147,124 @@ textarea#voiceTranscription {
     border: 1px solid #cbd5e0;
     border-radius: 8px;
     font-family: 'Roboto', sans-serif;
-    font-size: 1.05em;
-    line-height: 1.6;
+    font-size: 1em;
+    line-height: 1.5;
     color: #2d3748;
     resize: none; 
     box-sizing: border-box;
+    flex-grow: 1; /* Si espande */
 }
 textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
 
-.commesse-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 45px; }
+.commesse-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; }
 
 /* --- FOOTER --- */
-.form-actions-footer { margin-top: 10px; display: flex; justify-content: center; }
+.form-actions-footer { margin-top: 5px; display: flex; justify-content: center; }
 .big-save-btn {
     width: 100%;
     background-color: #28a745; color: white;
-    font-size: 1.1em; font-weight: 700;
-    padding: 15px 40px; border: none; border-radius: 8px;
+    font-size: 1em; font-weight: 700;
+    padding: 12px 20px; border: none; border-radius: 6px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
     transition: transform 0.2s, background-color 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
-.big-save-btn img { width: 20px; filter: invert(1); }
+.big-save-btn img { width: 18px; filter: invert(1); }
 
 
 /* ==========================================================================
-   DESKTOP VIEW (Layout Wide Screen)
+   DESKTOP VIEW (Layout Wide Screen - FORZATO)
    ========================================================================== */
 
-@media (min-width: 992px) {
+@media (min-width: 768px) { /* Breakpoint abbassato per scattare prima */
     
     .insert-container {
-        /* CAMBIO CRUCIALE: Allarga al 95% della larghezza o max 1800px */
-        width: 95%;
-        max-width: 1800px;
+        /* Forza la larghezza massima per desktop */
+        max-width: 98% !important; 
+        width: 98% !important;
         margin-top: 20px;
+        flex-direction: row; /* Non più colonna */
+        align-items: stretch; /* Allinea altezze */
     }
 
     #insertDataForm {
-        display: grid;
-        /* Colonna Sinistra fissa un po' più larga (400px), Destra flessibile */
-        grid-template-columns: 400px 1fr; 
-        grid-template-rows: auto 1fr auto; 
-        gap: 30px; /* Aumentato il gap tra le colonne */
+        display: flex;
+        width: 100%;
+        gap: 20px;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    /* GRIGLIA LAYOUT INTERNA AL FORM */
+    .layout-grid {
+        display: flex;
+        width: 100%;
+        gap: 20px;
         align-items: stretch;
     }
 
     /* --- COLONNA SINISTRA (Input Tools) --- */
-    .recording-section {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .attachment-section {
-        grid-column: 1;
-        grid-row: 2;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .attachment-section .file-drop-zone {
-        flex-grow: 1; 
-        min-height: 150px;
-    }
-
-    /* --- COLONNA DESTRA (Editor & Contesto) --- */
-    .editor-column {
-        grid-column: 2;
-        grid-row: 1 / span 2; 
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .editor-card {
-        height: 100%;        
+    .input-column {
+        flex: 0 0 280px; /* Larghezza fissa ridotta */
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
 
-    .commessa-select-group {
-        flex-shrink: 0;
+    .recording-section {
+        flex: 0 0 auto; /* Altezza in base al contenuto */
     }
 
-    .editor-group {
-        flex-grow: 1; 
+    .attachment-section {
+        flex: 1; /* Riempie lo spazio verticale rimanente a sinistra */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .attachment-section .section-header {
+        margin-bottom: 10px;
+    }
+
+    /* --- COLONNA DESTRA (Editor & Contesto) --- */
+    .editor-column {
+        flex: 1; /* Prende tutto lo spazio rimanente in larghezza */
         display: flex;
         flex-direction: column;
     }
 
+    .editor-card {
+        height: 100%; /* Occupa tutta l'altezza della colonna */
+        /* Flex interno per spingere il footer in basso se necessario o espandere la textarea */
+    }
+
+    .editor-group {
+        flex-grow: 1; /* La textarea deve crescere */
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+    }
+
     textarea#voiceTranscription {
-        flex-grow: 1; 
-        height: 100%;
-        /* Font leggermente più grande su schermi larghi */
-        font-size: 1.15em; 
-        padding: 25px;
+        height: 100%; /* Occupa tutto lo spazio del genitore */
+        min-height: 400px; /* Altezza minima garantita */
+        font-size: 1.1em; /* Testo più leggibile su desktop */
+        padding: 20px;
     }
 
     /* --- FOOTER --- */
+    /* Il bottone salva su desktop lo mettiamo dentro la card editor in basso a destra,
+       oppure fluttuante sotto. Per ordine lo mettiamo sotto la textarea nella colonna destra. */
+    
     .form-actions-footer {
-        grid-column: 2; 
-        grid-row: 3;
-        justify-content: flex-end; 
-        margin-top: 0;
+        justify-content: flex-end; /* Allineato a destra */
+        margin-top: 15px;
     }
 
     .big-save-btn {
         width: auto;
-        min-width: 250px;
+        min-width: 200px;
+        padding: 12px 30px;
     }
 }
