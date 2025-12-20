@@ -1,13 +1,12 @@
-// js/main.js (Versione Definitiva)
+// js/main.js
 
 import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
-import { showSuccessFeedbackModal, closeSuccessFeedbackModal } from './shared-ui.js';
+import { showModal } from './shared-ui.js'; 
 
 let appInitialized = false;
 window.currentUserProfile = null;
 
-// La guardia ha già fatto il suo lavoro. Partiamo appena la pagina è pronta.
 document.addEventListener('DOMContentLoaded', () => {
     if (!appInitialized) {
         appInitialized = true;
@@ -18,140 +17,99 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeApp() {
     console.log("Fase 1: Inizializzazione basata su profilo locale.");
     try {
-        // LEGGE IL PROFILO DIRETTAMENTE DALLO STORAGE
         const profileString = localStorage.getItem('user_profile');
-        if (!profileString) {
-            throw new Error("Profilo utente non trovato nella sessione locale.");
-        }
+        if (!profileString) throw new Error("Profilo utente non trovato.");
         
         const profile = JSON.parse(profileString);
         window.currentUserProfile = profile;
-        console.log("Fase 2: Profilo utente caricato con successo:", profile);
+        console.log("Fase 2: Profilo caricato:", profile);
         setupUI();
 
     } catch (error) {
-        console.error("ERRORE CRITICO in initializeApp:", error.message);
-        alert("La tua sessione non è valida o è scaduta. Verrai disconnesso.");
-        localStorage.removeItem('custom_session_token');
-        localStorage.removeItem('user_profile');
+        console.error("ERRORE CRITICO:", error.message);
+        localStorage.clear();
         window.location.href = 'login.html';
     }
 }
 
-
-/**
- * Imposta tutti gli elementi dell'interfaccia utente.
- * Viene eseguita SOLO DOPO che initializeApp ha caricato con successo il profilo utente.
- * Questo garantisce che qualsiasi logica sui permessi funzionerà correttamente.
- */
 function setupUI() {
-    console.log("Fase 3: Avvio del setup dell'interfaccia utente.");
+    console.log("Fase 3: Setup UI.");
 
     const legendInstance = new Legend();
     const modalOverlay = document.getElementById('modalOverlay'); 
-    const insertDataModalInstance = document.getElementById('insertDataModal');
-    const chatModalInstance = document.getElementById('chatModal');
-    const trainingModalInstance = document.getElementById('trainingModal');
-
-    // Ora i controlli sui permessi usano il nostro profilo salvato.
+    
+    // Controllo permessi Admin
     const isAdmin = window.currentUserProfile?.is_admin === true;
+    
+    // Gestione visibilità pulsanti protetti
     const trainingButton = document.getElementById('openTrainingModalBtn');
-    if (trainingButton && !isAdmin) {
-        trainingButton.style.display = 'none';
+    if (trainingButton && !isAdmin) trainingButton.style.display = 'none';
+
+    // --- NUOVO: Gestione pulsante Configurazione Logica ---
+    const configButton = document.getElementById('openConfigBtn');
+    if (configButton && !isAdmin) {
+        configButton.style.display = 'none';
     }
 
-    // Il logout ora deve cancellare la nostra chiave.
+    // Gestione click Dashboard (Placeholder Analisi)
+    const dashboardBtn = document.getElementById('openDashboardBtn');
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showModal({ 
+                title: 'In Sviluppo', 
+                message: 'La Dashboard Analisi dei Dati sarà disponibile prossimamente.', 
+                confirmText: 'OK' 
+            });
+        });
+    }
+
+    // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', (event) => {
         event.preventDefault();
-        localStorage.removeItem('custom_session_token');
+        localStorage.removeItem('session_token'); 
+        localStorage.removeItem('user_profile');
         window.location.href = 'login.html';
     });
 
-    // Modal Buttons
+    // Binding Modali Esistenti
     document.getElementById('openInsertDataModalBtn')?.addEventListener('click', openInsertDataModal);
     document.getElementById('openChatModalBtn')?.addEventListener('click', openChatModal);   
     document.getElementById('openTrainingModalBtn')?.addEventListener('click', openTrainingModal);
 
+    // Overlay Close
     if (modalOverlay) {
         modalOverlay.addEventListener('click', () => {
             const openModal = document.querySelector('.modal[style*="display: block"]');
             if (openModal) {
-                switch (openModal.id) {
-                    case 'insertDataModal': closeInsertDataModal(); break;
-                    case 'chatModal': closeChatModal(); break;
-                    case 'trainingModal': closeTrainingModal(); break;
-                }
+                if (openModal.id === 'insertDataModal') closeInsertDataModal();
+                else if (openModal.id === 'chatModal') closeChatModal();
+                else if (openModal.id === 'trainingModal') closeTrainingModal();
             }
         });
     }
 
-    // Rendiamo le funzioni e le istanze accessibili globalmente se necessario da altri script.
-    window.legendInstance = legendInstance;
-    window.modalOverlay = modalOverlay;
-    
+    // Export globale funzioni modali
     window.openInsertDataModal = openInsertDataModal;
     window.openChatModal = openChatModal;
     window.openTrainingModal = openTrainingModal;
-
     window.closeInsertDataModal = closeInsertDataModal;
     window.closeChatModal = closeChatModal;
     window.closeTrainingModal = closeTrainingModal;
-
-    console.log("Fase 4: Interfaccia utente pronta e operativa.");
 }
 
-
-// ---------------------------------------------------------------------------
-// FUNZIONI HELPER (Gestione Modali)
-// La loro logica interna non cambia.
-// ---------------------------------------------------------------------------
-
+// Funzioni Helper per i Modali
 function openInsertDataModal() {
-    const insertDataModalInstance = document.getElementById('insertDataModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (insertDataModalInstance) {
-        insertDataModalInstance.style.display = 'block';
-        modalOverlay.style.display = 'block';
-        if (window.prepareInsertDataModal) window.prepareInsertDataModal();
-    }
+    const m = document.getElementById('insertDataModal');
+    const o = document.getElementById('modalOverlay');
+    if(m) { m.style.display = 'block'; o.style.display = 'block'; if(window.prepareInsertDataModal) window.prepareInsertDataModal(); }
 }
-
-function openChatModal() {
-    const chatModalInstance = document.getElementById('chatModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (chatModalInstance) {
-        chatModalInstance.style.display = 'block';
-        modalOverlay.style.display = 'block';
-    }
-}
-
-function openTrainingModal() {
-    const trainingModalInstance = document.getElementById('trainingModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (trainingModalInstance) {
-        trainingModalInstance.style.display = 'block';
-        modalOverlay.style.display = 'block';
-    }
-}
-
 function closeInsertDataModal() {
-    const insertDataModalInstance = document.getElementById('insertDataModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (insertDataModalInstance) insertDataModalInstance.style.display = 'none';
-    if (modalOverlay) modalOverlay.style.display = 'none';
-    if (window.cleanupInsertDataModal) window.cleanupInsertDataModal();
+    const m = document.getElementById('insertDataModal');
+    const o = document.getElementById('modalOverlay');
+    if(m) m.style.display = 'none'; if(o) o.style.display = 'none'; if(window.cleanupInsertDataModal) window.cleanupInsertDataModal();
 }
-
-function closeChatModal() {
-    const chatModalInstance = document.getElementById('chatModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (chatModalInstance) chatModalInstance.style.display = 'none';
-    if (modalOverlay) modalOverlay.style.display = 'none';
-}
-
-function closeTrainingModal() {
-    const trainingModalInstance = document.getElementById('trainingModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (trainingModalInstance) trainingModalInstance.style.display = 'none';
-    if (modalOverlay) modalOverlay.style.display = 'none';
-}
+function openChatModal() { document.getElementById('chatModal').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; }
+function closeChatModal() { document.getElementById('chatModal').style.display = 'none'; document.getElementById('modalOverlay').style.display = 'none'; }
+function openTrainingModal() { document.getElementById('trainingModal').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; }
+function closeTrainingModal() { document.getElementById('trainingModal').style.display = 'none'; document.getElementById('modalOverlay').style.display = 'none'; }

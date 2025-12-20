@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <link rel="stylesheet" href="style-v2.css">
-
 </head>
 
 <body>
@@ -27,6 +26,7 @@
         <h1>SEGRETARIO AI</h1>
 
         <div class="button-container">
+            <!-- RIGA 1: INPUT DATI & CHAT -->
             <a href="#" class="button insert-data-button" id="openInsertDataModalBtn">
                 <img src="img/plus.png" alt="Inserisci">
                 <span>Inserisci Dati</span>
@@ -35,6 +35,8 @@
                 <img src="img/chat.png" alt="Chat">
                 <span>Chat AI</span>
             </a>
+
+            <!-- RIGA 2: COMMESSE & DATI -->
             <a href="commesse.html" class="button commesse-button">
                 <img src="img/view-orders.png" alt="Commesse">
                 <span>Commesse</span>
@@ -43,14 +45,8 @@
                 <img src="img/table.png" alt="Gestione Dati">
                 <span>Vista Agile</span>
             </a>
-            <a href="inserimento-ore.html" class="button insert-hours-button">
-                <img src="img/disciplinary.png" alt="Inserimento Ore">
-                <span>Inserimento Ore</span>
-            </a>
-            <a href="registro-presenze.html" class="button attendance-button">
-                <img src="img/attendance.png" alt="Registro Presenze">
-                <span>Registro Presenze</span>
-            </a>
+
+            <!-- RIGA 3: ORDINI PRODUZIONE -->
             <a href="#" class="button insert-orders-button" id="openInsertProductionOrderBtn">
                 <img src="img/production-order.png" alt="Inserimento Ordini">
                 <span>Inserimento Ordini</span>
@@ -59,15 +55,39 @@
                 <img src="img/view-orders.png" alt="Vista Ordini">
                 <span>Vista Ordini</span>
             </a>
-            <!-- LINK TEMPORANEO AL CONFIGURATORE -->
-            <a href="admin-config.html" class="button dashboard-button" id="openDashboardBtn">
+
+            <!-- RIGA 4: ORE & PLACEHOLDER -->
+            <a href="inserimento-ore.html" class="button insert-hours-button">
+                <img src="img/disciplinary.png" alt="Inserimento Ore">
+                <span>Inserimento Ore</span>
+            </a>
+            <!-- Pulsante Vuoto / Segnaposto -->
+            <div class="button placeholder-button">
+                <img src="img/more.png" alt="..." style="opacity: 0.3;">
+                <span>Presto disponibile</span>
+            </div>
+
+            <!-- RIGA 5: DASHBOARD & PRESENZE -->
+            <a href="#" class="button dashboard-button" id="openDashboardBtn">
                 <img src="img/dashboard.png" alt="Dashboard">
-                <span>Dashboard</span>
+                <span>Dashboard Analisi</span>
+            </a>
+            <a href="registro-presenze.html" class="button attendance-button">
+                <img src="img/attendance.png" alt="Registro Presenze">
+                <span>Registro Presenze</span>
+            </a>
+
+            <!-- RIGA 6: CONFIGURAZIONE & TASK -->
+            <a href="admin-config.html" class="button config-button" id="openConfigBtn">
+                <img src="img/settings.png" alt="Config">
+                <span>Configurazione Logica</span>
             </a>
             <a href="attivita.html" class="button task-button">
                 <img src="img/tasks.png" alt="Attività">
                 <span>Gestione Attività</span>
             </a>
+
+            <!-- RIGA 7: ADDESTRAMENTO (Full Width) -->
             <a href="#" class="training-button" id="openTrainingModalBtn">
                 <img src="img/brain.png" alt="Addestramento">
                 <span>Addestramento</span>
@@ -75,9 +95,9 @@
         </div>
     </div> 
 
+    <!-- MODALE INSERIMENTO DATI -->
     <div class="modal" id="insertDataModal">
         <div class="modal-content">
-
             <div class="modal-header">
                 <div class="modal-header-buttons">
                     <button class="help-button" id="insertDataHelpBtn">?</button>
@@ -90,7 +110,6 @@
 
             <div class="modal-body">
                 <form id="insertDataForm">
-
                     <div class="form-section">
                         <div class="form-section-header">
                             <img src="img/mic.png" alt="Mic Icon">
@@ -109,7 +128,8 @@
                         </div>
                     </div>
 
-                    <div class="form-section styled-choices-container"> <div class="form-section-header">
+                    <div class="form-section styled-choices-container"> 
+                        <div class="form-section-header">
                             <img src="img/chat.png" alt="Edit Icon">
                             <h3>Testo e Riferimento</h3>
                         </div>
@@ -119,7 +139,8 @@
                         </select>
                     </div>
 
-                    <div class="form-section"> <div class="form-section-header">
+                    <div class="form-section"> 
+                        <div class="form-section-header">
                             <img src="img/file.png" alt="Upload Icon">
                             <h3>Carica File (Opzionale)</h3>
                         </div>
@@ -129,7 +150,6 @@
                         </label>
                         <input type="file" id="fileUpload" name="fileUpload" hidden>
                     </div>
-
                 </form>
             </div>
 
@@ -139,59 +159,54 @@
                     <span>Salva Dati</span>
                 </button>
             </div>
-
-            <div id="insertDataSuccessMessage" style="display: none; text-align: center;">
-                 <h4>Dati salvati con successo! ✅</h4>
-            </div>
         </div>
     </div>
 
-    <div id="modalOverlay" class="modal-overlay"></div>
-
+    <!-- MODALE CHAT -->
     <div id="chatModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Chat AI</h2>
-            <div class="modal-header-buttons">
-                <div class="help-button-container">
-                    <button class="help-button" data-legend="chatLegend">?</button>
-                </div>
-                <span class="close-button" onclick="closeChatModal()">&times;</span>
-            </div>
-            </div>
-        <div class="modal-body chat-modal-body"> 
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-message user">
-                    <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
-                </div>
-                <div class="chat-message ai">
-                    <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chat AI</h2>
+                <div class="modal-header-buttons">
+                    <div class="help-button-container">
+                        <button class="help-button" data-legend="chatLegend">?</button>
+                    </div>
+                    <span class="close-button" onclick="closeChatModal()">&times;</span>
                 </div>
             </div>
+            <div class="modal-body chat-modal-body"> 
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message user">
+                        <div class="message-content">Ciao Frank, puoi aiutarmi?</div>
+                    </div>
+                    <div class="chat-message ai">
+                        <div class="message-content">Certamente! Sono qui per assisterti. Cosa posso fare per te oggi?</div>
+                    </div>
+                </div>
 
-            <div class="typing-indicator" style="display: none;">
-                <span></span><span></span><span></span>
-            </div>
+                <div class="typing-indicator" style="display: none;">
+                    <span></span><span></span><span></span>
+                </div>
 
-            <div id="chatStatus" class="chat-status"></div> 
+                <div id="chatStatus" class="chat-status"></div> 
 
-            <div class="chat-input-area">
-                <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
-                <div class="chat-controls">
-                    <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
-                    <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
+                <div class="chat-input-area">
+                    <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."></textarea>
+                    <div class="chat-controls">
+                        <button id="startChatRecording" class="chat-voice-button"><img src="img/voice.png" alt="Registra Vocale"></button>
+                        <button id="sendChatMessage" class="chat-send-button"><img src="img/play.png" alt="Invia"></button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
 
+    <!-- MODALE FEEDBACK SUCCESSO -->
     <div id="success-feedback-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="feedback-modal-title"></h2>
                 <div class="modal-header-buttons">
-                    <button class="help-button">?</button>
                     <button class="close-button" data-close-feedback>&times;</button>
                 </div>
             </div>
@@ -205,105 +220,8 @@
         </div>
     </div>
 
-    <div id="mainPageLegend" class="legend">
-        <h3>Aiuto - Pagina Principale</h3>
-        <div class="legend-item">
-            <div class="legend-icon insert-button"><img src="img/plus.png" alt="Inserisci"></div>
-            <div class="legend-text">Inserisci una nuova nota nella scheda "Registrazioni" di spreadsheets sul cloud.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon chat-button"><img src="img/chat.png" alt="Chat"></div>
-            <div class="legend-text">Apri la chat con l'intelligenza artificiale.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon new-order-button"><img src="img/new-order.png" alt="Nuova Commessa"></div>
-            <div class="legend-text">Inserisci i dati per una nuova commessa.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon search-button"><img src="img/search.png" alt="Apri Google Sheets"></div>
-            <div class="legend-text">Apre il foglio Google Sheets "master" per la gestione delle anagrafiche delle commesse.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon insert-hours-button"><img src="img/disciplinary.png" alt="Inserimento Ore"></div>
-            <div class="legend-text">Apre la finestra per l'inserimento massivo e controllato delle ore giornaliere.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon dashboard-button"><img src="img/dashboard.png" alt="Dashboard"></div>
-            <div class="legend-text">Apre la dashboard analitica in una nuova finestra per una visione d'insieme dei dati.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon manage-data-button"><img src="img/table.png" alt="Gestione Dati"></div>
-            <div class="legend-text">Apre la gestione dati avanzata in una nuova finestra per consultare, filtrare e modificare i record.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon production-orders-button"><img src="img/production-order.png" alt="Inserimento Ordini"></div>
-            <div class="legend-text">Apre il modale per inserire nuove righe negli ordini di produzione.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon attendance-button"><img src="img/attendance.png" alt="Registro Presenze"></div>
-            <div class="legend-text">Apre la maschera per la registrazione delle presenze giornaliere del personale.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon view-orders-button"><img src="img/view-orders.png" alt="Vista Ordini"></div>
-            <div class="legend-text">Visualizza lo stato di avanzamento e i dettagli degli ordini di produzione.</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-icon training-button"><img src="img/brain.png" alt="Addestramento"></div>
-            <div class="legend-text">Apre il modale per l'addestramento dell'intelligenza artificiale.</div>
-        </div>
-    </div>
-
-    <div id="insertDataLegend" class="legend" style="display: none;">
-        <h3>Aiuto - Inserisci Nuovi Dati</h3>
-        <div class="legend-item">
-            <h3>Inserisci Testo</h3>
-            <div class="legend-text">: Digita o incolla il testo che vuoi aggiungere al database.</div>
-        </div>
-        <div class="legend-item">
-            <h3>Carica File</h3>
-            <div class="legend-text">: Seleziona un file di testo da caricare e il suo contenuto verrà aggiunto.</div>
-        </div>
-        <div class="legend-item">
-            <h3>Registra Vocale</h3>
-            <div class="legend-text">: Avvia la registrazione vocale e il testo trascritto verrà aggiunto.</div>
-        </div>
-        <div class="legend-item">
-            <button class="save-button">Salva Dati</button>
-            <div class="legend-text">Clicca per salvare i dati inseriti nel database.</div>
-        </div>
-    </div>
-
-    <div id="chatLegend" class="legend" style="display: none;">
-        <h3>Aiuto - Chat AI</h3>
-        <div class="legend-item">
-            <div class="legend-text">Interagisci con l'intelligenza artificiale per porre domande e ottenere analisi sui dati.</div>
-        </div>
-    </div>
-
-    <div id="insertHoursLegend" class="legend" style="display: none;">
-        <h3>Aiuto - Inserimento Ore</h3>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Lista Personale (Sinistra):</strong> Clicca su un nome per pre-selezionarlo nel form. Il badge numerico indica le ore totali già inserite per quella persona nella tabella sottostante. I nomi in rosso sono già presenti in tabella.
-            </div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Inserisci Valori (Destra):</strong> Compila i campi e clicca su "Aggiungi alla Tabella" per creare una nuova riga nel riepilogo.
-            </div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-text">
-                <strong>Riepilogo Inserimenti:</strong> Questa tabella mostra tutte le righe pronte per essere salvate. Fai <strong>doppio clic</strong> su una cella (Giorno, Ore, Note) per modificarla direttamente.
-            </div>
-        </div>
-         <div class="legend-item">
-            <div class="legend-text">
-                <strong>Salva Dati Definitivi:</strong> Al termine, clicca questo pulsante per salvare tutte le righe presenti nel riepilogo.
-            </div>
-        </div>
-    </div>
-
+    <!-- OVERLAY -->
+    <div id="modalOverlay" class="modal-overlay"></div>
     <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
         <div id="custom-modal" class="custom-modal">
             <h2 id="custom-modal-title"></h2>
@@ -312,12 +230,28 @@
         </div>
     </div>
 
+    <!-- LEGENDE -->
+    <div id="mainPageLegend" class="legend">
+        <h3>Aiuto - Pagina Principale</h3>
+        <div class="legend-item"><div class="legend-text">Usa la <strong>Dashboard Analisi</strong> per consultare i grafici (presto disponibile).</div></div>
+        <div class="legend-item"><div class="legend-text">Usa la <strong>Configurazione Logica</strong> per gestire macro categorie e componenti (Solo Admin).</div></div>
+    </div>
+
+    <div id="insertDataLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Inserisci Nuovi Dati</h3>
+        <div class="legend-item"><div class="legend-text">Inserisci testo, file o vocali per arricchire la conoscenza dell'AI.</div></div>
+    </div>
+
+    <div id="chatLegend" class="legend" style="display: none;">
+        <h3>Aiuto - Chat AI</h3>
+        <div class="legend-item"><div class="legend-text">Interagisci con l'intelligenza artificiale per porre domande e ottenere analisi sui dati.</div></div>
+    </div>
+
     <footer class="release-info">
-        Release 1.0 revisione 0 - Rilasciata il 06 Settembre 2025
+        Release 2.0 - Rilasciata il 20 Dicembre 2025
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-
     <script type="module" src="js/supabase-client.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/api-client.js"></script>
@@ -328,7 +262,6 @@
     <script type="module" src="js/main.js"></script>       
     <script type="module" src="js/chat-modal.js"></script>
     <script type="module" src="js/insert-data-modal.js"></script>
-    <script type="module" src="js/inserimento-ore-mobile.js"></script>
     <script type="module" src="js/training.js"></script>
 </body>
 </html>
