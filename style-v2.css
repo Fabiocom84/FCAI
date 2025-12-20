@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.4 PATCHED)
+   SEGRETARIO AI - FOGLIO DI STILE PRINCIPALE (v2.5 FINAL FIX)
    ========================================================================== */
 
 /* --- 1. RESET & GLOBALI --- */
@@ -66,7 +66,6 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
     gap: 15px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;
 }
 
-/* Stile Base Pulsante */
 .button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 15px 10px; text-align: center; text-decoration: none; color: white;
@@ -124,17 +123,6 @@ h2 { font-weight: 500; color: #333333; margin-bottom: 15px; text-transform: uppe
 .training-button:hover { background-color: #7a8491; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
 .training-button img { max-width: 24px; max-height: 24px; filter: invert(1); margin: 0; }
 
-/* Classi Utility */
-.button.disabled { opacity: 0.6; cursor: not-allowed; background-color: #95a5a6; }
-.button.disabled:hover { transform: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-
-.button--primary { background-color: #28a745; border-color: #218838; color: white; }
-.button--primary:hover { background-color: #218838; }
-.button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
-.button--secondary:hover { background-color: #0069d9; }
-.button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
-.button--danger { background-color: #dc3545; border-color: #c82333; color: white; }
-
 /* --- 4. FORM & INPUT --- */
 .form-group, .form-section { margin-bottom: 5px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: left; }
 .form-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
@@ -158,6 +146,7 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 
 /* --- 5. MODALI --- */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20; }
+/* Il display: none è cruciale qui, ma meglio averlo anche inline nell'HTML per sicurezza */
 .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); width: 95%; max-width: 600px; max-height: 90%; overflow-y: auto; z-index: 30; animation: fadeInModal 0.3s; display: flex; flex-direction: column; box-sizing: border-box; }
 .modal-content { display: flex; flex-direction: column; height: 100%; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; }
@@ -185,43 +174,6 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 #stopButton { border-color: #dc3545; color: #dc3545; }
 #stopButton:hover:not(:disabled) { background-color: #dc3545; color: white; }
 
-/* Chat UI */
-.chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 10px; height: 300px; overflow-y: auto; background: #fff; }
-.chat-message { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 0.9em; }
-.chat-message.user { align-self: flex-end; background: #dcf8c6; }
-.chat-message.ai { align-self: flex-start; background: #f1f0f0; }
-
-/* Custom Modals */
-#custom-modal-overlay { z-index: 1000; background-color: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center; }
-.custom-modal { background: white; padding: 25px 30px; border-radius: 12px; max-width: 450px; text-align: center; }
-.custom-modal-buttons { display: flex; justify-content: center; gap: 15px; }
-.custom-modal-buttons .button { min-height: unset; width: auto; padding: 10px 25px; flex-direction: row; }
-
-/* Success Modal */
-#success-feedback-modal .feedback-body { text-align: center; padding: 5px 0; }
-#success-feedback-modal h3 { color: #28a745; }
-#success-feedback-modal h3::after { content: '✅'; margin-left: 10px; }
-#success-feedback-modal .save-button { width: auto; padding: 10px 30px; margin: 0 auto; }
-
-/* Insert Hours Responsive Elements */
-.modal.large { width: 90vw; max-width: 1400px; max-height: 85vh; }
-.modal-top-section { display: flex; gap: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
-.personnel-list-container { flex: 1.5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #f8f9fa; }
-#personnel-feedback-list { list-style: none; padding: 0; column-count: 3; column-gap: 15px; }
-.entry-count-badge { background: #2A76B8; color: white; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; visibility: hidden; }
-.entry-count-badge.visible { visibility: visible; }
-.insert-form-container-new { flex: 2; display: flex; flex-direction: column; justify-content: space-between; }
-.form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 15px; }
-.form-grid .form-group:nth-child(1) { grid-column: span 3; }
-.form-grid .form-group:nth-child(2) { grid-column: span 6; }
-.form-grid .form-group:nth-child(3) { grid-column: span 3; }
-.form-grid .form-group:nth-child(4) { grid-column: span 12; }
-.form-grid .form-group:nth-child(5) { grid-column: span 8; }
-.form-grid .form-group:nth-child(6) { grid-column: span 4; }
-#provisional-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-#provisional-table th, #provisional-table td { padding: 10px 12px; border-bottom: 1px solid #dee2e6; text-align: left; }
-.delete-row-btn img { width: 1.5em; height: 1.5em; }
-
 /* --- 6. UTILITY (Login, Help, Footer) --- */
 .login-container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; text-align: center; }
 .login-container button { width: 100%; padding: 14px; margin-top: 20px; background: #2A76B8; color: white; border-radius: 8px; cursor: pointer; font-size: 1.2em; border: none; }
@@ -232,7 +184,7 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 .logout-button-horizontal:hover { background: #e57373; transform: translateY(-2px); }
-/* --- FIX CRITICO: Dimensione icona logout --- */
+/* FIX CRITICO: Dimensione icona logout */
 .logout-button-horizontal img { width: 18px; height: 18px; }
 .logout-button-horizontal span { font-size: 0.8em; font-weight: 500; }
 
@@ -256,6 +208,37 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .legend-icon.config-button { background-color: #34495e; }
 
 .release-info { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; color: #777; text-align: center; padding: 12px 0; font-size: 0.8em; border-top: 1px solid #e9ecef; z-index: 5; }
+
+/* ==========================================================================
+   AGGIUNTE SPECIFICHE MODALE COMMESSE (Ripristino layout)
+   ========================================================================== */
+
+/* Griglia per affiancare input (es. VO e Rif. Tecnico) */
+.fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Due colonne uguali */
+    gap: 15px;
+}
+
+/* Griglia per dettagli aggiuntivi (Provincia, Paese, Anno, Matricola) */
+.additional-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Due colonne */
+    gap: 15px;
+}
+
+/* Wrapper generico per i campi */
+.form-fields-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spazio verticale tra i campi */
+}
+
+/* Input testuali in grassetto nel modale */
+.form-section input[type="text"],
+.form-section input[type="number"] {
+    font-weight: 700;
+}
 
 /* --- 7. RESPONSIVE --- */
 @media (max-width: 600px) {
