@@ -27,48 +27,84 @@
 
         <div class="insert-container">
             <form id="insertDataForm">
+                
                 <div class="columns-wrapper">
-                    <!-- Colonna Sinistra -->
+                    
+                    <!-- COLONNA SINISTRA -->
                     <div class="left-panel">
+                        
+                        <!-- Box 1: Vocale -->
                         <div class="card-section recording-section">
-                            <div class="section-header"><h3>🎤 Registrazione Vocale</h3></div>
+                            <div class="section-header">
+                                <h3>🎤 Registrazione Vocale</h3>
+                            </div>
                             <div class="recording-ui">
                                 <div id="visualizer" class="audio-visualizer">
-                                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                    <div class="bar"></div><div class="bar"></div>
                                 </div>
                                 <p id="recordingStatus" class="status-text">Pronto per registrare</p>
+                                
                                 <div class="voice-controls-stacked">
-                                    <button type="button" id="startButton" class="record-btn">Avvia Registrazione</button>
-                                    <button type="button" id="stopButton" class="stop-btn" disabled>Ferma & Trascrivi</button>
+                                    <button type="button" id="startButton" class="record-btn">
+                                        Avvia Registrazione
+                                    </button>
+                                    <button type="button" id="stopButton" class="stop-btn" disabled>
+                                        Ferma & Trascrivi
+                                    </button>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Box 2: Allegati -->
                         <div class="card-section attachment-section">
-                            <div class="section-header"><h3>📎 Allegati</h3></div>
+                            <div class="section-header">
+                                <h3>📎 Allegati</h3>
+                            </div>
+                            <!-- name="fileUpload" è corretto per il backend -->
                             <label for="fileUpload" class="file-drop-zone-expanded">
                                 <span class="drop-icon">📂</span>
-                                <div class="drop-text"><strong>Carica un file</strong><span class="file-name">Nessun file selezionato</span></div>
+                                <div class="drop-text">
+                                    <strong>Carica un file</strong>
+                                    <span class="file-name">Nessun file selezionato</span>
+                                </div>
                                 <input type="file" id="fileUpload" name="fileUpload" hidden>
                             </label>
                         </div>
-                    </div>
-                    <!-- Colonna Destra -->
+
+                    </div> <!-- Fine Left Panel -->
+
+                    <!-- COLONNA DESTRA -->
                     <div class="right-panel">
                         <div class="card-section editor-card">
+                            
+                            <!-- Scelta Commessa (name="riferimento" come da backend) -->
                             <div class="form-group styled-choices-container commessa-select-group">
                                 <label for="riferimentoDropdown">Riferimento Commessa</label>
-                                <select id="riferimentoDropdown" name="id_commessa_fk"><option value="" selected>Nessuna associazione</option></select>
+                                <select id="riferimentoDropdown" name="riferimento">
+                                    <option value="" selected>Nessuna associazione</option>
+                                </select>
                             </div>
+
+                            <!-- Area di Testo (name="transcription" come da backend) -->
                             <div class="form-group editor-group">
                                 <label for="voiceTranscription">Contenuto / Trascrizione</label>
-                                <textarea id="voiceTranscription" name="contenuto_testo" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                                <textarea id="voiceTranscription" name="transcription" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
                             </div>
+
+                            <!-- Pulsante Salva -->
                             <div class="save-btn-container">
-                                <button type="submit" id="saveDataBtn" class="big-save-btn"><img src="img/save.png" alt="Save">SALVA DATI</button>
+                                <button type="submit" id="saveDataBtn" class="big-save-btn">
+                                    <img src="img/save.png" alt="Save">
+                                    SALVA DATI
+                                </button>
                             </div>
+
                         </div>
-                    </div>
-                </div>
+                    </div> <!-- Fine Right Panel -->
+
+                </div> <!-- Fine Columns Wrapper -->
+
             </form>
         </div>
     </div>
@@ -83,14 +119,6 @@
     </div>
     <div id="modalOverlay" class="modal-overlay"></div>
 
-    <!-- LEGENDA (Div Nascosto) -->
-    <div id="insertLegend" class="legend" style="display: none;">
-        <h3>Guida Inserimento</h3>
-        <div class="legend-item"><div class="legend-text"><strong>Vocale:</strong> Premi "Avvia" e parla. Premi "Ferma" per trascrivere automaticamente.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong>Testo:</strong> Puoi modificare manualmente la trascrizione o scrivere direttamente.</div></div>
-        <div class="legend-item"><div class="legend-text"><strong>Salvataggio:</strong> I dati verranno salvati nella tabella 'Registrazioni'.</div></div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
@@ -98,5 +126,6 @@
     <script type="module" src="js/shared-ui.js"></script>
     <script type="module" src="js/legend.js"></script>
     <script type="module" src="js/inserisci-dati.js"></script>
+
 </body>
 </html>
