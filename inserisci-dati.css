@@ -1,13 +1,16 @@
 /* inserisci-dati.css */
 
-/* Contenitore principale centrato */
+/* --- STILI BASE (MOBILE FIRST) --- */
+
+/* Contenitore principale */
 .insert-container {
     width: 100%;
-    max-width: 800px; /* Più stretto per focus sul contenuto */
+    max-width: 600px; /* Default stretto per mobile */
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding-bottom: 40px;
 }
 
 /* Card generica per le sezioni */
@@ -29,16 +32,18 @@
 }
 
 .section-header img {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     opacity: 0.8;
 }
 
 .section-header h3 {
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: #2c3e50;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* --- SEZIONE REGISTRAZIONE --- */
@@ -55,29 +60,30 @@
     margin-bottom: 20px;
     min-height: 1.2em;
     font-weight: 500;
+    text-align: center;
 }
 
 .voice-controls-large {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     width: 100%;
     justify-content: center;
 }
 
 .record-btn, .stop-btn {
-    padding: 15px 30px;
-    border-radius: 50px; /* Pill shape */
+    padding: 12px 20px;
+    border-radius: 50px;
     border: none;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    min-width: 160px;
     justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    flex: 1; /* Pulsanti uguali su mobile */
 }
 
 .record-btn {
@@ -112,34 +118,44 @@
     transform: none;
 }
 
-/* Animazione Visualizer (finto, solo estetico durante rec) */
+.icon { font-style: normal; }
+
+/* Visualizer */
 .audio-visualizer {
     display: flex;
     gap: 5px;
-    height: 40px;
+    height: 30px;
     align-items: flex-end;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     opacity: 0;
     transition: opacity 0.3s;
 }
 .audio-visualizer.active { opacity: 1; }
 .bar {
-    width: 8px;
+    width: 6px;
     background-color: #e74c3c;
     border-radius: 4px;
     animation: sound 0ms -800ms linear infinite alternate;
 }
 @keyframes sound { 0% { height: 5px; opacity: .5; } 100% { height: 100%; opacity: 1; } }
-
 .audio-visualizer.active .bar { animation-duration: 400ms; }
-.audio-visualizer.active .bar:nth-child(1) { animation-duration: 474ms; }
-.audio-visualizer.active .bar:nth-child(2) { animation-duration: 433ms; }
-.audio-visualizer.active .bar:nth-child(3) { animation-duration: 407ms; }
-.audio-visualizer.active .bar:nth-child(4) { animation-duration: 458ms; }
-.audio-visualizer.active .bar:nth-child(5) { animation-duration: 400ms; }
+.audio-visualizer.active .bar:nth-child(odd) { animation-duration: 474ms; }
+.audio-visualizer.active .bar:nth-child(even) { animation-duration: 433ms; }
 
 
 /* --- SEZIONE CONTENUTO --- */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #555;
+    font-size: 0.9em;
+}
+
 textarea#voiceTranscription {
     width: 100%;
     min-height: 150px;
@@ -150,6 +166,7 @@ textarea#voiceTranscription {
     font-family: 'Roboto', sans-serif;
     line-height: 1.5;
     resize: vertical;
+    box-sizing: border-box;
 }
 textarea#voiceTranscription:focus {
     border-color: #2A76B8;
@@ -157,26 +174,36 @@ textarea#voiceTranscription:focus {
     outline: none;
 }
 
+/* Choices Custom Override */
+.styled-choices-container .choices__inner {
+    background-color: #fff;
+    border-radius: 8px;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+}
+
 /* --- SEZIONE ALLEGATI --- */
 .file-drop-zone {
     border: 2px dashed #b0b0b0;
     border-radius: 8px;
-    padding: 30px;
+    padding: 20px;
     text-align: center;
     cursor: pointer;
     background-color: #fcfcfc;
     transition: all 0.3s ease;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 15px;
 }
 .file-drop-zone:hover {
     border-color: #3498db;
     background-color: #f0f7ff;
 }
-.drop-icon { font-size: 2.5em; }
-.file-name { font-weight: 500; color: #555; }
+.drop-icon { font-size: 2em; }
+.file-name { font-weight: 500; color: #555; word-break: break-all; }
 
 /* --- FOOTER AZIONI --- */
 .form-actions {
@@ -184,26 +211,101 @@ textarea#voiceTranscription:focus {
 }
 .big-save-btn {
     width: 100%;
-    padding: 18px;
-    font-size: 1.2em;
+    padding: 15px;
+    font-size: 1.1em;
     font-weight: 700;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
 }
-.big-save-btn img {
-    width: 24px;
-    height: 24px;
-}
+.big-save-btn img { width: 20px; height: 20px; filter: invert(1); }
 
-/* Responsive Mobile */
-@media (max-width: 600px) {
-    .voice-controls-large {
+
+/* ============================================= */
+/* == STILI DESKTOP (Layout a 2 Colonne)      == */
+/* ============================================= */
+
+@media (min-width: 992px) {
+    
+    /* Allarghiamo il contenitore */
+    .insert-container {
+        max-width: 1200px;
+        margin-top: 20px;
+    }
+
+    /* Trasformiamo il form in una griglia */
+    #insertDataForm {
+        display: grid;
+        grid-template-columns: 350px 1fr; /* Colonna SX fissa, DX flessibile */
+        grid-template-rows: auto auto 1fr; /* Righe adattive */
+        gap: 25px;
+        align-items: start;
+    }
+
+    /* COLONNA SINISTRA (Strumenti) */
+    
+    /* 1. Registrazione in alto a sinistra */
+    .recording-section {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* 2. Allegati sotto la registrazione */
+    .attachment-section {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    /* COLONNA DESTRA (Area di lavoro) */
+    
+    /* 3. Contenuto (Testo) a tutta altezza */
+    .content-section {
+        grid-column: 2;
+        grid-row: 1 / span 2; /* Occupa l'altezza delle due card a sinistra */
+        height: 100%;
+        display: flex;
         flex-direction: column;
     }
-    .record-btn, .stop-btn {
-        width: 100%;
+
+    /* Fai espandere la textarea per riempire lo spazio vuoto */
+    .content-section .form-group:first-of-type {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
     }
-    .page-wrapper {
-        padding-top: 20px;
+    textarea#voiceTranscription {
+        flex-grow: 1;
+        min-height: 400px; /* Altezza minima importante su desktop */
+        font-size: 1.1em; /* Testo leggermente più grande per leggibilità */
+    }
+
+    /* FOOTER */
+    .form-actions {
+        grid-column: 1 / -1; /* Occupa tutta la larghezza in basso */
+        grid-row: 3;
+        display: flex;
+        justify-content: flex-end; /* Allinea a destra */
+        padding-top: 10px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .big-save-btn {
+        width: auto; /* Non più full width */
+        min-width: 250px;
+        padding: 15px 40px;
+        font-size: 1.2em;
+    }
+
+    /* Ritocchi estetici desktop */
+    .file-drop-zone {
+        flex-direction: column;
+        padding: 40px;
+    }
+    
+    .voice-controls-large {
+        flex-direction: row;
     }
 }
