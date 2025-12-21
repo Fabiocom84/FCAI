@@ -145,34 +145,39 @@ const App = {
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
         // ============================================================
-        // 1. LOGICA BARRA DI AVANZAMENTO (DEVE ESSERE PER TUTTI!)
+        // 1. LOGICA BARRA DI AVANZAMENTO (Personalizzata su DB)
         // ============================================================
         
-        // Pesi delle fasi
+        // Mappatura esatta basata sulla tua tabella 'fasi_produzione'
         const phaseWeights = {
-            'ufficio': 10, 'carpenteria': 30, 'assemblaggio': 50, 'preparazione': 80
+            'ufficio': 10,
+            'carpenteria': 30,
+            'assemblaggio': 50,
+            'preparazione': 80
         };
 
         let maxProgress = 5; 
         let progressLabel = "Avvio";
         
-        // 1. Convertiamo SICURAMENTE gli ID attivi in Numeri Interi
-        // (Gestisce casi in cui arrivano come ["1", "5"] stringhe)
-        const rawIds = commessa.ids_fasi_attive || [];
-        const activeIds = rawIds.map(id => parseInt(id, 10)).filter(n => !isNaN(n));
+        // 1. Pulizia e Conversione in Stringhe (Metodo Universale)
+        let activeIds = [];
+        if (Array.isArray(commessa.ids_fasi_attive)) {
+            // Convertiamo tutto in stringa per evitare problemi tra 1 e "1"
+            activeIds = commessa.ids_fasi_attive.map(id => String(id));
+        }
 
         if (this.state.allPhases && this.state.allPhases.length > 0) {
             this.state.allPhases.forEach(phase => {
-                // 2. Convertiamo anche l'ID della fase corrente in Numero
-                const currentPhaseId = parseInt(phase.id_fase, 10);
-
-                // 3. Confronto Numerico Puro
+                // 2. Confronto ID Stringa vs Stringa
+                const currentPhaseId = String(phase.id_fase);
+                
                 if (activeIds.includes(currentPhaseId)) {
-                    
                     const phaseNameLower = (phase.nome_fase || '').toLowerCase();
                     
+                    // 3. Cerchiamo il peso nel dizionario semplificato
                     for (const key in phaseWeights) {
                         if (phaseNameLower.includes(key)) {
+                            // Se la fase è attiva e ha una % più alta della attuale, aggiorna la barra
                             if (phaseWeights[key] > maxProgress) {
                                 maxProgress = phaseWeights[key];
                                 progressLabel = phase.nome_fase;
@@ -189,15 +194,18 @@ const App = {
             progressLabel = "Completato";
         }
 
-        let progressColorClass = maxProgress > 80 ? 'high' : (maxProgress > 40 ? 'mid' : 'low');
+        // Colori barra: Giallo (basso), Blu (medio), Verde (alto)
+        let progressColorClass = maxProgress >= 80 ? 'high' : (maxProgress >= 40 ? 'mid' : 'low');
         const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
 
         // ============================================================
         // 2. ELEMENTI HTML CONDIZIONALI (SOLO PER ADMIN)
         // ============================================================
 
-        // A. Note e Link (Solo Admin)
+        // A. Note (Solo Admin)
         const noteHtml = IsAdmin ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` : '';
+        
+        // B. Link Dettagli (Solo Admin)
         let registrazioniHtml = '';
         if (IsAdmin) {
             const count = commessa.registrazioni ? commessa.registrazioni.length : 0;
@@ -205,7 +213,7 @@ const App = {
             registrazioniHtml = `<div class="registrazioni-section"><p><strong>Registrazioni:</strong> ${count} ${link}</p></div>`;
         }
 
-        // B. Pulsanti Azione (Solo Admin)
+        // C. Pulsanti Azione (Solo Admin)
         let actionsHtml = '';
         if (IsAdmin) {
             actionsHtml = `
@@ -215,12 +223,13 @@ const App = {
             </div>`;
         }
 
-        // C. Toggle Fasi (Solo Admin)
+        // D. Toggle Fasi (Solo Admin)
         let phasesHtml = '';
         if (IsAdmin && this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
             this.state.allPhases.forEach(phase => {
-                const isChecked = activeIds.includes(phase.id_fase) ? 'checked' : '';
+                const currentPhaseId = String(phase.id_fase);
+                const isChecked = activeIds.includes(currentPhaseId) ? 'checked' : '';
                 phasesHtml += `
                     <div class="phase-item">
                         <span>${phase.nome_fase}</span>
@@ -233,7 +242,7 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
-        // D. Toggle Stato Generale (Solo Admin)
+        // E. Toggle Stato Generale (Solo Admin)
         let adminToggleHtml = '';
         if (IsAdmin) { 
             adminToggleHtml = `
@@ -260,25 +269,15 @@ const App = {
                 </div>
                 
                 <div class="card-info">
-                    <!-- RIGA 1: Impianto e Modello -->
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
-                    
-                    <!-- RIGA 2: Luogo (Provincia/Paese) -->
                     <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || '-'})</p>
-
-                    <!-- RIGA 3: Dettagli Tecnici (VO, Matricola, Anno) -->
                     <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                    
-                    <!-- RIGA 4: Riferimento Tecnico -->
                     <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
-
-                    <!-- RIGA 5: Note (Visibile SOLO se Admin) -->
                     ${noteHtml}
                 </div>
                 
                 ${phasesHtml} 
 
-                <!-- BARRA AVANZAMENTO -->
                 <div class="progress-section">
                     <div class="progress-container">
                         <div class="progress-labels">
@@ -301,7 +300,7 @@ const App = {
             ${actionsHtml}
         `;
 
-        // ... BINDING EVENTI (uguale a prima) ...
+        // ... BINDING EVENTI ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         
