@@ -11,24 +11,32 @@ const App = {
     },
 
     init: async function() {
-        console.log("Admin Config Tool Init");
+        console.group("🚀 ADMIN CONFIG INIT");
+        console.log("Controllo esistenza tabella #macrosTable...");
         
-        // Controllo di sicurezza: se non c'è la tabella, non siamo nella pagina giusta
-        if (!document.getElementById('macrosTable')) return;
+        const table = document.getElementById('macrosTable');
+        if (!table) {
+            console.error("❌ ERRORE CRITICO: Tabella #macrosTable non trovata nell'HTML.");
+            return;
+        }
+        console.log("✅ Tabella trovata. Avvio caricamento dati...");
 
         try {
             await this.loadRefData();
             
+            console.log("Avvio renderizzazione UI...");
             this.setupTabs();
             this.renderMacros();
             this.loadComponents(1);
             this.loadOrders();
             
             this.bindEvents();
+            console.log("✅ Init completato senza errori bloccanti.");
         } catch (e) {
-            console.error("Errore inizializzazione:", e);
-            alert("Errore caricamento dati: " + e.message);
+            console.error("❌ CRASH INIT:", e);
+            alert("Errore Inizializzazione: " + e.message);
         }
+        console.groupEnd();
     },
 
     bindEvents: function() {
@@ -38,83 +46,115 @@ const App = {
         document.getElementById('addCompBtn')?.addEventListener('click', () => this.addComponent());
     },
 
-    // 1. Caricamento dati di riferimento (Macro, Ruoli, Fasi)
+    // --- CARICAMENTO DATI (CON DEBUG) ---
     loadRefData: async function() {
+        console.group("📡 LOAD REF DATA (/api/admin/init-data)");
         try {
             const res = await apiFetch('/api/admin/init-data');
-            const d = await res.json();
+            console.log("Status Risposta:", res.status);
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("❌ Errore Backend:", text);
+                throw new Error(`API Error ${res.status}`);
+            }
             
-            // Fallback ad array vuoti se il backend non restituisce nulla
+            const d = await res.json();
+            console.log("📦 JSON Ricevuto dal Server:", d);
+
+            // Controllo specifico per le macro
+            if (!d.macros) console.warn("⚠️ Attenzione: Chiave 'macros' mancante nel JSON");
+            else console.log(`Elementi Macro trovati: ${d.macros.length}`);
+
             this.data.macros = d.macros || [];
             this.data.ruoli = d.ruoli || [];
             this.data.fasi = d.fasi || [];
             
-            console.log("Reference Data:", this.data);
         } catch (e) {
-            console.error("Errore API init-data:", e);
+            console.error("❌ Errore durante la fetch:", e);
+            // Non blocchiamo tutto, ma lasciamo vuoto
             this.data.macros = [];
         }
+        console.groupEnd();
     },
 
     setupTabs: function() {
         const tabs = document.querySelectorAll('.config-tab');
         const contents = document.querySelectorAll('.tab-pane');
-
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
-
                 tab.classList.add('active');
-                const targetId = tab.dataset.target;
-                document.getElementById(targetId)?.classList.add('active');
+                document.getElementById(tab.dataset.target)?.classList.add('active');
             });
         });
     },
 
-    // --- SEZIONE 1: MACRO CATEGORIE ---
-    
+    // --- MACRO (CON DEBUG NOMI COLONNE) ---
     renderMacros: function() {
+        console.group("🎨 RENDER MACROS");
         const tbody = document.querySelector('#macrosTable tbody');
         if (!tbody) return;
 
+        // Debug Dati
+        console.log("Dati da renderizzare:", this.data.macros);
+
         if (this.data.macros.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Nessuna macro trovata.</td></tr>';
+            console.warn("Nessuna macro da mostrare.");
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Nessuna macro trovata (Array vuoto).</td></tr>';
+            console.groupEnd();
             return;
         }
 
-        tbody.innerHTML = this.data.macros.map(m => `
-            <tr>
-                <td>${m.id_macro_categoria}</td>
-                <!-- Gestiamo sia 'nome' che 'nome_macro' per sicurezza -->
-                <td><strong>${m.nome_macro || m.nome || 'N/D'}</strong></td>
-                <td style="font-size:1.5em;">${m.icona_macro || m.icona || ''}</td>
-                <td><button class="action-btn" disabled title="Modifica non disponibile">✏️</button></td>
-            </tr>
-        `).join('');
+        // DEBUG: Stampa le chiavi del primo oggetto per capire come si chiamano le colonne
+        const primoOggetto = this.data.macros[0];
+        console.log("🔑 CHIAVI PRIMO OGGETTO:", Object.keys(primoOggetto));
+
+        tbody.innerHTML = this.data.macros.map(m => {
+            // Tenta tutte le combinazioni possibili
+            const nome = m.nome_macro || m.nome || 'NOME MANCANTE';
+            const icona = m.icona_macro || m.icona || '';
+            const id = m.id_macro_categoria || m.id;
+
+            return `
+                <tr>
+                    <td>${id}</td>
+                    <td><strong>${nome}</strong></td>
+                    <td style="font-size:1.5em;">${icona}</td>
+                    <td><button class="action-btn" disabled>✏️</button></td>
+                </tr>
+            `;
+        }).join('');
+        console.log("Render completato.");
+        console.groupEnd();
     },
 
     addMacro: async function() {
         const nome = document.getElementById('newMacroName').value;
         const icona = document.getElementById('newMacroIcon').value;
+        if(!nome) return alert("Nome obbligatorio");
         
-        if(!nome) return alert("Il nome è obbligatorio");
-        
-        // Payload corrispondente alle colonne DB
-        const payload = {
-            nome_macro: nome,
-            icona_macro: icona
-        };
+        console.log("Invio Nuova Macro:", { nome_macro: nome, icona_macro: icona });
 
         try {
-            await apiFetch('/api/admin/macro', { method: 'POST', body: JSON.stringify(payload) });
+            const res = await apiFetch('/api/admin/macro', { 
+                method: 'POST', 
+                body: JSON.stringify({ nome_macro: nome, icona_macro: icona }) 
+            });
             
-            // Ricarica e pulisci
+            if(!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Errore sconosciuto");
+            }
+
+            console.log("Macro aggiunta. Ricarico...");
             await this.loadRefData();
             this.renderMacros();
             document.getElementById('newMacroName').value = '';
             document.getElementById('newMacroIcon').value = '';
         } catch (e) {
+            console.error(e);
             alert("Errore salvataggio: " + e.message);
         }
     },
