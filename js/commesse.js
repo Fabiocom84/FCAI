@@ -28,9 +28,9 @@ const App = {
             addBtn: document.getElementById('add-commessa-btn'),
         };
 
-        // NUOVO: Nascondi il bottone "Aggiungi" se non è Admin
-        if (!IsAdmin && this.dom.addBtn) {
-            this.dom.addBtn.style.display = 'none';
+        // MOSTRA
+        if (IsAdmin && this.dom.addBtn) {
+            this.dom.addBtn.style.display = 'inline-flex';
         }
 
         try {
@@ -144,13 +144,29 @@ const App = {
         const statusClass = `status-${statusName}`;
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
-        // --- LOGICA PROGRESSO (Codice esistente che mantieni) ---
-        const phaseWeights = { 'ufficio': 15, 'progettazione': 20, 'taglio': 30, 'carpenteria': 45, 'saldatura': 50, 'tornitura': 55, 'assemblaggio': 70, 'montaggio': 75, 'elettricista': 80, 'verniciatura': 85, 'preparazione': 90, 'collaudo': 95, 'spedizione': 100 };
+        // ============================================================
+        // 1. LOGICA BARRA DI AVANZAMENTO (DEVE ESSERE PER TUTTI!)
+        // ============================================================
+        
+        // Pesi delle fasi
+        const phaseWeights = {
+            'ufficio': 10, 'commerciale': 10, 'progettazione': 20, 'disegno': 20,
+            'acquisti': 25, 'taglio': 30, 'laser': 30, 'piegatura': 35,
+            'carpenteria': 45, 'saldatura': 50, 'lavorazioni': 55, 'tornitura': 55, 'fresatura': 55,
+            'verniciatura': 65, 'zincatura': 65, 'assemblaggio': 75, 'montaggio': 80,
+            'elettricista': 85, 'cablaggio': 85, 'collaudo': 90, 'preparazione': 95, 'imballo': 95, 'spedizione': 100
+        };
+
         let maxProgress = 5; 
         let progressLabel = "Avvio";
-        const activeIds = commessa.ids_fasi_attive || [];
-        if (this.state.allPhases) {
+        const activeIds = commessa.ids_fasi_attive || []; // Array ID fasi attive dal DB
+
+        // Debug: controlla nella console se l'operatore vede questi dati
+        // console.log(`Commessa ${commessa.id_commessa} - Fasi Attive:`, activeIds, "Admin?", IsAdmin);
+
+        if (this.state.allPhases && this.state.allPhases.length > 0) {
             this.state.allPhases.forEach(phase => {
+                // Se la fase è attiva per questa commessa
                 if (activeIds.includes(phase.id_fase)) {
                     const phaseNameLower = phase.nome_fase.toLowerCase();
                     for (const key in phaseWeights) {
@@ -162,29 +178,30 @@ const App = {
                 }
             });
         }
+
+        // Se completato, forza 100%
+        if(commessa.status_commessa?.nome_status === 'Completato') {
+            maxProgress = 100;
+            progressLabel = "Completato";
+        }
+
         let progressColorClass = maxProgress > 80 ? 'high' : (maxProgress > 40 ? 'mid' : 'low');
         const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
-        // ---------------------------------------------------------
 
-        // --- HTML CONDIZIONALE ---
-        
-        // 1. Note: Visibili solo se Admin
-        // Usiamo formatDataContent (importalo in cima se non c'è, o usa raw string)
-        const noteHtml = IsAdmin 
-            ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` 
-            : ''; 
+        // ============================================================
+        // 2. ELEMENTI HTML CONDIZIONALI (SOLO PER ADMIN)
+        // ============================================================
 
-        // 2. Link Registrazioni: Visibile solo se Admin
+        // A. Note e Link (Solo Admin)
+        const noteHtml = IsAdmin ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` : '';
         let registrazioniHtml = '';
         if (IsAdmin) {
             const count = commessa.registrazioni ? commessa.registrazioni.length : 0;
-            const link = count > 0 
-                ? `| <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a>` 
-                : '';
+            const link = count > 0 ? `| <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a>` : '';
             registrazioniHtml = `<div class="registrazioni-section"><p><strong>Registrazioni:</strong> ${count} ${link}</p></div>`;
         }
 
-        // 3. Azioni (Edit/Delete): Visibili solo se Admin
+        // B. Pulsanti Azione (Solo Admin)
         let actionsHtml = '';
         if (IsAdmin) {
             actionsHtml = `
@@ -194,12 +211,8 @@ const App = {
             </div>`;
         }
 
-        // 4. Toggle e Fasi (Interattivi solo per Admin)
+        // C. Toggle Fasi (Solo Admin)
         let phasesHtml = '';
-        // Mostriamo le fasi sempre per vedere a che punto siamo, MA disabilitiamo i checkbox se non admin?
-        // La tua richiesta dice: "Barra avanzamento e ore... rispecchiare stato".
-        // Se l'operatore non deve toccare le fasi, possiamo nascondere i toggle o disabilitarli.
-        // Manteniamo la logica: Se admin vede i toggle, se no vede solo la barra.
         if (IsAdmin && this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
             this.state.allPhases.forEach(phase => {
@@ -216,6 +229,7 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
+        // D. Toggle Stato Generale (Solo Admin)
         let adminToggleHtml = '';
         if (IsAdmin) { 
             adminToggleHtml = `
@@ -225,7 +239,9 @@ const App = {
                 </label>`;
         }
 
-        // --- ASSEMBLAGGIO CARD ---
+        // ============================================================
+        // 3. ASSEMBLAGGIO CARD
+        // ============================================================
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
                 ${!commessa.immagine ? 'Nessuna Immagine' : ''}
@@ -241,13 +257,12 @@ const App = {
                 <div class="card-info">
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
                     <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                    
-                    ${noteHtml} <!-- Note visibili solo se Admin -->
+                    ${noteHtml}
                 </div>
                 
-                ${phasesHtml} <!-- Toggle Fasi visibili solo se Admin -->
+                ${phasesHtml} 
 
-                <!-- BARRA E ORE SEMPRE VISIBILI -->
+                <!-- BARRA AVANZAMENTO (VISIBILE A TUTTI) -->
                 <div class="progress-section">
                     <div class="progress-container">
                         <div class="progress-labels">
@@ -264,13 +279,13 @@ const App = {
                     </div>
                 </div>
 
-                ${registrazioniHtml} <!-- Link visibile solo se Admin -->
+                ${registrazioniHtml}
             </div>
             
-            ${actionsHtml} <!-- Pulsanti Modifica/Elimina visibili solo se Admin -->
+            ${actionsHtml}
         `;
 
-        // ... BINDING EVENTI (Solo se gli elementi esistono) ...
+        // ... BINDING EVENTI (uguale a prima) ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         
@@ -285,106 +300,6 @@ const App = {
         });
 
         return card;
-    },
-
-    handleStatusFilter: function(clickedBtn) {
-        this.dom.statusFilters.forEach(btn => btn.classList.remove('active'));
-        clickedBtn.classList.add('active');
-        this.state.activeStatus = clickedBtn.dataset.status;
-        this.fetchCommesse(true);
-    },
-
-    handleDelete: async function(commessaId) {
-        const isConfirmed = await showModal({
-            title: 'Conferma Eliminazione',
-            message: `Sei sicuro di voler eliminare questa commessa? L'azione è irreversibile.`,
-            confirmText: 'Elimina',
-            cancelText: 'Annulla'
-        });
-
-        if (isConfirmed) {
-            try {
-                const response = await apiFetch(`/api/commesse/${commessaId}`, { method: 'DELETE' });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Errore del server');
-                }
-                const cardToRemove = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
-                if (cardToRemove) cardToRemove.remove();
-            } catch (error) {
-                showModal({
-                    title: 'Errore',
-                    message: `Impossibile eliminare la commessa: ${error.message}`,
-                    confirmText: 'OK'
-                });
-            }
-        }
-    },
-
-    handleEdit: function(commessaId) {
-        // Ripristina 'window.'
-        if (typeof window.openNewOrderModal === 'function') {
-            window.openNewOrderModal(true, commessaId);
-        } else {
-            console.error('La funzione openNewOrderModal non è stata trovata.');
-        }
-    },
-
-    handleStatusToggle: async function(event) {
-        const toggleInput = event.target;
-        const commessaId = toggleInput.dataset.id;
-        const isCompleted = toggleInput.checked; // true se è stato spostato su "Completato"
-
-        // Trova gli ID corretti dallo stato che abbiamo caricato all'inizio
-        const completedStatus = this.state.allStatuses.find(s => s.nome_status === 'Completato');
-        const inProgressStatus = this.state.allStatuses.find(s => s.nome_status === 'In Lavorazione');
-
-        if (!completedStatus || !inProgressStatus) {
-            return showModal({ title: 'Errore', message: 'Impossibile trovare gli stati necessari.', confirmText: 'OK' });
-        }
-
-        const newStatusId = isCompleted ? completedStatus.id_status : inProgressStatus.id_status;
-        const newStatusName = isCompleted ? 'Completato' : 'In Lavorazione';
-
-        try {
-            // Disabilita momentaneamente il toggle per prevenire click multipli
-            toggleInput.disabled = true;
-
-            // Chiama l'API che abbiamo già creato
-            await apiFetch(`/api/commesse/${commessaId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ id_status_fk: newStatusId })
-            });
-
-            // --- Aggiornamento UI Istantaneo ---
-            const card = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
-            if (card) {
-                // Se il filtro attivo non corrisponde più al nuovo stato, rimuovi la card
-                if (this.state.activeStatus && this.state.activeStatus !== newStatusName) {
-                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.95)';
-                    setTimeout(() => card.remove(), 500);
-                } else {
-                    // Altrimenti, aggiorna semplicemente la card
-                    const badge = card.querySelector('.status-badge');
-                    const statusNameClass = newStatusName.toLowerCase().replace(' ', '-');
-
-                    badge.textContent = newStatusName;
-                    badge.className = `status-badge status-${statusNameClass}`;
-                    
-                    card.className = 'commesse-card'; // Resetta le classi di sfondo
-                    card.classList.add(`status-bg-${statusNameClass}`);
-                }
-            }
-
-        } catch (error) {
-            showModal({ title: 'Errore', message: `Impossibile aggiornare lo stato: ${error.message}`, confirmText: 'OK' });
-            // Ripristina lo stato visivo del toggle in caso di errore
-            toggleInput.checked = !isCompleted;
-        } finally {
-            toggleInput.disabled = false;
-        }
     },
 
     handleSort: function() {

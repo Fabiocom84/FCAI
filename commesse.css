@@ -394,3 +394,34 @@ input:checked + .slider:before {
     color: #888;
     text-transform: uppercase;
 }
+
+/* --- FIX LAYOUT HEADER (BLOCCA IL TITOLO AL CENTRO) --- */
+
+/* Sovrascriviamo lo stile globale solo per questa pagina */
+.page-header {
+    display: grid !important; /* Forza l'uso della griglia */
+    grid-template-columns: 100px auto 100px; /* Sinistra fissa, Centro flessibile, Destra fissa */
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 1. Bottone Home (Sinistra) */
+.page-header .header-button {
+    justify-self: start;
+    grid-column: 1;
+}
+
+/* 2. Titolo (Centro) */
+.page-header h1 {
+    grid-column: 2;
+    text-align: center;
+    margin: 0;
+    white-space: nowrap;
+    width: 100%;
+}
+
+/* 3. Bottone Aggiungi (Destra) */
+.page-header #add-commessa-btn {
+    justify-self: end;
+    grid-column: 3;
+}
