@@ -222,7 +222,9 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     border-radius: 12px; 
     width: 100%; 
     max-width: 450px; 
-    text-align: center; 
+    text-align: center;
+    box-sizing: border-box; 
+    margin: 0 auto; 
 }
 
 .login-container .form-group {
@@ -328,7 +330,7 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
     .button, .training-button { width: 100%; max-width: 100%; flex-basis: auto; min-height: 70px; }
     .modal { width: calc(100% - 20px); }
     h1 { margin-top: 50px; font-size: 1.8em; }
-    .login-container { width: 90%; padding: 30px 25px; }
+    .login-container { width: 90%; padding: 30px 20px; box-sizing: border-box; }
     
     .search-sort-group { flex-direction: column; align-items: stretch; }
     .search-sort-group input[type="text"], .search-sort-group select { width: 100% !important; }
