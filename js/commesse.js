@@ -2,6 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 const App = {
     state: {
@@ -137,35 +138,48 @@ const App = {
         card.classList.add(`status-bg-${statusName}`);
         const statusClass = `status-${statusName}`;
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
+        
+        // Gestione link registrazioni
         const registrazioniSummary = commessa.registrazioni.length > 0
             ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
                 | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
             : `<p><strong>Registrazioni:</strong> 0</p>`;
+        
+        // --- LOGICA FASI (Invariata) ---
         let phasesHtml = '';
         if (this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
-            
-            // Array delle fasi attive per questa commessa (o vuoto se null)
             const activePhases = commessa.ids_fasi_attive || [];
-
             this.state.allPhases.forEach(phase => {
                 const isChecked = activePhases.includes(phase.id_fase) ? 'checked' : '';
                 phasesHtml += `
                     <div class="phase-item">
                         <span>${phase.nome_fase}</span>
                         <label class="mini-switch">
-                            <input type="checkbox" 
-                                   data-action="toggle-phase" 
-                                   data-commessa-id="${commessa.id_commessa}" 
-                                   data-phase-id="${phase.id_fase}" 
-                                   ${isChecked}>
+                            <input type="checkbox" data-action="toggle-phase" data-commessa-id="${commessa.id_commessa}" data-phase-id="${phase.id_fase}" ${isChecked}>
                             <span class="mini-slider"></span>
                         </label>
-                    </div>
-                `;
+                    </div>`;
             });
             phasesHtml += `</div></div>`;
         }
+
+        // --- NUOVA LOGICA TOGGLE ADMIN (FIX RACE CONDITION) ---
+        // Usiamo IsAdmin importato: è immediato e sicuro.
+        let adminToggleHtml = '';
+        
+        if (IsAdmin) { 
+            adminToggleHtml = `
+                <label class="toggle-switch">
+                    <input type="checkbox" 
+                           data-action="toggle-status" 
+                           data-id="${commessa.id_commessa}" 
+                           ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            `;
+        }
+        // ------------------------------------------------------
 
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
@@ -176,13 +190,10 @@ const App = {
                     <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
                     <div class="status-and-toggle">
                         <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" 
-                                   data-action="toggle-status" 
-                                   data-id="${commessa.id_commessa}" 
-                                   ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
-                            <span class="slider"></span>
-                        </label>
+                        
+                        <!-- QUI INSERIAMO IL TOGGLE SOLO SE ADMIN -->
+                        ${adminToggleHtml}
+                        
                     </div>
                 </div>
                 <div class="card-info">
@@ -191,6 +202,8 @@ const App = {
                     <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
                     <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
                     <p><strong>Data:</strong> ${formattedDate}</p>
+                    
+                    <!-- Nota: Se vuoi formattare i caratteri speciali anche qui, dimmelo e aggiungiamo la funzione -->
                     <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
                 </div>
                 ${phasesHtml}
@@ -204,27 +217,20 @@ const App = {
             </div>
         `;
 
+        // ... binding eventi invariato ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.handleDelete(deleteBtn.dataset.id);
-            });
+            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         }
-
         const editBtn = card.querySelector('[data-action="edit"]');
         if (editBtn) {
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.handleEdit(editBtn.dataset.id); 
-            });
+            editBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleEdit(editBtn.dataset.id); });
         }
-
+        
+        // Aggiungiamo il listener per il toggle SOLO se esiste (cioè se siamo admin)
         const toggleInput = card.querySelector('[data-action="toggle-status"]');
         if (toggleInput) {
-            toggleInput.addEventListener('change', (e) => {
-                this.handleStatusToggle(e);
-            });
+            toggleInput.addEventListener('change', (e) => { this.handleStatusToggle(e); });
         }
 
         card.querySelectorAll('[data-action="toggle-phase"]').forEach(toggle => {
