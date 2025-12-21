@@ -231,10 +231,14 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 
 /* Stile del Logo sopra il titolo (opzionale, vedi HTML sotto) */
 .login-logo {
-    width: 60px;
+    width: 180px;      /* Aumentato da 60px a 180px per renderlo ben visibile */
+    max-width: 70%;    /* Per sicurezza su schermi piccolissimi */
     height: auto;
-    margin-bottom: 15px;
-    opacity: 0.9;
+    margin-bottom: 20px; /* Un po' più di spazio sotto il logo */
+    opacity: 1;        /* Togliamo l'opacità per renderlo nitido */
+    display: block;    /* Assicura che prenda il suo spazio */
+    margin-left: auto; /* Centratura orizzontale */
+    margin-right: auto;
 }
 
 .login-container h2 {
