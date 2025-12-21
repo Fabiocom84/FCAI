@@ -1,11 +1,11 @@
-// js/main.js
+// js/main.js (Logica DB-Centric)
 
 import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
 import { showModal } from './shared-ui.js'; 
 
 let appInitialized = false;
-window.currentUserProfile = null;
+window.currentUserProfile = null; // Qui salviamo la "verità" che arriva dal DB
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!appInitialized) {
@@ -15,148 +15,149 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
-    console.log("Fase 1: Inizializzazione basata su profilo locale.");
     try {
+        // 1. Recuperiamo quello che il DB ci ha dato al momento del Login
         const profileString = localStorage.getItem('user_profile');
-        if (!profileString) throw new Error("Profilo utente non trovato.");
         
-        const profile = JSON.parse(profileString);
-        window.currentUserProfile = profile;
-        console.log("Fase 2: Profilo caricato:", profile);
+        if (!profileString) {
+            throw new Error("Nessun profilo trovato. Login necessario.");
+        }
+        
+        // 2. Parsiamo i dati grezzi dal DB
+        let rawProfile = JSON.parse(profileString);
+        
+        // 3. NORMALIZZAZIONE CRUCIALE (Il fix al tuo problema)
+        // Il DB Supabase a volte manda true, a volte "true", a volte 1.
+        // Noi uniformiamo tutto qui, così la logica a valle non fallisce mai.
+        rawProfile.is_admin = normalizeAdminFlag(rawProfile.is_admin);
+        
+        window.currentUserProfile = rawProfile;
+        
+        console.log("Profilo utente caricato (Auth DB):", window.currentUserProfile);
+        
+        // 4. Avviamo l'interfaccia con i permessi calcolati
         setupUI();
+        
+        // Rendiamo la pagina visibile solo ora che sappiamo chi sei
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
 
     } catch (error) {
-        console.error("ERRORE CRITICO:", error.message);
+        console.error("Errore inizializzazione:", error);
         localStorage.clear();
         window.location.href = 'login.html';
     }
 }
 
+/**
+ * Funzione che traduce il "dialetto" del database in vero Booleano JS.
+ * Risolve il problema "Sono admin ma non vedo i tasti".
+ */
+function normalizeAdminFlag(val) {
+    if (val === true) return true;       // Booleano puro
+    if (val === "true") return true;     // Stringa dal JSON
+    if (val === 1) return true;          // Intero da PostgreSQL
+    if (val === "1") return true;        // Stringa numerica
+    return false;
+}
+
 function setupUI() {
-    console.log("Fase 3: Setup UI.");
+    const profile = window.currentUserProfile;
+    // Ora siamo sicuri che is_admin sia true o false, niente più ambiguità
+    const isAdmin = profile && profile.is_admin === true;
 
-    const legendInstance = new Legend();
-    const modalOverlay = document.getElementById('modalOverlay'); 
-    
-    // Controllo permessi Admin
-    const isAdmin = window.currentUserProfile?.is_admin === true;
-    
-    // 1. Training Button (Solo Admin)
-    const trainingButton = document.getElementById('openTrainingModalBtn');
-    if (trainingButton && !isAdmin) trainingButton.style.display = 'none';
+    console.log("Utente Admin?", isAdmin); // Log di verifica
 
-    // 2. Config Button (Solo Admin)
-    const configButton = document.getElementById('openConfigBtn');
-    if (configButton && !isAdmin) {
-        configButton.style.display = 'none';
-    }
+    // Lista dei pulsanti riservati agli Admin
+    // Questi ID devono corrispondere esattamente al tuo HTML
+    const adminOnlyButtons = [
+        'openConfigBtn',        // Configurazione Logica
+        'openTrainingModalBtn', // Addestramento
+        'openDataGridBtn'       // Vista Agile
+    ];
 
-    // 3. Dashboard Placeholder
-    const dashboardBtn = document.getElementById('openDashboardBtn');
-    if (dashboardBtn) {
-        dashboardBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showModal({ 
-                title: 'In Sviluppo', 
-                message: 'La Dashboard Analisi dei Dati sarà disponibile prossimamente.', 
-                confirmText: 'OK' 
-            });
-        });
-    }
+    adminOnlyButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            if (isAdmin) {
+                // Se sei admin, mostriamo il bottone
+                // Usiamo 'flex' perché nel tuo CSS i bottoni sono flex containers
+                btn.style.display = 'flex'; 
+                btn.classList.remove('disabled');
+            } else {
+                // Se NON sei admin, rimuoviamo il bottone dal DOM o lo nascondiamo
+                btn.style.display = 'none';
+            }
+        }
+    });
 
-    // 4. Stampa Ore Placeholder (NUOVO)
-    const printBtn = document.getElementById('openPrintHoursBtn');
-    if (printBtn) {
-        printBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showModal({
-                title: 'Stampa Ore',
-                message: 'La funzionalità di generazione report PDF e invio email è in fase di sviluppo.',
-                confirmText: 'OK'
-            });
-        });
-    }
+    // --- BINDING EVENTI STANDARD (Chat, Modali, etc.) ---
+    bindGlobalEvents();
+}
 
-    // Logout
-    document.getElementById('logoutBtn')?.addEventListener('click', (event) => {
-        event.preventDefault();
-        localStorage.removeItem('session_token'); 
-        localStorage.removeItem('user_profile');
+function bindGlobalEvents() {
+    // Gestione Logout
+    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.clear();
         window.location.href = 'login.html';
     });
 
-    // Binding Modali Esistenti (Con preventDefault)
-    const bindModal = (btnId, openFn) => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openFn();
-            });
-        }
+    // Modali Placeholder (Dashboard, etc.)
+    document.getElementById('openDashboardBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showModal({ title: 'Info', message: 'Dashboard in arrivo.', confirmText: 'OK' });
+    });
+    
+    document.getElementById('openPrintHoursBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showModal({ title: 'Info', message: 'Stampa report in sviluppo.', confirmText: 'OK' });
+    });
+
+    // Binding Apertura Modali Reali
+    const bind = (id, fn) => { 
+        const el = document.getElementById(id); 
+        if(el) el.addEventListener('click', (e) => { e.preventDefault(); fn(); });
     };
 
-    bindModal('openInsertDataModalBtn', openInsertDataModal);
-    bindModal('openChatModalBtn', openChatModal);
-    bindModal('openTrainingModalBtn', openTrainingModal);
-
-    // Overlay Close
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', () => {
-            const openModal = document.querySelector('.modal[style*="display: block"]');
-            if (openModal) {
-                if (openModal.id === 'insertDataModal') closeInsertDataModal();
-                else if (openModal.id === 'chatModal') closeChatModal();
-                else if (openModal.id === 'trainingModal') closeTrainingModal();
-            }
+    bind('openInsertDataModalBtn', window.openInsertDataModal);
+    bind('openChatModalBtn', window.openChatModal);
+    bind('openTrainingModalBtn', window.openTrainingModal);
+    
+    // Gestione Chiusura Overlay
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            if(document.querySelector('#insertDataModal')?.style.display === 'block') window.closeInsertDataModal();
+            if(document.querySelector('#chatModal')?.style.display === 'block') window.closeChatModal();
+            if(document.querySelector('#trainingModal')?.style.display === 'block') window.closeTrainingModal();
         });
     }
-
-    // Export globale funzioni modali
-    window.openInsertDataModal = openInsertDataModal;
-    window.openChatModal = openChatModal;
-    window.openTrainingModal = openTrainingModal;
-    window.closeInsertDataModal = closeInsertDataModal;
-    window.closeChatModal = closeChatModal;
-    window.closeTrainingModal = closeTrainingModal;
 }
 
-// Funzioni Helper per i Modali
-function openInsertDataModal() {
-    const m = document.getElementById('insertDataModal');
+// Funzioni export per onclick nell'HTML (retrocompatibilità)
+window.openInsertDataModal = () => { toggleModal('insertDataModal', true); };
+window.closeInsertDataModal = () => { toggleModal('insertDataModal', false); };
+
+window.openChatModal = () => { toggleModal('chatModal', true); };
+window.closeChatModal = () => { toggleModal('chatModal', false); };
+
+window.openTrainingModal = () => { toggleModal('trainingModal', true); };
+window.closeTrainingModal = () => { toggleModal('trainingModal', false); };
+
+// Helper unico per i modali
+function toggleModal(modalId, show) {
+    const m = document.getElementById(modalId);
     const o = document.getElementById('modalOverlay');
-    if(m) { 
-        m.style.display = 'block'; 
-        o.style.display = 'block'; 
+    if (!m || !o) return;
+
+    if (show) {
+        m.style.display = 'block';
+        o.style.display = 'block';
         document.body.classList.add('modal-open');
-        if(window.prepareInsertDataModal) window.prepareInsertDataModal(); 
+    } else {
+        m.style.display = 'none';
+        o.style.display = 'none';
+        document.body.classList.remove('modal-open');
     }
-}
-function closeInsertDataModal() {
-    const m = document.getElementById('insertDataModal');
-    const o = document.getElementById('modalOverlay');
-    if(m) m.style.display = 'none'; 
-    if(o) o.style.display = 'none'; 
-    document.body.classList.remove('modal-open');
-    if(window.cleanupInsertDataModal) window.cleanupInsertDataModal();
-}
-function openChatModal() { 
-    document.getElementById('chatModal').style.display = 'block'; 
-    document.getElementById('modalOverlay').style.display = 'block'; 
-    document.body.classList.add('modal-open');
-}
-function closeChatModal() { 
-    document.getElementById('chatModal').style.display = 'none'; 
-    document.getElementById('modalOverlay').style.display = 'none'; 
-    document.body.classList.remove('modal-open');
-}
-function openTrainingModal() { 
-    document.getElementById('trainingModal').style.display = 'block'; 
-    document.getElementById('modalOverlay').style.display = 'block'; 
-    document.body.classList.add('modal-open');
-}
-function closeTrainingModal() { 
-    document.getElementById('trainingModal').style.display = 'none'; 
-    document.getElementById('modalOverlay').style.display = 'none'; 
-    document.body.classList.remove('modal-open');
 }

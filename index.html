@@ -4,33 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segretario AI</title>
-    <!-- 1. NASCONDIAMO TUTTO SUBITO -->
+    
+    <!-- 1. STILE PER NASCONDERE IL FLASH -->
     <style>
-        /* Nasconde la pagina di default per evitare il flash */
-        body { 
-            visibility: hidden; 
-            opacity: 0; 
-        }
+        body { visibility: hidden; opacity: 0; transition: opacity 0.3s ease-in; }
     </style>
 
-    <!-- 2. IL BUTTAFUORI IMMEDIATO -->
+    <!-- 2. IL BUTTAFUORI RINFORZATO -->
     <script>
         (function() {
-            const token = localStorage.getItem('session_token');
-            if (!token) {
-                // Se non c'è il token, via subito al login
-                window.location.href = 'login.html';
-            } else {
-                // Se c'è il token, aspettiamo che il DOM sia pronto e mostriamo la pagina
+            try {
+                const token = localStorage.getItem('session_token');
+                const profileStr = localStorage.getItem('user_profile');
+                
+                // Se manca token O profilo, via al login
+                if (!token || !profileStr) {
+                    throw new Error("Credenziali mancanti");
+                }
+
+                // Proviamo a parsare il profilo per essere sicuri non sia corrotto
+                const profile = JSON.parse(profileStr);
+                if (!profile || !profile.id_personale) {
+                    throw new Error("Profilo corrotto");
+                }
+
+                // Se siamo qui, è tutto ok. Prepariamoci a mostrare la pagina.
+                // Nota: La renderemo visibile solo quando main.js avrà finito il setup UI
+                // o come fallback al DOMContentLoaded.
                 document.addEventListener('DOMContentLoaded', function() {
-                    document.body.style.visibility = 'visible';
-                    document.body.style.opacity = '1';
-                    document.body.style.transition = 'opacity 0.3s ease-in';
+                    // Timeout di sicurezza: se main.js fallisce, mostra comunque qualcosa dopo 100ms
+                    setTimeout(() => {
+                        document.body.style.visibility = 'visible';
+                        document.body.style.opacity = '1';
+                    }, 100);
                 });
+
+            } catch (e) {
+                console.warn("Auth check failed:", e);
+                localStorage.clear(); // Pulizia preventiva
+                window.location.replace('login.html');
             }
         })();
     </script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
