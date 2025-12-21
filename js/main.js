@@ -1,5 +1,6 @@
 // js/main.js (Logica DB-Centric)
 
+import { IsAdmin } from './core-init.js';
 import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
 import { showModal } from './shared-ui.js'; 
@@ -62,30 +63,23 @@ function normalizeAdminFlag(val) {
 }
 
 function setupUI() {
-    const profile = window.currentUserProfile;
-    // Ora siamo sicuri che is_admin sia true o false, niente più ambiguità
-    const isAdmin = profile && profile.is_admin === true;
+    console.log("🛠️ Setup UI...");
 
-    console.log("Utente Admin?", isAdmin); // Log di verifica
-
-    // Lista dei pulsanti riservati agli Admin
-    // Questi ID devono corrispondere esattamente al tuo HTML
+    // Definiamo gli ID dei bottoni solo per Admin
     const adminOnlyButtons = [
-        'openConfigBtn',        // Configurazione Logica
-        'openTrainingModalBtn', // Addestramento
-        'openDataGridBtn'       // Vista Agile
+        'openConfigBtn', 
+        'openTrainingModalBtn', 
+        'openDataGridBtn'
     ];
 
     adminOnlyButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
-            if (isAdmin) {
-                // Se sei admin, mostriamo il bottone
-                // Usiamo 'flex' perché nel tuo CSS i bottoni sono flex containers
+            // USIAMO LA COSTANTE IMPORTATA (Niente più check complessi qui)
+            if (IsAdmin) {
                 btn.style.display = 'flex'; 
                 btn.classList.remove('disabled');
             } else {
-                // Se NON sei admin, rimuoviamo il bottone dal DOM o lo nascondiamo
                 btn.style.display = 'none';
             }
         }
