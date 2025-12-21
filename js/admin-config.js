@@ -39,13 +39,16 @@ const App = {
             if (!res.ok) throw new Error(`API Error ${res.status}`);
             const d = await res.json();
             
-            console.log("📦 Dati Ricevuti:", d);
-
             this.data.macros = d.macros || [];
             this.data.ruoli = d.ruoli || [];
             this.data.fasi = d.fasi || [];
+            
+            // NUOVO: Salviamo tutti i componenti per popolare i menu delle macro
+            this.data.allComponents = d.componenti || []; 
+            
         } catch (e) {
             console.error("Errore loadRefData:", e);
+            this.data.macros = [];
         }
     },
 
@@ -62,25 +65,114 @@ const App = {
         });
     },
 
-    // --- MACRO (Usa 'nome' e 'icona' come da DB) ---
     renderMacros: function() {
         const tbody = document.querySelector('#macrosTable tbody');
         if (!tbody) return;
 
         if (this.data.macros.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Nessuna macro trovata.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Nessuna macro trovata.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = this.data.macros.map(m => `
-            <tr>
-                <td>${m.id_macro_categoria}</td>
-                <!-- IMPORTANTE: Usa m.nome, non m.nome_macro -->
-                <td><strong>${m.nome || m.nome_macro || '???'}</strong></td>
-                <td><span style="font-size:1.5em;">${m.icona || m.icona_macro || ''}</span></td>
-                <td><button class="action-btn" disabled>✏️</button></td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = '';
+
+        this.data.macros.forEach(m => {
+            const tr = document.createElement('tr');
+            
+            const valNome = m.nome || m.nome_macro || '';
+            const valIcona = m.icona || m.icona_macro || '';
+
+            tr.innerHTML = `
+                <td style="width: 50px; text-align: center; color: #888;">${m.id_macro_categoria}</td>
+                <td>
+                    <input type="text" class="edit-macro-name" value="${valNome}" style="width: 100%; font-weight: 500;">
+                </td>
+                <td>
+                    <input type="text" class="edit-macro-icon" value="${valIcona}" style="width: 50px; text-align: center; font-size: 1.2em;">
+                </td>
+                
+                <!-- NUOVA COLONNA: COMPONENTI ASSOCIATI -->
+                <td style="width: 40%;">
+                    <select class="choice-macro-comps" multiple></select>
+                </td>
+
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="action-btn save-macro-btn" data-id="${m.id_macro_categoria}" title="Salva Modifiche">💾</button>
+                    <button class="action-btn delete-macro-btn" data-id="${m.id_macro_categoria}" title="Elimina" style="color: #dc3545; border-color: #dc3545;">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // --- CHOICES.JS PER I COMPONENTI ---
+            const selectEl = tr.querySelector('.choice-macro-comps');
+            const choices = new Choices(selectEl, {
+                removeItemButton: true,
+                itemSelectText: '',
+                position: 'bottom',
+                placeholderValue: 'Associa lavorazioni...',
+                searchEnabled: true
+            });
+
+            // Calcolo quali componenti hanno GIA' questa macro nel loro array
+            // m.id_macro_categoria deve essere presente in comp.ids_macro_categorie
+            const options = this.data.allComponents.map(comp => {
+                const hasMacro = (comp.ids_macro_categorie || []).includes(m.id_macro_categoria);
+                return {
+                    value: comp.id_componente,
+                    label: comp.nome_componente,
+                    selected: hasMacro
+                };
+            });
+            
+            choices.setChoices(options, 'value', 'label', true);
+
+            // --- EVENTO SALVA ---
+            const saveBtn = tr.querySelector('.save-macro-btn');
+            saveBtn.addEventListener('click', async () => {
+                const newName = tr.querySelector('.edit-macro-name').value;
+                const newIcon = tr.querySelector('.edit-macro-icon').value;
+                const selectedComponentIds = choices.getValue(true); // Array di ID componenti selezionati
+                
+                saveBtn.textContent = "⏳";
+                saveBtn.disabled = true;
+
+                try {
+                    const response = await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { 
+                        method: 'PUT', 
+                        body: JSON.stringify({ 
+                            nome: newName, 
+                            icona: newIcon,
+                            ids_componenti: selectedComponentIds // Inviamo la lista per l'aggiornamento inverso
+                        }) 
+                    });
+
+                    if (!response.ok) throw new Error("Errore durante il salvataggio.");
+
+                    saveBtn.textContent = "✅";
+                    setTimeout(() => { saveBtn.textContent = "💾"; saveBtn.disabled = false; }, 1000);
+                    
+                    // Ricarichiamo i dati in background per tenere tutto sincronizzato
+                    await App.loadRefData();
+
+                } catch (e) {
+                    alert("Errore: " + e.message);
+                    saveBtn.textContent = "❌";
+                    saveBtn.disabled = false;
+                }
+            });
+
+            // --- EVENTO ELIMINA (Invariato) ---
+            const delBtn = tr.querySelector('.delete-macro-btn');
+            delBtn.addEventListener('click', async () => {
+                if(!confirm(`Eliminare macro "${valNome}"?`)) return;
+                delBtn.textContent = "⏳";
+                try {
+                    const res = await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error("Errore");
+                    tr.remove();
+                } catch (e) { alert("Errore"); delBtn.textContent = "🗑️"; }
+            });
+        });
     },
 
     addMacro: async function() {
