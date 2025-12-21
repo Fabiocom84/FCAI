@@ -145,70 +145,45 @@ const App = {
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
         // ============================================================
-        // 1. LOGICA BARRA DI AVANZAMENTO (CON DEBUG ATTIVO)
+        // 1. LOGICA BARRA DI AVANZAMENTO (MAPPATURA DIRETTA ID)
         // ============================================================
         
-        const phaseWeights = {
-            'ufficio': 10,
-            'carpenteria': 30,
-            'assemblaggio': 50,
-            'preparazione': 80
+        // CONFIGURAZIONE STATICA BASATA SUL TUO DB
+        // ID 1: Ufficio (10%)
+        // ID 2: Carpenteria (30%)
+        // ID 7: Assemblaggio (50%)
+        // ID 4: Preparazione (80%)
+        
+        const phaseConfig = {
+            '1': { label: 'Ufficio', weight: 10 },
+            '2': { label: 'Carpenteria', weight: 30 },
+            '7': { label: 'Assemblaggio', weight: 50 },
+            '4': { label: 'Preparazione', weight: 80 }
         };
 
         let maxProgress = 5; 
         let progressLabel = "Avvio";
         
-        // --- LOG ATTIVI ---
-        console.group(`🔎 DEBUG: ${commessa.impianto}`); // Crea un gruppo nella console
-        console.log("1. IDs Fasi dal DB (Raw):", commessa.ids_fasi_attive);
-        
-        // 1. Pulizia e Conversione
+        // 1. Recupero ID attivi
         let activeIds = [];
         if (Array.isArray(commessa.ids_fasi_attive)) {
             activeIds = commessa.ids_fasi_attive.map(id => String(id));
         } else if (typeof commessa.ids_fasi_attive === 'string') {
-            try {
-                // Caso in cui arriva come stringa "[1,2]"
-                const parsed = JSON.parse(commessa.ids_fasi_attive);
-                if(Array.isArray(parsed)) activeIds = parsed.map(id => String(id));
-            } catch(e) { 
-                console.warn("Errore parsing stringa fasi:", e);
-            }
+            try { activeIds = JSON.parse(commessa.ids_fasi_attive).map(id => String(id)); } catch(e){}
         }
 
-        console.log("2. IDs Fasi Convertiti (String):", activeIds);
-
-        if (this.state.allPhases && this.state.allPhases.length > 0) {
-            this.state.allPhases.forEach(phase => {
-                const currentPhaseId = String(phase.id_fase);
-                
-                // Verifichiamo se l'ID della fase corrente è nella lista degli attivi
-                if (activeIds.includes(currentPhaseId)) {
-                    console.log(`   -> TROVATA FASE ATTIVA: ID ${currentPhaseId} (${phase.nome_fase})`);
-                    
-                    const phaseNameLower = (phase.nome_fase || '').toLowerCase();
-                    
-                    // Cerchiamo il peso
-                    for (const key in phaseWeights) {
-                        if (phaseNameLower.includes(key)) {
-                            console.log(`      -> MATCH PESO: "${key}" = ${phaseWeights[key]}%`);
-                            if (phaseWeights[key] > maxProgress) {
-                                maxProgress = phaseWeights[key];
-                                progressLabel = phase.nome_fase;
-                            }
-                        }
-                    }
+        // 2. Calcolo Avanzamento basato sugli ID
+        activeIds.forEach(id => {
+            const phase = phaseConfig[id];
+            if (phase) {
+                if (phase.weight > maxProgress) {
+                    maxProgress = phase.weight;
+                    progressLabel = phase.label;
                 }
-            });
-        } else {
-            console.warn("⚠️ Nessuna lista fasi (this.state.allPhases) caricata!");
-        }
+            }
+        });
         
-        console.log(`3. RISULTATO: ${maxProgress}% - ${progressLabel}`);
-        console.groupEnd(); // Chiude il gruppo
-        // ------------------
-
-        // Se completato, forza 100%
+        // Se lo stato generale è "Completato", vince su tutto (100%)
         if(commessa.status_commessa?.nome_status === 'Completato') {
             maxProgress = 100;
             progressLabel = "Completato";
@@ -240,9 +215,19 @@ const App = {
         }
 
         let phasesHtml = '';
-        if (IsAdmin && this.state.allPhases && this.state.allPhases.length > 0) {
+        // Costruiamo i toggle basandoci sulla config statica se la lista API fallisce
+        const phasesToRender = (this.state.allPhases && this.state.allPhases.length > 0) 
+            ? this.state.allPhases 
+            : [ // Fallback manuale per visualizzare i toggle anche se l'API fasi fallisce
+                {id_fase: 1, nome_fase: 'Ufficio'},
+                {id_fase: 2, nome_fase: 'Carpenteria'},
+                {id_fase: 7, nome_fase: 'Assemblaggio'},
+                {id_fase: 4, nome_fase: 'Preparazione'}
+              ];
+
+        if (IsAdmin) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
-            this.state.allPhases.forEach(phase => {
+            phasesToRender.forEach(phase => {
                 const currentPhaseId = String(phase.id_fase);
                 const isChecked = activeIds.includes(currentPhaseId) ? 'checked' : '';
                 phasesHtml += `
