@@ -254,15 +254,27 @@ const App = {
                         ${adminToggleHtml}
                     </div>
                 </div>
+                
                 <div class="card-info">
+                    <!-- RIGA 1: Impianto e Modello -->
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
-                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
+                    
+                    <!-- RIGA 2: Luogo (Provincia/Paese) -->
+                    <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || '-'})</p>
+
+                    <!-- RIGA 3: Dettagli Tecnici (VO, Matricola, Anno) -->
+                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
+                    
+                    <!-- RIGA 4: Riferimento Tecnico -->
+                    <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+
+                    <!-- RIGA 5: Note (Visibile SOLO se Admin) -->
                     ${noteHtml}
                 </div>
                 
                 ${phasesHtml} 
 
-                <!-- BARRA AVANZAMENTO (VISIBILE A TUTTI) -->
+                <!-- BARRA AVANZAMENTO -->
                 <div class="progress-section">
                     <div class="progress-container">
                         <div class="progress-labels">
@@ -284,7 +296,7 @@ const App = {
             
             ${actionsHtml}
         `;
-
+        
         // ... BINDING EVENTI (uguale a prima) ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
