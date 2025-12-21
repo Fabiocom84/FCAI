@@ -1,96 +1,94 @@
-/* admin-config.css - Versione Layout Fixed & Small Buttons */
+/* admin-config.css */
 
 /* --- Layout Generale --- */
 .admin-page {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
+    /* Reset scroll */
+    overflow-y: auto; 
 }
 
 /* --- Contenitore Principale --- */
 .page-wrapper {
-    width: 80%;        /* Larghezza fissa contenitore */
-    max-width: 1200px; 
-    margin: 40px auto; /* Centrato */
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 40px;
     display: flex;
     flex-direction: column;
 }
 
-/* --- Header Specifico (Allineato al contenuto) --- */
+/* --- HEADER (Stile Inserisci Dati) --- */
 .page-header {
-    /* Resetta stili globali che potrebbero interferire */
-    width: 100% !important; 
-    box-sizing: border-box !important;
-    margin: 0 0 0 0 !important; /* Rimuove margini laterali indesiderati */
-    
-    display: grid !important;
-    grid-template-columns: 120px 1fr 120px;
-    align-items: center;
-    
+    width: 95%;
+    max-width: 1800px;
+    margin: 0 auto 20px auto; /* Centrato + Margine inferiore */
+    padding: 15px 20px;
+    box-sizing: border-box;
+    display: flex; 
+    justify-content: center;
+    background-color: transparent; /* Il colore di sfondo è gestito dai bottoni o dal body */
+}
+
+/* Header Content Wrapper (Contenitore grigio scuro) */
+.header-content-wrapper {
+    width: 100%;
     background-color: #4a5568; 
     color: white;
     padding: 15px 25px;
-    border-radius: 8px 8px 0 0; /* Arrotondato solo sopra per unirsi ai tab? No, meglio staccato */
     border-radius: 8px;
-    margin-bottom: 25px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .page-header h1 {
-    grid-column: 2;
-    text-align: center;
     margin: 0;
-    font-size: 1.5em;
+    font-size: 1.5rem;
     white-space: nowrap;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-align: center;
+    flex-grow: 1; /* Occupa lo spazio centrale */
 }
 
-/* --- FIX PULSANTI GIGANTI (Il "Reset Nucleare") --- */
-/* Questa regola forza TUTTI i bottoni in questa pagina ad essere normali */
-.admin-page .button {
-    min-height: unset !important;      /* Rimuove i 100px di altezza */
-    height: auto !important;           /* Altezza automatica */
-    width: auto !important;            /* Larghezza automatica */
-    max-width: none !important;        /* Rimuove limiti */
-    flex-basis: auto !important;       /* Rimuove il 50% width */
-    
-    display: inline-flex !important;   /* Disposizione in linea */
-    flex-direction: row !important;    /* Icona accanto al testo, non sopra */
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    
-    padding: 10px 20px !important;
-    font-size: 0.95em !important;
-    border-radius: 5px !important;
-    margin: 0 !important;
-    
-    box-shadow: none !important;       /* Rimuove ombre pesanti */
-    transform: none !important;        /* Rimuove animazioni di spostamento */
-}
-
-/* Stile specifico bottone "Aggiungi" (Verde) */
-.input-group .button {
-    background-color: #28a745 !important;
-    color: white !important;
-    white-space: nowrap;
-    height: 42px !important; /* Stessa altezza degli input */
-}
-.input-group .button:hover { background-color: #218838 !important; }
-
-/* Stile specifico bottoni Paginazione (Blu) */
-.pagination-controls .button {
-    background-color: #007bff !important;
-    color: white !important;
-    min-width: 80px;
-}
-.pagination-controls .button:hover { background-color: #0056b3 !important; }
-
-
-/* --- Tabs (Uniformi) --- */
-.config-tabs-container {
+/* Bottone Home (Stile Header) */
+.header-button {
     display: flex;
-    width: 100%;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    font-weight: 500;
+    font-size: 0.95rem;
+    height: 40px; /* Altezza fissa per allineamento */
+    box-sizing: border-box;
+}
+.header-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.header-button img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Spacer per bilanciare il titolo se non c'è bottone a destra */
+.header-spacer {
+    width: 90px; /* Stessa larghezza approx del bottone home */
+}
+
+/* --- Tabs --- */
+.config-tabs-container {
+    width: 95%;
+    max-width: 1800px;
+    margin: 0 auto;
+    display: flex;
     background: #fff;
     border-radius: 8px 8px 0 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -99,7 +97,7 @@
 }
 
 .config-tab {
-    flex: 1; /* 33% larghezza ognuno */
+    flex: 1;
     padding: 18px 10px;
     border: none;
     background: #f8f9fa;
@@ -121,17 +119,24 @@
 
 /* --- Contenuto Tab --- */
 .config-content {
+    width: 95%;
+    max-width: 1800px;
+    margin: 0 auto;
     background: #fff;
     padding: 30px;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     min-height: 400px;
+    box-sizing: border-box;
+    /* FIX: Rimuovere overflow hidden per permettere al dropdown di uscire se necessario, 
+       ma attenzione allo scroll */
+    overflow: visible; 
 }
 
 .tab-pane { display: none; }
 .tab-pane.active { display: block; animation: fadeIn 0.3s ease-in; }
 
-/* --- Input Panel --- */
+/* --- Tabelle e Layout --- */
 .input-panel {
     background-color: #f8f9fa;
     padding: 20px;
@@ -139,7 +144,6 @@
     border: 1px solid #e9ecef;
     margin-bottom: 25px;
 }
-.input-panel h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; color: #333; }
 
 .input-group {
     display: flex;
@@ -151,17 +155,20 @@
     padding: 0 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    height: 42px; /* Altezza fissa */
+    height: 42px;
     font-size: 1em;
-    box-sizing: border-box;
 }
 
-/* --- Tabelle --- */
+/* TABLE RESPONSIVE & DROPDOWN FIX */
 .table-responsive {
-    overflow-x: auto;
+    /* overflow-x: auto;  <-- Questo taglia i dropdown. 
+       Lo mettiamo visible per desktop admin, o usiamo un min-height grande. */
+    overflow-x: visible; 
     border: 1px solid #e0e0e0;
     border-radius: 6px;
+    min-height: 400px; /* Spazio per far aprire i menu in basso */
 }
+
 .config-table { width: 100%; border-collapse: collapse; }
 .config-table th {
     background-color: #e9ecef;
@@ -172,64 +179,48 @@
     padding: 15px;
     text-align: left;
     border-bottom: 2px solid #dee2e6;
+    position: sticky; 
+    top: 0; 
+    z-index: 10; /* Header sopra il contenuto ma sotto il dropdown */
 }
 .config-table td {
     padding: 12px 15px;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
 }
-.config-table tr:hover { background-color: #f1f3f5; }
 
-/* Input in tabella */
-.config-table input[type="text"] {
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9em;
-    box-sizing: border-box;
+/* Fix specifico per Choices.js dentro le tabelle */
+.config-table td .choices {
+    overflow: visible;
+}
+.choices__list--dropdown {
+    z-index: 1000 !important; /* Forza il dropdown sopra tutto */
+    width: max-content !important; /* Si allarga quanto serve */
+    min-width: 100%;
 }
 
-/* Pulsanti Azione (Salva) - Piccoli */
-.action-btn {
-    background: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+/* Pulsanti */
+.button {
     cursor: pointer;
-    width: 32px;
-    height: 32px;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.95em;
+    padding: 10px 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1em;
     transition: 0.2s;
-    min-height: unset; /* Override sicurezza */
 }
-.action-btn:hover:not(:disabled) {
-    background-color: #e2e6ea;
-    border-color: #adb5bd;
-}
+.button--primary { background-color: #28a745; color: white; height: 42px; }
+.button--primary:hover { background-color: #218838; }
 
-/* Paginazione */
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 25px 0;
-    padding-top: 15px;
-    border-top: 1px dashed #e0e0e0;
+.action-btn {
+    background: #fff; border: 1px solid #ced4da; border-radius: 4px;
+    cursor: pointer; width: 36px; height: 36px;
+    font-size: 1.2em;
+    display: inline-flex; align-items: center; justify-content: center;
 }
-
-/* Choices Override */
-.choices { margin-bottom: 0; }
-.choices__inner {
-    min-height: 36px;
-    padding: 0 5px;
-    background-color: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    display: flex; align-items: center;
-}
+.action-btn:hover { background-color: #e2e6ea; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }

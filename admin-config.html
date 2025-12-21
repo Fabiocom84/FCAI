@@ -11,24 +11,25 @@
     
     <!-- Libreria Choices.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
-    
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="admin-page">
 
     <div class="page-wrapper">
         
-        <!-- HEADER STANDARD (Uguale a Commesse) -->
+        <!-- HEADER (Nuovo Stile) -->
         <header class="page-header">
-            <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                <span>Home</span>
-            </a>
-            
-            <h1>Configuratore Logica</h1>
-            
-            <!-- Spacer vuoto per bilanciare il titolo al centro -->
-            <div style="width: 100px;"></div>
+            <div class="header-content-wrapper">
+                <a href="index.html" class="header-button">
+                    <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                    <span>Home</span>
+                </a>
+                
+                <h1>Configuratore Logica</h1>
+                
+                <!-- Spacer vuoto per bilanciare il titolo al centro -->
+                <div class="header-spacer"></div>
+            </div>
         </header>
 
         <!-- NAVIGAZIONE TAB -->
@@ -59,9 +60,8 @@
                                 <th style="width: 50px;">ID</th>
                                 <th>Nome</th>
                                 <th>Icona</th>
-                                <!-- NUOVA COLONNA -->
                                 <th style="width: 40%;">Lavorazioni Associate</th>
-                                <th>Azioni</th>
+                                <th style="width: 100px; text-align: center;">Azioni</th>
                             </tr>
                         </thead>
                         <tbody><!-- JS popola qui --></tbody>
@@ -80,10 +80,10 @@
                     </div>
                 </div>
 
-                <div class="pagination-controls">
-                    <button id="prevCompPage" class="button button--secondary">&lt; Prec</button>
-                    <span id="compPageIndicator">Pagina 1</span>
-                    <button id="nextCompPage" class="button button--secondary">Succ &gt;</button>
+                <div class="pagination-controls" style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;">
+                    <button id="prevCompPage" class="action-btn">&lt;</button>
+                    <span id="compPageIndicator" style="display:flex; align-items:center;">Pagina 1</span>
+                    <button id="nextCompPage" class="action-btn">&gt;</button>
                 </div>
 
                 <div class="table-responsive">
@@ -104,16 +104,19 @@
 
             <!-- TAB 3: COMMESSE -->
             <div id="tab-orders" class="tab-pane">
-                <div class="info-box">
-                    <p>Associa le Macro Categorie alle Commesse attive per filtrare i componenti nell'inserimento ore mobile.</p>
+                <div class="input-panel" style="background: #e8f4fc; border-color: #b8daff;">
+                    <p style="margin: 0; color: #004085;">
+                        <strong>Info:</strong> Associa le Macro Categorie alle Commesse attive. 
+                        Questo filtro determina quali componenti sono visibili nell'inserimento ore.
+                    </p>
                 </div>
                 <div class="table-responsive">
                     <table class="config-table" id="ordersTable">
                         <thead>
                             <tr>
-                                <th>Commessa</th>
-                                <th>Macro Attive</th>
-                                <th>Salva</th>
+                                <th style="width: 40%;">Dettagli Commessa</th>
+                                <th style="width: 45%;">Macro Attive</th>
+                                <th style="width: 15%; text-align: center;">Salva</th>
                             </tr>
                         </thead>
                         <tbody><!-- JS popola qui --></tbody>
@@ -124,9 +127,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <!-- Importiamo lo script come MODULO -->
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/core-init.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
