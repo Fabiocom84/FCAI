@@ -1,0 +1,172 @@
+/* admin-config.css */
+
+/* --- Layout Generale --- */
+.admin-page {
+    background-color: #f4f7f9;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Header specifico per griglia a 3 colonne (come commesse.css) */
+.page-header {
+    display: grid !important;
+    grid-template-columns: 100px 1fr 100px;
+    align-items: center;
+}
+.page-header h1 {
+    grid-column: 2;
+    text-align: center;
+    margin: 0;
+    font-size: 1.4em;
+    white-space: nowrap;
+}
+
+/* --- Tabs --- */
+.config-tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.config-tab {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.config-tab:hover {
+    color: #2A76B8;
+    background-color: #f8f9fa;
+    border-radius: 5px 5px 0 0;
+}
+
+.config-tab.active {
+    color: #2A76B8;
+    border-bottom-color: #2A76B8;
+    font-weight: 700;
+}
+
+/* --- Contenuto Tab --- */
+.tab-pane {
+    display: none; /* Nascosto di default */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    min-height: 400px;
+}
+
+.tab-pane.active {
+    display: block; /* Mostra attivo */
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* --- Pannelli Input --- */
+.input-panel {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.input-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.input-group input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* --- Tabelle --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.config-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.config-table th {
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    padding: 12px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+}
+
+.config-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.config-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- Choices.js Override --- */
+.choices {
+    margin-bottom: 0;
+}
+.choices__inner {
+    min-height: 35px;
+    padding: 2px 5px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+/* --- Pulsanti Azione Tabella --- */
+.action-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 1.2em;
+    transition: 0.2s;
+}
+.action-btn:hover {
+    background-color: #e2e6ea;
+    transform: scale(1.1);
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
