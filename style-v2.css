@@ -298,14 +298,34 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 }
 
 /* Fix icona occhio */
-.password-wrapper .toggle-password {
-    opacity: 0.4;
-    width: 22px;
-    right: 15px; /* Più distante dal bordo */
-    transition: opacity 0.3s;
+.password-wrapper {
+    position: relative; /* FONDAMENTALE: fa da "recinto" per l'icona */
+    width: 100%;
+    display: block;
 }
+
+.password-wrapper .toggle-password {
+    position: absolute;   /* Si muove liberamente dentro il wrapper */
+    top: 50%;             /* Si posiziona a metà altezza */
+    right: 15px;          /* 15px dal bordo destro */
+    transform: translateY(-50%); /* Corregge la centratura verticale esatta */
+    width: 22px;          /* Dimensione fissa */
+    height: auto;
+    cursor: pointer;
+    opacity: 0.5;
+    z-index: 5;           /* Assicura che stia sopra l'input */
+    margin: 0;            /* Rimuove eventuali margini indesiderati */
+}
+
 .password-wrapper .toggle-password:hover {
     opacity: 0.8;
+}
+
+.password-wrapper input[type="password"],
+.password-wrapper input[type="text"] {
+    width: 100%;
+    padding-right: 50px !important; /* Lascia spazio per l'occhio */
+    box-sizing: border-box;
 }
 
 .logout-button-horizontal {
