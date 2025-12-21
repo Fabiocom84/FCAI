@@ -323,6 +323,7 @@ const App = {
         this.state.sortOrder = sortOrder;
         this.fetchCommesse(true);
     },
+    
 
     handleScroll: function() {
         if (this.state.isLoading) return;
