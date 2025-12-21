@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segretario AI</title>
+    <!-- 1. NASCONDIAMO TUTTO SUBITO -->
+    <style>
+        /* Nasconde la pagina di default per evitare il flash */
+        body { 
+            visibility: hidden; 
+            opacity: 0; 
+        }
+    </style>
+
+    <!-- 2. IL BUTTAFUORI IMMEDIATO -->
+    <script>
+        (function() {
+            const token = localStorage.getItem('session_token');
+            if (!token) {
+                // Se non c'è il token, via subito al login
+                window.location.href = 'login.html';
+            } else {
+                // Se c'è il token, aspettiamo che il DOM sia pronto e mostriamo la pagina
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.style.visibility = 'visible';
+                    document.body.style.opacity = '1';
+                    document.body.style.transition = 'opacity 0.3s ease-in';
+                });
+            }
+        })();
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
