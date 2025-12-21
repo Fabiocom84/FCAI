@@ -319,3 +319,78 @@ input:checked + .slider:before {
 }
 .mini-switch input:checked + .mini-slider { background-color: #28a745; } /* Verde quando attivo */
 .mini-switch input:checked + .mini-slider:before { transform: translateX(14px); }
+
+/* --- PROGRESS BAR & ORE --- */
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.progress-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 10px;
+    transition: width 0.6s ease-in-out;
+    width: 0%; /* Di default 0, gestito da JS */
+}
+
+/* Colori dinamici in base alla percentuale (gestiti via classe o inline style) */
+.progress-bar-fill.low { background: #f1c40f; } /* Giallo (Ufficio) */
+.progress-bar-fill.mid { background: #3498db; } /* Blu (Lavorazione) */
+.progress-bar-fill.high { background: #2ecc71; } /* Verde (Finitura) */
+
+.hours-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 5px 10px;
+    min-width: 60px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.hours-value {
+    font-size: 1.1em;
+    font-weight: 800;
+    color: #2c3e50;
+}
+
+.hours-label {
+    font-size: 0.65em;
+    color: #888;
+    text-transform: uppercase;
+}

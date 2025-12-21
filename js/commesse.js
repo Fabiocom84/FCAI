@@ -139,19 +139,64 @@ const App = {
         const statusClass = `status-${statusName}`;
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
-        // Gestione link registrazioni
-        const registrazioniSummary = commessa.registrazioni.length > 0
-            ? `<p><strong>Registrazioni:</strong> ${commessa.registrazioni.length} 
-                | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Visualizza Dettagli</a></p>`
-            : `<p><strong>Registrazioni:</strong> 0</p>`;
+        // --- CALCOLO PROGRESSO AVANZAMENTO ---
+        // Definiamo i "pesi" delle fasi. Se una fase è attiva, la commessa è arrivata almeno lì.
+        // Usa le chiavi minuscole che corrispondono (o quasi) ai nomi nel tuo DB fasi.
+        const phaseWeights = {
+            'ufficio': 15,
+            'progettazione': 20,
+            'taglio': 30,
+            'carpenteria': 45,
+            'saldatura': 50,
+            'tornitura': 55,
+            'assemblaggio': 70,
+            'montaggio': 75,
+            'elettricista': 80,
+            'verniciatura': 85,
+            'preparazione': 90,
+            'collaudo': 95,
+            'spedizione': 100
+        };
+
+        let maxProgress = 5; // Minimo 5%
+        let progressLabel = "Avvio";
+
+        // Recuperiamo i nomi delle fasi attive usando gli ID e la lista allPhases
+        const activeIds = commessa.ids_fasi_attive || [];
         
-        // --- LOGICA FASI (Invariata) ---
+        if (this.state.allPhases) {
+            this.state.allPhases.forEach(phase => {
+                if (activeIds.includes(phase.id_fase)) {
+                    // Cerchiamo una corrispondenza parziale nel nome (es. "Carpenteria Leggera" -> trova "carpenteria")
+                    const phaseNameLower = phase.nome_fase.toLowerCase();
+                    for (const key in phaseWeights) {
+                        if (phaseNameLower.includes(key)) {
+                            if (phaseWeights[key] > maxProgress) {
+                                maxProgress = phaseWeights[key];
+                                progressLabel = phase.nome_fase; // Etichetta diventa la fase più avanzata
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Colore barra in base al progresso
+        let progressColorClass = 'low';
+        if (maxProgress > 40) progressColorClass = 'mid';
+        if (maxProgress > 80) progressColorClass = 'high';
+
+        // --- RECUPERO ORE (Se il backend non le manda ancora, mettiamo 0) ---
+        // Nota: Questo richiede che l'API backend restituisca il campo 'totale_ore'
+        const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
+
+
+        // --- HTML FASI (Invariato) ---
         let phasesHtml = '';
         if (this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
-            const activePhases = commessa.ids_fasi_attive || [];
             this.state.allPhases.forEach(phase => {
-                const isChecked = activePhases.includes(phase.id_fase) ? 'checked' : '';
+                const isChecked = activeIds.includes(phase.id_fase) ? 'checked' : '';
                 phasesHtml += `
                     <div class="phase-item">
                         <span>${phase.nome_fase}</span>
@@ -164,10 +209,8 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
-        // --- NUOVA LOGICA TOGGLE ADMIN (FIX RACE CONDITION) ---
-        // Usiamo IsAdmin importato: è immediato e sicuro.
+        // --- HTML TOGGLE ADMIN (Invariato) ---
         let adminToggleHtml = '';
-        
         if (IsAdmin) { 
             adminToggleHtml = `
                 <label class="toggle-switch">
@@ -179,8 +222,8 @@ const App = {
                 </label>
             `;
         }
-        // ------------------------------------------------------
 
+        // --- COSTRUZIONE HTML CARD ---
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
                 ${!commessa.immagine ? 'Nessuna Immagine' : ''}
@@ -190,25 +233,37 @@ const App = {
                     <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
                     <div class="status-and-toggle">
                         <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
-                        
-                        <!-- QUI INSERIAMO IL TOGGLE SOLO SE ADMIN -->
                         ${adminToggleHtml}
-                        
                     </div>
                 </div>
                 <div class="card-info">
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
-                    <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || 'N/D'})</p>
-                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matricola: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                    <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
-                    <p><strong>Data:</strong> ${formattedDate}</p>
-                    
-                    <!-- Nota: Se vuoi formattare i caratteri speciali anche qui, dimmelo e aggiungiamo la funzione -->
+                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
                     <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
                 </div>
+                
                 ${phasesHtml}
+
+                <!-- NUOVA SEZIONE: PROGRESSO E ORE -->
+                <div class="progress-section">
+                    <div class="progress-container">
+                        <div class="progress-labels">
+                            <span>Avanzamento</span>
+                            <span>${progressLabel} (${maxProgress}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill ${progressColorClass}" style="width: ${maxProgress}%"></div>
+                        </div>
+                    </div>
+                    <div class="hours-badge">
+                        <span class="hours-value">${totalHours}</span>
+                        <span class="hours-label">ORE</span>
+                    </div>
+                </div>
+
                 <div class="registrazioni-section">
-                    ${registrazioniSummary}
+                     <p><strong>Registrazioni:</strong> ${commessa.registrazioni ? commessa.registrazioni.length : 0} 
+                    | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a></p>
                 </div>
             </div>
             <div class="card-actions">
@@ -217,21 +272,15 @@ const App = {
             </div>
         `;
 
-        // ... binding eventi invariato ...
+        // ... BINDING EVENTI (Rimane uguale) ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
-        }
-        const editBtn = card.querySelector('[data-action="edit"]');
-        if (editBtn) {
-            editBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleEdit(editBtn.dataset.id); });
-        }
+        if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         
-        // Aggiungiamo il listener per il toggle SOLO se esiste (cioè se siamo admin)
+        const editBtn = card.querySelector('[data-action="edit"]');
+        if (editBtn) editBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleEdit(editBtn.dataset.id); });
+        
         const toggleInput = card.querySelector('[data-action="toggle-status"]');
-        if (toggleInput) {
-            toggleInput.addEventListener('change', (e) => { this.handleStatusToggle(e); });
-        }
+        if (toggleInput) toggleInput.addEventListener('change', (e) => { this.handleStatusToggle(e); });
 
         card.querySelectorAll('[data-action="toggle-phase"]').forEach(toggle => {
             toggle.addEventListener('change', (e) => this.handlePhaseToggle(e));
