@@ -155,6 +155,22 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 
 .styled-choices-container .choices__inner { min-height: 45px; background: #fff; border-radius: 8px; display: flex; align-items: center; }
 
+/* Stile per il saluto utente in index.html */
+.user-greeting {
+    font-size: 1.1em;
+    color: #555;
+    margin-top: -15px; /* Lo avvicina al titolo */
+    margin-bottom: 25px;
+    font-weight: 400;
+    text-transform: none; /* Lasciamo il nome normale, non maiuscolo forzato */
+    letter-spacing: 0.5px;
+}
+
+.user-greeting strong {
+    color: #2A76B8; /* Blu come il titolo */
+    font-weight: 600;
+}
+
 /* --- 5. MODALI --- */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20; }
 .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); width: 95%; max-width: 600px; max-height: 90%; overflow-y: auto; z-index: 30; animation: fadeInModal 0.3s; display: flex; flex-direction: column; box-sizing: border-box; }

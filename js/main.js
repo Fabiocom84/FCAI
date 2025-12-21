@@ -1,6 +1,6 @@
 // js/main.js (Logica DB-Centric)
 
-import { IsAdmin } from './core-init.js';
+import { IsAdmin, CurrentUser } from './core-init.js';
 import { apiFetch } from './api-client.js';
 import Legend from './legend.js';
 import { showModal } from './shared-ui.js'; 
@@ -65,28 +65,70 @@ function normalizeAdminFlag(val) {
 function setupUI() {
     console.log("🛠️ Setup UI...");
 
-    // Definiamo gli ID dei bottoni solo per Admin
-    const adminOnlyButtons = [
-        'openConfigBtn', 
-        'openTrainingModalBtn', 
-        'openDataGridBtn'
-    ];
+    // 1. VISUALIZZA NOME UTENTE
+    const greetingEl = document.getElementById('user-greeting');
+    if (greetingEl && CurrentUser) {
+        greetingEl.innerHTML = `Ciao, <strong>${CurrentUser.nome_cognome}</strong>`;
+    }
 
-    adminOnlyButtons.forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            // USIAMO LA COSTANTE IMPORTATA (Niente più check complessi qui)
-            if (IsAdmin) {
-                btn.style.display = 'flex'; 
-                btn.classList.remove('disabled');
-            } else {
-                btn.style.display = 'none';
+    // 2. GESTIONE VISIBILITÀ BOTTONI
+    if (!IsAdmin) {
+        // --- LOGICA PER UTENTI NON ADMIN ---
+        
+        // Lista di TUTTI gli ID dei bottoni nella pagina
+        const allButtons = [
+            'btn-inserisci-dati',
+            'openChatModalBtn',
+            'btn-commesse',              // PERMESSO
+            'openDataGridBtn',
+            'openInsertProductionOrderBtn',
+            'openViewProductionOrdersBtn',
+            'btn-inserimento-ore',       // PERMESSO
+            'openPrintHoursBtn',         // PERMESSO
+            'openDashboardBtn',
+            'btn-registro-presenze',
+            'openConfigBtn',
+            'btn-attivita',
+            'openTrainingModalBtn'
+        ];
+
+        // Lista dei bottoni PERMESSI ai non-admin
+        const allowedButtons = [
+            'btn-commesse',
+            'btn-inserimento-ore',
+            'openPrintHoursBtn'
+        ];
+
+        // Ciclo su tutti e nascondo quelli non permessi
+        allButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                if (allowedButtons.includes(id)) {
+                    btn.style.display = 'flex'; // Mostra (flex per mantenere il layout)
+                } else {
+                    btn.style.display = 'none'; // Nascondi
+                }
             }
-        }
-    });
+        });
 
-    // --- BINDING EVENTI STANDARD (Chat, Modali, etc.) ---
-    bindGlobalEvents();
+    } else {
+        // --- LOGICA PER ADMIN (Mostra tutto) ---
+        // Se c'è qualche bottone che era hidden di default nel CSS/HTML, qui lo mostriamo.
+        // Nel tuo caso, dato che sei Admin, vedi tutto di default.
+        // Solo Training, Config e Agile View a volte erano nascosti, assicuriamoci siano visibili.
+        ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.style.display = 'flex';
+        });
+    }
+
+    // ... Event binding (bindGlobalEvents) ...
+    if (!window.uiEventsBound) {
+        bindGlobalEvents();
+        window.uiEventsBound = true;
+    }
+    
+    new Legend();
 }
 
 function bindGlobalEvents() {
