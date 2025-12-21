@@ -13,7 +13,7 @@ const App = {
     init: async function() {
         console.log("Admin Config Tool Init");
         
-        // Verifica esistenza elementi chiave per evitare errori se la pagina non ha caricato
+        // Controllo di sicurezza: se non c'è la tabella, non siamo nella pagina giusta
         if (!document.getElementById('macrosTable')) return;
 
         try {
@@ -24,24 +24,36 @@ const App = {
             this.loadComponents(1);
             this.loadOrders();
             
-            // Event Listeners
-            document.getElementById('addMacroBtn').addEventListener('click', () => this.addMacro());
-            document.getElementById('prevCompPage').addEventListener('click', () => this.changeCompPage(-1));
-            document.getElementById('nextCompPage').addEventListener('click', () => this.changeCompPage(1));
-            document.getElementById('addCompBtn').addEventListener('click', () => this.addComponent());
+            this.bindEvents();
         } catch (e) {
-            console.error("Errore inizializzazione admin-config:", e);
+            console.error("Errore inizializzazione:", e);
             alert("Errore caricamento dati: " + e.message);
         }
     },
 
+    bindEvents: function() {
+        document.getElementById('addMacroBtn')?.addEventListener('click', () => this.addMacro());
+        document.getElementById('prevCompPage')?.addEventListener('click', () => this.changeCompPage(-1));
+        document.getElementById('nextCompPage')?.addEventListener('click', () => this.changeCompPage(1));
+        document.getElementById('addCompBtn')?.addEventListener('click', () => this.addComponent());
+    },
+
+    // 1. Caricamento dati di riferimento (Macro, Ruoli, Fasi)
     loadRefData: async function() {
-        const res = await apiFetch('/api/admin/init-data');
-        const d = await res.json();
-        this.data.macros = d.macros;
-        this.data.ruoli = d.ruoli;
-        this.data.fasi = d.fasi;
-        console.log("Reference Data Loaded:", this.data);
+        try {
+            const res = await apiFetch('/api/admin/init-data');
+            const d = await res.json();
+            
+            // Fallback ad array vuoti se il backend non restituisce nulla
+            this.data.macros = d.macros || [];
+            this.data.ruoli = d.ruoli || [];
+            this.data.fasi = d.fasi || [];
+            
+            console.log("Reference Data:", this.data);
+        } catch (e) {
+            console.error("Errore API init-data:", e);
+            this.data.macros = [];
+        }
     },
 
     setupTabs: function() {
@@ -50,31 +62,34 @@ const App = {
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Rimuovi active da tutti
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
 
-                // Aggiungi active al cliccato
                 tab.classList.add('active');
                 const targetId = tab.dataset.target;
-                document.getElementById(targetId).classList.add('active');
+                document.getElementById(targetId)?.classList.add('active');
             });
         });
     },
 
-    // --- MACRO ---
+    // --- SEZIONE 1: MACRO CATEGORIE ---
+    
     renderMacros: function() {
         const tbody = document.querySelector('#macrosTable tbody');
-        if (!this.data.macros.length) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nessuna macro trovata</td></tr>';
+        if (!tbody) return;
+
+        if (this.data.macros.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Nessuna macro trovata.</td></tr>';
             return;
         }
+
         tbody.innerHTML = this.data.macros.map(m => `
             <tr>
                 <td>${m.id_macro_categoria}</td>
-                <td><strong>${m.nome}</strong></td>
-                <td style="font-size:1.5em;">${m.icona || ''}</td>
-                <td><button class="action-btn" title="Funzione non attiva">✏️</button></td>
+                <!-- Gestiamo sia 'nome' che 'nome_macro' per sicurezza -->
+                <td><strong>${m.nome_macro || m.nome || 'N/D'}</strong></td>
+                <td style="font-size:1.5em;">${m.icona_macro || m.icona || ''}</td>
+                <td><button class="action-btn" disabled title="Modifica non disponibile">✏️</button></td>
             </tr>
         `).join('');
     },
@@ -82,48 +97,52 @@ const App = {
     addMacro: async function() {
         const nome = document.getElementById('newMacroName').value;
         const icona = document.getElementById('newMacroIcon').value;
-        if(!nome) return alert("Nome obbligatorio");
         
+        if(!nome) return alert("Il nome è obbligatorio");
+        
+        // Payload corrispondente alle colonne DB
+        const payload = {
+            nome_macro: nome,
+            icona_macro: icona
+        };
+
         try {
-            await apiFetch('/api/admin/macro', { method: 'POST', body: JSON.stringify({ nome, icona }) });
+            await apiFetch('/api/admin/macro', { method: 'POST', body: JSON.stringify(payload) });
+            
+            // Ricarica e pulisci
             await this.loadRefData();
             this.renderMacros();
             document.getElementById('newMacroName').value = '';
             document.getElementById('newMacroIcon').value = '';
         } catch (e) {
-            alert("Errore aggiunta macro: " + e.message);
+            alert("Errore salvataggio: " + e.message);
         }
     },
 
-    // --- COMPONENTI ---
+    // --- SEZIONE 2: COMPONENTI ---
+
     addComponent: async function() {
         const nome = document.getElementById('newCompName').value;
         const codice = document.getElementById('newCompCode').value;
         
-        if (!nome) return alert("Inserisci almeno il nome del componente.");
+        if (!nome) return alert("Inserisci il nome del componente.");
         
         const btn = document.getElementById('addCompBtn');
-        btn.disabled = true;
-        btn.textContent = "Salvataggio...";
+        btn.disabled = true; btn.textContent = "⏳";
 
         try {
             await apiFetch('/api/admin/componenti', {
                 method: 'POST',
-                body: JSON.stringify({ 
-                    nome_componente: nome, 
-                    codice_componente: codice 
-                })
+                body: JSON.stringify({ nome_componente: nome, codice_componente: codice })
             });
             
             document.getElementById('newCompName').value = '';
             document.getElementById('newCompCode').value = '';
             this.loadComponents(1); 
-            
         } catch (error) {
-            alert("Errore creazione: " + error.message);
+            alert("Errore: " + error.message);
         } finally {
-            btn.disabled = false;
-            btn.textContent = "+ Aggiungi Componente";
+            btn.disabled = false; btn.textContent = "+ Aggiungi Componente";
         }
     },
 
@@ -134,9 +153,16 @@ const App = {
         
         try {
             const res = await apiFetch(`/api/admin/componenti?page=${page}`);
-            const { data } = await res.json();
+            const json = await res.json();
+            const data = json.data || [];
+            
             const tbody = document.querySelector('#componentsTable tbody');
             tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Nessun componente trovato.</td></tr>';
+                return;
+            }
 
             data.forEach(comp => {
                 const tr = document.createElement('tr');
@@ -149,36 +175,38 @@ const App = {
                     <td style="vertical-align: top;"><select class="choice-ruoli" multiple></select></td>
                     <td style="vertical-align: top;"><select class="choice-fasi" multiple></select></td>
                     <td style="vertical-align: top; text-align: center;">
-                        <button class="action-btn save-btn" data-id="${comp.id_componente}" title="Salva modifiche">💾</button>
+                        <button class="action-btn save-btn" data-id="${comp.id_componente}" title="Salva">💾</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
 
-                const choicesConfig = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: false, searchEnabled: false };
+                // Config Choices
+                const config = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: false, searchEnabled: false };
                 
-                const macroSelect = new Choices(tr.querySelector('.choice-macro'), choicesConfig);
-                const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), choicesConfig);
-                const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), choicesConfig);
+                const macroSelect = new Choices(tr.querySelector('.choice-macro'), config);
+                const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), config);
+                const fasiSelect  = new Choices(tr.querySelector('.choice-fasi'), config);
 
-                const mapOptions = (sourceData, valueKey, labelKey, selectedArray) => {
-                    return sourceData.map(item => ({
-                        value: item[valueKey],
-                        label: item[labelKey],
-                        selected: (selectedArray || []).includes(item[valueKey])
-                    }));
-                };
+                // Helper Mappatura
+                const mapOpts = (src, valK, lblK, selArr) => src.map(i => ({
+                    value: i[valK], 
+                    // Gestione fallback nomi colonne
+                    label: i[lblK] || i.nome_macro || i.nome || '?', 
+                    selected: (selArr || []).includes(i[valK])
+                }));
 
-                macroSelect.setChoices(mapOptions(this.data.macros, 'id_macro_categoria', 'nome', comp.ids_macro_categorie), 'value', 'label', false);
-                ruoliSelect.setChoices(mapOptions(this.data.ruoli, 'id_ruolo', 'nome_ruolo', comp.ids_ruoli_abilitati), 'value', 'label', false);
-                fasiSelect.setChoices(mapOptions(this.data.fasi, 'id_fase', 'nome_fase', comp.ids_fasi_abilitate), 'value', 'label', false);
+                // Popolamento Select
+                macroSelect.setChoices(mapOpts(this.data.macros, 'id_macro_categoria', 'nome_macro', comp.ids_macro_categorie), 'value', 'label', false);
+                ruoliSelect.setChoices(mapOpts(this.data.ruoli, 'id_ruolo', 'nome_ruolo', comp.ids_ruoli_abilitati), 'value', 'label', false);
+                fasiSelect.setChoices(mapOpts(this.data.fasi, 'id_fase', 'nome_fase', comp.ids_fasi_abilitate), 'value', 'label', false);
 
-                const saveBtn = tr.querySelector('.save-btn');
-                saveBtn.addEventListener('click', async (e) => {
-                    const btn = e.currentTarget; 
-                    const compId = btn.dataset.id;
+                // Salvataggio
+                tr.querySelector('.save-btn').addEventListener('click', async (e) => {
+                    const btn = e.currentTarget;
                     btn.textContent = "⏳";
                     btn.disabled = true;
 
+                    // Payload con nomi colonne corretti per tabella 'componenti'
                     const payload = {
                         nome_componente: tr.querySelector('.edit-name').value,
                         codice_componente: tr.querySelector('.edit-code').value,
@@ -188,10 +216,12 @@ const App = {
                     };
 
                     try {
-                        const response = await apiFetch(`/api/admin/componenti/${compId}`, { 
+                        const response = await apiFetch(`/api/admin/componenti/${btn.dataset.id}`, { 
                             method: 'PUT', body: JSON.stringify(payload) 
                         });
-                        if (!response.ok) throw new Error("Errore API");
+                        
+                        if (!response.ok) throw new Error("Errore Backend");
+                        
                         btn.textContent = "✅";
                         setTimeout(() => { btn.textContent = "💾"; btn.disabled = false; }, 1000);
                     } catch (err) {
@@ -211,44 +241,69 @@ const App = {
         if(newPage > 0) this.loadComponents(newPage);
     },
 
-    // --- COMMESSE ---
+    // --- SEZIONE 3: CONFIGURAZIONE COMMESSE ---
     loadOrders: async function() {
-        const res = await apiFetch('/api/commesse/view?limit=50&status=In Lavorazione'); 
-        const { data } = await res.json();
-        const tbody = document.querySelector('#ordersTable tbody');
-        tbody.innerHTML = '';
-
-        data.forEach(comm => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${comm.impianto}</strong><br><small style="color:#666;">${comm.codice_commessa || 'N/D'}</small></td>
-                <td><select class="choice-macro-comm" multiple></select></td>
-                <td style="text-align: center;"><button class="action-btn save-btn">💾</button></td>
-            `;
-            tbody.appendChild(tr);
-
-            const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { removeItemButton: true, itemSelectText: '' });
+        try {
+            // Usiamo l'API commesse esistente
+            const res = await apiFetch('/api/commesse/view?limit=50&status=In Lavorazione'); 
+            const json = await res.json();
+            const data = json.data || [];
             
-            macroSelect.setChoices(this.data.macros.map(m => ({ 
-                value: m.id_macro_categoria, 
-                label: m.nome, 
-                selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
-            })), 'value', 'label', false);
+            const tbody = document.querySelector('#ordersTable tbody');
+            tbody.innerHTML = '';
 
-            tr.querySelector('.save-btn').addEventListener('click', async (e) => {
-                const btn = e.currentTarget;
-                btn.textContent = "⏳";
-                const payload = { ids_macro_categorie_attive: macroSelect.getValue(true) };
-                try {
-                    await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { method: 'PUT', body: JSON.stringify(payload) });
-                    btn.textContent = "✅";
-                    setTimeout(() => btn.textContent = "💾", 1000);
-                } catch(err) {
-                    alert("Errore: " + err.message);
-                    btn.textContent = "❌";
-                }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Nessuna commessa attiva.</td></tr>';
+                return;
+            }
+
+            data.forEach(comm => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${comm.impianto}</strong>
+                        <br><small style="color:#666;">${comm.codice_commessa || 'CODICE N/D'}</small>
+                    </td>
+                    <td><select class="choice-macro-comm" multiple></select></td>
+                    <td style="text-align: center;"><button class="action-btn save-btn">💾</button></td>
+                `;
+                tbody.appendChild(tr);
+
+                const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { removeItemButton: true, itemSelectText: '' });
+                
+                // Popolamento select con le macro esistenti
+                macroSelect.setChoices(this.data.macros.map(m => ({ 
+                    value: m.id_macro_categoria, 
+                    label: m.nome_macro || m.nome, 
+                    // Nota: il backend per le commesse usa 'ids_macro_categorie_attive'
+                    selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
+                })), 'value', 'label', false);
+
+                // Salvataggio Commessa
+                tr.querySelector('.save-btn').addEventListener('click', async (e) => {
+                    const btn = e.currentTarget;
+                    btn.textContent = "⏳";
+                    
+                    // Il backend admin_tools.py -> update_commessa_assoc si aspetta questa chiave specifica
+                    const payload = { 
+                        ids_macro_categorie_attive: macroSelect.getValue(true) 
+                    };
+                    
+                    try {
+                        await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { 
+                            method: 'PUT', body: JSON.stringify(payload) 
+                        });
+                        btn.textContent = "✅";
+                        setTimeout(() => btn.textContent = "💾", 1000);
+                    } catch(err) {
+                        alert("Errore: " + err.message);
+                        btn.textContent = "❌";
+                    }
+                });
             });
-        });
+        } catch(e) {
+            console.error("Errore caricamento Commesse:", e);
+        }
     }
 };
 
