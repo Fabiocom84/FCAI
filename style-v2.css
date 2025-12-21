@@ -216,59 +216,92 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 .delete-row-btn img { width: 1.5em; height: 1.5em; }
 
 /* --- 6. UTILITY (Login, Help, Footer) --- */
-.login-container { 
-    background: rgba(255,255,255,0.95); 
-    padding: 40px; 
-    border-radius: 12px; 
-    width: 100%; 
-    max-width: 450px; 
+.login-container {
+    background: rgba(255, 255, 255, 0.98); /* Quasi totalmente opaco */
+    padding: 50px 40px; /* Più spazio interno verticale */
+    border-radius: 16px; /* Angoli più morbidi */
+    width: 100%;
+    max-width: 420px; /* Leggermente più stretto per eleganza */
     text-align: center;
-    box-sizing: border-box; 
-    margin: 0 auto; 
+    box-sizing: border-box;
+    margin: 0 auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.5); /* Bordo sottile per definizione */
 }
 
-.login-container .form-group {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-bottom: 15px;
-}
-
-.login-container button { 
-    width: 100%; 
-    padding: 14px; 
-    margin-top: 20px; 
-    background: #2A76B8; 
-    color: white; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    font-size: 1.2em; 
-    border: none; 
-}
-
-/* FIX POSIZIONAMENTO OCCHIO PASSWORD */
-.password-wrapper {
-    position: relative; /* Fondamentale per contenere l'occhio */
-    width: 100%;
-    display: block;
-}
-
-.password-wrapper input {
-    width: 100%;
-    padding-right: 40px; /* Lascia spazio al testo per non andare sotto l'icona */
-}
-
-.password-wrapper .toggle-password {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    width: 20px;
+/* Stile del Logo sopra il titolo (opzionale, vedi HTML sotto) */
+.login-logo {
+    width: 60px;
     height: auto;
-    cursor: pointer;
-    opacity: 0.6;
-    z-index: 5;
-    margin: 0;
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.login-container h2 {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #2c3e50;
+    /* RISOLUZIONE TUA RICHIESTA: Più spazio sotto il titolo */
+    margin-bottom: 35px; 
+    letter-spacing: 0.5px;
+}
+
+/* Label più discrete */
+.login-container label {
+    display: block;
+    text-align: left;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #5a6b7c;
+    margin-bottom: 8px;
+    margin-left: 4px;
+}
+
+/* Input più moderni e spaziosi */
+.login-container input[type="email"],
+.login-container input[type="password"] {
+    padding: 14px 16px; /* Più alti */
+    background-color: #f7f9fc; /* Grigio chiarissimo invece di bianco puro */
+    border: 1px solid #e1e4e8;
+    border-radius: 10px;
+    font-size: 1.05em;
+    transition: all 0.3s ease;
+}
+
+.login-container input:focus {
+    background-color: #fff;
+    border-color: #3498db;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15); /* Alone blu morbido */
+}
+
+/* Bottone più accattivante */
+.login-container button {
+    margin-top: 30px;
+    padding: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 1em;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2A76B8 0%, #2980b9 100%); /* Sfumatura sottile */
+    box-shadow: 0 4px 15px rgba(42, 118, 184, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(42, 118, 184, 0.4);
+}
+
+/* Fix icona occhio */
+.password-wrapper .toggle-password {
+    opacity: 0.4;
+    width: 22px;
+    right: 15px; /* Più distante dal bordo */
+    transition: opacity 0.3s;
+}
+.password-wrapper .toggle-password:hover {
+    opacity: 0.8;
 }
 
 .logout-button-horizontal {
