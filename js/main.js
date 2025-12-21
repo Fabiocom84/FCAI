@@ -71,58 +71,53 @@ function setupUI() {
         greetingEl.innerHTML = `Ciao, <strong>${CurrentUser.nome_cognome}</strong>`;
     }
 
-    // 2. GESTIONE VISIBILITÀ BOTTONI
+    // 2. GESTIONE VISIBILITÀ BOTTONI (Logica esistente)
     if (!IsAdmin) {
-        // --- LOGICA PER UTENTI NON ADMIN ---
-        
-        // Lista di TUTTI gli ID dei bottoni nella pagina
         const allButtons = [
-            'btn-inserisci-dati',
-            'openChatModalBtn',
-            'btn-commesse',              // PERMESSO
-            'openDataGridBtn',
-            'openInsertProductionOrderBtn',
-            'openViewProductionOrdersBtn',
-            'btn-inserimento-ore',       // PERMESSO
-            'openPrintHoursBtn',         // PERMESSO
-            'openDashboardBtn',
-            'btn-registro-presenze',
-            'openConfigBtn',
-            'btn-attivita',
-            'openTrainingModalBtn'
+            'btn-inserisci-dati', 'openChatModalBtn', 'btn-commesse', 
+            'openDataGridBtn', 'openInsertProductionOrderBtn', 
+            'openViewProductionOrdersBtn', 'btn-inserimento-ore', 
+            'openPrintHoursBtn', 'openDashboardBtn', 'btn-registro-presenze', 
+            'openConfigBtn', 'btn-attivita', 'openTrainingModalBtn'
         ];
 
-        // Lista dei bottoni PERMESSI ai non-admin
-        const allowedButtons = [
-            'btn-commesse',
-            'btn-inserimento-ore',
-            'openPrintHoursBtn'
-        ];
+        // I soli permessi per l'operatore
+        const allowedButtons = ['btn-commesse', 'btn-inserimento-ore', 'openPrintHoursBtn'];
 
-        // Ciclo su tutti e nascondo quelli non permessi
         allButtons.forEach(id => {
             const btn = document.getElementById(id);
-            if (btn) {
-                if (allowedButtons.includes(id)) {
-                    btn.style.display = 'flex'; // Mostra (flex per mantenere il layout)
-                } else {
-                    btn.style.display = 'none'; // Nascondi
-                }
+            if (btn) btn.style.display = allowedButtons.includes(id) ? 'flex' : 'none';
+        });
+
+        // 3. PULIZIA LEGENDA (NUOVO)
+        // Nascondiamo le voci della legenda che corrispondono ai bottoni nascosti
+        const legendItemsToHide = [
+            '.insert-data-button', // Inserisci Dati
+            '.chat-ai-button',     // Chat
+            '.agile-view-button',  // Vista Agile
+            '.dashboard-button',   // Dashboard
+            '.attendance-button',  // Presenze
+            '.config-button'       // Config
+        ];
+
+        legendItemsToHide.forEach(selector => {
+            // Cerchiamo l'icona dentro la legenda e nascondiamo il genitore (.legend-item)
+            const iconInLegend = document.querySelector(`#mainPageLegend .legend-icon${selector}`);
+            if (iconInLegend) {
+                const legendItem = iconInLegend.closest('.legend-item');
+                if (legendItem) legendItem.style.display = 'none';
             }
+            // Nascondiamo anche i divisori <hr> se necessario, ma per ora basta nascondere le voci
         });
 
     } else {
-        // --- LOGICA PER ADMIN (Mostra tutto) ---
-        // Se c'è qualche bottone che era hidden di default nel CSS/HTML, qui lo mostriamo.
-        // Nel tuo caso, dato che sei Admin, vedi tutto di default.
-        // Solo Training, Config e Agile View a volte erano nascosti, assicuriamoci siano visibili.
+        // Admin vede tutto
         ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'flex';
         });
     }
 
-    // ... Event binding (bindGlobalEvents) ...
     if (!window.uiEventsBound) {
         bindGlobalEvents();
         window.uiEventsBound = true;

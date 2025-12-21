@@ -27,15 +27,20 @@ const App = {
             sortSelect: document.getElementById('sort-select'),
             addBtn: document.getElementById('add-commessa-btn'),
         };
+
+        // NUOVO: Nascondi il bottone "Aggiungi" se non è Admin
+        if (!IsAdmin && this.dom.addBtn) {
+            this.dom.addBtn.style.display = 'none';
+        }
+
         try {
-            // Carichiamo Stati E Fasi in parallelo
             const [statusRes, phasesRes] = await Promise.all([
                 apiFetch('/api/simple/status_commessa'),
-                apiFetch('/api/commesse/fasi') // <--- Chiamata alla nuova rotta
+                apiFetch('/api/commesse/fasi')
             ]);
             
             this.state.allStatuses = await statusRes.json();
-            this.state.allPhases = await phasesRes.json(); // Salviamo le fasi
+            this.state.allPhases = await phasesRes.json();
             
         } catch (error) {
             console.error("Errore caricamento dati init:", error);
@@ -139,61 +144,63 @@ const App = {
         const statusClass = `status-${statusName}`;
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
-        // --- CALCOLO PROGRESSO AVANZAMENTO ---
-        // Definiamo i "pesi" delle fasi. Se una fase è attiva, la commessa è arrivata almeno lì.
-        // Usa le chiavi minuscole che corrispondono (o quasi) ai nomi nel tuo DB fasi.
-        const phaseWeights = {
-            'ufficio': 15,
-            'progettazione': 20,
-            'taglio': 30,
-            'carpenteria': 45,
-            'saldatura': 50,
-            'tornitura': 55,
-            'assemblaggio': 70,
-            'montaggio': 75,
-            'elettricista': 80,
-            'verniciatura': 85,
-            'preparazione': 90,
-            'collaudo': 95,
-            'spedizione': 100
-        };
-
-        let maxProgress = 5; // Minimo 5%
+        // --- LOGICA PROGRESSO (Codice esistente che mantieni) ---
+        const phaseWeights = { 'ufficio': 15, 'progettazione': 20, 'taglio': 30, 'carpenteria': 45, 'saldatura': 50, 'tornitura': 55, 'assemblaggio': 70, 'montaggio': 75, 'elettricista': 80, 'verniciatura': 85, 'preparazione': 90, 'collaudo': 95, 'spedizione': 100 };
+        let maxProgress = 5; 
         let progressLabel = "Avvio";
-
-        // Recuperiamo i nomi delle fasi attive usando gli ID e la lista allPhases
         const activeIds = commessa.ids_fasi_attive || [];
-        
         if (this.state.allPhases) {
             this.state.allPhases.forEach(phase => {
                 if (activeIds.includes(phase.id_fase)) {
-                    // Cerchiamo una corrispondenza parziale nel nome (es. "Carpenteria Leggera" -> trova "carpenteria")
                     const phaseNameLower = phase.nome_fase.toLowerCase();
                     for (const key in phaseWeights) {
-                        if (phaseNameLower.includes(key)) {
-                            if (phaseWeights[key] > maxProgress) {
-                                maxProgress = phaseWeights[key];
-                                progressLabel = phase.nome_fase; // Etichetta diventa la fase più avanzata
-                            }
+                        if (phaseNameLower.includes(key) && phaseWeights[key] > maxProgress) {
+                            maxProgress = phaseWeights[key];
+                            progressLabel = phase.nome_fase;
                         }
                     }
                 }
             });
         }
-        
-        // Colore barra in base al progresso
-        let progressColorClass = 'low';
-        if (maxProgress > 40) progressColorClass = 'mid';
-        if (maxProgress > 80) progressColorClass = 'high';
-
-        // --- RECUPERO ORE (Se il backend non le manda ancora, mettiamo 0) ---
-        // Nota: Questo richiede che l'API backend restituisca il campo 'totale_ore'
+        let progressColorClass = maxProgress > 80 ? 'high' : (maxProgress > 40 ? 'mid' : 'low');
         const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
+        // ---------------------------------------------------------
 
+        // --- HTML CONDIZIONALE ---
+        
+        // 1. Note: Visibili solo se Admin
+        // Usiamo formatDataContent (importalo in cima se non c'è, o usa raw string)
+        const noteHtml = IsAdmin 
+            ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` 
+            : ''; 
 
-        // --- HTML FASI (Invariato) ---
+        // 2. Link Registrazioni: Visibile solo se Admin
+        let registrazioniHtml = '';
+        if (IsAdmin) {
+            const count = commessa.registrazioni ? commessa.registrazioni.length : 0;
+            const link = count > 0 
+                ? `| <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a>` 
+                : '';
+            registrazioniHtml = `<div class="registrazioni-section"><p><strong>Registrazioni:</strong> ${count} ${link}</p></div>`;
+        }
+
+        // 3. Azioni (Edit/Delete): Visibili solo se Admin
+        let actionsHtml = '';
+        if (IsAdmin) {
+            actionsHtml = `
+            <div class="card-actions">
+                <button class="button button--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
+                <button class="button button--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
+            </div>`;
+        }
+
+        // 4. Toggle e Fasi (Interattivi solo per Admin)
         let phasesHtml = '';
-        if (this.state.allPhases && this.state.allPhases.length > 0) {
+        // Mostriamo le fasi sempre per vedere a che punto siamo, MA disabilitiamo i checkbox se non admin?
+        // La tua richiesta dice: "Barra avanzamento e ore... rispecchiare stato".
+        // Se l'operatore non deve toccare le fasi, possiamo nascondere i toggle o disabilitarli.
+        // Manteniamo la logica: Se admin vede i toggle, se no vede solo la barra.
+        if (IsAdmin && this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
             this.state.allPhases.forEach(phase => {
                 const isChecked = activeIds.includes(phase.id_fase) ? 'checked' : '';
@@ -209,21 +216,16 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
-        // --- HTML TOGGLE ADMIN (Invariato) ---
         let adminToggleHtml = '';
         if (IsAdmin) { 
             adminToggleHtml = `
                 <label class="toggle-switch">
-                    <input type="checkbox" 
-                           data-action="toggle-status" 
-                           data-id="${commessa.id_commessa}" 
-                           ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
+                    <input type="checkbox" data-action="toggle-status" data-id="${commessa.id_commessa}" ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
                     <span class="slider"></span>
-                </label>
-            `;
+                </label>`;
         }
 
-        // --- COSTRUZIONE HTML CARD ---
+        // --- ASSEMBLAGGIO CARD ---
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
                 ${!commessa.immagine ? 'Nessuna Immagine' : ''}
@@ -239,12 +241,13 @@ const App = {
                 <div class="card-info">
                     <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
                     <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                    <p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>
+                    
+                    ${noteHtml} <!-- Note visibili solo se Admin -->
                 </div>
                 
-                ${phasesHtml}
+                ${phasesHtml} <!-- Toggle Fasi visibili solo se Admin -->
 
-                <!-- NUOVA SEZIONE: PROGRESSO E ORE -->
+                <!-- BARRA E ORE SEMPRE VISIBILI -->
                 <div class="progress-section">
                     <div class="progress-container">
                         <div class="progress-labels">
@@ -261,18 +264,13 @@ const App = {
                     </div>
                 </div>
 
-                <div class="registrazioni-section">
-                     <p><strong>Registrazioni:</strong> ${commessa.registrazioni ? commessa.registrazioni.length : 0} 
-                    | <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a></p>
-                </div>
+                ${registrazioniHtml} <!-- Link visibile solo se Admin -->
             </div>
-            <div class="card-actions">
-                <button class="button button--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
-                <button class="button button--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
-            </div>
+            
+            ${actionsHtml} <!-- Pulsanti Modifica/Elimina visibili solo se Admin -->
         `;
 
-        // ... BINDING EVENTI (Rimane uguale) ...
+        // ... BINDING EVENTI (Solo se gli elementi esistono) ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         
