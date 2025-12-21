@@ -145,10 +145,9 @@ const App = {
         const formattedDate = commessa.data_commessa ? new Date(commessa.data_commessa).toLocaleDateString('it-IT') : 'N/D';
         
         // ============================================================
-        // 1. LOGICA BARRA DI AVANZAMENTO (Personalizzata su DB)
+        // 1. LOGICA BARRA DI AVANZAMENTO (CON DEBUG ATTIVO)
         // ============================================================
         
-        // Mappatura esatta basata sulla tua tabella 'fasi_produzione'
         const phaseWeights = {
             'ufficio': 10,
             'carpenteria': 30,
@@ -159,25 +158,40 @@ const App = {
         let maxProgress = 5; 
         let progressLabel = "Avvio";
         
-        // 1. Pulizia e Conversione in Stringhe (Metodo Universale)
+        // --- LOG ATTIVI ---
+        console.group(`🔎 DEBUG: ${commessa.impianto}`); // Crea un gruppo nella console
+        console.log("1. IDs Fasi dal DB (Raw):", commessa.ids_fasi_attive);
+        
+        // 1. Pulizia e Conversione
         let activeIds = [];
         if (Array.isArray(commessa.ids_fasi_attive)) {
-            // Convertiamo tutto in stringa per evitare problemi tra 1 e "1"
             activeIds = commessa.ids_fasi_attive.map(id => String(id));
+        } else if (typeof commessa.ids_fasi_attive === 'string') {
+            try {
+                // Caso in cui arriva come stringa "[1,2]"
+                const parsed = JSON.parse(commessa.ids_fasi_attive);
+                if(Array.isArray(parsed)) activeIds = parsed.map(id => String(id));
+            } catch(e) { 
+                console.warn("Errore parsing stringa fasi:", e);
+            }
         }
+
+        console.log("2. IDs Fasi Convertiti (String):", activeIds);
 
         if (this.state.allPhases && this.state.allPhases.length > 0) {
             this.state.allPhases.forEach(phase => {
-                // 2. Confronto ID Stringa vs Stringa
                 const currentPhaseId = String(phase.id_fase);
                 
+                // Verifichiamo se l'ID della fase corrente è nella lista degli attivi
                 if (activeIds.includes(currentPhaseId)) {
+                    console.log(`   -> TROVATA FASE ATTIVA: ID ${currentPhaseId} (${phase.nome_fase})`);
+                    
                     const phaseNameLower = (phase.nome_fase || '').toLowerCase();
                     
-                    // 3. Cerchiamo il peso nel dizionario semplificato
+                    // Cerchiamo il peso
                     for (const key in phaseWeights) {
                         if (phaseNameLower.includes(key)) {
-                            // Se la fase è attiva e ha una % più alta della attuale, aggiorna la barra
+                            console.log(`      -> MATCH PESO: "${key}" = ${phaseWeights[key]}%`);
                             if (phaseWeights[key] > maxProgress) {
                                 maxProgress = phaseWeights[key];
                                 progressLabel = phase.nome_fase;
@@ -186,15 +200,20 @@ const App = {
                     }
                 }
             });
+        } else {
+            console.warn("⚠️ Nessuna lista fasi (this.state.allPhases) caricata!");
         }
         
-        // Se lo stato generale è "Completato", vince su tutto (100%)
+        console.log(`3. RISULTATO: ${maxProgress}% - ${progressLabel}`);
+        console.groupEnd(); // Chiude il gruppo
+        // ------------------
+
+        // Se completato, forza 100%
         if(commessa.status_commessa?.nome_status === 'Completato') {
             maxProgress = 100;
             progressLabel = "Completato";
         }
 
-        // Colori barra: Giallo (basso), Blu (medio), Verde (alto)
         let progressColorClass = maxProgress >= 80 ? 'high' : (maxProgress >= 40 ? 'mid' : 'low');
         const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
 
@@ -202,10 +221,8 @@ const App = {
         // 2. ELEMENTI HTML CONDIZIONALI (SOLO PER ADMIN)
         // ============================================================
 
-        // A. Note (Solo Admin)
         const noteHtml = IsAdmin ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` : '';
         
-        // B. Link Dettagli (Solo Admin)
         let registrazioniHtml = '';
         if (IsAdmin) {
             const count = commessa.registrazioni ? commessa.registrazioni.length : 0;
@@ -213,7 +230,6 @@ const App = {
             registrazioniHtml = `<div class="registrazioni-section"><p><strong>Registrazioni:</strong> ${count} ${link}</p></div>`;
         }
 
-        // C. Pulsanti Azione (Solo Admin)
         let actionsHtml = '';
         if (IsAdmin) {
             actionsHtml = `
@@ -223,7 +239,6 @@ const App = {
             </div>`;
         }
 
-        // D. Toggle Fasi (Solo Admin)
         let phasesHtml = '';
         if (IsAdmin && this.state.allPhases && this.state.allPhases.length > 0) {
             phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
@@ -242,7 +257,6 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
-        // E. Toggle Stato Generale (Solo Admin)
         let adminToggleHtml = '';
         if (IsAdmin) { 
             adminToggleHtml = `
@@ -300,7 +314,6 @@ const App = {
             ${actionsHtml}
         `;
 
-        // ... BINDING EVENTI ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
         
