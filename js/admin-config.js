@@ -73,7 +73,7 @@ const App = {
             return;
         }
 
-        // 1. ORDINAMENTO ALFABETICO MACRO
+        // ORDINAMENTO ALFABETICO
         this.data.macros.sort((a, b) => {
             const na = (a.nome || a.nome_macro || '').toLowerCase();
             const nb = (b.nome || b.nome_macro || '').toLowerCase();
@@ -106,12 +106,11 @@ const App = {
             `;
             tbody.appendChild(tr);
 
-            // Choices.js
             const selectEl = tr.querySelector('.choice-macro-comps');
             const choices = new Choices(selectEl, {
                 removeItemButton: true,
                 itemSelectText: '',
-                position: 'bottom', // Forza apertura verso il basso
+                position: 'bottom',
                 placeholderValue: 'Associa...',
                 searchEnabled: true,
                 shouldSort: false
@@ -127,7 +126,6 @@ const App = {
             });
             choices.setChoices(options, 'value', 'label', true);
 
-            // Salva
             const saveBtn = tr.querySelector('.save-macro-btn');
             saveBtn.addEventListener('click', async () => {
                 const newName = tr.querySelector('.edit-macro-name').value;
@@ -159,7 +157,6 @@ const App = {
                 }
             });
 
-            // Elimina
             const delBtn = tr.querySelector('.delete-macro-btn');
             delBtn.addEventListener('click', async () => {
                 if(!confirm(`Eliminare macro "${valNome}"?`)) return;
@@ -266,11 +263,6 @@ const App = {
         } catch (e) { console.error(e); }
     },
 
-    changeCompPage: function(delta) {
-        const newPage = this.data.componentiPage + delta;
-        if(newPage > 0) this.loadComponents(newPage);
-    },
-
     // --- COMMESSE ---
     loadOrders: async function() {
         try {
@@ -283,18 +275,23 @@ const App = {
             if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nessuna commessa attiva trovata.</td></tr>'; return; }
 
             data.forEach(comm => {
-                const tr = document.createElement('tr');
-                
-                // 4. ETICHETTA COMPLETA (Cliente + Impianto + ODV + Rif)
-                const labelCliente = comm.nome_cliente || 'Cliente Sconosciuto';
+                // CORREZIONE ETICHETTA: Recupero sicuro dei dati del cliente
+                let nomeCliente = 'Cliente Sconosciuto';
+                if (comm.clienti && comm.clienti.ragione_sociale) {
+                    nomeCliente = comm.clienti.ragione_sociale;
+                } else if (comm.nome_cliente) {
+                    nomeCliente = comm.nome_cliente;
+                }
+
                 const labelImpianto = comm.impianto || '';
                 const labelOdv = comm.ordine_vendita || comm.odv || '-';
                 const labelRif = comm.riferimento_tecnico || '-';
                 const labelCodice = comm.codice_commessa || '';
 
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div style="font-weight: 700; color: #2c3e50; font-size: 1.05em;">${labelCliente} - ${labelImpianto}</div>
+                        <div style="font-weight: 700; color: #2c3e50; font-size: 1.05em;">${nomeCliente} - ${labelImpianto}</div>
                         <div style="color: #666; font-size: 0.9em; margin-top: 4px;">
                             OV: <strong>${labelOdv}</strong> | Rif: <strong>${labelRif}</strong>
                         </div>
@@ -312,13 +309,13 @@ const App = {
                 const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { 
                     removeItemButton: true, 
                     itemSelectText: '',
-                    position: 'bottom' // Importante per non coprire il titolo
+                    position: 'bottom'
                 });
                 
                 macroSelect.setChoices(
                     this.data.macros.map(m => ({ 
                         value: m.id_macro_categoria, 
-                        label: m.nome || m.nome_macro, // Usa entrambi i casi per sicurezza 
+                        label: m.nome || m.nome_macro, 
                         selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
                     })), 
                     'value', 

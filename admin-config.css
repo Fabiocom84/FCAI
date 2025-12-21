@@ -1,11 +1,10 @@
-/* admin-config.css */
+/* admin-config.css - Versione Aggiornata */
 
 /* --- Layout Generale --- */
 .admin-page {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
-    /* Reset scroll */
     overflow-y: auto; 
 }
 
@@ -23,15 +22,14 @@
 .page-header {
     width: 95%;
     max-width: 1800px;
-    margin: 0 auto 20px auto; /* Centrato + Margine inferiore */
+    margin: 0 auto 20px auto;
     padding: 15px 20px;
     box-sizing: border-box;
     display: flex; 
     justify-content: center;
-    background-color: transparent; /* Il colore di sfondo è gestito dai bottoni o dal body */
+    background-color: transparent;
 }
 
-/* Header Content Wrapper (Contenitore grigio scuro) */
 .header-content-wrapper {
     width: 100%;
     background-color: #4a5568; 
@@ -51,10 +49,9 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     text-align: center;
-    flex-grow: 1; /* Occupa lo spazio centrale */
+    flex-grow: 1;
 }
 
-/* Bottone Home (Stile Header) */
 .header-button {
     display: flex;
     align-items: center;
@@ -67,21 +64,15 @@
     transition: background 0.2s;
     font-weight: 500;
     font-size: 0.95rem;
-    height: 40px; /* Altezza fissa per allineamento */
+    height: 40px;
     box-sizing: border-box;
 }
 .header-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }
-.header-button img {
-    width: 20px;
-    height: 20px;
-}
+.header-button img { width: 20px; height: 20px; }
 
-/* Spacer per bilanciare il titolo se non c'è bottone a destra */
-.header-spacer {
-    width: 90px; /* Stessa larghezza approx del bottone home */
-}
+.header-spacer { width: 90px; }
 
 /* --- Tabs --- */
 .config-tabs-container {
@@ -128,15 +119,13 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     min-height: 400px;
     box-sizing: border-box;
-    /* FIX: Rimuovere overflow hidden per permettere al dropdown di uscire se necessario, 
-       ma attenzione allo scroll */
     overflow: visible; 
 }
 
 .tab-pane { display: none; }
 .tab-pane.active { display: block; animation: fadeIn 0.3s ease-in; }
 
-/* --- Tabelle e Layout --- */
+/* --- Input Panels --- */
 .input-panel {
     background-color: #f8f9fa;
     padding: 20px;
@@ -159,14 +148,31 @@
     font-size: 1em;
 }
 
-/* TABLE RESPONSIVE & DROPDOWN FIX */
+/* --- FIX DIMENSIONE BOTTONE AGGIUNGI --- */
+/* Forza dimensioni ridotte per i pulsanti di input */
+.input-group .button {
+    height: 42px !important;
+    width: auto !important;
+    min-width: unset !important;
+    padding: 0 25px !important;
+    font-size: 0.95em !important;
+    white-space: nowrap !important;
+    flex-basis: auto !important;
+    flex-grow: 0 !important;
+    margin: 0 !important;
+    background-color: #28a745 !important;
+    color: white !important;
+    border-radius: 5px !important;
+}
+.input-group .button:hover { background-color: #218838 !important; }
+
+
+/* --- Tabelle --- */
 .table-responsive {
-    /* overflow-x: auto;  <-- Questo taglia i dropdown. 
-       Lo mettiamo visible per desktop admin, o usiamo un min-height grande. */
     overflow-x: visible; 
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    min-height: 400px; /* Spazio per far aprire i menu in basso */
+    min-height: 400px;
 }
 
 .config-table { width: 100%; border-collapse: collapse; }
@@ -181,7 +187,7 @@
     border-bottom: 2px solid #dee2e6;
     position: sticky; 
     top: 0; 
-    z-index: 10; /* Header sopra il contenuto ma sotto il dropdown */
+    z-index: 10;
 }
 .config-table td {
     padding: 12px 15px;
@@ -189,31 +195,15 @@
     vertical-align: middle;
 }
 
-/* Fix specifico per Choices.js dentro le tabelle */
-.config-table td .choices {
-    overflow: visible;
-}
+/* Choices.js fix in tabella */
+.config-table td .choices { overflow: visible; }
 .choices__list--dropdown {
-    z-index: 1000 !important; /* Forza il dropdown sopra tutto */
-    width: max-content !important; /* Si allarga quanto serve */
+    z-index: 1000 !important;
+    width: max-content !important;
     min-width: 100%;
 }
 
-/* Pulsanti */
-.button {
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.95em;
-    padding: 10px 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-}
-.button--primary { background-color: #28a745; color: white; height: 42px; }
-.button--primary:hover { background-color: #218838; }
-
+/* Bottoni Azione */
 .action-btn {
     background: #fff; border: 1px solid #ced4da; border-radius: 4px;
     cursor: pointer; width: 36px; height: 36px;
