@@ -150,36 +150,40 @@ const App = {
         
         // Pesi delle fasi
         const phaseWeights = {
-            'ufficio': 10, 'commerciale': 10, 'progettazione': 20, 'disegno': 20,
-            'acquisti': 25, 'taglio': 30, 'laser': 30, 'piegatura': 35,
-            'carpenteria': 45, 'saldatura': 50, 'lavorazioni': 55, 'tornitura': 55, 'fresatura': 55,
-            'verniciatura': 65, 'zincatura': 65, 'assemblaggio': 75, 'montaggio': 80,
-            'elettricista': 85, 'cablaggio': 85, 'collaudo': 90, 'preparazione': 95, 'imballo': 95, 'spedizione': 100
+            'ufficio': 10, 'carpenteria': 30, 'assemblaggio': 50, 'preparazione': 80
         };
 
         let maxProgress = 5; 
         let progressLabel = "Avvio";
-        const activeIds = commessa.ids_fasi_attive || []; // Array ID fasi attive dal DB
-
-        // Debug: controlla nella console se l'operatore vede questi dati
-        // console.log(`Commessa ${commessa.id_commessa} - Fasi Attive:`, activeIds, "Admin?", IsAdmin);
+        
+        // 1. Convertiamo SICURAMENTE gli ID attivi in Numeri Interi
+        // (Gestisce casi in cui arrivano come ["1", "5"] stringhe)
+        const rawIds = commessa.ids_fasi_attive || [];
+        const activeIds = rawIds.map(id => parseInt(id, 10)).filter(n => !isNaN(n));
 
         if (this.state.allPhases && this.state.allPhases.length > 0) {
             this.state.allPhases.forEach(phase => {
-                // Se la fase è attiva per questa commessa
-                if (activeIds.includes(phase.id_fase)) {
-                    const phaseNameLower = phase.nome_fase.toLowerCase();
+                // 2. Convertiamo anche l'ID della fase corrente in Numero
+                const currentPhaseId = parseInt(phase.id_fase, 10);
+
+                // 3. Confronto Numerico Puro
+                if (activeIds.includes(currentPhaseId)) {
+                    
+                    const phaseNameLower = (phase.nome_fase || '').toLowerCase();
+                    
                     for (const key in phaseWeights) {
-                        if (phaseNameLower.includes(key) && phaseWeights[key] > maxProgress) {
-                            maxProgress = phaseWeights[key];
-                            progressLabel = phase.nome_fase;
+                        if (phaseNameLower.includes(key)) {
+                            if (phaseWeights[key] > maxProgress) {
+                                maxProgress = phaseWeights[key];
+                                progressLabel = phase.nome_fase;
+                            }
                         }
                     }
                 }
             });
         }
-
-        // Se completato, forza 100%
+        
+        // Se lo stato generale è "Completato", vince su tutto (100%)
         if(commessa.status_commessa?.nome_status === 'Completato') {
             maxProgress = 100;
             progressLabel = "Completato";
@@ -296,7 +300,7 @@ const App = {
             
             ${actionsHtml}
         `;
-        
+
         // ... BINDING EVENTI (uguale a prima) ...
         const deleteBtn = card.querySelector('[data-action="delete"]');
         if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
