@@ -26,6 +26,7 @@ const App = {
             searchInput: document.getElementById('search-input'),
             sortSelect: document.getElementById('sort-select'),
             addBtn: document.getElementById('add-commessa-btn'),
+            deepSearchContainer: document.getElementById('deep-search-container'),
         };
 
         // MOSTRA
