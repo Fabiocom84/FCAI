@@ -35,38 +35,52 @@ const App = {
     },
 
     loadRefData: async function() {
-        console.log("🔄 Caricamento dati di riferimento...");
+        console.log("🔄 Caricamento dati...");
         
-        // Funzione helper per mostrare errori nella tabella
-        const showTableError = (msg) => {
-            const tbody = document.querySelector('#macrosTable tbody');
-            if(tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color: red;">⚠️ ${msg} <br><button onclick="location.reload()" style="margin-top:10px; cursor:pointer;">Ricarica Pagina</button></td></tr>`;
-        };
-
         try {
             const res = await apiFetch('/api/admin/init-data');
             
             if (!res.ok) {
-                throw new Error(`Errore API: ${res.status}`);
+                // Se il server risponde con errore (es. 500 o 404)
+                throw new Error(`Errore Server: ${res.status} ${res.statusText}`);
             }
             
             const d = await res.json();
             
-            // Verifica che i dati siano validi array, altrimenti usa array vuoto
+            // Assegnazione dati con controlli di sicurezza
             this.data.macros = Array.isArray(d.macros) ? d.macros : [];
             this.data.ruoli = Array.isArray(d.ruoli) ? d.ruoli : [];
             this.data.fasi = Array.isArray(d.fasi) ? d.fasi : [];
             this.data.allComponents = Array.isArray(d.componenti) ? d.componenti : []; 
             
-            console.log("✅ Dati caricati:", this.data.macros.length, "macro trovate.");
+            console.log("✅ Dati caricati correttamente.");
 
         } catch (e) {
-            console.error("❌ Errore loadRefData:", e);
-            // Non resettiamo a vuoto silenziosamente, avvisiamo l'utente
-            this.data.macros = []; 
-            showTableError("Errore caricamento dati: " + e.message);
-            // Rilanciamo l'errore per bloccare il render successivo se necessario
-            throw e;
+            console.error("❌ ERRORE CRITICO:", e);
+            
+            // 1. Mostriamo l'errore nella tabella VISIVAMENTE
+            const tbody = document.querySelector('#macrosTable tbody');
+            if(tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:30px; background-color: #fff0f0;">
+                            <div style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">
+                                ⚠️ Impossibile caricare i dati
+                            </div>
+                            <div style="font-family: monospace; color: #555; margin-bottom: 15px;">
+                                ${e.message}
+                            </div>
+                            <button onclick="location.reload()" style="padding: 8px 16px; cursor: pointer;">
+                                Riprova
+                            </button>
+                        </td>
+                    </tr>`;
+            }
+
+            // 2. IMPORTANTE: Rilanciamo l'errore per fermare 'init'
+            // Se non facciamo questo, init continuerà ed eseguirà renderMacros()
+            // che sovrascriverà il nostro bel messaggio di errore con "Nessuna macro trovata".
+            throw e; 
         }
     },
 
