@@ -395,71 +395,106 @@ input:checked + .slider:before {
     text-transform: uppercase;
 }
 
-/* --- FIX LAYOUT HEADER (DESKTOP) --- */
+/* =================================================== */
+/* ==   FIX LAYOUT HEADER (DESKTOP & MOBILE)        == */
+/* =================================================== */
+
+/* 1. CONFIGURAZIONE DESKTOP (Default) */
 .page-header {
     display: grid !important; 
-    grid-template-columns: 100px 1fr 100px; /* Desktop: Spazio comodo laterale */
+    grid-template-columns: auto 1fr auto; /* I lati si adattano al contenuto */
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    padding: 15px 20px;
 }
 
-/* 1. Bottone Home (Sinistra) */
-.page-header .header-button {
-    justify-self: start;
-    grid-column: 1;
-}
-
-/* 2. Titolo (Centro) */
+/* Gestione Titolo */
 .page-header h1 {
     grid-column: 2;
     text-align: center;
     margin: 0;
-    white-space: nowrap; /* Desktop: tutto su una riga */
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
 }
 
-/* 3. Bottone Aggiungi (Destra) */
-.page-header #add-commessa-btn {
-    justify-self: end;
-    grid-column: 3;
+/* Posizionamento Bottoni */
+.page-header .header-button { grid-column: 1; justify-self: start; }
+.page-header #add-commessa-btn { grid-column: 3; justify-self: end; }
+
+/* STILE SPECIFICO PER IL BOTTONE AGGIUNGI (Verde) */
+#add-commessa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Spazio tra icona e testo */
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    height: 40px; /* Altezza fissa uguale al tasto Home */
+    box-sizing: border-box;
+    min-width: unset; /* Rimuove larghezze minime ereditate */
+    width: auto;
+    flex-direction: row; /* Forza la riga */
+}
+
+/* Assicuriamo che l'icona nel bottone verde abbia la dimensione giusta */
+#add-commessa-btn img {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    display: block; /* Fondamentale per vederla */
+}
+
+/* Assicuriamo che il testo sia visibile su desktop */
+#add-commessa-btn span {
+    display: inline-block;
+    font-size: 0.95em;
+    font-weight: 500;
 }
 
 
-/* --- FIX LAYOUT HEADER (MOBILE) --- */
+/* 2. CONFIGURAZIONE MOBILE (Schermi piccoli) */
 @media (max-width: 600px) {
     .page-header {
-        /* Cambiamo la griglia: le colonne laterali si adattano al contenuto (icona) */
-        grid-template-columns: min-content 1fr min-content !important; 
-        padding: 10px 15px; /* Meno padding laterale */
+        grid-template-columns: min-content 1fr min-content !important;
+        padding: 10px;
+        gap: 10px;
     }
 
-    /* Nascondiamo il testo "Home" e "+Aggiungi" */
+    /* Nascondiamo SOLO il testo dentro gli span */
     .page-header .header-button span,
     .page-header #add-commessa-btn span {
-        display: none;
+        display: none !important;
     }
 
-    /* Rendiamo i bottoni quadrati/compatti */
+    /* Rendiamo i bottoni perfettamente QUADRATI */
     .page-header .header-button,
     .page-header #add-commessa-btn {
-        padding: 8px;
-        width: 36px;
-        height: 36px;
+        padding: 0;
+        width: 40px;  /* Larghezza fissa */
+        height: 40px; /* Altezza fissa */
+        display: flex;
+        align-items: center;
         justify-content: center;
     }
 
-    /* Correggiamo le icone per essere centrate perfettamente senza testo */
+    /* Centriamo le icone */
     .page-header .header-button img,
     .page-header #add-commessa-btn img {
-        margin: 0 !important; /* Rimuove margini residui */
+        margin: 0 !important;
+        width: 20px; /* Icona leggermente più grande su mobile */
+        height: 20px;
     }
 
-    /* Gestione Titolo Mobile */
+    /* Titolo su più righe se serve */
     .page-header h1 {
-        white-space: normal; /* Permette di andare a capo */
-        font-size: 1.1em;    /* Font leggermente più piccolo */
-        line-height: 1.2;    /* Interlinea stretta */
+        white-space: normal;
+        font-size: 1.1em;
+        line-height: 1.2;
     }
 }
