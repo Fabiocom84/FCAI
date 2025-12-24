@@ -149,21 +149,43 @@
 }
 
 /* --- FIX DIMENSIONE BOTTONE AGGIUNGI --- */
-/* Forza dimensioni ridotte per i pulsanti di input */
 .input-group .button {
+    /* Forziamo l'altezza identica agli input (42px) */
     height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    
+    /* Reset del layout flex per allineare testo orizzontalmente */
+    display: inline-flex !important;
+    flex-direction: row !important; 
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Spaziature e dimensioni */
+    padding: 0 25px !important;
+    margin: 0 !important;
     width: auto !important;
     min-width: unset !important;
-    padding: 0 25px !important;
-    font-size: 0.95em !important;
-    white-space: nowrap !important;
     flex-basis: auto !important;
     flex-grow: 0 !important;
-    margin: 0 !important;
+    
+    /* Stile testo */
+    font-size: 0.95em !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    
+    /* Colore (già presente ma ribadito per sicurezza) */
     background-color: #28a745 !important;
     color: white !important;
     border-radius: 5px !important;
+    box-shadow: none !important;
 }
+
+.input-group .button:hover { 
+    background-color: #218838 !important; 
+    transform: none !important; /* Evita il saltello tipico dei bottoni dashboard */
+}
+
 .input-group .button:hover { background-color: #218838 !important; }
 
 

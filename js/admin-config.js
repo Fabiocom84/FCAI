@@ -35,19 +35,38 @@ const App = {
     },
 
     loadRefData: async function() {
+        console.log("🔄 Caricamento dati di riferimento...");
+        
+        // Funzione helper per mostrare errori nella tabella
+        const showTableError = (msg) => {
+            const tbody = document.querySelector('#macrosTable tbody');
+            if(tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color: red;">⚠️ ${msg} <br><button onclick="location.reload()" style="margin-top:10px; cursor:pointer;">Ricarica Pagina</button></td></tr>`;
+        };
+
         try {
             const res = await apiFetch('/api/admin/init-data');
-            if (!res.ok) throw new Error(`API Error ${res.status}`);
+            
+            if (!res.ok) {
+                throw new Error(`Errore API: ${res.status}`);
+            }
+            
             const d = await res.json();
             
-            this.data.macros = d.macros || [];
-            this.data.ruoli = d.ruoli || [];
-            this.data.fasi = d.fasi || [];
-            this.data.allComponents = d.componenti || []; 
+            // Verifica che i dati siano validi array, altrimenti usa array vuoto
+            this.data.macros = Array.isArray(d.macros) ? d.macros : [];
+            this.data.ruoli = Array.isArray(d.ruoli) ? d.ruoli : [];
+            this.data.fasi = Array.isArray(d.fasi) ? d.fasi : [];
+            this.data.allComponents = Array.isArray(d.componenti) ? d.componenti : []; 
             
+            console.log("✅ Dati caricati:", this.data.macros.length, "macro trovate.");
+
         } catch (e) {
-            console.error("Errore loadRefData:", e);
-            this.data.macros = [];
+            console.error("❌ Errore loadRefData:", e);
+            // Non resettiamo a vuoto silenziosamente, avvisiamo l'utente
+            this.data.macros = []; 
+            showTableError("Errore caricamento dati: " + e.message);
+            // Rilanciamo l'errore per bloccare il render successivo se necessario
+            throw e;
         }
     },
 
