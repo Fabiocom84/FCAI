@@ -395,14 +395,12 @@ input:checked + .slider:before {
     text-transform: uppercase;
 }
 
-/* --- FIX LAYOUT HEADER (BLOCCA IL TITOLO AL CENTRO) --- */
-
-/* Sovrascriviamo lo stile globale solo per questa pagina */
+/* --- FIX LAYOUT HEADER (DESKTOP) --- */
 .page-header {
-    display: grid !important; /* Forza l'uso della griglia */
-    grid-template-columns: 100px auto 100px; /* Sinistra fissa, Centro flessibile, Destra fissa */
+    display: grid !important; 
+    grid-template-columns: 100px 1fr 100px; /* Desktop: Spazio comodo laterale */
     align-items: center;
-    justify-content: space-between;
+    gap: 10px;
 }
 
 /* 1. Bottone Home (Sinistra) */
@@ -416,7 +414,9 @@ input:checked + .slider:before {
     grid-column: 2;
     text-align: center;
     margin: 0;
-    white-space: nowrap;
+    white-space: nowrap; /* Desktop: tutto su una riga */
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
 }
 
@@ -424,4 +424,42 @@ input:checked + .slider:before {
 .page-header #add-commessa-btn {
     justify-self: end;
     grid-column: 3;
+}
+
+
+/* --- FIX LAYOUT HEADER (MOBILE) --- */
+@media (max-width: 600px) {
+    .page-header {
+        /* Cambiamo la griglia: le colonne laterali si adattano al contenuto (icona) */
+        grid-template-columns: min-content 1fr min-content !important; 
+        padding: 10px 15px; /* Meno padding laterale */
+    }
+
+    /* Nascondiamo il testo "Home" e "+Aggiungi" */
+    .page-header .header-button span,
+    .page-header #add-commessa-btn span {
+        display: none;
+    }
+
+    /* Rendiamo i bottoni quadrati/compatti */
+    .page-header .header-button,
+    .page-header #add-commessa-btn {
+        padding: 8px;
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+    }
+
+    /* Correggiamo le icone per essere centrate perfettamente senza testo */
+    .page-header .header-button img,
+    .page-header #add-commessa-btn img {
+        margin: 0 !important; /* Rimuove margini residui */
+    }
+
+    /* Gestione Titolo Mobile */
+    .page-header h1 {
+        white-space: normal; /* Permette di andare a capo */
+        font-size: 1.1em;    /* Font leggermente più piccolo */
+        line-height: 1.2;    /* Interlinea stretta */
+    }
 }
