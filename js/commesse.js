@@ -29,8 +29,15 @@ const App = {
         };
 
         // MOSTRA
-        if (IsAdmin && this.dom.addBtn) {
-            this.dom.addBtn.style.display = 'inline-flex';
+        if (IsAdmin) {
+            // Mostra bottone Aggiungi
+            if (this.dom.addBtn) {
+                this.dom.addBtn.style.display = 'inline-flex';
+            }
+            // 2. Mostra Checkbox Ricerca Registrazioni (con display flex per mantenere l'allineamento)
+            if (this.dom.deepSearchContainer) {
+                this.dom.deepSearchContainer.style.display = 'flex';
+            }
         }
 
         try {
