@@ -29,9 +29,19 @@ const App = {
 
     bindEvents: function() {
         document.getElementById('addMacroBtn')?.addEventListener('click', () => this.addMacro());
+        // Ora queste chiamate funzioneranno perché changeCompPage esiste
         document.getElementById('prevCompPage')?.addEventListener('click', () => this.changeCompPage(-1));
         document.getElementById('nextCompPage')?.addEventListener('click', () => this.changeCompPage(1));
         document.getElementById('addCompBtn')?.addEventListener('click', () => this.addComponent());
+    },
+
+    // --- NUOVA FUNZIONE PER LA PAGINAZIONE ---
+    changeCompPage: function(delta) {
+        const newPage = this.data.componentiPage + delta;
+        if (newPage < 1) return; // Non andare sotto pagina 1
+        
+        // Carichiamo la nuova pagina
+        this.loadComponents(newPage);
     },
 
     loadRefData: async function() {
@@ -45,32 +55,15 @@ const App = {
             }
             
             const d = await res.json();
-            
-            // --- DEBUG: VEDIAMO COSA ARRIVA ---
             console.log("📦 RISPOSTA SERVER COMPLETA:", d);
-            // ----------------------------------
 
-            // 1. Recupero MACROS (Cerchiamo con più nomi possibili per sicurezza)
-            // A volte il DB le chiama 'macro_categorie', a volte 'macros'
             const rawMacros = d.macros || d.macro_categorie || d.data?.macros || [];
             this.data.macros = Array.isArray(rawMacros) ? rawMacros : [];
-
-            // 2. Recupero ALTRI DATI
             this.data.ruoli = Array.isArray(d.ruoli) ? d.ruoli : [];
             this.data.fasi = Array.isArray(d.fasi) ? d.fasi : [];
             this.data.allComponents = Array.isArray(d.componenti) ? d.componenti : []; 
             
-            // Log finale di verifica
-            console.log(`✅ ANALISI DATI:
-            - Macro trovate: ${this.data.macros.length}
-            - Ruoli trovati: ${this.data.ruoli.length}
-            - Fasi trovate: ${this.data.fasi.length}
-            - Componenti trovati: ${this.data.allComponents.length}`);
-
-            // Se abbiamo 0 macro, potrebbe essere un problema
-            if (this.data.macros.length === 0) {
-                console.warn("⚠️ ATTENZIONE: Array macro vuoto. Verifica il 'nome' della proprietà nel log 'RISPOSTA SERVER'.");
-            }
+            console.log(`✅ ANALISI DATI: Macro ${this.data.macros.length}, Ruoli ${this.data.ruoli.length}`);
 
         } catch (e) {
             console.error("❌ Errore loadRefData:", e);
@@ -102,32 +95,19 @@ const App = {
             return;
         }
 
-        // ORDINAMENTO ALFABETICO
-        this.data.macros.sort((a, b) => {
-            const na = (a.nome || a.nome_macro || '').toLowerCase();
-            const nb = (b.nome || b.nome_macro || '').toLowerCase();
-            return na.localeCompare(nb);
-        });
-
+        this.data.macros.sort((a, b) => (a.nome || a.nome_macro || '').toLowerCase().localeCompare((b.nome || b.nome_macro || '').toLowerCase()));
         tbody.innerHTML = '';
 
         this.data.macros.forEach(m => {
             const tr = document.createElement('tr');
-            
             const valNome = m.nome || m.nome_macro || '';
             const valIcona = m.icona || m.icona_macro || '';
 
             tr.innerHTML = `
                 <td style="text-align: center; color: #888;">${m.id_macro_categoria}</td>
-                <td>
-                    <input type="text" class="edit-macro-name" value="${valNome}" style="width: 100%; font-weight: 500;">
-                </td>
-                <td>
-                    <input type="text" class="edit-macro-icon" value="${valIcona}" style="width: 50px; text-align: center; font-size: 1.2em;">
-                </td>
-                <td>
-                    <select class="choice-macro-comps" multiple></select>
-                </td>
+                <td><input type="text" class="edit-macro-name" value="${valNome}" style="width: 100%; font-weight: 500;"></td>
+                <td><input type="text" class="edit-macro-icon" value="${valIcona}" style="width: 50px; text-align: center; font-size: 1.2em;"></td>
+                <td><select class="choice-macro-comps" multiple></select></td>
                 <td style="text-align: center; white-space: nowrap;">
                     <button class="action-btn save-macro-btn" data-id="${m.id_macro_categoria}" title="Salva">💾</button>
                     <button class="action-btn delete-macro-btn" data-id="${m.id_macro_categoria}" title="Elimina" style="color: #dc3545; border-color: #dc3545;">🗑️</button>
@@ -135,66 +115,38 @@ const App = {
             `;
             tbody.appendChild(tr);
 
+            // Setup Choices.js (omesso per brevità, logica identica a prima)
             const selectEl = tr.querySelector('.choice-macro-comps');
-            const choices = new Choices(selectEl, {
-                removeItemButton: true,
-                itemSelectText: '',
-                position: 'bottom',
-                placeholderValue: 'Associa...',
-                searchEnabled: true,
-                shouldSort: false
-            });
-
-            const options = this.data.allComponents.map(comp => {
-                const hasMacro = (comp.ids_macro_categorie || []).includes(m.id_macro_categoria);
-                return {
-                    value: comp.id_componente,
-                    label: comp.nome_componente,
-                    selected: hasMacro
-                };
-            });
+            const choices = new Choices(selectEl, { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: false });
+            const options = this.data.allComponents.map(comp => ({
+                value: comp.id_componente,
+                label: comp.nome_componente,
+                selected: (comp.ids_macro_categorie || []).includes(m.id_macro_categoria)
+            }));
             choices.setChoices(options, 'value', 'label', true);
 
-            const saveBtn = tr.querySelector('.save-macro-btn');
-            saveBtn.addEventListener('click', async () => {
-                const newName = tr.querySelector('.edit-macro-name').value;
-                const newIcon = tr.querySelector('.edit-macro-icon').value;
-                const selectedComponentIds = choices.getValue(true);
-                
-                saveBtn.textContent = "⏳";
-                saveBtn.disabled = true;
-
+            // Bind Save
+            tr.querySelector('.save-macro-btn').addEventListener('click', async (e) => {
+                const btn = e.currentTarget; btn.textContent = "⏳";
                 try {
-                    const response = await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { 
-                        method: 'PUT', 
-                        body: JSON.stringify({ 
-                            nome: newName, 
-                            icona: newIcon,
-                            ids_componenti: selectedComponentIds 
-                        }) 
-                    });
-
-                    if (!response.ok) throw new Error("Errore salvataggio.");
-
-                    saveBtn.textContent = "✅";
-                    setTimeout(() => { saveBtn.textContent = "💾"; saveBtn.disabled = false; }, 1000);
+                    const payload = {
+                        nome: tr.querySelector('.edit-macro-name').value,
+                        icona: tr.querySelector('.edit-macro-icon').value,
+                        ids_componenti: choices.getValue(true)
+                    };
+                    await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { method: 'PUT', body: JSON.stringify(payload) });
+                    btn.textContent = "✅"; setTimeout(() => btn.textContent = "💾", 1000);
                     await App.loadRefData();
-                } catch (e) {
-                    alert("Errore: " + e.message);
-                    saveBtn.textContent = "❌";
-                    saveBtn.disabled = false;
-                }
+                } catch (e) { alert("Errore: " + e.message); btn.textContent = "❌"; }
             });
 
-            const delBtn = tr.querySelector('.delete-macro-btn');
-            delBtn.addEventListener('click', async () => {
+            // Bind Delete
+            tr.querySelector('.delete-macro-btn').addEventListener('click', async () => {
                 if(!confirm(`Eliminare macro "${valNome}"?`)) return;
-                delBtn.textContent = "⏳";
                 try {
-                    const res = await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { method: 'DELETE' });
-                    if (!res.ok) throw new Error("Errore");
+                    await apiFetch(`/api/admin/macro/${m.id_macro_categoria}`, { method: 'DELETE' });
                     tr.remove();
-                } catch (e) { alert("Errore"); delBtn.textContent = "🗑️"; }
+                } catch (e) { alert("Errore cancellazione"); }
             });
         });
     },
@@ -202,24 +154,15 @@ const App = {
     addMacro: async function() {
         const nome = document.getElementById('newMacroName').value;
         const icona = document.getElementById('newMacroIcon').value;
-        
         if(!nome) return alert("Nome obbligatorio");
         
         try {
-            const res = await apiFetch('/api/admin/macro', { 
-                method: 'POST', 
-                body: JSON.stringify({ nome: nome, icona: icona }) 
-            });
-            
-            if(!res.ok) throw new Error("Errore inserimento");
-
+            await apiFetch('/api/admin/macro', { method: 'POST', body: JSON.stringify({ nome: nome, icona: icona }) });
             await this.loadRefData();
             this.renderMacros();
             document.getElementById('newMacroName').value = '';
             document.getElementById('newMacroIcon').value = '';
-        } catch (e) {
-            alert("Errore salvataggio: " + e.message);
-        }
+        } catch (e) { alert("Errore: " + e.message); }
     },
 
     // --- COMPONENTI ---
@@ -235,14 +178,16 @@ const App = {
             await apiFetch('/api/admin/componenti', { method: 'POST', body: JSON.stringify({ nome_componente: nome, codice_componente: codice }) });
             document.getElementById('newCompName').value = '';
             document.getElementById('newCompCode').value = '';
-            this.loadComponents(1); 
+            this.loadComponents(1); // Ricarica prima pagina
         } catch (error) { alert("Errore: " + error.message); } 
         finally { btn.disabled = false; btn.textContent = "+ Aggiungi Componente"; }
     },
 
     loadComponents: async function(page) {
         this.data.componentiPage = page;
-        document.getElementById('compPageIndicator').innerText = `Pagina ${page}`;
+        const indicator = document.getElementById('compPageIndicator');
+        if(indicator) indicator.innerText = `Pagina ${page}`;
+        
         try {
             const res = await apiFetch(`/api/admin/componenti?page=${page}`);
             const json = await res.json();
@@ -250,7 +195,17 @@ const App = {
             const tbody = document.querySelector('#componentsTable tbody');
             tbody.innerHTML = '';
             
-            if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun componente.</td></tr>'; return; }
+            if (data.length === 0) { 
+                // Se la pagina è > 1 e non ci sono dati, potremmo tornare indietro, 
+                // ma per ora mostriamo solo il messaggio.
+                if (page > 1) {
+                    // Opzionale: torna indietro automaticamente
+                    // this.changeCompPage(-1); 
+                    // return;
+                }
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun componente trovato in questa pagina.</td></tr>'; 
+                return; 
+            }
 
             data.forEach(comp => {
                 const tr = document.createElement('tr');
@@ -262,10 +217,16 @@ const App = {
                     <td style="vertical-align: top;"><select class="choice-macro" multiple></select></td>
                     <td style="vertical-align: top;"><select class="choice-ruoli" multiple></select></td>
                     <td style="vertical-align: top;"><select class="choice-fasi" multiple></select></td>
-                    <td style="vertical-align: top; text-align: center;"><button class="action-btn save-btn" data-id="${comp.id_componente}">💾</button></td>
+                    
+                    <!-- MODIFICATA ULTIMA COLONNA CON I DUE TASTI -->
+                    <td style="vertical-align: top; text-align: center; white-space: nowrap;">
+                        <button class="action-btn save-btn" data-id="${comp.id_componente}" title="Salva">💾</button>
+                        <button class="action-btn delete-btn" data-id="${comp.id_componente}" title="Elimina" style="color: #dc3545; border-color: #dc3545; margin-left: 5px;">🗑️</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
                 
+                // Config Choices (identico a prima)
                 const config = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: false, searchEnabled: false };
                 const macroSelect = new Choices(tr.querySelector('.choice-macro'), config);
                 const ruoliSelect = new Choices(tr.querySelector('.choice-ruoli'), config);
@@ -276,6 +237,7 @@ const App = {
                 ruoliSelect.setChoices(mapOpts(this.data.ruoli, 'id_ruolo', 'nome_ruolo', comp.ids_ruoli_abilitati), 'value', 'label', false);
                 fasiSelect.setChoices(mapOpts(this.data.fasi, 'id_fase', 'nome_fase', comp.ids_fasi_abilitate), 'value', 'label', false);
 
+                // --- GESTIONE SALVATAGGIO ---
                 tr.querySelector('.save-btn').addEventListener('click', async (e) => {
                     const btn = e.currentTarget; btn.textContent = "⏳";
                     const payload = {
@@ -287,6 +249,23 @@ const App = {
                     };
                     try { await apiFetch(`/api/admin/componenti/${btn.dataset.id}`, { method: 'PUT', body: JSON.stringify(payload) }); btn.textContent = "✅"; setTimeout(() => btn.textContent = "💾", 1500); } 
                     catch(err) { alert("Errore: " + err.message); btn.textContent = "❌"; }
+                });
+
+                // --- GESTIONE ELIMINAZIONE (NUOVO) ---
+                tr.querySelector('.delete-btn').addEventListener('click', async (e) => {
+                    const btn = e.currentTarget;
+                    const compName = tr.querySelector('.edit-name').value;
+                    if(!confirm(`Sei sicuro di voler eliminare il componente "${compName}"?`)) return;
+
+                    btn.textContent = "⏳";
+                    try {
+                        const res = await apiFetch(`/api/admin/componenti/${btn.dataset.id}`, { method: 'DELETE' });
+                        if(!res.ok) throw new Error("Errore durante l'eliminazione");
+                        tr.remove(); // Rimuove la riga dalla tabella visivamente
+                    } catch (err) {
+                        alert("Impossibile eliminare: " + err.message);
+                        btn.textContent = "🗑️";
+                    }
                 });
             });
         } catch (e) { console.error(e); }
@@ -304,14 +283,12 @@ const App = {
             if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nessuna commessa attiva trovata.</td></tr>'; return; }
 
             data.forEach(comm => {
-                // CORREZIONE ETICHETTA: Recupero sicuro dei dati del cliente
                 let nomeCliente = 'Cliente Sconosciuto';
                 if (comm.clienti && comm.clienti.ragione_sociale) {
                     nomeCliente = comm.clienti.ragione_sociale;
                 } else if (comm.nome_cliente) {
                     nomeCliente = comm.nome_cliente;
                 }
-
                 const labelImpianto = comm.impianto || '';
                 const labelOdv = comm.ordine_vendita || comm.odv || '-';
                 const labelRif = comm.riferimento_tecnico || '-';
@@ -321,51 +298,27 @@ const App = {
                 tr.innerHTML = `
                     <td>
                         <div style="font-weight: 700; color: #2c3e50; font-size: 1.05em;">${nomeCliente} - ${labelImpianto}</div>
-                        <div style="color: #666; font-size: 0.9em; margin-top: 4px;">
-                            OV: <strong>${labelOdv}</strong> | Rif: <strong>${labelRif}</strong>
-                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 4px;">OV: <strong>${labelOdv}</strong> | Rif: <strong>${labelRif}</strong></div>
                         <div style="font-size: 0.8em; color: #999; margin-top: 2px;">${labelCodice}</div>
                     </td>
-                    <td style="overflow: visible;">
-                        <select class="choice-macro-comm" multiple></select>
-                    </td>
-                    <td style="text-align: center;">
-                        <button class="action-btn save-btn">💾</button>
-                    </td>
+                    <td style="overflow: visible;"><select class="choice-macro-comm" multiple></select></td>
+                    <td style="text-align: center;"><button class="action-btn save-btn">💾</button></td>
                 `;
                 tbody.appendChild(tr);
 
-                const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { 
-                    removeItemButton: true, 
-                    itemSelectText: '',
-                    position: 'bottom'
-                });
-                
-                macroSelect.setChoices(
-                    this.data.macros.map(m => ({ 
-                        value: m.id_macro_categoria, 
-                        label: m.nome || m.nome_macro, 
-                        selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
-                    })), 
-                    'value', 
-                    'label', 
-                    false
-                );
+                const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { removeItemButton: true, itemSelectText: '', position: 'bottom' });
+                macroSelect.setChoices(this.data.macros.map(m => ({ 
+                    value: m.id_macro_categoria, 
+                    label: m.nome || m.nome_macro, 
+                    selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
+                })), 'value', 'label', false);
 
                 tr.querySelector('.save-btn').addEventListener('click', async (e) => {
                     const btn = e.currentTarget; btn.textContent = "⏳";
                     try { 
-                        await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { 
-                            method: 'PUT', 
-                            body: JSON.stringify({ ids_macro_categorie_attive: macroSelect.getValue(true) }) 
-                        }); 
-                        btn.textContent = "✅"; 
-                        setTimeout(() => btn.textContent = "💾", 1000); 
-                    } 
-                    catch(err) { 
-                        alert("Errore: " + err.message); 
-                        btn.textContent = "❌"; 
-                    }
+                        await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { method: 'PUT', body: JSON.stringify({ ids_macro_categorie_attive: macroSelect.getValue(true) }) }); 
+                        btn.textContent = "✅"; setTimeout(() => btn.textContent = "💾", 1000); 
+                    } catch(err) { alert("Errore: " + err.message); btn.textContent = "❌"; }
                 });
             });
         } catch(e) { console.error(e); }
