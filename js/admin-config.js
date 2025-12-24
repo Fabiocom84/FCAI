@@ -41,46 +41,42 @@ const App = {
             const res = await apiFetch('/api/admin/init-data');
             
             if (!res.ok) {
-                // Se il server risponde con errore (es. 500 o 404)
-                throw new Error(`Errore Server: ${res.status} ${res.statusText}`);
+                throw new Error(`Errore API: ${res.status}`);
             }
             
             const d = await res.json();
             
-            // Assegnazione dati con controlli di sicurezza
-            this.data.macros = Array.isArray(d.macros) ? d.macros : [];
+            // --- DEBUG: VEDIAMO COSA ARRIVA ---
+            console.log("📦 RISPOSTA SERVER COMPLETA:", d);
+            // ----------------------------------
+
+            // 1. Recupero MACROS (Cerchiamo con più nomi possibili per sicurezza)
+            // A volte il DB le chiama 'macro_categorie', a volte 'macros'
+            const rawMacros = d.macros || d.macro_categorie || d.data?.macros || [];
+            this.data.macros = Array.isArray(rawMacros) ? rawMacros : [];
+
+            // 2. Recupero ALTRI DATI
             this.data.ruoli = Array.isArray(d.ruoli) ? d.ruoli : [];
             this.data.fasi = Array.isArray(d.fasi) ? d.fasi : [];
             this.data.allComponents = Array.isArray(d.componenti) ? d.componenti : []; 
             
-            console.log("✅ Dati caricati correttamente.");
+            // Log finale di verifica
+            console.log(`✅ ANALISI DATI:
+            - Macro trovate: ${this.data.macros.length}
+            - Ruoli trovati: ${this.data.ruoli.length}
+            - Fasi trovate: ${this.data.fasi.length}
+            - Componenti trovati: ${this.data.allComponents.length}`);
 
-        } catch (e) {
-            console.error("❌ ERRORE CRITICO:", e);
-            
-            // 1. Mostriamo l'errore nella tabella VISIVAMENTE
-            const tbody = document.querySelector('#macrosTable tbody');
-            if(tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align:center; padding:30px; background-color: #fff0f0;">
-                            <div style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">
-                                ⚠️ Impossibile caricare i dati
-                            </div>
-                            <div style="font-family: monospace; color: #555; margin-bottom: 15px;">
-                                ${e.message}
-                            </div>
-                            <button onclick="location.reload()" style="padding: 8px 16px; cursor: pointer;">
-                                Riprova
-                            </button>
-                        </td>
-                    </tr>`;
+            // Se abbiamo 0 macro, potrebbe essere un problema
+            if (this.data.macros.length === 0) {
+                console.warn("⚠️ ATTENZIONE: Array macro vuoto. Verifica il 'nome' della proprietà nel log 'RISPOSTA SERVER'.");
             }
 
-            // 2. IMPORTANTE: Rilanciamo l'errore per fermare 'init'
-            // Se non facciamo questo, init continuerà ed eseguirà renderMacros()
-            // che sovrascriverà il nostro bel messaggio di errore con "Nessuna macro trovata".
-            throw e; 
+        } catch (e) {
+            console.error("❌ Errore loadRefData:", e);
+            const tbody = document.querySelector('#macrosTable tbody');
+            if(tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Errore: ${e.message}</td></tr>`;
+            throw e;
         }
     },
 
