@@ -402,7 +402,7 @@ input:checked + .slider:before {
 /* 1. CONFIGURAZIONE DESKTOP (Default) */
 .page-header {
     display: grid !important; 
-    grid-template-columns: auto 1fr auto; /* I lati si adattano al contenuto */
+    grid-template-columns: auto 1fr auto; 
     align-items: center;
     gap: 15px;
     padding: 15px 20px;
@@ -419,46 +419,24 @@ input:checked + .slider:before {
     width: 100%;
 }
 
-/* Posizionamento Bottoni */
-.page-header .header-button { grid-column: 1; justify-self: start; }
+/* Posizionamento Elementi */
+.page-header .header-button:first-child { grid-column: 1; justify-self: start; }
 .page-header #add-commessa-btn { grid-column: 3; justify-self: end; }
 
-/* STILE SPECIFICO PER IL BOTTONE AGGIUNGI (Verde) */
+/* OVERRIDE COLORE PER IL TASTO AGGIUNGI (Default header-button è blu) */
 #add-commessa-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* Spazio tra icona e testo */
-    background-color: #28a745;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
+    background-color: #28a745; /* Verde */
+    border: none; /* Rimuove bordi standard dei button */
     cursor: pointer;
-    text-decoration: none;
-    height: 40px; /* Altezza fissa uguale al tasto Home */
-    box-sizing: border-box;
-    min-width: unset; /* Rimuove larghezze minime ereditate */
-    width: auto;
-    flex-direction: row; /* Forza la riga */
+    /* Reset dimensioni per allinearlo al link Home */
+    height: auto; 
+    min-height: unset; 
+}
+#add-commessa-btn:hover {
+    background-color: #218838;
 }
 
-/* Assicuriamo che l'icona nel bottone verde abbia la dimensione giusta */
-#add-commessa-btn img {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-    display: block; /* Fondamentale per vederla */
-}
-
-/* Assicuriamo che il testo sia visibile su desktop */
-#add-commessa-btn span {
-    display: inline-block;
-    font-size: 0.95em;
-    font-weight: 500;
-}
-
-
-/* 2. CONFIGURAZIONE MOBILE (Schermi piccoli) */
+/* 2. CONFIGURAZIONE MOBILE (< 600px) */
 @media (max-width: 600px) {
     .page-header {
         grid-template-columns: min-content 1fr min-content !important;
@@ -466,32 +444,29 @@ input:checked + .slider:before {
         gap: 10px;
     }
 
-    /* Nascondiamo SOLO il testo dentro gli span */
-    .page-header .header-button span,
-    .page-header #add-commessa-btn span {
+    /* Nascondiamo il testo dentro gli span di TUTTI gli header-button */
+    .page-header .header-button span {
         display: none !important;
     }
 
-    /* Rendiamo i bottoni perfettamente QUADRATI */
-    .page-header .header-button,
-    .page-header #add-commessa-btn {
+    /* Rendiamo i bottoni quadrati e compatti */
+    .page-header .header-button {
         padding: 0;
-        width: 40px;  /* Larghezza fissa */
-        height: 40px; /* Altezza fissa */
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     /* Centriamo le icone */
-    .page-header .header-button img,
-    .page-header #add-commessa-btn img {
+    .page-header .header-button img {
         margin: 0 !important;
-        width: 20px; /* Icona leggermente più grande su mobile */
+        width: 20px;
         height: 20px;
     }
 
-    /* Titolo su più righe se serve */
+    /* Titolo responsivo */
     .page-header h1 {
         white-space: normal;
         font-size: 1.1em;
