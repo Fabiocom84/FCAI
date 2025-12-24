@@ -315,6 +315,19 @@ const App = {
         return card;
     },
 
+    handleStatusFilter: function(clickedBtn) {
+        // 1. Aggiorna la grafica (sposta la classe .active)
+        this.dom.statusFilters.forEach(btn => btn.classList.remove('active'));
+        clickedBtn.classList.add('active');
+
+        // 2. Aggiorna lo stato interno
+        // Nota: data-status="" corrisponde a "Tutte"
+        this.state.activeStatus = clickedBtn.dataset.status;
+
+        // 3. Ricarica i dati resettando la paginazione
+        this.fetchCommesse(true);
+    },
+
     handleSort: function() {
         const [sortBy, sortOrder] = this.dom.sortSelect.value.split(':');
         this.state.sortBy = sortBy;
