@@ -58,7 +58,7 @@
     gap: 8px;
     text-decoration: none;
     color: white;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #007bff; 
     padding: 8px 16px;
     border-radius: 6px;
     transition: background 0.2s;
@@ -67,8 +67,9 @@
     height: 40px;
     box-sizing: border-box;
 }
+
 .header-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: #0056b3; 
 }
 .header-button img { width: 20px; height: 20px; }
 
