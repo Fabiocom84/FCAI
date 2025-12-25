@@ -175,27 +175,64 @@ select, input[type="number"], textarea, input[type="text"] {
 select:focus, input:focus { border-color: #3498db; outline: none; }
 
 /* Choices.js Fixes */
-.choices__inner { background-color: white; border-radius: 8px; border: 1px solid #cbd5e0; padding: 5px; }
-.choices__list--dropdown { z-index: 1000; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-
-/* 3. Calcolatore Orari */
-.time-calculator-box {
-    background: #ebf8ff; border: 1px solid #bee3f8;
-    border-radius: 10px; padding: 15px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px; gap: 10px;
+.choices {
+    margin-bottom: 0; /* Rimuove margini extra */
+    width: 100%;
 }
-.time-inputs-col { display: flex; flex-direction: column; gap: 10px; flex: 1; }
-.time-field { display: flex; align-items: center; justify-content: space-between; }
-.time-field label { font-size: 0.8rem; color: #2b6cb0; margin: 0; }
-.time-field input { width: 80px; padding: 5px; border-radius: 5px; border: 1px solid #90cdf4; font-size: 0.95rem; text-align: center; }
 
-.time-arrow { font-size: 1.5rem; color: #3182ce; opacity: 0.5; }
+.choices__inner {
+    background-color: white;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    min-height: 44px; /* Altezza comoda per il dito */
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+}
 
-.total-hours-col { text-align: center; width: 80px; }
-.total-hours-col input { 
-    text-align: center; font-size: 1.4rem; font-weight: 800; 
-    color: #2c5282; border: 2px solid #3182ce; padding: 8px 0;
+/* Nascondiamo la lista finché non si clicca (comportamento standard) */
+.choices__list--dropdown {
+    z-index: 1000;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 1px solid #e2e8f0;
+    margin-top: 5px;
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background-color: #3498db;
+    color: white;
+}
+
+/* --- CAMPI INSERIMENTO ORE (Semplificato) --- */
+/* Rimuoviamo gli stili complessi del calcolatore e teniamo lo stile semplice */
+.simple-hours-group {
+    background: #fff;
+    border: 1px solid #cbd5e0;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.simple-hours-group label {
+    font-size: 1rem; 
+    font-weight: 700; 
+    color: #2d3748;
+    margin: 0;
+}
+
+.simple-hours-group input {
+    width: 100px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #2b6cb0;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    padding: 8px;
 }
 
 /* --- FOOTER FISSO --- */
