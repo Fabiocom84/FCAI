@@ -12,9 +12,10 @@ const MobileHoursApp = {
         currentOptionsTree: [], 
         choicesInstance: null,
         editingId: null,
-        
-        // NUOVO: Cache delle etichette commesse per visualizzazione corretta
-        commesseMap: {} 
+        editingOriginalHours: 0, // Serve per calcolare correttamente il totale durante la modifica
+
+        currentDayTotal: 0,      // Somma delle ore salvate nel DB per il giorno corrente
+        commesseMap: {}          // Cache etichette "Cliente | Impianto"
     },
 
     dom: {
@@ -24,18 +25,30 @@ const MobileHoursApp = {
         form: document.getElementById('mobileHoursForm'),
         typeRadios: document.querySelectorAll('input[name="entryType"]'),
         
+        // Selects
         commessaSelect: document.getElementById('mobileCommessaSelect'),
         macroSelect: document.getElementById('mobileMacroSelect'),
         componentSelect: document.getElementById('mobileComponentSelect'),
         absenceSelect: document.getElementById('mobileAbsenceType'),
         
-        // Rimosso startTime/endTime
+        // Inputs
         hoursInput: document.getElementById('mobileHoursInput'),
         noteInput: document.getElementById('mobileNoteInput'),
         
+        // Sections & Wrappers
         groupCommessa: document.getElementById('group-commessa'),
         prodFields: document.getElementById('production-fields'),
         absFields: document.getElementById('absence-fields'),
+
+        // New Features Elements
+        dayTotalBadge: document.getElementById('dayTotalBadge'),
+        
+        travelFields: document.getElementById('travel-fields'),
+        travelInput: document.getElementById('travelHoursInput'),
+        
+        overtimeFields: document.getElementById('overtime-fields'),
+        overtimeStart: document.getElementById('overtimeStart'),
+        overtimeEnd: document.getElementById('overtimeEnd'),
         
         existingList: document.getElementById('existingWorksList'),
         saveBtn: document.getElementById('saveHoursBtn'),
@@ -44,22 +57,31 @@ const MobileHoursApp = {
     },
 
     init: function() {
-        console.log("🚀 Mobile App Init - Fix UI");
+        console.log("🚀 Mobile App Init - Full Features");
         this.loadUserName();
         this.loadTimelineBatch();
         
-        // Init Choices
+        // Init Choices.js
         this.initChoices();
         
-        // Listeners
+        // Listeners Globali
         this.dom.timelineContainer.addEventListener('scroll', () => this.handleScroll());
         this.dom.closeDetailBtn.addEventListener('click', () => this.closeDetail());
         
+        // Toggle Tipo (Produzione / Cantiere / Assenza)
         this.dom.typeRadios.forEach(r => r.addEventListener('change', (e) => this.handleTypeChange(e.target.value)));
+        
+        // Cascata Macro -> Componenti
         this.dom.macroSelect.addEventListener('change', (e) => this.renderComponentOptions(e.target.value));
 
+        // Pulsanti Azione
         this.dom.saveBtn.addEventListener('click', (e) => this.handleSave(e));
         this.dom.cancelEditBtn.addEventListener('click', () => this.resetFormState());
+
+        // Logic Check Straordinari (al digitare delle ore)
+        this.dom.hoursInput.addEventListener('input', () => this.checkOvertimeLogic());
+        // Se vuoi che anche il viaggio conti nel limite delle 8 ore, scommenta:
+        // this.dom.travelInput.addEventListener('input', () => this.checkOvertimeLogic());
     },
 
     loadUserName: function() {
@@ -126,7 +148,7 @@ const MobileHoursApp = {
         this.loadTimelineBatch();
     },
 
-    // --- CARDS ATTIVITÀ (CON ETICHETTE CORRETTE) ---
+    // --- CARDS ATTIVITÀ & CALCOLO TOTALE ---
     loadExistingWorks: async function(dateStr) {
         this.dom.existingList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Caricamento...</div>';
         try {
@@ -134,32 +156,43 @@ const MobileHoursApp = {
             const works = await res.json();
             this.dom.existingList.innerHTML = '';
 
+            // 1. Calcolo Totale Giornaliero (Ore Lavorate)
+            let total = 0;
+            works.forEach(w => total += (w.ore || 0));
+            this.state.currentDayTotal = total;
+            this.updateTotalBadge(total);
+
             if (works.length === 0) {
-                this.dom.existingList.innerHTML = '<div style="text-align:center; padding:10px; color:#999;">Nessuna attività.</div>';
+                this.dom.existingList.innerHTML = '<div style="text-align:center; padding:10px; color:#999;">Nessuna attività registrata.</div>';
                 return;
             }
 
             works.forEach(w => {
                 let cardClass = 'card-prod'; 
                 
-                // 1. RECUPERO TITOLO RICCO DALLA MAPPA LOCALE
-                // Se l'ID commessa esiste nella nostra mappa caricata da Choices, usiamo quell'etichetta.
-                // Altrimenti fallback sui dati grezzi della card.
+                // Titolo Commessa (Ricco se disponibile in cache)
                 let title = 'N/D';
                 if (w.id_commessa_fk && this.state.commesseMap[w.id_commessa_fk]) {
-                    title = this.state.commesseMap[w.id_commessa_fk]; // Esempio: "Cliente | Impianto | VO"
+                    title = this.state.commesseMap[w.id_commessa_fk];
                 } else if (w.commesse) {
                     title = `${w.commesse.impianto} (${w.commesse.codice_commessa || ''})`;
                 }
 
                 let sub = w.componenti?.nome_componente || 'Attività generica';
                 
-                if (sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso')) {
+                // Euristica Tipo
+                if (sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia')) {
                     cardClass = 'card-abs'; 
-                    title = 'Assenza'; // Override titolo per assenze
-                } else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere')) {
+                    title = 'Assenza';
+                } else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere') || (w.ore_viaggio > 0)) {
                     cardClass = 'card-site';
                 }
+
+                // Info aggiuntive (Viaggio / Straordinari)
+                let extras = [];
+                if (w.ore_viaggio > 0) extras.push(`🚗 Viaggio: ${w.ore_viaggio}h`);
+                if (w.straordinario_dalle && w.straordinario_alle) extras.push(`⚡ Straord: ${w.straordinario_dalle}-${w.straordinario_alle}`);
+                const extraHtml = extras.length > 0 ? `<div style="font-size:0.75rem; color:#d35400; margin-top:2px;">${extras.join(' | ')}</div>` : '';
 
                 const card = document.createElement('div');
                 card.className = `activity-card ${cardClass}`;
@@ -167,7 +200,8 @@ const MobileHoursApp = {
                     <div class="card-info">
                         <h5>${title}</h5>
                         <p>${sub} ${w.componenti?.codice_componente ? `(${w.componenti.codice_componente})` : ''}</p>
-                        ${w.note ? `<span class="card-meta">${w.note}</span>` : ''}
+                        ${w.note ? `<span class="card-meta">📝 ${w.note}</span>` : ''}
+                        ${extraHtml}
                     </div>
                     <div class="card-right">
                         <div class="card-hours">${w.ore}h</div>
@@ -186,9 +220,33 @@ const MobileHoursApp = {
         } catch (e) { console.error(e); }
     },
 
-    // --- CHOICES.JS ---
+    updateTotalBadge: function(total) {
+        const el = this.dom.dayTotalBadge;
+        if (!el) return;
+        el.textContent = `Totale: ${total}h`;
+        el.className = 'day-total-badge';
+        if (total > 8) el.classList.add('warning');
+        else if (total === 8) el.classList.add('ok');
+    },
+
+    // --- CHECK STRAORDINARI (> 8h) ---
+    checkOvertimeLogic: function() {
+        const inputHours = parseFloat(this.dom.hoursInput.value) || 0;
+        
+        // Totale = (TotaleDB - OreInModifica) + OreInput
+        // Se non stiamo modificando, editingOriginalHours è 0
+        const potentialTotal = (this.state.currentDayTotal - this.state.editingOriginalHours) + inputHours;
+
+        if (potentialTotal > 8) {
+            this.dom.overtimeFields.style.display = 'block';
+        } else {
+            this.dom.overtimeFields.style.display = 'none';
+            // Non puliamo i campi automaticamente per non infastidire l'utente se corregge al volo
+        }
+    },
+
+    // --- CHOICES.JS CONFIG ---
     initChoices: async function() {
-        // Distruggi istanza precedente se esiste (per evitare doppi menu)
         if (this.state.choicesInstance) {
             this.state.choicesInstance.destroy();
         }
@@ -200,15 +258,16 @@ const MobileHoursApp = {
             placeholder: true,
             placeholderValue: 'Cerca Commessa...',
             shouldSort: false,
-            position: 'bottom', // Forza apertura verso il basso
-            renderChoiceLimit: 50, // Limita quanti elementi renderizza nel DOM
-            searchResultLimit: 10, // Limita risultati ricerca
-            // Queste opzioni aiutano a mantenere il layout compatto
+            position: 'bottom',
+            renderChoiceLimit: 50,
+            searchResultLimit: 15,
             removeItemButton: false,
             duplicateItemsAllowed: false,
         });
 
         try {
+            // Usa l'API corretta /api/get-etichette (o /api/common/get-etichette se hai fixato il backend)
+            // Assumo backend attuale: /api/get-etichette
             const res = await apiFetch('/api/get-etichette');
             const data = await res.json();
             
@@ -255,96 +314,148 @@ const MobileHoursApp = {
         this.dom.componentSelect.disabled = false;
     },
 
-    // --- UI Logic ---
+    // --- LOGICA UI (Toggle Tipo) ---
     handleTypeChange: function(type) {
+        // Reset Visibilità
         this.dom.prodFields.style.display = 'none';
         this.dom.absFields.style.display = 'none';
-        this.dom.groupCommessa.style.display = 'block';
+        this.dom.groupCommessa.style.display = 'block'; // Default on
+        this.dom.travelFields.style.display = 'none';   // Default off
 
-        if (type === 'produzione') this.dom.prodFields.style.display = 'block';
+        if (type === 'produzione') {
+            this.dom.prodFields.style.display = 'block';
+        } 
+        else if (type === 'cantiere') {
+            // Cantiere: Commessa (opzionale) + Viaggio
+            this.dom.travelFields.style.display = 'block';
+        } 
         else if (type === 'assenza') {
+            // Assenza: Niente commessa, solo tipo
             this.dom.groupCommessa.style.display = 'none';
             this.dom.absFields.style.display = 'block';
         }
+        
+        // Ricontrolla se serve mostrare straordinari (magari cambiando tipo cambia contesto)
+        this.checkOvertimeLogic();
     },
 
+    // --- MODIFICA ---
     startEdit: async function(work) {
         this.state.editingId = work.id_registrazione;
+        this.state.editingOriginalHours = work.ore || 0; // Salva ore originali per delta
+
         this.dom.saveBtn.textContent = "AGGIORNA";
         this.dom.saveBtn.style.backgroundColor = "#e67e22"; 
         this.dom.cancelEditBtn.style.display = 'block';
         document.querySelector('.mobile-insert-form').scrollIntoView({ behavior: 'smooth' });
 
+        // Determina Tipo
         let type = 'produzione';
         const sub = (work.componenti?.nome_componente || '').toLowerCase();
-        if (sub.includes('ferie') || sub.includes('permesso')) type = 'assenza';
-        else if (sub.includes('cantiere')) type = 'cantiere';
+        
+        if (sub.includes('ferie') || sub.includes('permesso') || sub.includes('malattia')) type = 'assenza';
+        else if (work.ore_viaggio > 0 || (work.note && work.note.includes('[CANTIERE]'))) type = 'cantiere';
 
+        // Setta Radio
         document.querySelector(`input[value="${type}"]`).checked = true;
         this.handleTypeChange(type);
 
+        // Popola Campi Comuni
         this.dom.hoursInput.value = work.ore;
         this.dom.noteInput.value = work.note || '';
+        
+        // Campi Extra
+        if (work.ore_viaggio) this.dom.travelInput.value = work.ore_viaggio;
+        if (work.straordinario_dalle) this.dom.overtimeStart.value = work.straordinario_dalle;
+        if (work.straordinario_alle) this.dom.overtimeEnd.value = work.straordinario_alle;
 
-        if (type === 'produzione' || type === 'cantiere') {
-            if (work.id_commessa_fk) {
-                this.state.choicesInstance.setChoiceByValue(work.id_commessa_fk);
-                if (type === 'produzione') {
-                    await this.loadSmartOptions(work.id_commessa_fk);
-                    if (work.id_componente_fk) {
-                        const macro = this.state.currentOptionsTree.find(m => m.componenti.some(c => c.id == work.id_componente_fk));
-                        if (macro) {
-                            this.dom.macroSelect.value = macro.id_macro;
-                            this.renderComponentOptions(macro.id_macro);
-                            this.dom.componentSelect.value = work.id_componente_fk;
-                        }
+        // Popola Commessa e Cascata (se presenti)
+        if ((type === 'produzione' || type === 'cantiere') && work.id_commessa_fk) {
+            this.state.choicesInstance.setChoiceByValue(work.id_commessa_fk);
+            
+            if (type === 'produzione') {
+                await this.loadSmartOptions(work.id_commessa_fk);
+                if (work.id_componente_fk) {
+                    const macro = this.state.currentOptionsTree.find(m => m.componenti.some(c => c.id == work.id_componente_fk));
+                    if (macro) {
+                        this.dom.macroSelect.value = macro.id_macro;
+                        this.renderComponentOptions(macro.id_macro);
+                        this.dom.componentSelect.value = work.id_componente_fk;
                     }
                 }
             }
         }
+        
+        // Check Straordinari immediato
+        this.checkOvertimeLogic();
     },
 
     resetFormState: function() {
         this.state.editingId = null;
+        this.state.editingOriginalHours = 0;
+        
         this.dom.form.reset();
         this.state.choicesInstance.removeActiveItems();
+        
+        // Reset cascata
         this.dom.macroSelect.innerHTML = '<option disabled selected>--</option>';
         this.dom.componentSelect.innerHTML = '<option disabled selected>--</option>';
         this.dom.componentSelect.disabled = true;
         this.dom.macroSelect.disabled = true;
+        
         this.dom.saveBtn.textContent = "AGGIUNGI ORE";
         this.dom.saveBtn.style.backgroundColor = "";
         this.dom.cancelEditBtn.style.display = 'none';
+        
+        // Reset UI Extra
+        this.dom.overtimeFields.style.display = 'none';
+        
+        // Reset Tipo
         document.querySelector('input[value="produzione"]').checked = true;
         this.handleTypeChange('produzione');
     },
 
+    // --- SALVATAGGIO ---
     handleSave: async function(e) {
         e.preventDefault();
         const type = document.querySelector('input[name="entryType"]:checked').value;
         const btn = this.dom.saveBtn;
         
-        if (!this.dom.hoursInput.value) return alert("Inserire le ore");
+        const hours = parseFloat(this.dom.hoursInput.value);
+        if (!hours) return alert("Inserire le ore");
+
+        // Controllo Straordinari Obbligatori
+        if (this.dom.overtimeFields.style.display === 'block') {
+            if (!this.dom.overtimeStart.value || !this.dom.overtimeEnd.value) {
+                return alert("Hai superato le 8 ore: specifica l'orario dello straordinario.");
+            }
+        }
 
         const payload = {
             data: this.state.currentDate,
-            ore: this.dom.hoursInput.value,
-            note: this.dom.noteInput.value
+            ore: hours,
+            note: this.dom.noteInput.value,
+            straordinario_dalle: this.dom.overtimeStart.value || null,
+            straordinario_alle: this.dom.overtimeEnd.value || null,
+            ore_viaggio: parseFloat(this.dom.travelInput.value) || 0
         };
 
         if (type === 'produzione') {
             payload.id_commessa = this.state.choicesInstance.getValue(true);
             payload.id_componente = this.dom.componentSelect.value;
-            if (!payload.id_commessa || !payload.id_componente) return alert("Dati incompleti");
+            if (!payload.id_commessa || !payload.id_componente) return alert("Dati incompleti (Commessa/Lavorazione)");
         } 
         else if (type === 'cantiere') {
-            payload.id_commessa = this.state.choicesInstance.getValue(true);
-            if (!payload.id_commessa) return alert("Seleziona Commessa");
-            payload.note = `[CANTIERE] ${payload.note}`; 
+            const commessaVal = this.state.choicesInstance.getValue(true);
+            payload.id_commessa = commessaVal ? commessaVal : null;
+            // Nota obbligatoria se non c'è commessa
+            if (!payload.note && !commessaVal) return alert("Per cantiere: seleziona commessa o scrivi una nota.");
+            if (!payload.note.includes('[CANTIERE]')) payload.note = `[CANTIERE] ${payload.note}`;
         }
         else if (type === 'assenza') {
+            payload.id_commessa = null;
             const absenceType = this.dom.absenceSelect.value;
-            if (!absenceType) return alert("Seleziona motivo");
+            if (!absenceType) return alert("Seleziona motivo assenza");
             payload.note = `[${absenceType.toUpperCase()}] ${payload.note}`;
         }
 
@@ -357,7 +468,7 @@ const MobileHoursApp = {
              
              this.loadExistingWorks(this.state.currentDate);
              this.resetFormState();
-             showModal({title: 'Fatto!', message: 'Ore registrate.', confirmText:'OK'});
+             showModal({title: 'Fatto!', message: 'Salvataggio completato.', confirmText:'OK'});
         } catch (err) { alert("Errore: " + err.message); } 
         finally { btn.disabled = false; }
     },

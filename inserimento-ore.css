@@ -299,3 +299,16 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
     border-radius: 10px; padding: 0 20px; font-weight: 600;
     cursor: pointer;
 }
+
+/* Aggiungi questo al CSS */
+.day-total-badge {
+    background-color: #2d3748;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid #4a5568;
+}
+.day-total-badge.warning { background-color: #e53e3e; border-color: #c53030; } /* > 8 ore */
+.day-total-badge.ok { background-color: #38a169; border-color: #2f855a; }      /* = 8 ore */
