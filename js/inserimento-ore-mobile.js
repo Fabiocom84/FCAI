@@ -209,7 +209,7 @@ const MobileHoursApp = {
 
         // Carica dati
         try {
-            const res = await apiFetch('/api/common/get-etichette');
+            const res = await apiFetch('/api/get-etichette');
             const data = await res.json();
             const choicesData = data.map(c => ({ value: c.id, label: c.label }));
             this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
