@@ -63,6 +63,9 @@ const MobileHoursApp = {
         
         // Init Choices.js
         this.initChoices();
+
+        // --- NUOVO: Popola gli orari straordinari ---
+        this.populateOvertimeSelects();
         
         // Listeners Globali
         this.dom.timelineContainer.addEventListener('scroll', () => this.handleScroll());
@@ -283,6 +286,26 @@ const MobileHoursApp = {
         this.dom.commessaSelect.addEventListener('change', (e) => {
             if (e.target.value) this.loadSmartOptions(e.target.value);
         });
+    },
+
+    // Genera orari con step 30 minuti sfasati (XX:15, XX:45)
+    populateOvertimeSelects: function() {
+        let options = '<option value="" disabled selected>--:--</option>';
+        
+        // Generiamo orari dalle 06:00 alle 22:00 (o 24:00)
+        for (let h = 6; h < 23; h++) {
+            const hour = h.toString().padStart(2, '0');
+            
+            // Opzione XX:15
+            options += `<option value="${hour}:15">${hour}:15</option>`;
+            
+            // Opzione XX:45
+            options += `<option value="${hour}:45">${hour}:45</option>`;
+        }
+
+        // Iniettiamo l'HTML nelle select
+        if(this.dom.overtimeStart) this.dom.overtimeStart.innerHTML = options;
+        if(this.dom.overtimeEnd) this.dom.overtimeEnd.innerHTML = options;
     },
 
     loadSmartOptions: async function(commessaId) {
