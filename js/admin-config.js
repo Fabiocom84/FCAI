@@ -274,6 +274,7 @@ const App = {
     // --- COMMESSE ---
     loadOrders: async function() {
         try {
+            // Nota: Se hai cambiato lo status per i test, rimetti quello che preferisci (es. status=In Lavorazione)
             const res = await apiFetch('/api/commesse/view?limit=50&status=In Lavorazione'); 
             const json = await res.json();
             const data = json.data || [];
@@ -283,17 +284,21 @@ const App = {
             if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nessuna commessa attiva trovata.</td></tr>'; return; }
 
             data.forEach(comm => {
+                // --- Calcolo etichette ---
                 let nomeCliente = 'Cliente Sconosciuto';
                 if (comm.clienti && comm.clienti.ragione_sociale) {
                     nomeCliente = comm.clienti.ragione_sociale;
                 } else if (comm.nome_cliente) {
                     nomeCliente = comm.nome_cliente;
                 }
+                
                 const labelImpianto = comm.impianto || '';
+                // Fix per VO che abbiamo fatto prima
                 const labelOdv = comm.vo || comm.ordine_vendita || comm.odv || '-';
                 const labelRif = comm.riferimento_tecnico || '-';
                 const labelCodice = comm.codice_commessa || '';
 
+                // --- Creazione Riga ---
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
@@ -302,24 +307,92 @@ const App = {
                         <div style="font-size: 0.8em; color: #999; margin-top: 2px;">${labelCodice}</div>
                     </td>
                     <td style="overflow: visible;"><select class="choice-macro-comm" multiple></select></td>
-                    <td style="text-align: center;"><button class="action-btn save-btn">💾</button></td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <!-- NUOVO BOTTONE ANTEPRIMA -->
+                        <button class="action-btn view-preview-btn" title="Vedi Anteprima Componenti" style="margin-right: 5px; color: #007bff; border-color: #007bff;">👁️</button>
+                        <button class="action-btn save-btn" title="Salva Modifiche">💾</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
 
-                const macroSelect = new Choices(tr.querySelector('.choice-macro-comm'), { removeItemButton: true, itemSelectText: '', position: 'bottom' });
+                // --- Inizializzazione Choices.js ---
+                const macroSelectElement = tr.querySelector('.choice-macro-comm');
+                const macroSelect = new Choices(macroSelectElement, { removeItemButton: true, itemSelectText: '', position: 'bottom' });
+                
                 macroSelect.setChoices(this.data.macros.map(m => ({ 
                     value: m.id_macro_categoria, 
                     label: m.nome || m.nome_macro, 
                     selected: (comm.ids_macro_categorie_attive || []).includes(m.id_macro_categoria) 
                 })), 'value', 'label', false);
 
+                // --- EVENTO 1: SALVATAGGIO (Già esistente, aggiornato url se necessario) ---
                 tr.querySelector('.save-btn').addEventListener('click', async (e) => {
                     const btn = e.currentTarget; btn.textContent = "⏳";
                     try { 
-                        await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { method: 'PUT', body: JSON.stringify({ ids_macro_categorie_attive: macroSelect.getValue(true) }) }); 
+                        // Assicurati che il backend abbia la rotta PUT /api/admin/commesse/:id creata prima
+                        await apiFetch(`/api/admin/commesse/${comm.id_commessa}`, { 
+                            method: 'PUT', 
+                            body: JSON.stringify({ ids_macro_categorie_attive: macroSelect.getValue(true) }) 
+                        }); 
                         btn.textContent = "✅"; setTimeout(() => btn.textContent = "💾", 1000); 
                     } catch(err) { alert("Errore: " + err.message); btn.textContent = "❌"; }
                 });
+
+                // --- EVENTO 2: ANTEPRIMA ESPLOSA (NUOVO) ---
+                tr.querySelector('.view-preview-btn').addEventListener('click', () => {
+                    // 1. Prendi gli ID delle macro ATTUALMENTE selezionate nella tendina (anche se non salvate)
+                    const selectedMacroIds = macroSelect.getValue(true); // Restituisce array di ID [1, 5, ...]
+
+                    if (selectedMacroIds.length === 0) {
+                        alert("Seleziona almeno una macro per vedere i componenti.");
+                        return;
+                    }
+
+                    // 2. Costruisci l'HTML
+                    let htmlContent = `<p>Componenti attivi per <strong>${labelOdv}</strong> in base alla selezione corrente:</p>`;
+                    
+                    selectedMacroIds.forEach(mId => {
+                        // Trova i dettagli della macro
+                        const macroObj = this.data.macros.find(m => m.id_macro_categoria == mId);
+                        if (!macroObj) return;
+
+                        // Trova i componenti che appartengono a questa macro
+                        // Un componente è incluso se il suo array 'ids_macro_categorie' contiene mId
+                        const componentsInMacro = this.data.allComponents.filter(comp => {
+                            const cMacros = comp.ids_macro_categorie || [];
+                            return cMacros.includes(parseInt(mId)); // parseInt per sicurezza
+                        });
+
+                        htmlContent += `
+                            <div class="exploded-list-group">
+                                <div class="exploded-macro-header">
+                                    <span>${macroObj.icona || '📁'}</span>
+                                    <span>${macroObj.nome || 'Macro Sconosciuta'}</span>
+                                    <span style="font-weight: normal; font-size: 0.8em; margin-left: auto;">(${componentsInMacro.length} comp.)</span>
+                                </div>
+                                <ul class="exploded-components-list">
+                        `;
+
+                        if (componentsInMacro.length > 0) {
+                            componentsInMacro.forEach(c => {
+                                htmlContent += `
+                                    <li>
+                                        <span>${c.nome_componente}</span>
+                                        ${c.codice_componente ? `<span class="comp-code">${c.codice_componente}</span>` : ''}
+                                    </li>`;
+                            });
+                        } else {
+                            htmlContent += `<li style="color: #999; font-style: italic;">Nessun componente associato a questa macro.</li>`;
+                        }
+
+                        htmlContent += `</ul></div>`;
+                    });
+
+                    // 3. Mostra nel Modale
+                    document.getElementById('explodedViewContent').innerHTML = htmlContent;
+                    document.getElementById('explodedViewModal').style.display = 'block';
+                });
+
             });
         } catch(e) { console.error(e); }
     }
