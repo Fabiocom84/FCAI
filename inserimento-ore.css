@@ -30,16 +30,26 @@ body {
     margin-bottom: 20px;
 }
 .header-button {
-    background: rgba(255,255,255,0.1);
-    border: none;
+    background-color: #3498db; /* Blu Standard */
     color: white;
     padding: 8px 12px;
-    border-radius: 8px;
-    display: flex; align-items: center; gap: 6px;
-    cursor: pointer;
-    text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease;
 }
+
+.header-button:hover { 
+    background-color: #2980b9; /* Blu Scuro Hover */
+}
+
 .title-container {
     flex-grow: 1; display: flex; flex-direction: column; align-items: center;
 }
@@ -234,6 +244,7 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
     background-color: #3498db;
     color: white;
 }
+
 
 /* --- CAMPI INSERIMENTO ORE (Semplificato) --- */
 /* Rimuoviamo gli stili complessi del calcolatore e teniamo lo stile semplice */
