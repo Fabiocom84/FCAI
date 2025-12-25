@@ -1,4 +1,4 @@
-/* admin-config.css - Versione Aggiornata */
+/* admin-config.css - FILE COMPLETO RIPRISTINATO */
 
 /* --- Layout Generale --- */
 .admin-page {
@@ -18,7 +18,7 @@
     flex-direction: column;
 }
 
-/* --- HEADER (Stile Inserisci Dati) --- */
+/* --- HEADER --- */
 .page-header {
     width: 95%;
     max-width: 1800px;
@@ -52,13 +52,14 @@
     flex-grow: 1;
 }
 
+/* MODIFICA: Pulsante Home Blu */
 .header-button {
     display: flex;
     align-items: center;
     gap: 8px;
     text-decoration: none;
     color: white;
-    background-color: #007bff; 
+    background-color: #007bff; /* BLU STANDARD */
     padding: 8px 16px;
     border-radius: 6px;
     transition: background 0.2s;
@@ -67,9 +68,8 @@
     height: 40px;
     box-sizing: border-box;
 }
-
 .header-button:hover {
-    background-color: #0056b3; 
+    background-color: #0056b3; /* BLU SCURO HOVER */
 }
 .header-button img { width: 20px; height: 20px; }
 
@@ -149,33 +149,24 @@
     font-size: 1em;
 }
 
-/* --- FIX DIMENSIONE BOTTONE AGGIUNGI --- */
+/* FIX DIMENSIONE BOTTONE AGGIUNGI */
 .input-group .button {
-    /* Forziamo l'altezza identica agli input (42px) */
     height: 42px !important;
     min-height: 42px !important;
     max-height: 42px !important;
-    
-    /* Reset del layout flex per allineare testo orizzontalmente */
     display: inline-flex !important;
     flex-direction: row !important; 
     align-items: center !important;
     justify-content: center !important;
-    
-    /* Spaziature e dimensioni */
     padding: 0 25px !important;
     margin: 0 !important;
     width: auto !important;
     min-width: unset !important;
     flex-basis: auto !important;
     flex-grow: 0 !important;
-    
-    /* Stile testo */
     font-size: 0.95em !important;
     line-height: 1 !important;
     white-space: nowrap !important;
-    
-    /* Colore (già presente ma ribadito per sicurezza) */
     background-color: #28a745 !important;
     color: white !important;
     border-radius: 5px !important;
@@ -184,11 +175,8 @@
 
 .input-group .button:hover { 
     background-color: #218838 !important; 
-    transform: none !important; /* Evita il saltello tipico dei bottoni dashboard */
+    transform: none !important; 
 }
-
-.input-group .button:hover { background-color: #218838 !important; }
-
 
 /* --- Tabelle --- */
 .table-responsive {
@@ -240,46 +228,100 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* modale riferimenti esploso */
-.exploded-list-group {
-    margin-bottom: 20px;
-    border: 1px solid #eee;
-    border-radius: 6px;
+/* ========================================= */
+/* --- STILI ANTEPRIMA ESPLOSA (GRIGLIA) --- */
+/* ========================================= */
+
+.exploded-macro-container {
+    border: 1px solid #dce0e6;
+    border-radius: 8px;
+    margin-bottom: 25px;
     overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .exploded-macro-header {
-    background-color: #e9ecef;
-    padding: 10px 15px;
+    background-color: #34495e; /* Grigio/Blu scuro per distinguere la Macro */
+    color: white;
+    padding: 12px 20px;
+    font-size: 1.1em;
     font-weight: 700;
-    color: #495057;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.exploded-components-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+.exploded-grid {
+    display: grid;
+    /* Crea colonne automatiche larghe almeno 250px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
 }
 
-.exploded-components-list li {
-    padding: 8px 15px;
-    border-bottom: 1px solid #f8f9fa;
+.phase-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.phase-header {
+    background-color: #e3f2fd; /* Azzurro chiaro per le Fasi */
+    color: #0d47a1;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 0.95em;
+    border-bottom: 1px solid #bbdefb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-block {
+    padding: 10px 12px;
+    border-bottom: 1px dashed #eee;
+}
+.role-block:last-child { border-bottom: none; }
+
+.role-title {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+/* Pallino colorato per il ruolo */
+.role-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #28a745; display: inline-block; }
+
+.comp-list-mini {
+    margin: 0;
+    padding-left: 15px;
+    list-style-type: disc;
+}
+.comp-list-mini li {
     font-size: 0.9em;
     color: #333;
-    display: flex;
-    justify-content: space-between;
+    line-height: 1.4;
+    margin-bottom: 2px;
 }
-.exploded-components-list li:last-child {
-    border-bottom: none;
-}
-.comp-code {
+.comp-code-tag {
+    font-size: 0.75em;
     color: #888;
-    font-size: 0.85em;
-    font-family: monospace;
     background: #f1f1f1;
-    padding: 2px 5px;
-    border-radius: 4px;
+    padding: 0 4px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+.empty-msg {
+    padding: 10px;
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: center;
 }

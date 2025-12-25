@@ -338,61 +338,114 @@ const App = {
                     } catch(err) { alert("Errore: " + err.message); btn.textContent = "❌"; }
                 });
 
-                // --- EVENTO 2: ANTEPRIMA ESPLOSA (NUOVO) ---
+                // --- EVENTO 2: ANTEPRIMA ESPLOSA (LAYOUT INTUITIVO) ---
                 tr.querySelector('.view-preview-btn').addEventListener('click', () => {
-                    // 1. Prendi gli ID delle macro ATTUALMENTE selezionate nella tendina (anche se non salvate)
-                    const selectedMacroIds = macroSelect.getValue(true); // Restituisce array di ID [1, 5, ...]
+                    const selectedMacroIds = macroSelect.getValue(true);
 
                     if (selectedMacroIds.length === 0) {
                         alert("Seleziona almeno una macro per vedere i componenti.");
                         return;
                     }
 
-                    // 2. Costruisci l'HTML
-                    let htmlContent = `<p>Componenti attivi per <strong>${labelOdv}</strong> in base alla selezione corrente:</p>`;
-                    
+                    let htmlContent = `<div style="margin-bottom:15px; color:#555;">Anteprima configurazione per: <strong>${labelOdv}</strong></div>`;
+                    let hasAnyContent = false;
+
+                    // 1. CICLO SULLE MACRO SELEZIONATE
                     selectedMacroIds.forEach(mId => {
-                        // Trova i dettagli della macro
                         const macroObj = this.data.macros.find(m => m.id_macro_categoria == mId);
                         if (!macroObj) return;
 
-                        // Trova i componenti che appartengono a questa macro
-                        // Un componente è incluso se il suo array 'ids_macro_categorie' contiene mId
+                        // Filtra componenti che appartengono a questa macro
                         const componentsInMacro = this.data.allComponents.filter(comp => {
                             const cMacros = comp.ids_macro_categorie || [];
-                            return cMacros.includes(parseInt(mId)); // parseInt per sicurezza
+                            return cMacros.includes(parseInt(mId));
                         });
 
+                        // Se la macro non ha componenti, saltala (opzionale, o mostra messaggio)
+                        if (componentsInMacro.length === 0) return;
+                        hasAnyContent = true;
+
                         htmlContent += `
-                            <div class="exploded-list-group">
+                            <div class="exploded-macro-container">
                                 <div class="exploded-macro-header">
-                                    <span>${macroObj.icona || '📁'}</span>
-                                    <span>${macroObj.nome || 'Macro Sconosciuta'}</span>
-                                    <span style="font-weight: normal; font-size: 0.8em; margin-left: auto;">(${componentsInMacro.length} comp.)</span>
+                                    <span>${macroObj.icona || '📦'}</span>
+                                    <span>Macro: ${macroObj.nome}</span>
                                 </div>
-                                <ul class="exploded-components-list">
+                                <div class="exploded-grid">
                         `;
 
-                        if (componentsInMacro.length > 0) {
-                            componentsInMacro.forEach(c => {
+                        // 2. CICLO SULLE FASI (Es. Cablaggio, Collaudo)
+                        // Ordiniamo le fasi per ID per coerenza cronologica
+                        const fasiOrdinate = [...this.data.fasi].sort((a,b) => a.id_fase - b.id_fase);
+                        
+                        let fasiTrovate = 0;
+
+                        fasiOrdinate.forEach(fase => {
+                            // C'è almeno un componente in questa macro che usa questa fase?
+                            // Un componente è "visibile" se ha l'ID della fase nel suo array ids_fasi_abilitate
+                            const compsInFase = componentsInMacro.filter(c => 
+                                (c.ids_fasi_abilitate || []).includes(fase.id_fase)
+                            );
+
+                            if (compsInFase.length > 0) {
+                                fasiTrovate++;
                                 htmlContent += `
-                                    <li>
-                                        <span>${c.nome_componente}</span>
-                                        ${c.codice_componente ? `<span class="comp-code">${c.codice_componente}</span>` : ''}
-                                    </li>`;
-                            });
-                        } else {
-                            htmlContent += `<li style="color: #999; font-style: italic;">Nessun componente associato a questa macro.</li>`;
+                                    <div class="phase-card">
+                                        <div class="phase-header">${fase.nome_fase}</div>
+                                `;
+
+                                // 3. CICLO SUI RUOLI (Es. Elettricista)
+                                const ruoliOrdinati = [...this.data.ruoli].sort((a,b) => a.id_ruolo - b.id_ruolo);
+                                let ruoliTrovati = 0;
+
+                                ruoliOrdinati.forEach(ruolo => {
+                                    // Quali componenti, in QUESTA fase e in QUESTA macro, vede QUESTO ruolo?
+                                    const compsForRole = compsInFase.filter(c => 
+                                        (c.ids_ruoli_abilitati || []).includes(ruolo.id_ruolo)
+                                    );
+
+                                    if (compsForRole.length > 0) {
+                                        ruoliTrovati++;
+                                        htmlContent += `
+                                            <div class="role-block">
+                                                <div class="role-title">
+                                                    <span class="role-dot"></span> ${ruolo.nome_ruolo}
+                                                </div>
+                                                <ul class="comp-list-mini">
+                                        `;
+                                        
+                                        compsForRole.forEach(c => {
+                                            const codiceHtml = c.codice_componente ? `<span class="comp-code-tag">${c.codice_componente}</span>` : '';
+                                            htmlContent += `<li>${c.nome_componente} ${codiceHtml}</li>`;
+                                        });
+
+                                        htmlContent += `</ul></div>`;
+                                    }
+                                });
+
+                                if (ruoliTrovati === 0) {
+                                    htmlContent += `<div class="empty-msg">Nessun ruolo abilitato nonostante ci siano componenti.</div>`;
+                                }
+
+                                htmlContent += `</div>`; // Chiude phase-card
+                            }
+                        });
+
+                        if (fasiTrovate === 0) {
+                            htmlContent += `<div class="empty-msg" style="grid-column: 1 / -1;">Questa macro contiene componenti (${componentsInMacro.length}), ma nessuno è assegnato a una Fase specifica.</div>`;
                         }
 
-                        htmlContent += `</ul></div>`;
+                        htmlContent += `</div></div>`; // Chiude exploded-grid e exploded-macro-container
                     });
 
-                    // 3. Mostra nel Modale
+                    if (!hasAnyContent) {
+                        htmlContent += `<div style="text-align:center; padding:20px; color:#888;">Nessun componente trovato nelle macro selezionate.</div>`;
+                    }
+
+                    // Iniezione nel modale
                     document.getElementById('explodedViewContent').innerHTML = htmlContent;
                     document.getElementById('explodedViewModal').style.display = 'block';
                 });
-
             });
         } catch(e) { console.error(e); }
     }
