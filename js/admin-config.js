@@ -290,7 +290,7 @@ const App = {
                     nomeCliente = comm.nome_cliente;
                 }
                 const labelImpianto = comm.impianto || '';
-                const labelOdv = comm.ordine_vendita || comm.odv || '-';
+                const labelOdv = comm.vo || comm.ordine_vendita || comm.odv || '-';
                 const labelRif = comm.riferimento_tecnico || '-';
                 const labelCodice = comm.codice_commessa || '';
 
