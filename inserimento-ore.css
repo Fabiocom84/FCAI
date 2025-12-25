@@ -174,29 +174,60 @@ select, input[type="number"], textarea, input[type="text"] {
 }
 select:focus, input:focus { border-color: #3498db; outline: none; }
 
-/* Choices.js Fixes */
+/* --- FIX CHOICES.JS (Menu a tendina compatto) --- */
 .choices {
-    margin-bottom: 0; /* Rimuove margini extra */
+    margin-bottom: 0;
     width: 100%;
+    position: relative; /* Fondamentale per il dropdown */
+    overflow: visible;  /* Permette al menu di uscire dal box */
 }
 
 .choices__inner {
     background-color: white;
     border: 1px solid #cbd5e0;
     border-radius: 8px;
-    min-height: 44px; /* Altezza comoda per il dito */
+    min-height: 44px;
     padding: 5px 10px;
     display: flex;
     align-items: center;
+    font-size: 1rem;
+    z-index: 2; /* Sta sopra al resto */
 }
 
-/* Nascondiamo la lista finché non si clicca (comportamento standard) */
+/* Stile dell'input di ricerca dentro il box */
+.choices__input {
+    background-color: transparent;
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+/* IL MENU DROPDOWN (Nascosto di default) */
 .choices__list--dropdown {
+    visibility: hidden; /* Nascosto */
     z-index: 1000;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #cbd5e0;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    border: 1px solid #e2e8f0;
     margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Quando è attivo, mostralo */
+.choices.is-open .choices__list--dropdown {
+    visibility: visible;
+}
+
+/* Stile elementi lista */
+.choices__list--dropdown .choices__item {
+    padding: 10px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .choices__list--dropdown .choices__item--selectable.is-highlighted {

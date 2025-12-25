@@ -188,27 +188,33 @@ const MobileHoursApp = {
 
     // --- CHOICES.JS ---
     initChoices: async function() {
+        // Distruggi istanza precedente se esiste (per evitare doppi menu)
+        if (this.state.choicesInstance) {
+            this.state.choicesInstance.destroy();
+        }
+
         this.state.choicesInstance = new Choices(this.dom.commessaSelect, {
             searchEnabled: true,
+            searchChoices: true,
             itemSelectText: '',
             placeholder: true,
             placeholderValue: 'Cerca Commessa...',
             shouldSort: false,
-            position: 'bottom',
-            // Opzioni per migliorare la resa su mobile
-            searchResultLimit: 10,
-            renderChoiceLimit: 20
+            position: 'bottom', // Forza apertura verso il basso
+            renderChoiceLimit: 50, // Limita quanti elementi renderizza nel DOM
+            searchResultLimit: 10, // Limita risultati ricerca
+            // Queste opzioni aiutano a mantenere il layout compatto
+            removeItemButton: false,
+            duplicateItemsAllowed: false,
         });
 
         try {
             const res = await apiFetch('/api/get-etichette');
             const data = await res.json();
             
-            // Popoliamo la mappa per le card
             this.state.commesseMap = {};
-            
             const choicesData = data.map(c => {
-                this.state.commesseMap[c.id] = c.label; // Salviamo etichetta "ricca"
+                this.state.commesseMap[c.id] = c.label;
                 return { value: c.id, label: c.label };
             });
             
