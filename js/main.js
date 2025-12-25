@@ -1,4 +1,4 @@
-// js/main.js (Logica DB-Centric)
+// js/main.js (Versione Fix "Velo Scuro")
 
 import { IsAdmin, CurrentUser } from './core-init.js';
 import { apiFetch } from './api-client.js';
@@ -6,7 +6,6 @@ import Legend from './legend.js';
 import { showModal } from './shared-ui.js'; 
 
 let appInitialized = false;
-window.currentUserProfile = null; // Qui salviamo la "verità" che arriva dal DB
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!appInitialized) {
@@ -16,50 +15,56 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
+    const overlay = document.getElementById('modalOverlay');
+    
     try {
-        // 1. Recuperiamo quello che il DB ci ha dato al momento del Login
-        const profileString = localStorage.getItem('user_profile');
-        
-        if (!profileString) {
-            throw new Error("Nessun profilo trovato. Login necessario.");
+        // Mostra un caricamento visivo (opzionale, se vuoi l'effetto caricamento)
+        // if (overlay) overlay.style.display = 'block';
+
+        // 1. Controllo di sicurezza base
+        if (!CurrentUser) {
+            throw new Error("Utente non identificato. Riesegui il login.");
         }
         
-        // 2. Parsiamo i dati grezzi dal DB
-        let rawProfile = JSON.parse(profileString);
+        console.log("🚀 Avvio App. Utente:", CurrentUser.nome_cognome, "| Admin:", IsAdmin);
         
-        // 3. NORMALIZZAZIONE CRUCIALE (Il fix al tuo problema)
-        // Il DB Supabase a volte manda true, a volte "true", a volte 1.
-        // Noi uniformiamo tutto qui, così la logica a valle non fallisce mai.
-        rawProfile.is_admin = normalizeAdminFlag(rawProfile.is_admin);
-        
-        window.currentUserProfile = rawProfile;
-        
-        console.log("Profilo utente caricato (Auth DB):", window.currentUserProfile);
-        
-        // 4. Avviamo l'interfaccia con i permessi calcolati
+        // 2. Setup dell'interfaccia (Nascondi/Mostra bottoni)
         setupUI();
         
-        // Rendiamo la pagina visibile solo ora che sappiamo chi sei
-        document.body.style.visibility = 'visible';
-        document.body.style.opacity = '1';
+        // 3. (OPZIONALE) Caricamento Dati Iniziali
+        // Se in futuro dovrai caricare dati all'avvio, FALLO QUI.
+        // Esempio: 
+        // await loadDashboardData(); 
+
+        // ATTENZIONE: Se carichi dati ADMIN, devi proteggerli così:
+        /*
+        if (IsAdmin) {
+            try {
+                await apiFetch('/api/admin/init-data'); 
+            } catch (e) {
+                console.warn("Admin data error (ignorato):", e);
+            }
+        }
+        */
 
     } catch (error) {
-        console.error("Errore inizializzazione:", error);
-        localStorage.clear();
-        window.location.href = 'login.html';
+        console.error("❌ Errore critico inizializzazione:", error);
+        // In caso di errore grave, slogghiamo per sicurezza
+        // localStorage.clear();
+        // window.location.href = 'login.html';
+        alert("Errore durante il caricamento: " + error.message);
+    } finally {
+        // ============================================================
+        // IL FIX CHE RISOLVE IL BLOCCO:
+        // Qualsiasi cosa succeda (errore o successo), togliamo il velo.
+        // ============================================================
+        if (overlay) overlay.style.display = 'none';
+        
+        // Forziamo la visibilità del body (nel caso index.html lo nasconda)
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
+        document.body.classList.remove('modal-open');
     }
-}
-
-/**
- * Funzione che traduce il "dialetto" del database in vero Booleano JS.
- * Risolve il problema "Sono admin ma non vedo i tasti".
- */
-function normalizeAdminFlag(val) {
-    if (val === true) return true;       // Booleano puro
-    if (val === "true") return true;     // Stringa dal JSON
-    if (val === 1) return true;          // Intero da PostgreSQL
-    if (val === "1") return true;        // Stringa numerica
-    return false;
 }
 
 function setupUI() {
@@ -71,47 +76,33 @@ function setupUI() {
         greetingEl.innerHTML = `Ciao, <strong>${CurrentUser.nome_cognome}</strong>`;
     }
 
-    // 2. GESTIONE VISIBILITÀ BOTTONI (Logica esistente)
+    // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
-        const allButtons = [
-            'btn-inserisci-dati', 'openChatModalBtn', 'btn-commesse', 
-            'openDataGridBtn', 'openInsertProductionOrderBtn', 
-            'openViewProductionOrdersBtn', 'btn-inserimento-ore', 
-            'openPrintHoursBtn', 'openDashboardBtn', 'btn-registro-presenze', 
-            'openConfigBtn', 'btn-attivita', 'openTrainingModalBtn'
+        // ELENCO DI TUTTI I BOTTONI CHE UN UTENTE NORMALE NON DEVE VEDERE
+        // (Nota: Ho lasciato visibili solo quelli operativi)
+        const buttonsToHide = [
+            'btn-inserisci-dati',        // Inserimento Knowledge Base
+            'openChatModalBtn',          // Chat AI
+            'openDataGridBtn',           // Vista Agile (Gestione)
+            'openInsertProductionOrderBtn', 
+            'openViewProductionOrdersBtn',
+            'openDashboardBtn',          // Dashboard
+            'btn-registro-presenze',     // Registro (meglio nasconderlo ai non admin o sola lettura)
+            'openConfigBtn',             // Configurazione
+            'btn-attivita',              // Task Manager
+            'openTrainingModalBtn'       // Addestramento
         ];
 
-        // I soli permessi per l'operatore
-        const allowedButtons = ['btn-commesse', 'btn-inserimento-ore', 'openPrintHoursBtn'];
-
-        allButtons.forEach(id => {
+        buttonsToHide.forEach(id => {
             const btn = document.getElementById(id);
-            if (btn) btn.style.display = allowedButtons.includes(id) ? 'flex' : 'none';
+            if (btn) btn.style.display = 'none';
         });
-
-        // 3. PULIZIA LEGENDA (NUOVO)
-        // Nascondiamo le voci della legenda che corrispondono ai bottoni nascosti
-        const legendItemsToHide = [
-            '.insert-data-button', // Inserisci Dati
-            '.chat-ai-button',     // Chat
-            '.agile-view-button',  // Vista Agile
-            '.dashboard-button',   // Dashboard
-            '.attendance-button',  // Presenze
-            '.config-button'       // Config
-        ];
-
-        legendItemsToHide.forEach(selector => {
-            // Cerchiamo l'icona dentro la legenda e nascondiamo il genitore (.legend-item)
-            const iconInLegend = document.querySelector(`#mainPageLegend .legend-icon${selector}`);
-            if (iconInLegend) {
-                const legendItem = iconInLegend.closest('.legend-item');
-                if (legendItem) legendItem.style.display = 'none';
-            }
-            // Nascondiamo anche i divisori <hr> se necessario, ma per ora basta nascondere le voci
-        });
+        
+        // Nascondi anche le voci della legenda corrispondenti
+        hideLegendItemsForNonAdmin();
 
     } else {
-        // Admin vede tutto
+        // Se è Admin, assicuriamoci che i tasti speciali siano visibili
         ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'flex';
@@ -123,7 +114,27 @@ function setupUI() {
         window.uiEventsBound = true;
     }
     
+    // Inizializza la legenda
     new Legend();
+}
+
+function hideLegendItemsForNonAdmin() {
+    const legendSelectors = [
+        '.insert-data-button',
+        '.chat-ai-button',
+        '.agile-view-button',
+        '.dashboard-button',
+        '.attendance-button',
+        '.config-button'
+    ];
+
+    legendSelectors.forEach(selector => {
+        const iconInLegend = document.querySelector(`#mainPageLegend .legend-icon${selector}`);
+        if (iconInLegend) {
+            const legendItem = iconInLegend.closest('.legend-item');
+            if (legendItem) legendItem.style.display = 'none';
+        }
+    });
 }
 
 function bindGlobalEvents() {
@@ -134,7 +145,7 @@ function bindGlobalEvents() {
         window.location.href = 'login.html';
     });
 
-    // Modali Placeholder (Dashboard, etc.)
+    // Modali Placeholder
     document.getElementById('openDashboardBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         showModal({ title: 'Info', message: 'Dashboard in arrivo.', confirmText: 'OK' });
@@ -145,17 +156,18 @@ function bindGlobalEvents() {
         showModal({ title: 'Info', message: 'Stampa report in sviluppo.', confirmText: 'OK' });
     });
 
-    // Binding Apertura Modali Reali
+    // Helper per binding
     const bind = (id, fn) => { 
         const el = document.getElementById(id); 
         if(el) el.addEventListener('click', (e) => { e.preventDefault(); fn(); });
     };
 
+    // Binding Apertura Modali
     bind('openInsertDataModalBtn', window.openInsertDataModal);
     bind('openChatModalBtn', window.openChatModal);
     bind('openTrainingModalBtn', window.openTrainingModal);
     
-    // Gestione Chiusura Overlay
+    // Gestione Chiusura Overlay clickando fuori
     const overlay = document.getElementById('modalOverlay');
     if (overlay) {
         overlay.addEventListener('click', () => {
@@ -166,7 +178,7 @@ function bindGlobalEvents() {
     }
 }
 
-// Funzioni export per onclick nell'HTML (retrocompatibilità)
+// Funzioni Globali per l'HTML (Retrocompatibilità)
 window.openInsertDataModal = () => { toggleModal('insertDataModal', true); };
 window.closeInsertDataModal = () => { toggleModal('insertDataModal', false); };
 
