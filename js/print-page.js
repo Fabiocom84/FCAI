@@ -128,13 +128,17 @@ const PrintPage = {
     },
 
     toggleAccordion: function() {
+        // Usa una classe CSS per gestire la visibilità
         const content = this.dom.accordionContent;
         const arrow = this.dom.accordionBtn.querySelector('.arrow');
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
+        
+        // Toggle della classe 'open' definita nel CSS
+        content.classList.toggle('open');
+        
+        // Aggiorna la freccia
+        if (content.classList.contains('open')) {
             arrow.textContent = '▲';
         } else {
-            content.style.display = 'none';
             arrow.textContent = '▼';
         }
     },
