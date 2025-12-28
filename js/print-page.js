@@ -297,10 +297,10 @@ const PrintPage = {
             const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
             const mNames = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO","LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"];
 
-            const HEADER_Y = 673; 
-            page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 130, y: HEADER_Y, size: 10, font: fontBold });
-            page.drawText(mNames[month - 1], { x: 450, y: HEADER_Y, size: 10, font: fontBold });
-            page.drawText(year.toString(), { x: 540, y: HEADER_Y, size: 10, font: fontBold });
+            const HEADER_Y = 665; 
+            page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 160, y: HEADER_Y, size: 10, font: fontBold });
+            page.drawText(mNames[month - 1], { x: 420, y: HEADER_Y, size: 10, font: fontBold });
+            page.drawText(year.toString(), { x: 550, y: HEADER_Y, size: 10, font: fontBold });
 
             const rowsByDay = {};
             for (let d = 1; d <= 31; d++) rowsByDay[d] = [];

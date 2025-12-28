@@ -97,27 +97,61 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;
 }
 
-/* FIX PULSANTE CARICA DATI */
+
+/* FIX PULSANTE CARICA DATI (Full Width) */
 #btnLoadData {
-    height: 36px !important;
+    height: 40px !important;       /* Altezza comoda */
     min-height: unset !important;
-    width: 100% !important;
+    width: 100% !important;        /* Occupa tutto lo spazio orizzontale */
     padding: 0 15px !important;
-    margin-top: 5px !important;
+    margin-top: 10px !important;
     box-sizing: border-box;
+    
     display: flex !important;
-    flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
+    
     background-color: #3498db !important;
     color: white !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+#btnLoadData:active { transform: scale(0.99); }
+
+/* FIX PULSANTI FILTRI (Reset e Applica - Compatti) */
+#btnResetFilters, #btnApplyFilters {
+    height: 36px !important;       /* Stessa altezza dei bottoni PDF */
+    min-height: unset !important;  /* Rimuove l'altezza della dashboard */
+    padding: 0 20px !important;
+    width: auto !important;        /* Larghezza automatica in base al testo */
+    
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
     font-size: 0.9rem !important;
     font-weight: 500 !important;
     border-radius: 6px;
-    border: none;
+    margin: 0 !important;
     cursor: pointer;
+    box-shadow: none !important;
 }
-#btnLoadData:active { transform: scale(0.98); }
+
+/* Colore specifico Reset */
+#btnResetFilters {
+    background-color: #95a5a6 !important;
+    color: white !important;
+}
+
+/* Colore specifico Applica */
+#btnApplyFilters {
+    background-color: #007bff !important; /* Blu standard */
+    color: white !important;
+}
 
 /* --- 4. ACCORDION --- */
 .accordion-container {
