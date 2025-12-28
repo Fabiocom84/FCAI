@@ -269,8 +269,6 @@ const MobileHoursApp = {
         });
 
         try {
-            // Usa l'API corretta /api/get-etichette (o /api/common/get-etichette se hai fixato il backend)
-            // Assumo backend attuale: /api/get-etichette
             const res = await apiFetch('/api/get-etichette');
             const data = await res.json();
             
@@ -292,18 +290,20 @@ const MobileHoursApp = {
     populateOvertimeSelects: function() {
         let options = '<option value="" disabled selected>--:--</option>';
         
-        // Generiamo orari dalle 06:00 alle 22:00 (o 24:00)
-        for (let h = 6; h < 23; h++) {
-            const hour = h.toString().padStart(2, '0');
-            
-            // Opzione XX:15
-            options += `<option value="${hour}:15">${hour}:15</option>`;
-            
-            // Opzione XX:45
-            options += `<option value="${hour}:45">${hour}:45</option>`;
-        }
+        // Esteso per coprire anche la notte (es. fino alle 04:00 del mattino dopo)
+        const hoursList = [
+            6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23, // Giorno
+            0,1,2,3,4 // Notte
+        ];
 
-        // Iniettiamo l'HTML nelle select
+        hoursList.forEach(h => {
+            const hour = h.toString().padStart(2, '0');
+            options += `<option value="${hour}:00">${hour}:00</option>`; // Aggiunto XX:00
+            options += `<option value="${hour}:15">${hour}:15</option>`;
+            options += `<option value="${hour}:30">${hour}:30</option>`; // Aggiunto XX:30
+            options += `<option value="${hour}:45">${hour}:45</option>`;
+        });
+
         if(this.dom.overtimeStart) this.dom.overtimeStart.innerHTML = options;
         if(this.dom.overtimeEnd) this.dom.overtimeEnd.innerHTML = options;
     },

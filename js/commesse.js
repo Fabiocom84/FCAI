@@ -396,6 +396,72 @@ const App = {
         } finally {
             checkbox.disabled = false;
         }
+    },
+
+    // 1. GESTIONE STATUS (Toggle Completato/In Lavorazione)
+    handleStatusToggle: async function(event) {
+        const checkbox = event.target;
+        const commessaId = checkbox.dataset.id;
+        // Se è checkato -> status 5 (Completato), altrimenti 2 (In Lavorazione) - Adatta gli ID al tuo DB
+        const newStatusId = checkbox.checked ? 5 : 2; 
+
+        try {
+            // Disabilita temporaneamente
+            checkbox.disabled = true;
+
+            const res = await apiFetch(`/api/commesse/${commessaId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ id_status: newStatusId })
+            });
+
+            if (!res.ok) throw new Error("Errore aggiornamento status");
+            
+            // Ricarica per aggiornare colori e badge
+            this.fetchCommesse(false); // false = mantieni pagina corrente
+            
+        } catch (e) {
+            console.error(e);
+            checkbox.checked = !checkbox.checked; // Revert visivo
+            showModal({ title: "Errore", message: "Impossibile aggiornare lo stato." });
+        } finally {
+            checkbox.disabled = false;
+        }
+    },
+
+    // 2. GESTIONE ELIMINAZIONE
+    handleDelete: async function(commessaId) {
+        const confirm = await showModal({
+            title: "Elimina Commessa",
+            message: "Sei sicuro di voler eliminare questa commessa? L'operazione è irreversibile.",
+            confirmText: "Elimina",
+            cancelText: "Annulla"
+        });
+
+        if (!confirm) return;
+
+        try {
+            const res = await apiFetch(`/api/commesse/${commessaId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error("Errore durante l'eliminazione");
+            
+            showModal({ title: "Successo", message: "Commessa eliminata." });
+            this.fetchCommesse(true); // Ricarica da pag 1
+        } catch (e) {
+            console.error(e);
+            showModal({ title: "Errore", message: "Impossibile eliminare la commessa." });
+        }
+    },
+
+    // 3. GESTIONE MODIFICA
+    handleEdit: function(commessaId) {
+        // Opzione A: Apri il modale esistente in modalità edit
+        if (typeof window.openNewOrderModal === 'function') {
+            window.openNewOrderModal(true, commessaId);
+        } else {
+            // Opzione B: Redirect a una pagina di dettaglio se il modale non supporta l'edit
+            console.warn("Funzione openNewOrderModal non trovata, redirect a gestione.");
+            // window.location.href = `gestione.html?edit=${commessaId}`;
+            showModal({ title: "Info", message: "Funzione modifica in arrivo." });
+        }
     }
 };
 

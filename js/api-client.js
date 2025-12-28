@@ -1,11 +1,5 @@
-// js/api-client.js (Versione Finale Completa)
-
 import { API_BASE_URL } from './config.js';
 
-/**
- * Funzione per le chiamate API PUBBLICHE (es. login).
- * Non controlla la sessione e non invia token.
- */
 export async function publicApiFetch(url, options = {}) {
     const headers = { ...options.headers };
 
@@ -15,27 +9,22 @@ export async function publicApiFetch(url, options = {}) {
 
     const fullUrl = `${API_BASE_URL}${url}`;
     const response = await fetch(fullUrl, { ...options, headers });
-
     return response;
 }
 
-
-/**
- * Funzione per le chiamate API PRIVATE (autenticate).
- * Controlla che esista il nostro token personalizzato e lo invia.
- */
 export async function apiFetch(url, options = {}) {
     const headers = { ...options.headers };
 
+    // CORREZIONE: Usiamo un'unica chiave coerente 'session_token'
     const token = localStorage.getItem('session_token');
+    
     if (token) {
-        // Ora usiamo l'header standard 'Authorization'
         headers['Authorization'] = `Bearer ${token}`;
     } else {
-        // Se non c'è il token, reindirizza al login
-        console.error("apiFetch: Token di sessione personalizzato non trovato. Reindirizzo al login.");
+        console.error("Auth: Token mancante. Reindirizzo al login.");
+        localStorage.clear(); // Pulisce tutto per sicurezza
         window.location.replace('login.html');
-        throw new Error("Token di sessione personalizzato non trovato.");
+        throw new Error("Token mancante.");
     }
 
     if (!(options.body instanceof FormData)) {
@@ -45,10 +34,11 @@ export async function apiFetch(url, options = {}) {
     const fullUrl = `${API_BASE_URL}${url}`;
     const response = await fetch(fullUrl, { ...options, headers });
 
+    // Gestione scadenza token
     if (response.status === 401) {
-        console.error("Il backend ha restituito 401. Il token personalizzato potrebbe essere scaduto o non valido.");
-        // In caso di token non valido, cancelliamo quello vecchio e forziamo un nuovo login
-        localStorage.removeItem('custom_session_token');
+        console.error("Auth: Token scaduto o non valido (401).");
+        localStorage.removeItem('session_token'); // CORRETTO: rimuove la chiave giusta
+        localStorage.removeItem('user_profile');
         window.location.replace('login.html');
     }
     
