@@ -299,8 +299,8 @@ const PrintPage = {
 
             const HEADER_Y = 712; 
             page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 110, y: HEADER_Y, size: 10, font: fontBold });
-            page.drawText(mNames[month - 1], { x: 380, y: HEADER_Y, size: 10, font: fontBold });
-            page.drawText(year.toString(), { x: 550, y: HEADER_Y, size: 10, font: fontBold });
+            page.drawText(mNames[month - 1], { x: 400, y: HEADER_Y, size: 10, font: fontBold });
+            page.drawText(year.toString(), { x: 548, y: HEADER_Y, size: 10, font: fontBold });
 
             const rowsByDay = {};
             for (let d = 1; d <= 31; d++) rowsByDay[d] = [];
