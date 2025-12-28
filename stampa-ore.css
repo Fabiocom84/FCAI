@@ -1,5 +1,5 @@
 /* ==========================================================================
-   stampa-ore.css - Fix Layout & Dimensioni Pulsanti
+   stampa-ore.css - Fix Definitivi Altezza Pulsanti
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE --- */
@@ -33,36 +33,54 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 
 .pdf-controls {
     display: flex;
-    gap: 8px; /* Spazio leggermente aumentato per pulizia */
+    gap: 8px;
     align-items: center;
-    justify-content: center; /* Centrato */
+    justify-content: center;
 }
 
-/* FIX MENU DATE (Compatti) */
+/* FIX MENU DATE */
 .pdf-select {
-    height: 36px !important; /* Ridotto da 40px a 36px */
+    height: 36px !important;
     padding: 0 8px !important;
     font-size: 0.9rem !important;
     border-radius: 6px;
     border: 1px solid #ccc;
     background: white;
     flex: 1;
-    min-width: 0; /* Previene overflow */
-    text-overflow: ellipsis;
+    min-width: 0;
 }
 
-/* PULSANTE CREA PDF (Verde - Compatto) */
+/* PULSANTE CREA PDF (Verde) */
+/* Override aggressivo per annullare lo stile .button di style-v2.css */
 .pdf-btn {
-    height: 36px !important; /* Ridotto da 40px a 36px */
+    height: 36px !important;
+    min-height: unset !important; /* FONDAMENTALE: Annulla i 100px del padre */
     padding: 0 15px !important;
+    
+    /* Layout interno */
+    display: inline-flex !important;
+    flex-direction: row !important; /* Icona e testo allineati orizzontalmente */
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Reset dimensioni dashboard */
+    flex-basis: auto !important;
+    max-width: none !important;
+    width: auto !important;
+
+    /* Stile Visivo */
+    background-color: #27ae60 !important; 
+    color: white !important;
     font-size: 0.9rem !important;
-    font-weight: 500 !important; /* Meno pesante */
-    background-color: #27ae60 !important; color: white !important;
-    border: none; border-radius: 6px; white-space: nowrap; cursor: pointer;
-    flex: 0 0 auto;
-    display: flex; align-items: center; justify-content: center;
+    font-weight: 500 !important;
+    border: none; 
+    border-radius: 6px; 
+    white-space: nowrap; 
+    cursor: pointer;
+    margin: 0 !important; /* Rimuove margini strani */
 }
 .pdf-btn:active { transform: scale(0.98); }
+
 
 /* --- 3. SEZIONE ANALISI --- */
 .filter-card { background: white; padding: 15px; border-radius: 12px; margin-top: 0; }
@@ -74,24 +92,30 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 .form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
 
 .compact-input {
-    height: 36px !important; /* Ridotto per coerenza */
+    height: 36px !important;
     padding: 5px 10px !important; font-size: 0.9rem !important;
     border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;
 }
 
-/* FIX PULSANTE CARICA DATI (Blu - Compatto) */
+/* FIX PULSANTE CARICA DATI (Blu) */
 #btnLoadData {
-    /* Dimensioni */
+    /* Dimensioni fisse */
+    height: 36px !important;
+    min-height: unset !important; /* FONDAMENTALE */
     width: 100% !important;
-    height: 36px !important; /* Ridotto da 45px a 36px */
-    margin-top: 5px !important;
     padding: 0 15px !important;
+    margin-top: 5px !important;
     box-sizing: border-box;
     
     /* Layout */
     display: flex !important;
+    flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
+    
+    /* Reset dashboard style */
+    flex-basis: auto !important;
+    max-width: none !important;
     
     /* Stile */
     background-color: #3498db !important;
@@ -104,13 +128,14 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 }
 #btnLoadData:active { transform: scale(0.98); }
 
+
 /* --- 4. ACCORDION (Filtri Avanzati) --- */
 .accordion-container {
     background: white; border-radius: 10px; overflow: hidden; margin: 10px 0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;
 }
 .accordion-header {
-    width: 100%; padding: 10px 15px; /* Padding ridotto */
+    width: 100%; padding: 10px 15px;
     background: #fff; border: none;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 0.9rem; color: #34495e; cursor: pointer; font-weight: 500;
@@ -127,7 +152,7 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 
 /* --- 5. KPI --- */
 .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.kpi-box { padding: 10px; /* Padding ridotto */ border-radius: 8px; text-align: center; color: white !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.kpi-box { padding: 10px; border-radius: 8px; text-align: center; color: white !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .kpi-box.blue { background: #3498db !important; }
 .kpi-box.purple { background: #9b59b6 !important; }
 .kpi-box.orange { background: #e67e22 !important; }
