@@ -312,3 +312,18 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 }
 .day-total-badge.warning { background-color: #e53e3e; border-color: #c53030; } /* > 8 ore */
 .day-total-badge.ok { background-color: #38a169; border-color: #2f855a; }      /* = 8 ore */
+
+/* --- LAYOUT FLESSIBILE PER RIORDINAMENTO --- */
+#mobileHoursForm {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Default: l'ordine segue l'HTML (Commessa -> Dinamici -> Ore -> Note) */
+
+/* Specifico per CANTIERE: Riordina i campi */
+.cantiere-layout .simple-hours-group { order: 1; margin-top: 10px; } /* 1. Ore Cantiere */
+.cantiere-layout #overtime-fields    { order: 2; } /* 2. Eventuali Straordinari */
+.cantiere-layout #travel-fields      { order: 3; } /* 3. Ore Viaggio */
+.cantiere-layout #group-note         { order: 4; } /* 4. Note */
+/* Tutto il resto (div spaziatori, ecc) finirà dopo per natura */

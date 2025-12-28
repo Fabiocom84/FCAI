@@ -350,36 +350,42 @@ const MobileHoursApp = {
     },
 
     handleTypeChange: function(type) {
-        // 1. Reset Visibilità (Codice esistente)
+        // Riferimento al form per aggiungere la classe di layout
+        const formEl = this.dom.form;
+
+        // 1. Reset Visibilità Base
         this.dom.prodFields.style.display = 'none';
         this.dom.absFields.style.display = 'none';
-        this.dom.groupCommessa.style.display = 'block'; 
-        this.dom.travelFields.style.display = 'none';   
+        this.dom.travelFields.style.display = 'none';
+        
+        // Rimuoviamo la classe di layout speciale (reset allo standard)
+        formEl.classList.remove('cantiere-layout');
+        // Di base mostriamo la commessa (verrà nascosta sotto se serve)
+        this.dom.groupCommessa.style.display = 'block';
 
-        // 2. Logica Visibilità Campi (Codice esistente)
+        // 2. Logica Specifica per Tipo
         if (type === 'produzione') {
             this.dom.prodFields.style.display = 'block';
+            if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Lavoro *";
         } 
         else if (type === 'cantiere') {
+            // CANTIERE:
+            // A. Nascondi Commessa
+            this.dom.groupCommessa.style.display = 'none';
+            // B. Mostra Viaggio
             this.dom.travelFields.style.display = 'block';
+            // C. Attiva Layout Riordinato (Ore -> Viaggio -> Note)
+            formEl.classList.add('cantiere-layout');
+            // D. Cambia Etichetta
+            if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Cantiere *";
         } 
         else if (type === 'assenza') {
             this.dom.groupCommessa.style.display = 'none';
             this.dom.absFields.style.display = 'block';
-        }
-
-        // 3. NUOVO: Aggiornamento Etichetta Ore
-        if (this.dom.hoursLabel) {
-            if (type === 'produzione') {
-                this.dom.hoursLabel.textContent = "Ore Lavoro *";
-            } else if (type === 'cantiere') {
-                this.dom.hoursLabel.textContent = "Ore Cantiere *";
-            } else if (type === 'assenza') {
-                this.dom.hoursLabel.textContent = "Ore Assenza *";
-            }
+            if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Assenza *";
         }
         
-        // 4. Ricontrolla straordinari (Codice esistente)
+        // 3. Controllo Straordinari
         this.checkOvertimeLogic();
     },
 
