@@ -1,12 +1,11 @@
 /* ==========================================================================
-   stampa-ore.css - Layout Flexbox (Stile Inserimento Ore)
+   stampa-ore.css - Layout Flexbox & Altezze Uniformi
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE & HEADER --- */
 body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
-    /* Lasciamo che il browser gestisca lo scroll se necessario */
 }
 
 .page-wrapper {
@@ -16,20 +15,19 @@ body {
     padding-bottom: 40px;
 }
 
-/* Header Flexbox: Identico a Inserimento Ore */
+/* Header Flexbox */
 .mobile-nav-header {
     background-color: #2c3e50;
     color: white;
     padding: 15px;
     border-radius: 12px;
     display: flex;
-    align-items: center; /* Allinea verticalmente al centro */
-    gap: 15px;           /* Spazio tra pulsante e titolo */
+    align-items: center;
+    gap: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     margin-bottom: 20px;
 }
 
-/* Pulsante Home: Dimensione fissa, non si schiaccia */
 .header-button {
     background-color: #3498db;
     color: white;
@@ -40,53 +38,33 @@ body {
     text-decoration: none;
     border: none;
     cursor: pointer;
-    display: flex; 
-    align-items: center; 
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     transition: background-color 0.2s ease;
-    flex-shrink: 0; /* IMPEDISCE di rimpicciolirsi */
+    flex-shrink: 0;
 }
-
 .header-button:hover { background-color: #2980b9; }
 
-/* Contenitore Titolo: Prende tutto lo spazio residuo */
+/* Titolo Centrato nello spazio residuo */
 .title-container {
-    flex-grow: 1; /* Occupa tutto lo spazio a destra */
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra il testo nel suo spazio */
+    align-items: center;
     justify-content: center;
-    /* Nota: Se il titolo sembra spostato a destra, è perché lo spazio
-       a sinistra è occupato dal bottone. È il comportamento corretto Flexbox. */
+    margin-right: 30px; /* Bilancia visivamente il pulsante a sx */
 }
 
 .title-container h1 { 
-    margin: 0; 
-    font-size: 1.1rem; 
-    color: #3498db; 
-    text-transform: uppercase; 
-    text-align: center;
-    line-height: 1.2;
+    margin: 0; font-size: 1.1rem; color: #3498db; text-transform: uppercase; text-align: center; 
 }
-
 .header-username { 
-    font-size: 0.8rem; 
-    color: #bdc3c7; 
-    margin-top: 2px;
+    font-size: 0.8rem; color: #bdc3c7; margin-top: 2px; 
 }
 
 /* --- 2. CORPO PAGINA --- */
 .report-body {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.section-divider { 
-    border: 0; 
-    border-top: 1px solid #e0e0e0; 
-    margin: 5px 0; 
+    display: flex; flex-direction: column; gap: 15px;
 }
 
 /* --- 3. SEZIONE PDF (Box Azzurro) --- */
@@ -98,201 +76,109 @@ body {
     text-align: center;
 }
 
-.pdf-official-section h3 { 
-    margin: 0 0 5px 0; 
-    color: #0277bd; 
-    font-size: 1rem; 
-}
+.pdf-official-section h3 { margin: 0 0 5px 0; color: #0277bd; font-size: 1rem; }
+.info-text { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
 
-.info-text { 
-    font-size: 0.85rem; 
-    color: #666; 
-    margin-bottom: 15px; 
-}
-
-/* Controlli PDF: Flex con Wrap se necessario */
 .pdf-controls {
     display: flex;
     gap: 10px;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap; /* Se lo schermo è troppo piccolo, va a capo */
+    flex-wrap: wrap; /* Va a capo se serve */
 }
 
+/* --- REGOLE UNIFORMI PER INPUT E BOTTONI --- */
+
+/* 1. SELECT (Mese/Anno) */
 .pdf-select {
-    padding: 10px 5px;
-    font-size: 0.95rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: white;
-    flex: 1;          /* Si allargano per riempire */
-    min-width: 90px;  /* Larghezza minima per non tagliare il testo */
-}
-
-.pdf-btn {
-    padding: 10px 20px !important; /* Padding forzato */
+    height: 42px !important;       /* Altezza fissa */
+    padding: 5px 10px !important;
     font-size: 0.95rem !important;
-    font-weight: bold;
-    white-space: nowrap;
-    width: auto !important; /* Larghezza naturale in base al testo */
-    flex: 0 0 auto;         /* Non si espande, non si stringe */
-    background-color: #27ae60 !important;
-}
-
-/* --- 4. ANALISI & FILTRI --- */
-.filter-card {
+    border-radius: 6px;
+    border: 1px solid #ccc;
     background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    flex: 1;
+    min-width: 100px;
+    box-sizing: border-box;
 }
 
-.section-label {
-    margin: 0 0 10px 0;
-    color: #555;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    font-weight: bold;
-}
-
-.filter-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.half { flex: 1; margin: 0; }
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-}
-
-.form-group label {
-    font-size: 0.8rem;
-    color: #666;
-    margin-bottom: 4px;
-}
-
+/* 2. INPUT DATA (Dal/Al) */
 .compact-input {
-    padding: 10px;
+    height: 42px !important;       /* Altezza fissa */
+    padding: 5px 10px !important;
+    font-size: 0.95rem !important;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 0.95rem;
     width: 100%;
     box-sizing: border-box;
 }
 
+/* 3. BOTTONI (Crea PDF & Carica Dati) */
+.pdf-btn, .full-width-btn {
+    height: 42px !important;       /* Altezza fissa identica agli input */
+    min-height: unset !important;  /* Rimuove i 100px ereditati */
+    padding: 0 20px !important;    /* Padding laterale */
+    font-size: 0.95rem !important;
+    font-weight: bold;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    margin: 0 !important;          /* Reset margini */
+}
+
+/* Specifico per il bottone verde PDF */
+.pdf-btn {
+    width: auto !important;
+    flex: 0 0 auto;
+    background-color: #27ae60 !important;
+}
+
+/* Specifico per il bottone Carica Dati (sotto i filtri) */
 .full-width-btn {
-    width: 100%;
-    margin-top: 5px;
-    padding: 12px;
-    font-size: 1rem;
+    width: 100% !important;
+    margin-top: 15px !important;   /* Spazio sopra */
 }
 
-/* --- 5. ACCORDION (Filtri Avanzati) --- */
+/* --- 4. ANALISI & FILTRI --- */
+.filter-card {
+    background: white; padding: 15px; border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.section-label { margin: 0 0 10px 0; color: #555; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; }
+
+.filter-row { display: flex; gap: 10px; margin-bottom: 0; } /* Margine bottom gestito dal bottone */
+.half { flex: 1; margin: 0; }
+.form-group { display: flex; flex-direction: column; text-align: left; }
+.form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+
+/* --- 5. ALTRI ELEMENTI (Accordion, KPI, Tabella) --- */
 .accordion-container {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: white; border-radius: 10px; overflow: hidden; margin-bottom: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-
 .accordion-header {
-    width: 100%;
-    padding: 12px 15px;
-    background: #fff;
-    border: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    color: #34495e;
-    cursor: pointer;
-    font-weight: 500;
+    width: 100%; padding: 12px 15px; background: #fff; border: none;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.9rem; color: #34495e; cursor: pointer; font-weight: 500;
 }
+.filter-inner-padding { padding: 15px; background: #f9f9f9; border-top: 1px solid #eee; }
 
-.filter-inner-padding {
-    padding: 15px;
-    background: #f9f9f9;
-    border-top: 1px solid #eee;
-}
-
-/* --- 6. KPI & TABELLA --- */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.kpi-box {
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-}
-/* Colori KPI definiti in style-v2 o inline, qui gestiamo il layout */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.kpi-box { padding: 12px; border-radius: 8px; text-align: center; color: white; }
 .kpi-value { font-size: 1.4rem; font-weight: 700; display: block;}
 .kpi-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
 
-.preview-section h4 {
-    margin: 5px 0 10px 0;
-    font-size: 0.9rem;
-    color: #555;
-    text-transform: uppercase;
-}
-
-.view-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.toggle-view {
-    background: #e0e0e0;
-    border-radius: 15px;
-    padding: 3px;
-    display: flex;
-}
-
-.view-btn {
-    padding: 5px 12px;
-    font-size: 0.8rem;
-    border: none;
-    background: none;
-    border-radius: 12px;
-    cursor: pointer;
-}
+.preview-section h4 { margin: 5px 0 10px 0; font-size: 0.9rem; color: #555; text-transform: uppercase; }
+.view-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.toggle-view { background: #e0e0e0; border-radius: 15px; padding: 3px; display: flex; }
+.view-btn { padding: 5px 12px; font-size: 0.8rem; border: none; background: none; border-radius: 12px; cursor: pointer; }
 .view-btn.active { background: white; color: #3498db; font-weight: bold; }
 
-.table-container {
-    border-radius: 8px;
-    max-height: 350px;
-    overflow-y: auto;
-    border: 1px solid #eee;
-    background: white;
-}
-
+.table-container { border-radius: 8px; max-height: 350px; overflow-y: auto; border: 1px solid #eee; background: white; }
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
 thead { position: sticky; top: 0; background: #f8f9fa; z-index: 5; }
 .empty-msg { text-align: center; color: #999; padding: 20px; font-style: italic; }
 
-/* Pulsanti Azione (Scarica/WhatsApp) */
-.buttons-grid {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-.buttons-grid .button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    font-size: 0.9rem;
-}
+.buttons-grid { display: flex; gap: 10px; margin-top: 15px; }
+.buttons-grid .button { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 0.9rem; min-height: unset; }
