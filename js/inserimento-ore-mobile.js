@@ -350,33 +350,34 @@ const MobileHoursApp = {
     },
 
     handleTypeChange: function(type) {
-        // Riferimento al form per aggiungere la classe di layout
+        // Riferimento al contenitore padre (che avvolge sia i tasti che il form)
+        const wrapperEl = this.dom.form.closest('.mobile-insert-form');
         const formEl = this.dom.form;
 
-        // 1. Reset Visibilità Base
+        // 1. Reset: Rimuovi classe speciale dal contenitore
+        wrapperEl.classList.remove('cantiere-mode');
+        
+        // Reset visibilità campi standard
         this.dom.prodFields.style.display = 'none';
         this.dom.absFields.style.display = 'none';
         this.dom.travelFields.style.display = 'none';
-        
-        // Rimuoviamo la classe di layout speciale (reset allo standard)
-        formEl.classList.remove('cantiere-layout');
-        // Di base mostriamo la commessa (verrà nascosta sotto se serve)
         this.dom.groupCommessa.style.display = 'block';
 
-        // 2. Logica Specifica per Tipo
+        // 2. Logica Specifica
         if (type === 'produzione') {
             this.dom.prodFields.style.display = 'block';
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Lavoro *";
         } 
         else if (type === 'cantiere') {
             // CANTIERE:
-            // A. Nascondi Commessa
+            // A. Aggiungi classe al contenitore padre per gestire spazi esterni
+            wrapperEl.classList.add('cantiere-mode');
+            
+            // B. Nascondi Commessa e Mostra Viaggio
             this.dom.groupCommessa.style.display = 'none';
-            // B. Mostra Viaggio
             this.dom.travelFields.style.display = 'block';
-            // C. Attiva Layout Riordinato (Ore -> Viaggio -> Note)
-            formEl.classList.add('cantiere-layout');
-            // D. Cambia Etichetta
+            
+            // C. Etichetta
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Cantiere *";
         } 
         else if (type === 'assenza') {
