@@ -350,34 +350,26 @@ const MobileHoursApp = {
     },
 
     handleTypeChange: function(type) {
-        // Riferimento al contenitore padre (che avvolge sia i tasti che il form)
+        // Riferimento al contenitore padre per gestire gli spazi esterni
         const wrapperEl = this.dom.form.closest('.mobile-insert-form');
-        const formEl = this.dom.form;
-
-        // 1. Reset: Rimuovi classe speciale dal contenitore
-        wrapperEl.classList.remove('cantiere-mode');
         
-        // Reset visibilità campi standard
+        // Reset classi e visibilità
+        if (wrapperEl) wrapperEl.classList.remove('cantiere-mode');
         this.dom.prodFields.style.display = 'none';
         this.dom.absFields.style.display = 'none';
         this.dom.travelFields.style.display = 'none';
         this.dom.groupCommessa.style.display = 'block';
 
-        // 2. Logica Specifica
         if (type === 'produzione') {
             this.dom.prodFields.style.display = 'block';
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Lavoro *";
         } 
         else if (type === 'cantiere') {
-            // CANTIERE:
-            // A. Aggiungi classe al contenitore padre per gestire spazi esterni
-            wrapperEl.classList.add('cantiere-mode');
+            // CANTIERE: Aggiunge la classe che attiva il CSS "aggressivo" di cui sopra
+            if (wrapperEl) wrapperEl.classList.add('cantiere-mode');
             
-            // B. Nascondi Commessa e Mostra Viaggio
             this.dom.groupCommessa.style.display = 'none';
             this.dom.travelFields.style.display = 'block';
-            
-            // C. Etichetta
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Cantiere *";
         } 
         else if (type === 'assenza') {
@@ -386,7 +378,6 @@ const MobileHoursApp = {
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Assenza *";
         }
         
-        // 3. Controllo Straordinari
         this.checkOvertimeLogic();
     },
 
