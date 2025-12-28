@@ -1,5 +1,5 @@
 /* ==========================================================================
-   stampa-ore.css - Fix Definitivi Layout & Accordion
+   stampa-ore.css - Fix Layout & Dimensioni Pulsanti
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE --- */
@@ -33,34 +33,36 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 
 .pdf-controls {
     display: flex;
-    gap: 5px; /* Spazio ridotto tra elementi */
+    gap: 8px; /* Spazio leggermente aumentato per pulizia */
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* Centrato */
 }
 
-/* FIX MENU DATE (Molto più stretti) */
+/* FIX MENU DATE (Compatti) */
 .pdf-select {
-    height: 40px !important;
-    padding: 0 5px !important; /* Padding minimo laterale */
-    font-size: 0.85rem !important;
+    height: 36px !important; /* Ridotto da 40px a 36px */
+    padding: 0 8px !important;
+    font-size: 0.9rem !important;
     border-radius: 6px;
     border: 1px solid #ccc;
     background: white;
-    flex: 1; /* Si dividono lo spazio equamente */
-    min-width: 65px; /* Larghezza minima ridotta drasticamente */
+    flex: 1;
+    min-width: 0; /* Previene overflow */
     text-overflow: ellipsis;
 }
 
-/* PULSANTE CREA PDF (Verde) */
+/* PULSANTE CREA PDF (Verde - Compatto) */
 .pdf-btn {
-    height: 40px !important;
-    padding: 0 12px !important;
+    height: 36px !important; /* Ridotto da 40px a 36px */
+    padding: 0 15px !important;
     font-size: 0.9rem !important;
-    font-weight: bold;
+    font-weight: 500 !important; /* Meno pesante */
     background-color: #27ae60 !important; color: white !important;
     border: none; border-radius: 6px; white-space: nowrap; cursor: pointer;
-    flex: 0 0 auto; /* Non si allarga oltre il testo */
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
 }
+.pdf-btn:active { transform: scale(0.98); }
 
 /* --- 3. SEZIONE ANALISI --- */
 .filter-card { background: white; padding: 15px; border-radius: 12px; margin-top: 0; }
@@ -72,17 +74,18 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 .form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
 
 .compact-input {
-    height: 42px !important; padding: 5px 10px !important; font-size: 0.95rem !important;
+    height: 36px !important; /* Ridotto per coerenza */
+    padding: 5px 10px !important; font-size: 0.9rem !important;
     border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;
 }
 
-/* FIX PULSANTE CARICA DATI (Full Width) */
+/* FIX PULSANTE CARICA DATI (Blu - Compatto) */
 #btnLoadData {
     /* Dimensioni */
     width: 100% !important;
-    height: 45px !important;
+    height: 36px !important; /* Ridotto da 45px a 36px */
     margin-top: 5px !important;
-    padding: 0 !important;
+    padding: 0 15px !important;
     box-sizing: border-box;
     
     /* Layout */
@@ -93,8 +96,8 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     /* Stile */
     background-color: #3498db !important;
     color: white !important;
-    font-size: 1rem !important;
-    font-weight: bold;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
     border-radius: 6px;
     border: none;
     cursor: pointer;
@@ -107,31 +110,29 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;
 }
 .accordion-header {
-    width: 100%; padding: 12px 15px; background: #fff; border: none;
+    width: 100%; padding: 10px 15px; /* Padding ridotto */
+    background: #fff; border: none;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 0.9rem; color: #34495e; cursor: pointer; font-weight: 500;
 }
 .accordion-header:active { background-color: #f9f9f9; }
 
-/* FIX VISIBILITÀ ACCORDION */
 .accordion-content { 
-    display: none; /* Nascosto di base */
+    display: none;
     border-top: 1px solid #eee; 
     background: #fdfdfd; 
 }
-.accordion-content.open { 
-    display: block !important; /* Mostrato quando ha la classe .open */
-}
+.accordion-content.open { display: block !important; }
 .filter-inner-padding { padding: 15px; }
 
 /* --- 5. KPI --- */
 .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.kpi-box { padding: 12px; border-radius: 8px; text-align: center; color: white !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.kpi-box { padding: 10px; /* Padding ridotto */ border-radius: 8px; text-align: center; color: white !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .kpi-box.blue { background: #3498db !important; }
 .kpi-box.purple { background: #9b59b6 !important; }
 .kpi-box.orange { background: #e67e22 !important; }
 .kpi-box.green { background: #27ae60 !important; }
-.kpi-value { font-size: 1.4rem; font-weight: 700; display: block; }
+.kpi-value { font-size: 1.3rem; font-weight: 700; display: block; }
 .kpi-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
 
 /* --- 6. TABELLA --- */
