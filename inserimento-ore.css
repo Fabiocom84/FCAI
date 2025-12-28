@@ -313,36 +313,46 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .day-total-badge.warning { background-color: #e53e3e; border-color: #c53030; } /* > 8 ore */
 .day-total-badge.ok { background-color: #38a169; border-color: #2f855a; }      /* = 8 ore */
 
-/* --- LAYOUT CANTIERE (Versione Forzata) --- */
+/* --- LAYOUT CANTIERE: FIX SPAZIATURA DEFINITIVO --- */
 
-/* 1. Attiva Flexbox sul Form per il riordino */
+/* 1. Rimuovi totalmente lo spazio sotto i bottoni di selezione */
+.cantiere-mode .entry-type-selector {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom-left-radius: 0; /* Opzionale: unisce visivamente */
+    border-bottom-right-radius: 0;
+}
+
+/* 2. Configura il Form: Flexbox e ZERO spazi */
 .cantiere-mode #mobileHoursForm {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0 !important;        /* Niente gap automatici */
+    margin-top: 0 !important; /* Niente margine sopra il form */
+    padding-top: 0 !important;
 }
 
-/* 2. Nasconde elementi inutili in modo definitivo */
+/* 3. Nascondi elementi inutili */
 .cantiere-mode #group-commessa,
 .cantiere-mode #dynamic-fields-container {
     display: none !important;
 }
 
-/* 3. RIORDINO e ELIMINAZIONE SPAZIO */
+/* 4. Primo elemento (Ore): Tira su ulteriormente se necessario */
 .cantiere-mode .simple-hours-group { 
     order: 1; 
-    /* Margine negativo aggressivo per annullare lo spazio della barra sopra */
-    margin-top: -20px !important; 
+    /* Se c'è ancora spazio, questo -10px lo chiuderà per forza */
+    margin-top: -10px !important; 
     margin-bottom: 15px;
-    z-index: 10; /* Assicura che stia sopra se c'è sovrapposizione */
+    z-index: 10;
+    
+    /* Opzionale: Rimuovi bordo superiore per unirlo al selettore */
+    /* border-top: none; */
+    /* border-top-left-radius: 0; */
+    /* border-top-right-radius: 0; */
 }
 
-/* 4. Ordine degli altri elementi */
-.cantiere-mode #overtime-fields    { order: 2; }
-.cantiere-mode #travel-fields      { order: 3; }
-.cantiere-mode #group-note         { order: 4; }
-
-/* 5. Riduzione margine della barra di selezione (opzionale ma consigliato) */
-.cantiere-mode .entry-type-selector {
-    margin-bottom: 0 !important;
-}
+/* 5. Ordine elementi successivi */
+.cantiere-mode #overtime-fields    { order: 2; margin-top: 10px; }
+.cantiere-mode #travel-fields      { order: 3; margin-top: 0; }
+.cantiere-mode #group-note         { order: 4; margin-top: 10px; }
