@@ -1,153 +1,94 @@
 /* ==========================================================================
-   stampa-ore.css - Fix Dimensioni Pulsanti Definitivo
+   stampa-ore.css - Fix Definitivi Layout & Accordion
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE --- */
-body {
-    background-color: #f4f7f9;
-    font-family: 'Roboto', sans-serif;
-}
+body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
+.page-wrapper { width: 95%; max-width: 900px; margin: 20px auto; padding-bottom: 40px; }
 
-.page-wrapper {
-    width: 95%;
-    max-width: 900px;
-    margin: 20px auto;
-    padding-bottom: 40px;
-}
-
-/* --- 2. HEADER (Invariato, funzionava bene) --- */
+/* HEADER */
 .mobile-nav-header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 15px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    background-color: #2c3e50; color: white; padding: 15px; border-radius: 12px;
+    display: flex; align-items: center; gap: 15px; margin-bottom: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
 }
-
 .header-button {
-    background-color: #3498db;
-    color: white;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 6px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    flex-shrink: 0;
+    background-color: #3498db; color: white; padding: 8px 12px; font-size: 0.9rem;
+    border-radius: 6px; text-decoration: none; border: none; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; gap: 5px;
 }
-
-.title-container {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-right: 30px;
-}
-
-.title-container h1 { 
-    margin: 0; font-size: 1.1rem; color: #3498db; text-transform: uppercase; text-align: center; 
-}
-.header-username { 
-    font-size: 0.8rem; color: #bdc3c7; margin-top: 2px; 
-}
+.title-container { flex-grow: 1; display: flex; flex-direction: column; align-items: center; margin-right: 30px; }
+.title-container h1 { margin: 0; font-size: 1.1rem; color: #3498db; text-transform: uppercase; text-align: center; }
+.header-username { font-size: 0.8rem; color: #bdc3c7; margin-top: 2px; }
 
 .report-body { display: flex; flex-direction: column; gap: 15px; }
 
-/* --- 3. SEZIONE PDF (Box Azzurro) --- */
+/* --- 2. SEZIONE PDF (Box Azzurro) --- */
 .pdf-official-section {
-    background-color: #e8f4f8;
-    border: 2px dashed #b3e5fc;
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
+    background-color: #e8f4f8; border: 2px dashed #b3e5fc; padding: 10px;
+    border-radius: 12px; text-align: center;
 }
-
 .pdf-official-section h3 { margin: 0 0 5px 0; color: #0277bd; font-size: 1rem; }
-.info-text { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
+.info-text { font-size: 0.8rem; color: #666; margin-bottom: 10px; }
 
-/* Contenitore riga PDF */
 .pdf-controls {
     display: flex;
-    gap: 8px; /* Spazio tra gli elementi */
-    align-items: center; /* Fondamentale: allinea al centro verticale, evita lo stretch */
+    gap: 5px; /* Spazio ridotto tra elementi */
+    align-items: center;
     justify-content: space-between;
 }
 
-/* Select Mese/Anno */
+/* FIX MENU DATE (Molto più stretti) */
 .pdf-select {
-    height: 42px !important;
-    padding: 5px 8px !important;
-    font-size: 0.9rem !important;
+    height: 40px !important;
+    padding: 0 5px !important; /* Padding minimo laterale */
+    font-size: 0.85rem !important;
     border-radius: 6px;
     border: 1px solid #ccc;
     background: white;
-    flex: 1; /* Si espandono equamente */
-    min-width: 0; /* Permette di restringersi se necessario */
+    flex: 1; /* Si dividono lo spazio equamente */
+    min-width: 65px; /* Larghezza minima ridotta drasticamente */
+    text-overflow: ellipsis;
 }
 
-/* --- FIX PULSANTE CREA PDF (VERDE) --- */
-#btnGeneratePDF {
-    /* Dimensioni fisse e compatte */
-    height: 42px !important;
-    min-height: 0 !important; /* Annulla stili globali */
-    padding: 0 15px !important;
-    
-    /* Larghezza adattata al testo */
-    width: auto !important; 
-    flex: 0 0 auto !important; /* Non si espande */
-    
-    /* Stile */
+/* PULSANTE CREA PDF (Verde) */
+.pdf-btn {
+    height: 40px !important;
+    padding: 0 12px !important;
     font-size: 0.9rem !important;
     font-weight: bold;
-    background-color: #27ae60 !important;
-    color: white !important;
-    border-radius: 6px;
-    border: none;
-    white-space: nowrap;
-    display: flex; align-items: center; justify-content: center;
+    background-color: #27ae60 !important; color: white !important;
+    border: none; border-radius: 6px; white-space: nowrap; cursor: pointer;
+    flex: 0 0 auto; /* Non si allarga oltre il testo */
 }
 
-/* --- 4. SEZIONE ANALISI (Box Bianco) --- */
-.filter-card {
-    background: white; padding: 15px; border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
+/* --- 3. SEZIONE ANALISI --- */
+.filter-card { background: white; padding: 15px; border-radius: 12px; margin-top: 0; }
 .section-label { margin: 0 0 10px 0; color: #555; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; }
 
-.filter-row { display: flex; gap: 10px; margin-bottom: 0; }
-.half { flex: 1; margin: 0; }
+.filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.half { flex: 1; }
 .form-group { display: flex; flex-direction: column; text-align: left; }
 .form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
 
 .compact-input {
-    height: 42px !important;
-    padding: 5px 10px !important;
-    font-size: 0.95rem !important;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    width: 100%;
-    box-sizing: border-box;
+    height: 42px !important; padding: 5px 10px !important; font-size: 0.95rem !important;
+    border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;
 }
 
-/* --- FIX PULSANTE CARICA DATI (BLU) --- */
+/* FIX PULSANTE CARICA DATI (Full Width) */
 #btnLoadData {
-    /* Larghezza Totale */
+    /* Dimensioni */
     width: 100% !important;
-    
-    /* Altezza comoda */
-    height: 45px !important; 
-    min-height: 0 !important;
-    
-    margin-top: 15px !important;
+    height: 45px !important;
+    margin-top: 5px !important;
     padding: 0 !important;
+    box-sizing: border-box;
+    
+    /* Layout */
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     
     /* Stile */
     background-color: #3498db !important;
@@ -157,51 +98,49 @@ body {
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    display: flex; align-items: center; justify-content: center;
 }
 #btnLoadData:active { transform: scale(0.98); }
 
-/* --- 5. FILTRI AVANZATI (Accordion) --- */
+/* --- 4. ACCORDION (Filtri Avanzati) --- */
 .accordion-container {
-    background: white; border-radius: 10px; overflow: hidden; margin-bottom: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: white; border-radius: 10px; overflow: hidden; margin: 10px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eee;
 }
 .accordion-header {
     width: 100%; padding: 12px 15px; background: #fff; border: none;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 0.9rem; color: #34495e; cursor: pointer; font-weight: 500;
 }
-.accordion-content { display: none; border-top: 1px solid #eee; background: #fdfdfd; }
-.accordion-content.open { display: block; }
+.accordion-header:active { background-color: #f9f9f9; }
+
+/* FIX VISIBILITÀ ACCORDION */
+.accordion-content { 
+    display: none; /* Nascosto di base */
+    border-top: 1px solid #eee; 
+    background: #fdfdfd; 
+}
+.accordion-content.open { 
+    display: block !important; /* Mostrato quando ha la classe .open */
+}
 .filter-inner-padding { padding: 15px; }
 
-/* --- 6. KPI (Contatori) --- */
+/* --- 5. KPI --- */
 .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.kpi-box { 
-    padding: 12px; border-radius: 8px; text-align: center; 
-    color: white !important; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-}
+.kpi-box { padding: 12px; border-radius: 8px; text-align: center; color: white !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .kpi-box.blue { background: #3498db !important; }
 .kpi-box.purple { background: #9b59b6 !important; }
 .kpi-box.orange { background: #e67e22 !important; }
 .kpi-box.green { background: #27ae60 !important; }
-
-.kpi-value { font-size: 1.4rem; font-weight: 700; display: block; margin-bottom: 2px;}
+.kpi-value { font-size: 1.4rem; font-weight: 700; display: block; }
 .kpi-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
 
-/* --- 7. TABELLA --- */
+/* --- 6. TABELLA --- */
 .preview-section h4 { margin: 5px 0 10px 0; font-size: 0.9rem; color: #555; text-transform: uppercase; }
 .view-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .toggle-view { background: #e0e0e0; border-radius: 15px; padding: 3px; display: flex; }
 .view-btn { padding: 5px 12px; font-size: 0.8rem; border: none; background: none; border-radius: 12px; cursor: pointer; }
 .view-btn.active { background: white; color: #3498db; font-weight: bold; }
-
 .table-container { border-radius: 8px; max-height: 350px; overflow-y: auto; border: 1px solid #eee; background: white; }
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
 thead { position: sticky; top: 0; background: #f8f9fa; z-index: 5; }
-.empty-msg { text-align: center; color: #999; padding: 20px; font-style: italic; }
-
-.buttons-grid { display: flex; gap: 10px; margin-top: 15px; }
-.buttons-grid .button { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 0.9rem; min-height: unset; }

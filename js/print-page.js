@@ -128,14 +128,13 @@ const PrintPage = {
     },
 
     toggleAccordion: function() {
-        // Usa una classe CSS per gestire la visibilità
+        console.log("Toggle accordion cliccato"); // Debug
         const content = this.dom.accordionContent;
         const arrow = this.dom.accordionBtn.querySelector('.arrow');
         
-        // Toggle della classe 'open' definita nel CSS
+        // Aggiunge o toglie la classe 'open' definita ora nel CSS
         content.classList.toggle('open');
         
-        // Aggiorna la freccia
         if (content.classList.contains('open')) {
             arrow.textContent = '▲';
         } else {
