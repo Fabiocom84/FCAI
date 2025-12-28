@@ -36,28 +36,49 @@
         </header>
 
         <!-- CONTENUTO SCROLLABILE -->
+
         <div class="mobile-content-wrapper report-body">
 
-            <!-- 1. FILTRI DI RICERCA -->
+            <!-- 1. PERIODO & CARICAMENTO -->
             <section class="filter-card">
+                <h4 class="section-label">Periodo di Analisi</h4>
                 <div class="filter-row">
                     <div class="form-group half">
-                        <label>Mese</label>
-                        <select id="printMonth">
-                            <!-- Popolato via JS -->
-                        </select>
+                        <label>Dal</label>
+                        <input type="date" id="dateStart">
                     </div>
                     <div class="form-group half">
-                        <label>Anno</label>
-                        <select id="printYear">
-                            <!-- Popolato via JS -->
-                        </select>
+                        <label>Al</label>
+                        <input type="date" id="dateEnd">
                     </div>
                 </div>
-                <button id="btnUpdateAnalysis" class="button full-width-btn">🔄 Analizza Mese</button>
+                <button id="btnLoadData" class="button full-width-btn">🔄 Carica Dati</button>
             </section>
 
-            <!-- 2. KPI (DASHBOARD RAPIDA) -->
+            <!-- 2. FILTRI AVANZATI (ACCORDION) -->
+            <div class="accordion-container">
+                <button class="accordion-header" id="btnToggleFilters">
+                    <span>🌪️ Filtri Avanzati</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="accordion-content" id="advancedFiltersBox" style="display: none;">
+                    <div class="filter-inner-padding">
+                        <div class="form-group">
+                            <label>Commesse (del periodo)</label>
+                            <select id="filterCommesse" multiple></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Attività / Lavorazioni</label>
+                            <select id="filterComponenti" multiple></select>
+                        </div>
+                        <div style="text-align: right; margin-top:10px;">
+                            <button id="btnApplyFilters" class="button button--secondary" style="height: 35px; font-size: 0.9em;">Applica Filtri</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. KPI DASHBOARD -->
             <section class="kpi-grid">
                 <div class="kpi-box blue">
                     <span class="kpi-label">Lavorate</span>
@@ -77,38 +98,45 @@
                 </div>
             </section>
 
-            <!-- 3. ANTEPRIMA TABELLARE -->
+            <!-- 4. VISTA DATI (Switch & Tabella) -->
             <section class="preview-section">
-                <h4>Anteprima Dati</h4>
+                <div class="view-controls">
+                    <h4>Dettaglio Attività</h4>
+                    <div class="toggle-view">
+                        <button class="view-btn active" data-view="list">📅 Data</button>
+                        <button class="view-btn" data-view="group">📁 Commessa</button>
+                    </div>
+                </div>
+                
                 <div class="table-container">
-                    <table id="previewTable">
-                        <thead>
-                            <tr>
-                                <th width="15%">GG</th>
-                                <th>Attività</th>
-                                <th width="15%">Ore</th>
-                            </tr>
+                    <table id="analysisTable">
+                        <thead id="tableHead">
+                            <tr><th>Data</th><th>Attività</th><th>Ore</th></tr>
                         </thead>
-                        <tbody id="previewTableBody">
-                            <tr><td colspan="3" class="empty-msg">Seleziona mese e aggiorna</td></tr>
+                        <tbody id="tableBody">
+                            <tr><td colspan="3" class="empty-msg">Carica i dati per iniziare</td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- 4. GESTIONE PDF (Nascosto inizialmente) -->
-            <section id="pdfActionsArea" class="actions-card" style="display: none;">
-                <div class="status-indicator" id="pdfStatusText"></div>
+            <!-- 5. SEZIONE PDF UFFICIALE (Separata) -->
+            <section class="pdf-official-section">
+                <h3>📄 Documento Ufficiale</h3>
+                <p class="info-text">Seleziona il mese da archiviare o inviare.</p>
                 
-                <div class="buttons-grid">
-                    <button id="btnGeneratePDF" class="button button--primary">
-                        📄 Genera & Archivia
-                    </button>
-                    
-                    <a id="btnWhatsappPDF" href="#" target="_blank" class="button button-whatsapp" style="display: none;">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA">
-                        Invia su WhatsApp
-                    </a>
+                <div class="pdf-controls">
+                    <select id="pdfMonth" class="pdf-select"></select>
+                    <select id="pdfYear" class="pdf-select"></select>
+                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Crea PDF</button>
+                </div>
+
+                <div id="pdfActions" style="display: none; margin-top: 15px;">
+                    <div id="pdfStatus" class="status-indicator"></div>
+                    <div class="buttons-grid">
+                        <a id="btnDownload" href="#" class="button" style="background:#6c757d;">Scarica</a>
+                        <a id="btnWhatsapp" href="#" class="button button-whatsapp">WhatsApp</a>
+                    </div>
                 </div>
             </section>
 

@@ -1,43 +1,78 @@
-import { apiFetch, publicApiFetch } from './api-client.js'; // publicApiFetch serve per scaricare il template
+import { apiFetch, publicApiFetch } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
-import { supabase } from './supabase-client.js'; // Solo per utility se serve, ma usiamo API backend
 
 const PrintPage = {
     state: {
-        analysisData: null,
+        rawData: [],        // Dati scaricati dal server
+        filteredData: [],   // Dati attualmente visibili
+        choicesCommesse: null,
+        choicesComponenti: null,
+        currentView: 'list', // 'list' o 'group'
         templateBytes: null,
-        currentUser: null,
-        lastGeneratedBlob: null
+        currentUser: null
     },
 
     dom: {
-        monthSelect: document.getElementById('printMonth'),
-        yearSelect: document.getElementById('printYear'),
-        btnUpdate: document.getElementById('btnUpdateAnalysis'),
-        btnGenerate: document.getElementById('btnGeneratePDF'),
-        btnDownload: document.getElementById('btnDownloadPDF'),
-        btnWhatsapp: document.getElementById('btnWhatsappPDF'),
-        previewTableBody: document.getElementById('previewTableBody'),
-        pdfActionsArea: document.getElementById('pdfActionsArea'),
-        pdfStatusText: document.getElementById('pdfStatusText'),
+        // Date Analisi
+        dateStart: document.getElementById('dateStart'),
+        dateEnd: document.getElementById('dateEnd'),
+        btnLoad: document.getElementById('btnLoadData'),
+        
+        // Filtri Avanzati
+        accordionBtn: document.getElementById('btnToggleFilters'),
+        accordionContent: document.getElementById('advancedFiltersBox'),
+        selCommesse: document.getElementById('filterCommesse'),
+        selComponenti: document.getElementById('filterComponenti'),
+        btnApplyFilters: document.getElementById('btnApplyFilters'),
+        
+        // Viste
+        viewBtns: document.querySelectorAll('.view-btn'),
+        tableHead: document.getElementById('tableHead'),
+        tableBody: document.getElementById('tableBody'),
         
         // KPI
         kpiWork: document.getElementById('kpiWorkHours'),
         kpiTravel: document.getElementById('kpiTravelHours'),
         kpiAbsence: document.getElementById('kpiAbsenceHours'),
         kpiTotal: document.getElementById('kpiTotalHours'),
+        
+        // PDF Ufficiale
+        pdfMonth: document.getElementById('pdfMonth'),
+        pdfYear: document.getElementById('pdfYear'),
+        btnGenerate: document.getElementById('btnGeneratePDF'),
+        pdfActions: document.getElementById('pdfActions'),
+        pdfStatus: document.getElementById('pdfStatus'),
+        btnDownload: document.getElementById('btnDownload'),
+        btnWhatsapp: document.getElementById('btnWhatsapp'),
+        
         userName: document.getElementById('headerUserName')
     },
 
     init: async function() {
+        console.log("📊 Analytics Page Init");
         this.loadUserInfo();
-        this.populateDates();
-        
-        // Pre-carica il template PDF all'avvio per velocità
-        this.loadTemplate();
+        this.setupDates();
+        this.initChoices();
+        this.loadTemplate(); // Pre-carica template PDF
 
-        this.dom.btnUpdate.addEventListener('click', () => this.fetchData());
-        this.dom.btnGenerate.addEventListener('click', () => this.generateAndArchive());
+        // Listeners
+        this.dom.btnLoad.addEventListener('click', () => this.loadAnalysisData());
+        this.dom.accordionBtn.addEventListener('click', () => this.toggleAccordion());
+        this.dom.btnApplyFilters.addEventListener('click', () => this.applyFilters());
+        
+        this.dom.viewBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.dom.viewBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.state.currentView = e.target.dataset.view;
+                this.renderTable();
+            });
+        });
+
+        this.dom.btnGenerate.addEventListener('click', () => this.handlePdfGeneration());
+        
+        // Caricamento automatico iniziale (ultimi 30gg)
+        this.loadAnalysisData();
     },
 
     loadUserInfo: function() {
@@ -48,267 +83,379 @@ const PrintPage = {
         } catch(e) {}
     },
 
-    loadTemplate: async function() {
-        try {
-            // URL Pubblico del Template su Supabase
-            const templateUrl = "https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf";
-            const res = await fetch(templateUrl);
-            if (!res.ok) throw new Error("Template non trovato");
-            this.state.templateBytes = await res.arrayBuffer();
-            console.log("PDF Template caricato in memoria.");
-        } catch (e) {
-            console.error("Errore template:", e);
-            alert("Attenzione: Impossibile caricare il modello PDF.");
-        }
-    },
+    setupDates: function() {
+        // Analisi: Default ultimi 90 giorni
+        const today = new Date();
+        const past = new Date();
+        past.setDate(today.getDate() - 90);
+        
+        this.dom.dateEnd.value = today.toISOString().split('T')[0];
+        this.dom.dateStart.value = past.toISOString().split('T')[0];
 
-    populateDates: function() {
+        // PDF: Popola Select Mese/Anno
         const months = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
         months.forEach((m, i) => {
             const opt = document.createElement('option');
             opt.value = i + 1;
             opt.textContent = m;
-            this.dom.monthSelect.appendChild(opt);
+            this.dom.pdfMonth.appendChild(opt);
         });
-
-        const currentYear = new Date().getFullYear();
-        for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+        
+        const curYear = today.getFullYear();
+        for (let y = curYear - 1; y <= curYear + 1; y++) {
             const opt = document.createElement('option');
             opt.value = y;
             opt.textContent = y;
-            if(y === currentYear) opt.selected = true;
-            this.dom.yearSelect.appendChild(opt);
+            if(y === curYear) opt.selected = true;
+            this.dom.pdfYear.appendChild(opt);
         }
-        this.dom.monthSelect.value = new Date().getMonth() + 1;
+        this.dom.pdfMonth.value = today.getMonth() + 1;
     },
 
-    fetchData: async function() {
-        const m = this.dom.monthSelect.value;
-        const y = this.dom.yearSelect.value;
+    initChoices: function() {
+        const config = {
+            removeItemButton: true,
+            searchEnabled: true,
+            placeholder: true,
+            placeholderValue: 'Seleziona...',
+            itemSelectText: ''
+        };
+        this.state.choicesCommesse = new Choices(this.dom.selCommesse, config);
+        this.state.choicesComponenti = new Choices(this.dom.selComponenti, config);
         
-        this.dom.previewTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Caricamento dati...</td></tr>';
-        this.dom.pdfActionsArea.style.display = 'none';
+        // Ascolta i cambiamenti per filtro live (opzionale, ora usiamo il tasto Applica)
+        // this.dom.selCommesse.addEventListener('change', () => this.applyFilters());
+    },
+
+    toggleAccordion: function() {
+        const content = this.dom.accordionContent;
+        const arrow = this.dom.accordionBtn.querySelector('.arrow');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            arrow.textContent = '▲';
+        } else {
+            content.style.display = 'none';
+            arrow.textContent = '▼';
+        }
+    },
+
+    // --- CARICAMENTO DATI (Backend) ---
+    loadAnalysisData: async function() {
+        const start = this.dom.dateStart.value;
+        const end = this.dom.dateEnd.value;
+        
+        this.dom.btnLoad.disabled = true;
+        this.dom.btnLoad.textContent = "⏳ Caricamento...";
+        this.dom.tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Caricamento dati dal server...</td></tr>';
 
         try {
-            const res = await apiFetch(`/api/report/analyze?mese=${m}&anno=${y}`);
-            const data = await res.json();
+            const res = await apiFetch(`/api/report/analyze?start=${start}&end=${end}`);
+            const payload = await res.json();
             
-            this.state.analysisData = data; // Salva nello state per il generatore PDF
+            this.state.rawData = payload.data || [];
+            this.state.filteredData = [...this.state.rawData]; // Reset filtri
             
-            // 1. Aggiorna KPI
-            this.dom.kpiWork.textContent = data.kpi.lavorate.toFixed(1);
-            this.dom.kpiTravel.textContent = data.kpi.viaggio.toFixed(1);
-            this.dom.kpiAbsence.textContent = data.kpi.assenze.toFixed(1);
-            this.dom.kpiTotal.textContent = data.kpi.totale.toFixed(1);
+            this.populateFilterOptions();
+            this.applyFilters(); // Calcola KPI e Renderizza
             
-            // 2. Popola Tabella Anteprima
-            this.renderPreviewTable(data.rows);
-            
-            // 3. Gestione Area PDF
-            this.dom.pdfActionsArea.style.display = 'block';
-            this.dom.btnDownload.style.display = 'none';
-            this.dom.btnWhatsapp.style.display = 'none';
-            
-            if (data.existing_pdf) {
-                const dateParts = data.existing_pdf.created_at.split('T')[0].split('-');
-                const fmtDate = `${dateParts[2]}/${dateParts[1]}`;
-                this.dom.pdfStatusText.innerHTML = `⚠️ Esiste già una <b>versione ${data.existing_pdf.versione}</b> creata il ${fmtDate}.<br>Puoi scaricarla o generarne una nuova (v${data.existing_pdf.versione + 1}).`;
-                
-                // Mostra subito i tasti download per la versione esistente
-                this.dom.btnDownload.href = data.existing_pdf.public_url;
-                this.dom.btnDownload.style.display = 'inline-flex';
-                this.setupWhatsappLink(data.existing_pdf.public_url);
-            } else {
-                this.dom.pdfStatusText.textContent = "Nessun documento archiviato per questo mese.";
-            }
-
         } catch (e) {
             console.error(e);
-            this.dom.previewTableBody.innerHTML = `<tr><td colspan="3" style="color:red;">Errore: ${e.message}</td></tr>`;
+            alert("Errore caricamento dati: " + e.message);
+        } finally {
+            this.dom.btnLoad.disabled = false;
+            this.dom.btnLoad.textContent = "🔄 Carica Dati";
         }
     },
 
-    renderPreviewTable: function(rowsData) {
-        this.dom.previewTableBody.innerHTML = '';
-        const days = Object.keys(rowsData).sort((a,b) => parseInt(a)-parseInt(b));
+    populateFilterOptions: function() {
+        // Estrae liste univoche dai dati caricati
+        const commesseMap = new Map();
+        const compMap = new Map();
+
+        this.state.rawData.forEach(row => {
+            if (row.id_commessa && !commesseMap.has(row.id_commessa)) {
+                commesseMap.set(row.id_commessa, row.label_commessa);
+            }
+            if (row.id_componente && !compMap.has(row.id_componente)) {
+                compMap.set(row.id_componente, row.label_componente);
+            }
+        });
+
+        const commesseChoices = Array.from(commesseMap).map(([val, label]) => ({ value: val, label: label }));
+        const compChoices = Array.from(compMap).map(([val, label]) => ({ value: val, label: label }));
+
+        this.state.choicesCommesse.setChoices(commesseChoices, 'value', 'label', true);
+        this.state.choicesComponenti.setChoices(compChoices, 'value', 'label', true);
+    },
+
+    // --- FILTRAGGIO LOCALE ---
+    applyFilters: function() {
+        const selectedCommesse = this.state.choicesCommesse.getValue(true); // Array di ID
+        const selectedComp = this.state.choicesComponenti.getValue(true);   // Array di ID
+
+        this.state.filteredData = this.state.rawData.filter(row => {
+            // 1. Filtro Commessa
+            if (selectedCommesse.length > 0) {
+                // Se la riga non ha commessa (es. Assenza) e filtro attivo, la nascondiamo? 
+                // O consideriamo "Assenza" un tipo speciale? Per ora filtraggio stretto.
+                if (!selectedCommesse.includes(row.id_commessa)) return false;
+            }
+            // 2. Filtro Componente
+            if (selectedComp.length > 0) {
+                if (!selectedComp.includes(row.id_componente)) return false;
+            }
+            return true;
+        });
+
+        this.calculateKPI();
+        this.renderTable();
+    },
+
+    calculateKPI: function() {
+        let work = 0, travel = 0, abs = 0;
         
-        if (days.length === 0) {
-            this.dom.previewTableBody.innerHTML = '<tr><td colspan="3" class="empty-msg">Nessuna attività registrata.</td></tr>';
+        this.state.filteredData.forEach(row => {
+            travel += row.viaggio;
+            if (row.is_assenza) {
+                abs += row.ore;
+            } else {
+                work += row.ore;
+            }
+        });
+
+        this.dom.kpiWork.textContent = work.toFixed(1);
+        this.dom.kpiTravel.textContent = travel.toFixed(1);
+        this.dom.kpiAbsence.textContent = abs.toFixed(1);
+        this.dom.kpiTotal.textContent = (work + travel + abs).toFixed(1);
+    },
+
+    renderTable: function() {
+        const view = this.state.currentView;
+        const tbody = this.dom.tableBody;
+        const thead = this.dom.tableHead;
+        tbody.innerHTML = '';
+
+        if (this.state.filteredData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="empty-msg">Nessun dato trovato con i filtri attuali.</td></tr>';
             return;
         }
 
-        days.forEach(d => {
-            const items = rowsData[d];
-            items.forEach(item => {
+        if (view === 'list') {
+            // VISTA LISTA CRONOLOGICA
+            thead.innerHTML = '<tr><th width="20%">Data</th><th>Attività</th><th width="15%">Ore</th></tr>';
+            
+            this.state.filteredData.forEach(row => {
+                const dateParts = row.data.split('-');
+                const shortDate = `${dateParts[2]}/${dateParts[1]}`;
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${d}</td>
-                    <td><b>${item.commessa}</b><br><small>${item.note || ''}</small></td>
-                    <td>${item.ore}h ${item.viaggio > 0 ? `+ ${item.viaggio}h v.` : ''}</td>
+                    <td><b>${shortDate}</b></td>
+                    <td>
+                        <div style="font-weight:500; font-size:0.9em;">${row.label_commessa}</div>
+                        <div style="font-size:0.8em; color:#666;">${row.label_componente} ${row.note ? `(${row.note})` : ''}</div>
+                    </td>
+                    <td style="text-align:center;">
+                        <span style="font-weight:bold;">${row.ore}</span>
+                        ${row.viaggio > 0 ? `<div style="font-size:0.7em; color:#9b59b6;">+${row.viaggio}v</div>` : ''}
+                    </td>
                 `;
-                this.dom.previewTableBody.appendChild(tr);
+                tbody.appendChild(tr);
             });
-        });
+
+        } else {
+            // VISTA RAGGRUPPATA PER COMMESSA
+            thead.innerHTML = '<tr><th>Commessa</th><th style="text-align:right;">Ore Lav.</th><th style="text-align:right;">Viaggio</th></tr>';
+            
+            // Raggruppamento
+            const groups = {};
+            this.state.filteredData.forEach(row => {
+                const key = row.label_commessa; // Raggruppa per nome visuale
+                if (!groups[key]) groups[key] = { hours: 0, travel: 0, count: 0 };
+                
+                if (row.is_assenza) {
+                    // Opzionale: Raggruppare le assenze a parte o sotto "Generico"
+                } 
+                groups[key].hours += row.ore;
+                groups[key].travel += row.viaggio;
+                groups[key].count++;
+            });
+
+            // Ordinamento per ore decrescenti
+            const sortedKeys = Object.keys(groups).sort((a,b) => groups[b].hours - groups[a].hours);
+
+            sortedKeys.forEach(k => {
+                const g = groups[k];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:bold; color:#2c3e50;">${k}</div>
+                        <div style="font-size:0.75em; color:#888;">${g.count} registrazioni</div>
+                    </td>
+                    <td style="text-align:right; font-size:1.1em; color:#2980b9;"><b>${g.hours.toFixed(1)}</b></td>
+                    <td style="text-align:right; color:#8e44ad;">${g.travel > 0 ? g.travel.toFixed(1) : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     },
 
-    // --- GENERATORE PDF ---
-    generateAndArchive: async function() {
-        if (!this.state.templateBytes) return alert("Template non ancora caricato. Riprova tra un secondo.");
-        if (!this.state.analysisData) return alert("Fai prima l'analisi dei dati.");
+    // ============================================================
+    // SEZIONE PDF (Indipendente dall'analisi)
+    // ============================================================
 
+    loadTemplate: async function() {
+        try {
+            // URL Pubblico del Template su Supabase (Bucket 'templates')
+            const templateUrl = "https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf";
+            const res = await fetch(templateUrl);
+            if (!res.ok) throw new Error("Template PDF non trovato");
+            this.state.templateBytes = await res.arrayBuffer();
+        } catch (e) {
+            console.error("PDF Load Error:", e);
+        }
+    },
+
+    handlePdfGeneration: async function() {
+        if (!this.state.templateBytes) return alert("Il modello PDF non è stato caricato. Ricarica la pagina.");
+        
+        const month = parseInt(this.dom.pdfMonth.value);
+        const year = parseInt(this.dom.pdfYear.value);
         const btn = this.dom.btnGenerate;
+
         btn.disabled = true;
-        btn.textContent = "⏳ Generazione...";
+        btn.textContent = "⏳ Elaborazione...";
+        this.dom.pdfActions.style.display = 'none';
 
         try {
-            // 1. Crea il PDF con pdf-lib
+            // 1. Fetch Dati SPECIFICI per quel mese (ignoriamo i filtri analisi per sicurezza)
+            // Calcolo date esatte inizio/fine mese
+            const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+            const endDateObj = new Date(year, month, 0); // Ultimo giorno del mese
+            const endDate = endDateObj.toISOString().split('T')[0];
+
+            const res = await apiFetch(`/api/report/analyze?start=${startDate}&end=${endDate}`);
+            const payload = await res.json();
+            const monthData = payload.data || [];
+
+            // 2. Raggruppa i dati per Giorno (per il modulo cartaceo)
+            const rowsByDay = {};
+            for (let d = 1; d <= 31; d++) rowsByDay[d] = [];
+
+            monthData.forEach(row => {
+                const dayNum = parseInt(row.data.split('-')[2]);
+                rowsByDay[dayNum].push(row);
+            });
+
+            // 3. Disegna il PDF
             const pdfDoc = await PDFLib.PDFDocument.load(this.state.templateBytes);
-            const pages = pdfDoc.getPages();
-            const firstPage = pages[0];
-            const { width, height } = firstPage.getSize();
-            
-            // Font standard
+            const page = pdfDoc.getPages()[0];
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
             const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-            
-            // --- LOGICA COORDINATE (Tarata sul tuo Modello) ---
-            // Coordinate Base (da aggiustare facendo prove)
-            const startY = 645; // Coordinata Y della riga "1" (giorno 1)
-            const rowHeight = 15.6; // Altezza di ogni riga giorno
-            
-            const cols = {
-                entrataMatt: 110,
-                uscitaMatt: 150,
-                entrataPom: 190,
-                uscitaPom: 230,
-                oreLavoro: 280,
-                oreStraord: 310,
-                permessi: 350,
-                tipo: 385, // T/O/U
-                commessa: 410,
-                viaggioA: 535,
-                viaggioR: 565
-            };
 
             // Intestazione
             const mNames = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO","LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"];
-            const mIndex = parseInt(this.dom.monthSelect.value) - 1;
             
-            firstPage.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 90, y: 735, size: 10, font: fontBold });
-            firstPage.drawText(mNames[mIndex], { x: 340, y: 735, size: 10, font: fontBold });
-            firstPage.drawText(this.dom.yearSelect.value, { x: 530, y: 735, size: 10, font: fontBold });
+            page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 90, y: 735, size: 10, font: fontBold });
+            page.drawText(mNames[month - 1], { x: 340, y: 735, size: 10, font: fontBold });
+            page.drawText(year.toString(), { x: 530, y: 735, size: 10, font: fontBold });
 
-            // Ciclo Giorni
-            const rowsData = this.state.analysisData.rows;
+            // Griglia Giorni
+            const startY = 645;
+            const rowH = 15.6;
             
-            // Iteriamo da 1 a 31
+            // Coordinate X delle colonne (Tarate sul modello)
+            const CX = { Ore: 280, Straord: 310, Perm: 350, Tipo: 385, Desc: 410, VA: 535, VR: 565 };
+
             for (let day = 1; day <= 31; day++) {
-                // Calcola Y per questo giorno (Il PDF ha righe fisse per 1..31)
-                // Giorno 1 è in alto, giorno 31 in basso.
-                // Formula: startY - ((day - 1) * rowHeight)
-                const yPos = startY - ((day - 1) * rowHeight);
-                
-                if (rowsData[day]) {
-                    // C'è attività in questo giorno
-                    // Prendiamo la prima attività (se ce ne sono multiple concateniamo le note, ma sommiamo le ore)
-                    // Nota: Per semplicità nel modulo cartaceo, sommiamo tutto su una riga.
-                    
+                const items = rowsByDay[day];
+                if (items.length > 0) {
                     let totOre = 0;
                     let totViaggio = 0;
-                    let descrizioni = [];
-                    let tipi = new Set();
-                    let isAssenza = false;
+                    let labels = [];
+                    let types = new Set();
+                    let isAbs = false;
 
-                    rowsData[day].forEach(r => {
-                        totOre += r.ore;
-                        totViaggio += r.viaggio;
-                        if(r.commessa) descrizioni.push(r.commessa + (r.note ? ` (${r.note})` : ''));
-                        tipi.add(r.tipo);
-                        if(r.is_assenza) isAssenza = true;
+                    items.forEach(it => {
+                        totOre += it.ore;
+                        totViaggio += it.viaggio;
+                        labels.push(it.label_commessa + (it.note ? ` (${it.note})` : ''));
+                        types.add(it.tipo); // T o O
+                        if (it.is_assenza) isAbs = true;
                     });
 
-                    // Scrittura Dati nella Riga
-                    const fontSize = 8;
-                    
-                    // Colonna Ore Lavoro o Permessi
-                    if (isAssenza) {
-                        firstPage.drawText(totOre.toString(), { x: cols.permessi, y: yPos, size: fontSize, font });
-                        // Se assenza scriviamo "FERIE" o simili nella descrizione
+                    const Y = startY - ((day - 1) * rowH);
+                    const fs = 8; // font size
+
+                    // Scrittura
+                    if (isAbs) {
+                        page.drawText(totOre.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     } else {
-                        // Se > 8 ore, splittiamo in ordinario e straordinario?
-                        // Per ora mettiamo tutto in ore lavoro come da tua app, o se vuoi gestire straord:
-                        let ordinario = totOre > 8 ? 8 : totOre;
-                        let straord = totOre > 8 ? totOre - 8 : 0;
-                        
-                        firstPage.drawText(ordinario.toString(), { x: cols.oreLavoro, y: yPos, size: fontSize, font });
-                        if (straord > 0) firstPage.drawText(straord.toString(), { x: cols.oreStraord, y: yPos, size: fontSize, font });
+                        // Gestione Straordinari Semplice (>8h)
+                        const ord = totOre > 8 ? 8 : totOre;
+                        const str = totOre > 8 ? totOre - 8 : 0;
+                        page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
+                        if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
-                    // Colonna Tipo (T/O)
-                    const tipoFin = tipi.has('T') ? 'T' : 'O';
-                    firstPage.drawText(tipoFin, { x: cols.tipo, y: yPos, size: fontSize, font });
+                    // Tipo
+                    const finalType = types.has('T') ? 'T' : 'O';
+                    page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
 
-                    // Colonna Commessa
-                    let textDesc = descrizioni.join(", ");
-                    // Taglia se troppo lungo
-                    if (textDesc.length > 35) textDesc = textDesc.substring(0, 33) + "..";
-                    firstPage.drawText(textDesc, { x: cols.commessa, y: yPos, size: 7, font });
+                    // Descrizione (Tagliata se lunga)
+                    let fullDesc = labels.join(", ");
+                    if (fullDesc.length > 40) fullDesc = fullDesc.substring(0, 38) + "..";
+                    page.drawText(fullDesc, { x: CX.Desc, y: Y, size: 7, font }); // font più piccolo
 
-                    // Colonna Viaggio (Diviso A/R)
+                    // Viaggio (Diviso A/R)
                     if (totViaggio > 0) {
-                        const half = totViaggio / 2;
-                        firstPage.drawText(half.toString(), { x: cols.viaggioA, y: yPos, size: fontSize, font });
-                        firstPage.drawText(half.toString(), { x: cols.viaggioR, y: yPos, size: fontSize, font });
+                        const half = (totViaggio / 2).toFixed(1).replace('.0',''); // Es. 1.5 -> 0.75 (visualizzato 0.8)
+                        // Oppure dividiamo brutalmente
+                        const v = totViaggio / 2;
+                        page.drawText(v.toString(), { x: CX.VA, y: Y, size: fs, font });
+                        page.drawText(v.toString(), { x: CX.VR, y: Y, size: fs, font });
                     }
                 }
             }
 
-            // 2. Salva e Prepara Upload
+            // 4. Salva e Carica
             const pdfBytes = await pdfDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             
-            // 3. Upload al Backend
             const formData = new FormData();
             formData.append('pdf_file', blob, 'report.pdf');
-            formData.append('mese', this.dom.monthSelect.value);
-            formData.append('anno', this.dom.yearSelect.value);
+            formData.append('mese', month);
+            formData.append('anno', year);
 
             btn.textContent = "☁️ Archiviazione...";
             
-            const res = await apiFetch('/api/report/archive', {
+            const uploadRes = await apiFetch('/api/report/archive', {
                 method: 'POST',
-                body: formData // apiFetch gestisce automaticamente il content-type per FormData
+                body: formData
             });
+            const result = await uploadRes.json();
 
-            const result = await res.json();
-            
-            // 4. Successo
+            // 5. Aggiorna UI
             btn.textContent = "✅ Fatto!";
-            setTimeout(() => { 
-                btn.textContent = "📄 Genera & Archivia PDF"; 
-                btn.disabled = false; 
-            }, 3000);
-
-            this.dom.pdfStatusText.textContent = `Nuova versione (v${result.version}) archiviata con successo!`;
+            this.dom.pdfStatus.textContent = `Documento v${result.version} salvato.`;
             this.dom.btnDownload.href = result.url;
-            this.dom.btnDownload.style.display = 'inline-flex';
-            this.setupWhatsappLink(result.url);
+            this.dom.pdfActions.style.display = 'block';
+            
+            // Link WhatsApp
+            const waMsg = `Ciao, invio report presenze ${mNames[month-1]} ${year}: ${result.url}`;
+            this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
 
-            showSuccessFeedbackModal("Archiviato", "Il PDF è stato salvato in cloud.");
+            showSuccessFeedbackModal("Creato", "PDF Generato e Archiviato.");
 
         } catch (e) {
             console.error(e);
-            alert("Errore generazione/upload: " + e.message);
-            btn.disabled = false;
-            btn.textContent = "📄 Genera & Archivia PDF";
+            alert("Errore: " + e.message);
+        } finally {
+            setTimeout(() => { 
+                btn.disabled = false; 
+                btn.textContent = "Crea PDF"; 
+            }, 3000);
         }
-    },
-
-    setupWhatsappLink: function(url) {
-        const msg = `Ciao, ecco il mio report presenze per ${this.dom.monthSelect.options[this.dom.monthSelect.selectedIndex].text} ${this.dom.yearSelect.value}: ${url}`;
-        const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-        this.dom.btnWhatsapp.href = waUrl;
-        this.dom.btnWhatsapp.style.display = 'inline-flex';
     }
 };
 

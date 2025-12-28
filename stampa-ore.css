@@ -207,3 +207,95 @@ tr:last-child td { border-bottom: none; }
     .buttons-grid { flex-direction: row; }
     .buttons-grid button, .buttons-grid a { flex: 1; }
 }
+
+/* --- ACCORDION FILTRI --- */
+.accordion-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.accordion-header {
+    width: 100%;
+    padding: 15px;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #34495e;
+    cursor: pointer;
+}
+
+.accordion-content {
+    border-top: 1px solid #eee;
+    background: #fdfdfd;
+}
+
+.filter-inner-padding { padding: 15px; }
+
+/* --- VIEW TOGGLE --- */
+.view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 5px;
+}
+
+.toggle-view {
+    display: flex;
+    background: #e0e0e0;
+    border-radius: 20px;
+    padding: 3px;
+}
+
+.view-btn {
+    border: none;
+    background: none;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #666;
+    transition: 0.3s;
+}
+
+.view-btn.active {
+    background: white;
+    color: #3498db;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- SEZIONE PDF UFFICIALE --- */
+.pdf-official-section {
+    background-color: #e8f4f8;
+    border: 2px dashed #b3e5fc;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pdf-official-section h3 { margin: 0 0 5px 0; color: #0277bd; }
+.info-text { font-size: 0.9rem; color: #555; margin-bottom: 15px; }
+
+.pdf-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pdf-select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    background: white;
+}
+
+.pdf-btn { padding: 10px 20px; width: auto; }
