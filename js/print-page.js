@@ -11,7 +11,6 @@ const PrintPage = {
         templateBytes: null,
         currentUser: null,
         
-        // Stato PDF temporaneo
         currentPdfBlob: null,
         currentPdfMonth: null,
         currentPdfYear: null
@@ -26,7 +25,7 @@ const PrintPage = {
         selCommesse: document.getElementById('filterCommesse'),
         selComponenti: document.getElementById('filterComponenti'),
         btnApplyFilters: document.getElementById('btnApplyFilters'),
-        btnResetFilters: document.getElementById('btnResetFilters'), // NUOVO
+        btnResetFilters: document.getElementById('btnResetFilters'),
         viewBtns: document.querySelectorAll('.view-btn'),
         tableHead: document.getElementById('tableHead'),
         tableBody: document.getElementById('tableBody'),
@@ -44,7 +43,8 @@ const PrintPage = {
         pdfYear: document.getElementById('pdfYear'),
         
         btnGenerate: document.getElementById('btnGeneratePDF'),
-        pdfPreviewFrame: document.getElementById('pdfPreviewFrame'),
+        // MODIFICATO: Ora puntiamo all'immagine, non all'iframe
+        pdfPreviewImage: document.getElementById('pdfPreviewImage'),
         btnCancelPreview: document.getElementById('btnCancelPreview'),
         btnConfirmSave: document.getElementById('btnConfirmSave'),
         
@@ -63,11 +63,10 @@ const PrintPage = {
         this.initChoices();
         this.loadTemplate(); 
 
-        // Listeners Analisi
         this.dom.btnLoad.addEventListener('click', () => this.loadAnalysisData());
         this.dom.accordionBtn.addEventListener('click', () => this.toggleAccordion());
         this.dom.btnApplyFilters.addEventListener('click', () => this.applyFilters());
-        this.dom.btnResetFilters.addEventListener('click', () => this.resetFilters()); // LISTENER RESET
+        this.dom.btnResetFilters.addEventListener('click', () => this.resetFilters());
         
         this.dom.viewBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -78,7 +77,6 @@ const PrintPage = {
             });
         });
 
-        // Listeners PDF Workflow
         this.dom.btnGenerate.addEventListener('click', () => this.generatePreview());
         this.dom.btnCancelPreview.addEventListener('click', () => this.resetPdfWorkflow());
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
@@ -103,7 +101,6 @@ const PrintPage = {
         this.dom.dateEnd.value = today.toISOString().split('T')[0];
         this.dom.dateStart.value = past.toISOString().split('T')[0];
 
-        // PDF Select
         const months = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
         months.forEach((m, i) => {
             const opt = document.createElement('option');
@@ -144,27 +141,17 @@ const PrintPage = {
         arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
     },
 
-    // --- LOGICA FILTRI ---
-
-    // 1. Reset
     resetFilters: function() {
-        // Pulisce le selezioni visuali
         if(this.state.choicesCommesse) this.state.choicesCommesse.removeActiveItems();
         if(this.state.choicesComponenti) this.state.choicesComponenti.removeActiveItems();
-        
-        // Ripristina i dati filtrati con tutti i dati grezzi
         this.state.filteredData = [...this.state.rawData];
-        
-        // Ricalcola tutto
         this.calculateKPI();
         this.renderTable();
     },
 
-    // 2. Caricamento Dati
     loadAnalysisData: async function() {
         const start = this.dom.dateStart.value;
         const end = this.dom.dateEnd.value;
-        
         this.dom.btnLoad.disabled = true;
         this.dom.btnLoad.textContent = "⏳...";
         this.dom.tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Caricamento...</td></tr>';
@@ -172,13 +159,10 @@ const PrintPage = {
         try {
             const res = await apiFetch(`/api/report/analyze?start=${start}&end=${end}`);
             const payload = await res.json();
-            
             this.state.rawData = payload.data || [];
             this.state.filteredData = [...this.state.rawData];
-            
             this.populateFilterOptions();
             this.applyFilters();
-            
         } catch (e) {
             console.error(e);
             alert("Errore caricamento dati: " + e.message);
@@ -191,15 +175,12 @@ const PrintPage = {
     populateFilterOptions: function() {
         const commesseMap = new Map();
         const compMap = new Map();
-
         this.state.rawData.forEach(row => {
             if (row.id_commessa && !commesseMap.has(row.id_commessa)) commesseMap.set(row.id_commessa, row.label_commessa);
             if (row.id_componente && !compMap.has(row.id_componente)) compMap.set(row.id_componente, row.label_componente);
         });
-
         const commesseChoices = Array.from(commesseMap).map(([val, label]) => ({ value: val, label: label }));
         const compChoices = Array.from(compMap).map(([val, label]) => ({ value: val, label: label }));
-
         this.state.choicesCommesse.setChoices(commesseChoices, 'value', 'label', true);
         this.state.choicesComponenti.setChoices(compChoices, 'value', 'label', true);
     },
@@ -207,13 +188,11 @@ const PrintPage = {
     applyFilters: function() {
         const selectedCommesse = this.state.choicesCommesse.getValue(true);
         const selectedComp = this.state.choicesComponenti.getValue(true);
-
         this.state.filteredData = this.state.rawData.filter(row => {
             if (selectedCommesse.length > 0 && !selectedCommesse.includes(row.id_commessa)) return false;
             if (selectedComp.length > 0 && !selectedComp.includes(row.id_componente)) return false;
             return true;
         });
-
         this.calculateKPI();
         this.renderTable();
     },
@@ -282,10 +261,6 @@ const PrintPage = {
         }
     },
 
-    // ============================================================
-    // PDF WORKFLOW: PREVIEW -> CONFIRM
-    // ============================================================
-
     loadTemplate: async function() {
         try {
             const templateUrl = "https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf";
@@ -295,7 +270,7 @@ const PrintPage = {
         } catch (e) { console.error("PDF Template Error:", e); }
     },
 
-    // 1. GENERA L'ANTEPRIMA (Blob Locale)
+    // 1. GENERAZIONE PDF E RENDERING IMMAGINE
     generatePreview: async function() {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
         
@@ -309,14 +284,13 @@ const PrintPage = {
         btn.disabled = true;
 
         try {
-            // Fetch Dati Mese
+            // A. CREAZIONE PDF (come prima)
             const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
             const res = await apiFetch(`/api/report/analyze?start=${startDate}&end=${endDate}`);
             const payload = await res.json();
             const monthData = payload.data || [];
 
-            // Disegno PDF
             const pdfDoc = await PDFLib.PDFDocument.load(this.state.templateBytes);
             const page = pdfDoc.getPages()[0];
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -377,11 +351,31 @@ const PrintPage = {
                 }
             }
 
+            // SALVA BLOB PDF (Per l'upload)
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const blobUrl = URL.createObjectURL(this.state.currentPdfBlob);
-            this.dom.pdfPreviewFrame.src = blobUrl;
+
+            // B. RENDERING IMMAGINE (Per l'anteprima su mobile)
+            const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
+            const pdf = await loadingTask.promise;
+            const pdfPage = await pdf.getPage(1);
             
+            // Scale 2.0 per alta risoluzione (Retina)
+            const viewport = pdfPage.getViewport({scale: 2.0});
+            
+            // Crea Canvas Temporaneo
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Renderizza PDF su Canvas
+            await pdfPage.render({canvasContext: context, viewport: viewport}).promise;
+            
+            // Metti l'immagine (JPG) nell'elemento IMG
+            this.dom.pdfPreviewImage.src = canvas.toDataURL('image/jpeg', 0.85);
+
+            // Switch UI
             this.dom.stepSelect.style.display = 'none';
             this.dom.stepPreview.style.display = 'block';
 
@@ -394,7 +388,6 @@ const PrintPage = {
         }
     },
 
-    // 2. SALVA SU DB
     uploadPdf: async function() {
         const btn = this.dom.btnConfirmSave;
         btn.disabled = true;
@@ -433,7 +426,8 @@ const PrintPage = {
         this.dom.stepFinalActions.style.display = 'none';
         this.dom.stepSelect.style.display = 'flex';
         
-        this.dom.pdfPreviewFrame.src = '';
+        // Pulisce l'immagine
+        this.dom.pdfPreviewImage.src = ''; 
         this.state.currentPdfBlob = null;
         this.dom.btnConfirmSave.disabled = false;
         this.dom.btnConfirmSave.textContent = "💾 Salva e Archivia";
