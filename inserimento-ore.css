@@ -313,22 +313,25 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .day-total-badge.warning { background-color: #e53e3e; border-color: #c53030; } /* > 8 ore */
 .day-total-badge.ok { background-color: #38a169; border-color: #2f855a; }      /* = 8 ore */
 
-/* --- LAYOUT FLESSIBILE PER RIORDINAMENTO --- */
+/* --- LAYOUT FLESSIBILE PER RIORDINAMENTO (Versione Finale) --- */
 #mobileHoursForm {
     display: flex;
     flex-direction: column;
+    gap: 0; /* Assicura che non ci siano spazi flex automatici */
+}
+
+/* Nascondiamo tutto ciò che non serve nel Cantiere via CSS per sicurezza */
+.cantiere-layout #group-commessa,
+.cantiere-layout #dynamic-fields-container {
+    display: none !important;
 }
 
 /* Specifico per CANTIERE: Riordina e Compatta */
 .cantiere-layout .simple-hours-group { 
     order: 1; 
-    margin-top: 0 !important; /* Rimuove lo spazio extra sopra */
-    margin-bottom: 15px;      /* Mantiene un po' di spazio sotto */
-}
-
-/* Nasconde completamente il contenitore vuoto intermedio per evitare spazi fantasma */
-.cantiere-layout #dynamic-fields-container {
-    display: none !important;
+    /* Margine negativo per annullare il margine dei bottoni sopra */
+    margin-top: -10px !important; 
+    margin-bottom: 15px;
 }
 
 .cantiere-layout #overtime-fields    { order: 2; }
