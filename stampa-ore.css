@@ -1,5 +1,5 @@
 /* ==========================================================================
-   stampa-ore.css - Layout Flexbox & Altezze Uniformi
+   stampa-ore.css - Versione Finale (Colori & Layout Fix)
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE & HEADER --- */
@@ -45,14 +45,14 @@ body {
 }
 .header-button:hover { background-color: #2980b9; }
 
-/* Titolo Centrato nello spazio residuo */
+/* Titolo Centrato */
 .title-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-right: 30px; /* Bilancia visivamente il pulsante a sx */
+    margin-right: 30px;
 }
 
 .title-container h1 { 
@@ -84,14 +84,12 @@ body {
     gap: 10px;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap; /* Va a capo se serve */
+    flex-wrap: wrap;
 }
 
-/* --- REGOLE UNIFORMI PER INPUT E BOTTONI --- */
-
-/* 1. SELECT (Mese/Anno) */
+/* Elementi PDF uniformi */
 .pdf-select {
-    height: 42px !important;       /* Altezza fissa */
+    height: 42px !important;
     padding: 5px 10px !important;
     font-size: 0.95rem !important;
     border-radius: 6px;
@@ -102,9 +100,40 @@ body {
     box-sizing: border-box;
 }
 
-/* 2. INPUT DATA (Dal/Al) */
+/* Bottone Crea PDF (Verde) */
+.pdf-btn {
+    height: 42px !important;
+    min-height: unset !important;
+    padding: 0 20px !important;
+    font-size: 0.95rem !important;
+    font-weight: bold;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    width: auto !important;
+    flex: 0 0 auto;
+    background-color: #27ae60 !important;
+    color: white !important;
+    border: none;
+}
+
+/* --- 4. SEZIONE ANALISI (Date & Pulsante) --- */
+.filter-card {
+    background: white; padding: 15px; border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.section-label { margin: 0 0 10px 0; color: #555; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; }
+
+.filter-row { display: flex; gap: 10px; margin-bottom: 0; }
+.half { flex: 1; margin: 0; }
+.form-group { display: flex; flex-direction: column; text-align: left; }
+.form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+
+/* Input Data */
 .compact-input {
-    height: 42px !important;       /* Altezza fissa */
+    height: 42px !important;
     padding: 5px 10px !important;
     font-size: 0.95rem !important;
     border: 1px solid #ccc;
@@ -113,46 +142,23 @@ body {
     box-sizing: border-box;
 }
 
-/* 3. BOTTONI (Crea PDF & Carica Dati) */
-.pdf-btn, .full-width-btn {
-    height: 42px !important;       /* Altezza fissa identica agli input */
-    min-height: unset !important;  /* Rimuove i 100px ereditati */
-    padding: 0 20px !important;    /* Padding laterale */
-    font-size: 0.95rem !important;
+/* Bottone Carica Dati (Blu) */
+#btnLoadData {
+    background-color: #3498db !important; /* Colore Blu */
+    color: white !important;
+    width: 100% !important; /* Larghezza Piena */
+    height: 42px !important;
+    margin-top: 15px !important;
+    font-size: 1rem !important;
     font-weight: bold;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1 !important;
-    margin: 0 !important;          /* Reset margini */
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+#btnLoadData:active { transform: scale(0.98); }
 
-/* Specifico per il bottone verde PDF */
-.pdf-btn {
-    width: auto !important;
-    flex: 0 0 auto;
-    background-color: #27ae60 !important;
-}
-
-/* Specifico per il bottone Carica Dati (sotto i filtri) */
-.full-width-btn {
-    width: 100% !important;
-    margin-top: 15px !important;   /* Spazio sopra */
-}
-
-/* --- 4. ANALISI & FILTRI --- */
-.filter-card {
-    background: white; padding: 15px; border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.section-label { margin: 0 0 10px 0; color: #555; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; }
-
-.filter-row { display: flex; gap: 10px; margin-bottom: 0; } /* Margine bottom gestito dal bottone */
-.half { flex: 1; margin: 0; }
-.form-group { display: flex; flex-direction: column; text-align: left; }
-.form-group label { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
-
-/* --- 5. ALTRI ELEMENTI (Accordion, KPI, Tabella) --- */
+/* --- 5. FILTRI AVANZATI (Accordion) --- */
 .accordion-container {
     background: white; border-radius: 10px; overflow: hidden; margin-bottom: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
@@ -163,11 +169,29 @@ body {
 }
 .filter-inner-padding { padding: 15px; background: #f9f9f9; border-top: 1px solid #eee; }
 
-.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.kpi-box { padding: 12px; border-radius: 8px; text-align: center; color: white; }
-.kpi-value { font-size: 1.4rem; font-weight: 700; display: block;}
+/* --- 6. KPI (CONTATORI COLORATI) --- */
+.kpi-grid { 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; 
+}
+
+.kpi-box { 
+    padding: 12px; 
+    border-radius: 8px; 
+    text-align: center; 
+    color: white !important; /* Forza testo bianco */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+/* Colori di sfondo espliciti */
+.kpi-box.blue { background: #3498db !important; }
+.kpi-box.purple { background: #9b59b6 !important; }
+.kpi-box.orange { background: #e67e22 !important; }
+.kpi-box.green { background: #27ae60 !important; }
+
+.kpi-value { font-size: 1.4rem; font-weight: 700; display: block; margin-bottom: 2px;}
 .kpi-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
 
+/* --- 7. TABELLA ANTEPRIMA --- */
 .preview-section h4 { margin: 5px 0 10px 0; font-size: 0.9rem; color: #555; text-transform: uppercase; }
 .view-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .toggle-view { background: #e0e0e0; border-radius: 15px; padding: 3px; display: flex; }
@@ -180,5 +204,6 @@ th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
 thead { position: sticky; top: 0; background: #f8f9fa; z-index: 5; }
 .empty-msg { text-align: center; color: #999; padding: 20px; font-style: italic; }
 
+/* Pulsanti Azione Finali */
 .buttons-grid { display: flex; gap: 10px; margin-top: 15px; }
 .buttons-grid .button { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 0.9rem; min-height: unset; }
