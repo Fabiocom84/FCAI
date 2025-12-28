@@ -49,6 +49,8 @@ const MobileHoursApp = {
         overtimeFields: document.getElementById('overtime-fields'),
         overtimeStart: document.getElementById('overtimeStart'),
         overtimeEnd: document.getElementById('overtimeEnd'),
+
+        hoursLabel: document.getElementById('dynamicHoursLabel'),
         
         existingList: document.getElementById('existingWorksList'),
         saveBtn: document.getElementById('saveHoursBtn'),
@@ -347,28 +349,37 @@ const MobileHoursApp = {
         this.dom.componentSelect.disabled = false;
     },
 
-    // --- LOGICA UI (Toggle Tipo) ---
     handleTypeChange: function(type) {
-        // Reset Visibilità
+        // 1. Reset Visibilità (Codice esistente)
         this.dom.prodFields.style.display = 'none';
         this.dom.absFields.style.display = 'none';
-        this.dom.groupCommessa.style.display = 'block'; // Default on
-        this.dom.travelFields.style.display = 'none';   // Default off
+        this.dom.groupCommessa.style.display = 'block'; 
+        this.dom.travelFields.style.display = 'none';   
 
+        // 2. Logica Visibilità Campi (Codice esistente)
         if (type === 'produzione') {
             this.dom.prodFields.style.display = 'block';
         } 
         else if (type === 'cantiere') {
-            // Cantiere: Commessa (opzionale) + Viaggio
             this.dom.travelFields.style.display = 'block';
         } 
         else if (type === 'assenza') {
-            // Assenza: Niente commessa, solo tipo
             this.dom.groupCommessa.style.display = 'none';
             this.dom.absFields.style.display = 'block';
         }
+
+        // 3. NUOVO: Aggiornamento Etichetta Ore
+        if (this.dom.hoursLabel) {
+            if (type === 'produzione') {
+                this.dom.hoursLabel.textContent = "Ore Lavoro *";
+            } else if (type === 'cantiere') {
+                this.dom.hoursLabel.textContent = "Ore Cantiere *";
+            } else if (type === 'assenza') {
+                this.dom.hoursLabel.textContent = "Ore Assenza *";
+            }
+        }
         
-        // Ricontrolla se serve mostrare straordinari (magari cambiando tipo cambia contesto)
+        // 4. Ricontrolla straordinari (Codice esistente)
         this.checkOvertimeLogic();
     },
 
