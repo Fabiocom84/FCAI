@@ -36,26 +36,47 @@
         </header>
 
         <!-- CONTENUTO SCROLLABILE -->
-
         <div class="mobile-content-wrapper report-body">
 
-            <!-- 1. PERIODO & CARICAMENTO -->
+            <!-- 1. SEZIONE PDF UFFICIALE (Spostata in ALTO) -->
+            <section class="pdf-official-section">
+                <h3>📄 Documento Ufficiale</h3>
+                <p class="info-text">Seleziona mese e anno per creare il report.</p>
+                
+                <div class="pdf-controls compact-row">
+                    <select id="pdfMonth" class="pdf-select"></select>
+                    <select id="pdfYear" class="pdf-select"></select>
+                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Crea PDF</button>
+                </div>
+
+                <div id="pdfActions" style="display: none; margin-top: 15px;">
+                    <div id="pdfStatus" class="status-indicator"></div>
+                    <div class="buttons-grid small-grid">
+                        <a id="btnDownload" href="#" class="button compact-btn" style="background:#6c757d;">Scarica</a>
+                        <a id="btnWhatsapp" href="#" class="button button-whatsapp compact-btn">WhatsApp</a>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="section-divider">
+
+            <!-- 2. PERIODO & ANALISI (Spostata SOTTO) -->
             <section class="filter-card">
-                <h4 class="section-label">Periodo di Analisi</h4>
-                <div class="filter-row">
+                <h4 class="section-label">Analisi Periodo</h4>
+                <div class="filter-row compact-row">
                     <div class="form-group half">
                         <label>Dal</label>
-                        <input type="date" id="dateStart">
+                        <input type="date" id="dateStart" class="compact-input">
                     </div>
                     <div class="form-group half">
                         <label>Al</label>
-                        <input type="date" id="dateEnd">
+                        <input type="date" id="dateEnd" class="compact-input">
                     </div>
                 </div>
-                <button id="btnLoadData" class="button full-width-btn">🔄 Carica Dati</button>
+                <button id="btnLoadData" class="button full-width-btn compact-btn">🔄 Carica Dati</button>
             </section>
 
-            <!-- 2. FILTRI AVANZATI (ACCORDION) -->
+            <!-- 3. FILTRI AVANZATI -->
             <div class="accordion-container">
                 <button class="accordion-header" id="btnToggleFilters">
                     <span>🌪️ Filtri Avanzati</span>
@@ -64,21 +85,21 @@
                 <div class="accordion-content" id="advancedFiltersBox" style="display: none;">
                     <div class="filter-inner-padding">
                         <div class="form-group">
-                            <label>Commesse (del periodo)</label>
+                            <label>Commesse</label>
                             <select id="filterCommesse" multiple></select>
                         </div>
                         <div class="form-group">
-                            <label>Attività / Lavorazioni</label>
+                            <label>Attività</label>
                             <select id="filterComponenti" multiple></select>
                         </div>
                         <div style="text-align: right; margin-top:10px;">
-                            <button id="btnApplyFilters" class="button button--secondary" style="height: 35px; font-size: 0.9em;">Applica Filtri</button>
+                            <button id="btnApplyFilters" class="button button--secondary compact-btn">Applica</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. KPI DASHBOARD -->
+            <!-- 4. KPI DASHBOARD -->
             <section class="kpi-grid">
                 <div class="kpi-box blue">
                     <span class="kpi-label">Lavorate</span>
@@ -98,45 +119,20 @@
                 </div>
             </section>
 
-            <!-- 4. VISTA DATI (Switch & Tabella) -->
+            <!-- 5. VISTA DATI -->
             <section class="preview-section">
                 <div class="view-controls">
-                    <h4>Dettaglio Attività</h4>
+                    <h4>Dettagli</h4>
                     <div class="toggle-view">
                         <button class="view-btn active" data-view="list">📅 Data</button>
                         <button class="view-btn" data-view="group">📁 Commessa</button>
                     </div>
                 </div>
-                
                 <div class="table-container">
                     <table id="analysisTable">
-                        <thead id="tableHead">
-                            <tr><th>Data</th><th>Attività</th><th>Ore</th></tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr><td colspan="3" class="empty-msg">Carica i dati per iniziare</td></tr>
-                        </tbody>
+                        <thead id="tableHead"><tr><th>Data</th><th>Attività</th><th>Ore</th></tr></thead>
+                        <tbody id="tableBody"><tr><td colspan="3" class="empty-msg">Carica i dati per iniziare</td></tr></tbody>
                     </table>
-                </div>
-            </section>
-
-            <!-- 5. SEZIONE PDF UFFICIALE (Separata) -->
-            <section class="pdf-official-section">
-                <h3>📄 Documento Ufficiale</h3>
-                <p class="info-text">Seleziona il mese da archiviare o inviare.</p>
-                
-                <div class="pdf-controls">
-                    <select id="pdfMonth" class="pdf-select"></select>
-                    <select id="pdfYear" class="pdf-select"></select>
-                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Crea PDF</button>
-                </div>
-
-                <div id="pdfActions" style="display: none; margin-top: 15px;">
-                    <div id="pdfStatus" class="status-indicator"></div>
-                    <div class="buttons-grid">
-                        <a id="btnDownload" href="#" class="button" style="background:#6c757d;">Scarica</a>
-                        <a id="btnWhatsapp" href="#" class="button button-whatsapp">WhatsApp</a>
-                    </div>
                 </div>
             </section>
 
