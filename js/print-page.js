@@ -297,8 +297,8 @@ const PrintPage = {
             const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
             const mNames = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO","LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"];
 
-            const HEADER_Y = 500; 
-            page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 100, y: HEADER_Y, size: 10, font: fontBold });
+            const HEADER_Y = 700; 
+            page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 110, y: HEADER_Y, size: 10, font: fontBold });
             page.drawText(mNames[month - 1], { x: 420, y: HEADER_Y, size: 10, font: fontBold });
             page.drawText(year.toString(), { x: 550, y: HEADER_Y, size: 10, font: fontBold });
 
