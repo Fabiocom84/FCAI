@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- LIBRERIA CSS CHOICES (Mancava questo!) -->
+    <!-- LIBRERIA CSS CHOICES -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     
     <link rel="stylesheet" href="style-v2.css">
@@ -45,17 +45,31 @@
                 <h3>📄 Documento Ufficiale</h3>
                 <p class="info-text">Seleziona mese e anno per creare il report.</p>
                 
-                <div class="pdf-controls compact-row">
+                <!-- STEP 1: Selezione -->
+                <div id="stepSelect" class="pdf-controls compact-row">
                     <select id="pdfMonth" class="pdf-select"></select>
                     <select id="pdfYear" class="pdf-select"></select>
-                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Crea PDF</button>
+                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Anteprima</button>
                 </div>
 
-                <div id="pdfActions" style="display: none; margin-top: 15px;">
+                <!-- STEP 2: Anteprima (Nascosto) -->
+                <div id="stepPreview" style="display: none; margin-top: 15px;">
+                    <p class="info-text" style="color: #e67e22; font-weight: bold;">Controlla il PDF prima di salvare:</p>
+                    <iframe id="pdfPreviewFrame" style="width: 100%; height: 350px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px;"></iframe>
+                    
+                    <div class="pdf-controls compact-row">
+                        <button id="btnCancelPreview" class="button pdf-btn" style="background-color: #95a5a6 !important;">Indietro</button>
+                        <button id="btnConfirmSave" class="button pdf-btn" style="background-color: #2980b9 !important;">💾 Salva e Archivia</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Azioni Finali (Nascosto) -->
+                <div id="stepFinalActions" style="display: none; margin-top: 15px;">
                     <div id="pdfStatus" class="status-indicator"></div>
-                    <div class="buttons-grid small-grid">
-                        <a id="btnDownload" href="#" class="button compact-btn" style="background:#6c757d;">Scarica</a>
-                        <a id="btnWhatsapp" href="#" class="button button-whatsapp compact-btn">WhatsApp</a>
+                    <div class="pdf-controls compact-row">
+                        <a id="btnDownload" href="#" class="button pdf-btn" style="background-color: #6c757d !important; text-decoration: none;">Scarica</a>
+                        <a id="btnWhatsapp" href="#" class="button pdf-btn" style="background-color: #25D366 !important; text-decoration: none;">WhatsApp</a>
+                        <button id="btnReset" class="button pdf-btn" style="background-color: #34495e !important;">Nuovo</button>
                     </div>
                 </div>
             </section>
@@ -94,7 +108,9 @@
                             <label>Attività</label>
                             <select id="filterComponenti" multiple></select>
                         </div>
-                        <div style="text-align: right; margin-top:10px;">
+                        <!-- PULSANTI FILTRI MODIFICATI -->
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top:10px;">
+                            <button id="btnResetFilters" class="button compact-btn" style="background-color: #95a5a6; color: white;">Reset</button>
                             <button id="btnApplyFilters" class="button button--secondary compact-btn">Applica</button>
                         </div>
                     </div>
@@ -150,7 +166,7 @@
         </div>
     </div>
 
-    <!-- LIBRERIA JS CHOICES (Mancava questo!) -->
+    <!-- LIBRERIA JS CHOICES -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
     <!-- Script Moduli -->
