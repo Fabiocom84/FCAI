@@ -90,8 +90,18 @@ const MobileHoursApp = {
     loadUserName: function() {
         try {
             const p = JSON.parse(localStorage.getItem('user_profile') || '{}');
-            if (p.nome_cognome) document.getElementById('headerUserName').textContent = p.nome_cognome;
-        } catch(e) {}
+            if (p.nome_cognome) {
+                // Aggiorna la schermata principale (timeline)
+                const headerEl = document.getElementById('headerUserName');
+                if (headerEl) headerEl.textContent = p.nome_cognome;
+
+                // Aggiorna la schermata di dettaglio (quella dello screenshot)
+                const detailEl = document.getElementById('detailUserName'); 
+                if (detailEl) detailEl.textContent = p.nome_cognome;
+            }
+        } catch(e) {
+            console.warn("Errore caricamento nome utente:", e);
+        }
     },
 
     // --- TIMELINE ---
