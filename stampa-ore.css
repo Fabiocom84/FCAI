@@ -1,0 +1,115 @@
+/* STILI PAGINA REPORT */
+
+/* Reset interno al content wrapper per spaziatura */
+.report-body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* --- CARD FILTRI --- */
+.filter-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.half { flex: 1; margin: 0; }
+.full-width-btn { width: 100%; height: 45px; font-size: 1rem; }
+
+/* --- GRIGLIA KPI (2x2 su mobile) --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.kpi-box {
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.kpi-box.blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+.kpi-box.purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.kpi-box.orange { background: linear-gradient(135deg, #e67e22, #d35400); }
+.kpi-box.green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+.kpi-label { display: block; font-size: 0.75rem; text-transform: uppercase; opacity: 0.9; margin-bottom: 2px; }
+.kpi-value { display: block; font-size: 1.5rem; font-weight: 700; }
+
+/* --- ANTEPRIMA TABELLA --- */
+.preview-section h4 {
+    margin: 0 0 10px 5px;
+    color: #555;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead { background: #f8f9fa; position: sticky; top: 0; z-index: 10; }
+th { padding: 12px 8px; text-align: left; color: #666; font-weight: 600; border-bottom: 1px solid #ddd; }
+td { padding: 10px 8px; border-bottom: 1px solid #eee; color: #333; }
+tr:last-child td { border-bottom: none; }
+.empty-msg { text-align: center; color: #999; padding: 20px; font-style: italic; }
+
+/* --- AZIONI PDF --- */
+.actions-card {
+    background: #e3f2fd; /* Azzurro chiarissimo */
+    border: 1px solid #bbdefb;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    font-size: 0.9rem;
+    color: #0d47a1;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.buttons-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.button-whatsapp {
+    background-color: #25D366;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.button-whatsapp img { width: 24px; height: 24px; filter: brightness(0) invert(1); margin: 0; }
+.button-whatsapp:hover { background-color: #128c7e; }
+
+/* Tablet/Desktop Tweaks */
+@media (min-width: 600px) {
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+    .buttons-grid { flex-direction: row; }
+    .buttons-grid button, .buttons-grid a { flex: 1; }
+}
