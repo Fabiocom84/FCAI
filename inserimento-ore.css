@@ -342,7 +342,7 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .cantiere-mode .simple-hours-group { 
     order: 1; 
     /* Se c'è ancora spazio, questo -10px lo chiuderà per forza */
-    margin-top: -20px !important; 
+    margin-top: -40px !important; 
     margin-bottom: 15px;
     z-index: 10;
     border-top: none;
