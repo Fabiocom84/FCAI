@@ -341,10 +341,11 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 /* 4. Primo elemento (Ore): Tira su ulteriormente se necessario */
 .cantiere-mode .simple-hours-group { 
     order: 1; 
-    /* Se c'è ancora spazio, questo -10px lo chiuderà per forza */
+    /* Margine negativo forzato su richiesta per chiudere il gap visivo */
     margin-top: -60px !important; 
     margin-bottom: 15px;
     z-index: 10;
+    
     border-top: none;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
