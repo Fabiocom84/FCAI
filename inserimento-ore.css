@@ -313,31 +313,36 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .day-total-badge.warning { background-color: #e53e3e; border-color: #c53030; } /* > 8 ore */
 .day-total-badge.ok { background-color: #38a169; border-color: #2f855a; }      /* = 8 ore */
 
-/* --- LAYOUT CANTIERE (Versione Definitiva) --- */
+/* --- LAYOUT CANTIERE (Versione Forzata) --- */
 
-/* 1. Riduciamo il margine della barra di selezione quando siamo in Cantiere */
-.cantiere-mode .entry-type-selector {
-    margin-bottom: 5px !important; /* Da 20px passa a 5px */
-}
-
-/* 2. Impostiamo il form come flex column per riordinare */
+/* 1. Attiva Flexbox sul Form per il riordino */
 .cantiere-mode #mobileHoursForm {
     display: flex;
     flex-direction: column;
+    gap: 0;
 }
 
-/* 3. Nascondiamo e azzeriamo elementi inutili */
+/* 2. Nasconde elementi inutili in modo definitivo */
 .cantiere-mode #group-commessa,
 .cantiere-mode #dynamic-fields-container {
     display: none !important;
 }
 
-/* 4. Riordino elementi */
+/* 3. RIORDINO e ELIMINAZIONE SPAZIO */
 .cantiere-mode .simple-hours-group { 
     order: 1; 
-    margin-top: 0 !important; 
+    /* Margine negativo aggressivo per annullare lo spazio della barra sopra */
+    margin-top: -20px !important; 
+    margin-bottom: 15px;
+    z-index: 10; /* Assicura che stia sopra se c'è sovrapposizione */
 }
 
+/* 4. Ordine degli altri elementi */
 .cantiere-mode #overtime-fields    { order: 2; }
 .cantiere-mode #travel-fields      { order: 3; }
 .cantiere-mode #group-note         { order: 4; }
+
+/* 5. Riduzione margine della barra di selezione (opzionale ma consigliato) */
+.cantiere-mode .entry-type-selector {
+    margin-bottom: 0 !important;
+}
