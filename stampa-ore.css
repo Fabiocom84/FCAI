@@ -1,5 +1,5 @@
 /* ==========================================================================
-   stampa-ore.css - Fix Definitivi Altezza Pulsanti
+   stampa-ore.css - Fix Spaziatura & Accordion
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE --- */
@@ -22,6 +22,15 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 .header-username { font-size: 0.8rem; color: #bdc3c7; margin-top: 2px; }
 
 .report-body { display: flex; flex-direction: column; gap: 15px; }
+
+/* --- FIX SPAZIATURA TRA LE SCHEDE --- */
+/* Rimuoviamo il margine naturale dell'HR per avvicinare le schede */
+.section-divider {
+    margin: 0;         /* Rimuove spazi extra sopra/sotto */
+    border: 0;         /* Rimuove bordi default */
+    border-top: 1px solid #e0e0e0; /* Mantiene una linea sottile */
+    opacity: 0.5;      /* La rende meno invasiva */
+}
 
 /* --- 2. SEZIONE PDF (Box Azzurro) --- */
 .pdf-official-section {
@@ -51,24 +60,17 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 }
 
 /* PULSANTE CREA PDF (Verde) */
-/* Override aggressivo per annullare lo stile .button di style-v2.css */
 .pdf-btn {
     height: 36px !important;
-    min-height: unset !important; /* FONDAMENTALE: Annulla i 100px del padre */
+    min-height: unset !important;
     padding: 0 15px !important;
-    
-    /* Layout interno */
     display: inline-flex !important;
-    flex-direction: row !important; /* Icona e testo allineati orizzontalmente */
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    
-    /* Reset dimensioni dashboard */
     flex-basis: auto !important;
     max-width: none !important;
     width: auto !important;
-
-    /* Stile Visivo */
     background-color: #27ae60 !important; 
     color: white !important;
     font-size: 0.9rem !important;
@@ -77,7 +79,7 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     border-radius: 6px; 
     white-space: nowrap; 
     cursor: pointer;
-    margin: 0 !important; /* Rimuove margini strani */
+    margin: 0 !important;
 }
 .pdf-btn:active { transform: scale(0.98); }
 
@@ -99,25 +101,18 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 
 /* FIX PULSANTE CARICA DATI (Blu) */
 #btnLoadData {
-    /* Dimensioni fisse */
     height: 36px !important;
-    min-height: unset !important; /* FONDAMENTALE */
+    min-height: unset !important;
     width: 100% !important;
     padding: 0 15px !important;
     margin-top: 5px !important;
     box-sizing: border-box;
-    
-    /* Layout */
     display: flex !important;
     flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
-    
-    /* Reset dashboard style */
     flex-basis: auto !important;
     max-width: none !important;
-    
-    /* Stile */
     background-color: #3498db !important;
     color: white !important;
     font-size: 0.9rem !important;
@@ -139,6 +134,9 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     background: #fff; border: none;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 0.9rem; color: #34495e; cursor: pointer; font-weight: 500;
+    /* Assicura che sia cliccabile */
+    position: relative; 
+    z-index: 10;
 }
 .accordion-header:active { background-color: #f9f9f9; }
 
