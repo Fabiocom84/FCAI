@@ -312,21 +312,21 @@ const PrintPage = {
             for (let d = 1; d <= 31; d++) rowsByDay[d] = [];
             monthData.forEach(row => rowsByDay[parseInt(row.data.split('-')[2])].push(row));
 
-            const startY = 670;
+            const startY = 671;
             const rowH = 15.6;
             
             // COORDINATE
             const CX = {
-                Col_M_In: 90,   Col_M_Out: 125,
-                Col_P_In: 160,  Col_P_Out: 195,
-                Ore: 225, Straord: 260, Perm: 290,
-                Tipo: 320, 
-                Desc: 330, // Posizione Descrizione
-                VA: 515, VR: 550 
+                Col_M_In: 95,   Col_M_Out: 128,
+                Col_P_In: 160,  Col_P_Out: 193,
+                Ore: 230, Straord: 261, Perm: 295,
+                Tipo: 340, 
+                Desc: 350, // Posizione Descrizione
+                VA: 513, VR: 551 
             };
 
             // FONT SIZE UNIFICATO
-            const fs = 9; 
+            const fs = 10; 
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
