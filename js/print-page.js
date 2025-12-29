@@ -34,7 +34,6 @@ const PrintPage = {
         kpiAbsence: document.getElementById('kpiAbsenceHours'),
         kpiTotal: document.getElementById('kpiTotalHours'),
         
-        // PDF Elements
         stepSelect: document.getElementById('stepSelect'),
         stepPreview: document.getElementById('stepPreview'),
         stepFinalActions: document.getElementById('stepFinalActions'),
@@ -58,7 +57,7 @@ const PrintPage = {
     init: async function() {
         console.log("📊 Analytics Page Init");
         this.loadUserInfo();
-        this.setupDates(); // Configura le date all'avvio
+        this.setupDates();
         this.initChoices();
         this.loadTemplate(); 
 
@@ -81,7 +80,6 @@ const PrintPage = {
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
         
-        // Carica i dati subito dopo aver impostato le date di default
         this.loadAnalysisData(); 
     },
 
@@ -95,23 +93,17 @@ const PrintPage = {
 
     setupDates: function() {
         const today = new Date();
-        
-        // Calcola il primo giorno del mese corrente
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         
-        // Funzione per formattare la data nel formato YYYY-MM-DD
         const formatDate = (date) => {
-            // Adjust for timezone offset to ensure the date is correct after toISOString
             const offset = date.getTimezoneOffset();
             const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
             return adjustedDate.toISOString().split('T')[0];
         };
         
-        // Imposta i valori nei campi input per il mese corrente
         this.dom.dateEnd.value = formatDate(today);
         this.dom.dateStart.value = formatDate(firstDayOfMonth);
 
-        // Popola i selettori di Mese e Anno per il PDF
         const months = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
         months.forEach((m, i) => {
             const opt = document.createElement('option');
@@ -125,10 +117,10 @@ const PrintPage = {
             const opt = document.createElement('option');
             opt.value = y;
             opt.textContent = y;
-            if(y === curYear) opt.selected = true; // Seleziona l'anno corrente di default
+            if(y === curYear) opt.selected = true;
             this.dom.pdfYear.appendChild(opt);
         }
-        this.dom.pdfMonth.value = today.getMonth() + 1; // Seleziona il mese corrente di default
+        this.dom.pdfMonth.value = today.getMonth() + 1;
     },
 
     initChoices: function() {
@@ -281,7 +273,9 @@ const PrintPage = {
         } catch (e) { console.error("PDF Template Error:", e); }
     },
 
-    // 1. GENERAZIONE PDF E RENDERING IMMAGINE
+    // ==========================================
+    //   GENERAZIONE PDF (LOGICA AGGIORNATA)
+    // ==========================================
     generatePreview: async function() {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
         
@@ -295,13 +289,14 @@ const PrintPage = {
         btn.disabled = true;
 
         try {
-            // A. CREAZIONE PDF (come prima)
+            // A. Recupero Dati Mese
             const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
             const res = await apiFetch(`/api/report/analyze?start=${startDate}&end=${endDate}`);
             const payload = await res.json();
             const monthData = payload.data || [];
 
+            // B. Preparazione PDF
             const pdfDoc = await PDFLib.PDFDocument.load(this.state.templateBytes);
             const page = pdfDoc.getPages()[0];
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -310,7 +305,7 @@ const PrintPage = {
 
             const HEADER_Y = 712; 
             page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 115, y: HEADER_Y, size: 10, font: fontBold });
-            page.drawText(mNames[month - 1], { x: 420, y: HEADER_Y, size: 10, font: fontBold });
+            page.drawText(mNames[month - 1], { x: 405, y: HEADER_Y, size: 10, font: fontBold });
             page.drawText(year.toString(), { x: 548, y: HEADER_Y, size: 10, font: fontBold });
 
             const rowsByDay = {};
@@ -319,27 +314,58 @@ const PrintPage = {
 
             const startY = 645;
             const rowH = 15.6;
-            const CX = { Ore: 280, Straord: 310, Perm: 350, Tipo: 385, Desc: 410, VA: 535, VR: 565 };
+            
+            // --- NUOVE COORDINATE ---
+            const CX = {
+                Col_M_In: 75,   // Mattino Entrata
+                Col_M_Out: 110, // Mattino Uscita
+                Col_P_In: 145,  // Pomeriggio Entrata
+                Col_P_Out: 180, // Pomeriggio Uscita
+                
+                Ore: 220, 
+                Straord: 245, 
+                Perm: 270,
+                Tipo: 295, 
+                Desc: 315, // SPOSTATO A SINISTRA (Era 410)
+                VA: 535, 
+                VR: 565 
+            };
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
                 if (items.length > 0) {
                     let totOre = 0, totViaggio = 0;
                     let labels = [], types = new Set(), isAbs = false;
+                    
+                    // Variabili per gli orari da stampare (se presenti)
+                    let timeM_In = "", timeM_Out = "", timeP_In = "", timeP_Out = "";
 
                     items.forEach(it => {
                         totOre += it.ore;
-                        // Nota: il backend invia solo 'viaggio' aggregato.
-                        // Se vuoi dettaglio andata/ritorno nel PDF, devi estrarli dal backend
-                        totViaggio += it.viaggio; // it.ore_viaggio_andata + it.ore_viaggio_ritorno;
+                        totViaggio += it.viaggio;
                         labels.push(it.label_commessa + (it.note ? ` (${it.note})` : ''));
                         types.add(it.tipo);
                         if (it.is_assenza) isAbs = true;
+
+                        // RACCOLTA ORARI (Prende il primo disponibile della giornata)
+                        if (it.str_mattina_dalle) { timeM_In = it.str_mattina_dalle; timeM_Out = it.str_mattina_alle; }
+                        if (it.str_pomeriggio_dalle) { timeP_In = it.str_pomeriggio_dalle; timeP_Out = it.str_pomeriggio_alle; }
+                        
+                        if (it.assenza_mattina_dalle) { timeM_In = it.assenza_mattina_dalle; timeM_Out = it.assenza_mattina_alle; }
+                        if (it.assenza_pomeriggio_dalle) { timeP_In = it.assenza_pomeriggio_dalle; timeP_Out = it.assenza_pomeriggio_alle; }
                     });
 
                     const Y = startY - ((day - 1) * rowH);
                     const fs = 8; 
 
+                    // 1. STAMPA ORARI NELLE PRIME 4 COLONNE
+                    if (timeM_In) page.drawText(timeM_In, { x: CX.Col_M_In, y: Y, size: 7, font });
+                    if (timeM_Out) page.drawText(timeM_Out, { x: CX.Col_M_Out, y: Y, size: 7, font });
+                    if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: 7, font });
+                    if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: 7, font });
+
+
+                    // 2. STAMPA ORE E PERMESSI
                     if (isAbs) {
                         page.drawText(totOre.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     } else {
@@ -349,49 +375,43 @@ const PrintPage = {
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
+                    // 3. TIPO E DESCRIZIONE
                     const finalType = types.has('T') ? 'T' : 'O';
                     page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
 
                     let fullDesc = labels.join(", ");
-                    if (fullDesc.length > 40) fullDesc = fullDesc.substring(0, 38) + "..";
-                    page.drawText(fullDesc, { x: CX.Desc, y: Y, size: 7, font });
+                    // Tronca se troppo lungo
+                    if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";
+                    
+                    // DESCRIZIONE: Spostata a Sinistra (315) e Più in alto (Y + 4)
+                    page.drawText(fullDesc, { x: CX.Desc, y: Y + 4, size: 9, font }); // Size aumentato a 9
 
+                    // 4. VIAGGI
                     if (totViaggio > 0) {
-                        // Supponendo che 'viaggio' sia la somma, e vogliamo dividerlo equamente per A/R nel report
-                        // Se il backend invia ore_viaggio_andata e ore_viaggio_ritorno, usare quelli!
-                        const v_andata = (totViaggio / 2); // Placeholder, da sostituire con dati reali se disponibili
-                        const v_ritorno = (totViaggio / 2); // Placeholder
+                        const v_andata = (totViaggio / 2); 
+                        const v_ritorno = (totViaggio / 2); 
                         page.drawText(v_andata.toFixed(1), { x: CX.VA, y: Y, size: fs, font });
                         page.drawText(v_ritorno.toFixed(1), { x: CX.VR, y: Y, size: fs, font });
                     }
                 }
             }
 
-            // SALVA BLOB PDF (Per l'upload)
+            // SALVA BLOB PDF
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
-            // B. RENDERING IMMAGINE (Per l'anteprima su mobile)
+            // RENDER ANTEPRIMA (Canvas)
             const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
             const pdf = await loadingTask.promise;
             const pdfPage = await pdf.getPage(1);
-            
-            // Scale 2.0 per alta risoluzione (Retina)
             const viewport = pdfPage.getViewport({scale: 2.0});
-            
-            // Crea Canvas Temporaneo
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-
-            // Renderizza PDF su Canvas
             await pdfPage.render({canvasContext: context, viewport: viewport}).promise;
-            
-            // Metti l'immagine (JPG) nell'elemento IMG
             this.dom.pdfPreviewImage.src = canvas.toDataURL('image/jpeg', 0.85);
 
-            // Switch UI
             this.dom.stepSelect.style.display = 'none';
             this.dom.stepPreview.style.display = 'block';
 
