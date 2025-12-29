@@ -414,3 +414,34 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .cantiere-mode .simple-hours-group {
     margin-top: -10px !important; /* Avvicina al blocco viaggio */
 }
+
+/* --- Modifiche layout orari --- */
+
+.time-range-row {
+    display: flex; 
+    gap: 8px; /* Un po' più di spazio tra etichetta e select */
+    align-items: center; 
+    margin-bottom: 8px;
+}
+
+/* Sostituisce .icon-col */
+.label-col { 
+    width: 35px; /* Larghezza fissa per allineamento verticale perfetto */
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    text-align: center; 
+    letter-spacing: 0.5px;
+    padding-top: 2px; /* Micro-aggiustamento ottico */
+}
+
+/* Colori specifici per le etichette */
+.text-mattina { color: #d69e2e; }    /* Giallo scuro/Oro per Mattina */
+.text-pomeriggio { color: #e53e3e; } /* Rosso/Arancio per Pomeriggio */
+
+/* Se usi la variante blu per le assenze */
+.absence-box .text-mattina, 
+.absence-box .text-pomeriggio { 
+    color: #1565c0; /* Blu scuro uniforme o variante */
+}
+
+.arrow-col { color: #cbd5e0; font-size: 0.8rem; }

@@ -178,25 +178,44 @@ const MobileHoursApp = {
 
     // --- LOGICA UI COMPLESSA (Viaggio, Straordinari, Assenze) ---
 
+    // Cerca la funzione populateOvertimeSelects e SOSTITUISCILA con questa:
+
     populateOvertimeSelects: function() {
-        let options = '<option value="">--:--</option>';
-        // Genera orari dalle 05:00 alle 23:00 step 15min
-        for(let h=5; h<=23; h++) {
+        // 1. Genera opzioni MATTINA (06:00 -> 13:00)
+        let morningOpts = '<option value="">--:--</option>';
+        for(let h=6; h<=13; h++) {
             const hh = h.toString().padStart(2, '0');
             ['00', '15', '30', '45'].forEach(mm => {
-                options += `<option value="${hh}:${mm}">${hh}:${mm}</option>`;
+                // Evitiamo orari oltre le 13:00 per la mattina
+                if (h === 13 && mm !== '00') return; 
+                morningOpts += `<option value="${hh}:${mm}">${hh}:${mm}</option>`;
             });
         }
-        
-        // Applica a tutti gli 8 selettori (4 Straordinario, 4 Assenza)
-        const targets = [
-            this.dom.strMattinaStart, this.dom.strMattinaEnd, 
+
+        // 2. Genera opzioni POMERIGGIO (12:00 -> 22:00)
+        // Partiamo dalle 12:00 per gestire eventuali cambi turno anticipati o sovrapposizioni
+        let afternoonOpts = '<option value="">--:--</option>';
+        for(let h=12; h<=22; h++) {
+            const hh = h.toString().padStart(2, '0');
+            ['00', '15', '30', '45'].forEach(mm => {
+                afternoonOpts += `<option value="${hh}:${mm}">${hh}:${mm}</option>`;
+            });
+        }
+
+        // 3. Applica alle select corrette
+        // MATTINA
+        const morningTargets = [
+            this.dom.strMattinaStart, this.dom.strMattinaEnd,
+            this.dom.absMattinaStart, this.dom.absMattinaEnd
+        ];
+        morningTargets.forEach(el => { if(el) el.innerHTML = morningOpts; });
+
+        // POMERIGGIO
+        const afternoonTargets = [
             this.dom.strPomStart, this.dom.strPomEnd,
-            this.dom.absMattinaStart, this.dom.absMattinaEnd,
             this.dom.absPomStart, this.dom.absPomEnd
         ];
-        
-        targets.forEach(el => { if(el) el.innerHTML = options; });
+        afternoonTargets.forEach(el => { if(el) el.innerHTML = afternoonOpts; });
     },
 
     handleTypeChange: function(type) {
@@ -246,12 +265,6 @@ const MobileHoursApp = {
         // VISIBILITÀ STRAORDINARI (Solo Produzione e > 8h)
         if (type === 'produzione' && inputTotal > 8) {
             this.dom.overtimeFields.style.display = 'block';
-            
-            // Suggerimento orario (solo se vuoti)
-            if(!this.dom.strPomStart.value && !this.dom.strMattinaStart.value) {
-                // Esempio: Entrata Pomeriggio default
-                this.dom.strPomStart.value = "17:00"; 
-            }
         } else {
             this.dom.overtimeFields.style.display = 'none';
         }
