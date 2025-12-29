@@ -44,6 +44,7 @@ const PrintPage = {
         existingReportAlert: document.getElementById('existingReportAlert'),
         newReportControls: document.getElementById('newReportControls'),
         foundVersion: document.getElementById('foundVersion'),
+        btnQuickPreview: document.getElementById('btnQuickPreview'),
         btnQuickDownload: document.getElementById('btnQuickDownload'),
         btnQuickWhatsapp: document.getElementById('btnQuickWhatsapp'),
         btnForceRegenerate: document.getElementById('btnForceRegenerate'),
@@ -62,12 +63,13 @@ const PrintPage = {
     },
 
     init: async function() {
-        console.log("📊 Analytics Page Init");
+        console.log("📊 Analytics Page Init - Full Image Support");
         this.loadUserInfo();
         this.setupDates();
         this.initChoices();
         this.loadTemplate(); 
 
+        // Listeners Tabelle
         this.dom.btnLoad.addEventListener('click', () => this.loadAnalysisData());
         this.dom.accordionBtn.addEventListener('click', () => this.toggleAccordion());
         this.dom.btnApplyFilters.addEventListener('click', () => this.applyFilters());
@@ -82,24 +84,21 @@ const PrintPage = {
             });
         });
 
+        // Listeners Workflow PDF
         this.dom.btnGenerate.addEventListener('click', () => this.generatePreview());
         this.dom.btnCancelPreview.addEventListener('click', () => this.resetPdfWorkflow());
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
-
-        // NUOVO: Listener per "Crea Nuova Versione" (quando esiste già un report)
+        
         if(this.dom.btnForceRegenerate) {
             this.dom.btnForceRegenerate.addEventListener('click', () => this.generatePreview());
         }
 
-        // NUOVO: Listener cambio data per check report
+        // Cambio data -> Check Report
         this.dom.pdfMonth.addEventListener('change', () => this.checkExistingReport());
         this.dom.pdfYear.addEventListener('change', () => this.checkExistingReport());
 
-        // Carica dati analisi
         this.loadAnalysisData(); 
-        
-        // Controlla subito se esiste il report del mese corrente
         this.checkExistingReport();
     },
 
