@@ -37,8 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastUpdatedMonth = ""; 
 
     let activePopup = null;
-    let activeCell = null;
-    let activeHeaderDate = null; // Traccia quale colonna stiamo colorando
+    let activeHeaderDate = null; 
     
     // Variabili Dettaglio
     let detailCurrentPerson = null;
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('search-notes');
     
     const detailModal = document.getElementById('personnelDetailModal');
-    const detailBody = document.getElementById('personnelDetailBody'); 
     const detailTitle = document.getElementById('personnelDetailTitle');
     const detailMonthLabel = document.getElementById('detailMonthLabel');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -158,12 +156,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             tr.dataset.personId = person.id_personale;
             
             const th = document.createElement('th');
-            // Container flex per allineare nome e icona
             th.style.display = 'flex';
             th.style.justifyContent = 'space-between';
             th.style.alignItems = 'center';
 
-            // Nome cliccabile per il dettaglio mensile (esistente)
             const nameSpan = document.createElement('span');
             nameSpan.textContent = person.nome_cognome;
             nameSpan.title = person.nome_cognome;
@@ -172,16 +168,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             nameSpan.style.textOverflow = 'ellipsis';
             nameSpan.addEventListener('click', () => openPersonnelDetail(person));
             
-            // --- NUOVO: Bottone Link Admin Mode ---
-            // Apre inserimento-ore.html con parametri URL
             const editLink = document.createElement('a');
             editLink.className = 'user-edit-btn';
-            editLink.innerHTML = '✏️'; // O usa un'immagine <img>
+            editLink.innerHTML = '✏️';
             editLink.title = `Inserisci ore per ${person.nome_cognome}`;
             editLink.href = `inserimento-ore.html?adminMode=true&targetUserId=${person.id_personale}&targetUserName=${encodeURIComponent(person.nome_cognome)}`;
-            editLink.target = '_blank'; // Apre nuova scheda
-            
-            // Preveniamo che il click sul link apra anche il modale dettaglio
+            editLink.target = '_blank';
             editLink.addEventListener('click', (e) => e.stopPropagation());
 
             th.appendChild(nameSpan);
@@ -242,10 +234,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isWeekend) th.classList.add('weekend-column');
         if (isToday) th.classList.add('is-today');
         
-        // FIX CLICK HEADER: Apre il color picker invece del prompt
         th.addEventListener('click', (e) => openColorPicker(e, dateStr));
         
         return th;
+    }
+
+    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO ---
+    function calculateStatusClass(record, isWeekend) {
+        // 1. Ore reali di produzione (calcolate dal backend)
+        let realWorkHours = 0;
+        if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
+            realWorkHours = parseFloat(record.ore_effettive);
+        }
+
+        // 2. Ore inserite MANUALMENTE nel registro (forzature)
+        let manualHours = 0;
+        if (record && record.numero_ore) {
+            manualHours = parseFloat(record.numero_ore);
+        }
+
+        // 3. Verifica se c'è una giustificazione (Ferie, Malattia, Permesso...)
+        const hasJustification = (record && record.id_tipo_presenza_fk);
+
+        // --- LOGICA ---
+        // Verde: Se ha lavorato 8h oppure c'è una forzatura manuale >= 8h
+        if (realWorkHours >= 8) {
+            return 'status-ok';
+        }
+        // Giallo: Ha lavorato qualcosa ma < 8h
+        else if (realWorkHours > 0) {
+            return 'status-warning';
+        }
+        // Rosso (Assente Ingiustificato):
+        // Solo se è giorno feriale, NON ha lavorato, NON ha giustificazioni (Ferie) e NON ha ore manuali.
+        else if (!isWeekend && !hasJustification && manualHours === 0) {
+            return 'status-missing';
+        }
+        
+        // Se arriviamo qui (es. Weekend, oppure Ferie, o ore manuali < 8 su cui non vogliamo dare warning),
+        // non ritorniamo nessuna classe (nessun semaforo o semaforo nascosto)
+        return null; 
     }
 
     function createBodyCell(d, pid) {
@@ -255,7 +283,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
         
-        // Salviamo il fatto che è weekend nel dataset per ripristinarlo dopo
         if (isWeekend) {
             td.dataset.isWeekend = "true";
             td.classList.add('weekend-column');
@@ -263,36 +290,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const record = loadedDataMap[`${pid}_${dateStr}`];
 
-        // 1. PRIMA RENDERIZZIAMO IL CONTENUTO (Numeri, Etichette)
-        // (Questo resetta l'HTML della cella, quindi va fatto per primo)
+        // 1. Render Contenuto
         if (record) {
             renderCellContent(td, record);
         }
         
-        // 2. POI CALCOLIAMO E AGGIUNGIAMO IL SEMAFORO
-        // (Così viene appeso DOPO e non viene cancellato)
-        let totalHours = 0;
-        if (record && record.numero_ore) {
-            totalHours = parseFloat(record.numero_ore);
-        }
-
-        const indicator = document.createElement('div');
-        indicator.className = 'status-indicator';
-
-        if (totalHours >= 8) {
-            indicator.classList.add('status-ok'); // Verde
-        } else if (totalHours > 0 && totalHours < 8) {
-            indicator.classList.add('status-warning'); // Giallo
-        } else if (!isWeekend && totalHours === 0) {
-            // Rosso se feriale e vuoto
-            indicator.classList.add('status-missing'); 
-        } else {
-            indicator.style.display = 'none'; 
+        // 2. Render Semaforo
+        const statusClass = calculateStatusClass(record, isWeekend);
+        if (statusClass) {
+            const indicator = document.createElement('div');
+            indicator.className = `status-indicator ${statusClass}`;
+            td.appendChild(indicator);
         }
         
-        td.appendChild(indicator); // Appende DIRETTAMENTE al TD
-        
-        // Eventi Click
         td.addEventListener('click', (e) => handleQuickEdit(e, td));
         td.addEventListener('contextmenu', (e) => { e.preventDefault(); handleVisualEdit(e, td); });
         
@@ -310,12 +320,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- FUNZIONI DI SERVIZIO (Color Picker) ---
+    // --- COLOR PICKER ---
     function openColorPicker(e, dateStr) {
         e.stopPropagation();
-        activeHeaderDate = dateStr; // Imposta la data attiva per il bulk update
-        
-        // Posiziona il popup
+        activeHeaderDate = dateStr; 
         colorPickerPopup.style.left = `${e.pageX}px`;
         colorPickerPopup.style.top = `${e.pageY + 10}px`;
         colorPickerPopup.style.display = 'block';
@@ -355,10 +363,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function updateDetailModal() {
         if (!detailCurrentPerson) return;
-
         const monthLabel = detailCurrentDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
         detailMonthLabel.textContent = monthLabel;
-        
         const modalBodyContainer = document.querySelector('#personnelDetailModal .modal-body');
         modalBodyContainer.innerHTML = '<div style="text-align:center; padding:20px;">Caricamento...</div>';
 
@@ -377,10 +383,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const recordMap = {};
             personRecords.forEach(r => recordMap[r.data] = r);
 
-            // --- APPLICAZIONE SUGGERIMENTO 4: Costruzione Stringa HTML ottimizzata ---
-            // Invece di manipolare il DOM, costruiamo stringhe HTML giganti e le iniettiamo una volta sola.
-            // (Nota: Per tabelle statiche come questa, costruire stringhe HTML è spesso più veloce di DocumentFragment)
-            
             let leftRowsHtml = '';
             let rightRowsHtml = '';
             
@@ -431,14 +433,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
             `;
-
         } catch (err) {
             console.error(err);
             modalBodyContainer.innerHTML = '<div style="color:red; text-align:center;">Errore caricamento dati.</div>';
         }
     }
 
-    // ... (Visual Popup e Handle Quick Edit rimangono identici a prima) ...
     // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
@@ -535,36 +535,78 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiClient.post('/presenze', payload);
             loadedDataMap[`${payload.id_personale_fk}_${payload.data}`] = res;
-            renderCellContent(td, res);
-        } catch (err) { console.error(err); alert("Errore salvataggio"); const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`]; if(old) renderCellContent(td, old); else td.innerHTML=''; }
+            updateCellVisuals(td, res); // Funzione aggiornata che ri-renderizza tutto
+        } catch (err) { 
+            console.error(err); 
+            alert("Errore salvataggio"); 
+            const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`]; 
+            if(old) updateCellVisuals(td, old); else td.innerHTML=''; 
+        }
     }
 
     function renderCellContent(td, record) {
-        td.innerHTML = ''; 
-        td.className = ''; // <--- Questo pulisce le classi!
+        // Questa funzione ora si occupa SOLO del contenuto interno (badge, numeri, note)
+        // NON pulisce la cella, deve essere chiamata su un contenitore pulito o gestita
+        // Ma nel nostro flow, puliamo il td prima.
         
-        // IMPORTANTE: Ripristiniamo la classe weekend se necessario
-        if(td.dataset.isWeekend === "true") {
-            td.classList.add('weekend-column'); 
-        }
-        
-        // Ripristiniamo il colore di sfondo personalizzato se c'è
+        // Colore sfondo
         if(record.colore && record.colore !== 'none') {
             td.classList.add(`cell-color-${record.colore}`);
         }
         
-        const wrapper = document.createElement('div'); wrapper.className = 'cell-content-wrapper';
+        const wrapper = document.createElement('div'); 
+        wrapper.className = 'cell-content-wrapper';
+        
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
             if (t.etichetta) {
-                const badge = document.createElement('span'); badge.className = 'chip'; badge.textContent = t.etichetta;
+                const badge = document.createElement('span'); 
+                badge.className = 'chip'; 
+                badge.textContent = t.etichetta;
                 if(t.colore_hex) badge.style.backgroundColor = t.colore_hex; else badge.style.backgroundColor = '#ccc';
                 wrapper.appendChild(badge);
             }
         }
-        if (record.numero_ore) { const chip = document.createElement('span'); chip.className = 'chip ore'; chip.textContent = record.numero_ore; wrapper.appendChild(chip); }
+        
+        if (record.numero_ore) { 
+            const chip = document.createElement('span'); 
+            chip.className = 'chip ore'; 
+            chip.textContent = record.numero_ore; 
+            wrapper.appendChild(chip); 
+        }
+        
         td.appendChild(wrapper);
-        if (record.note) { const ind = document.createElement('div'); ind.className = 'note-indicator'; ind.title = record.note; td.appendChild(ind); }
+        
+        if (record.note) { 
+            const ind = document.createElement('div'); 
+            ind.className = 'note-indicator'; 
+            ind.title = record.note; 
+            td.appendChild(ind); 
+        }
+    }
+    
+    // Funzione unificata per ri-renderizzare la cella dopo un salvataggio
+    function updateCellVisuals(td, record) {
+        td.innerHTML = '';
+        td.className = ''; 
+
+        // Ripristino Weekend
+        if (td.dataset.isWeekend === "true") {
+            td.classList.add('weekend-column');
+        }
+
+        // Render Contenuto
+        if (record) {
+            renderCellContent(td, record);
+        }
+
+        // Render Semaforo (Usa la stessa logica del caricamento iniziale!)
+        const statusClass = calculateStatusClass(record, td.dataset.isWeekend === "true");
+        if (statusClass) {
+            const indicator = document.createElement('div');
+            indicator.className = `status-indicator ${statusClass}`;
+            td.appendChild(indicator);
+        }
     }
 
     async function loadTypes() {
@@ -594,8 +636,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return {ore,idTipo,note};
     }
 
-    // FIX CHIAVE: Data Locale Formattata Correttamente (YYYY-MM-DD)
-    // Evita l'uso di toISOString() che converte in UTC e causa sfasamenti di -1 giorno
     function formatDateISO(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -603,17 +643,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return `${year}-${month}-${day}`;
     }
 
-    async function applyColumnColorPrompt(e, dateStr) {
-        const color = prompt("Scrivi colore (red, yellow, green, blue, none):");
-        if(color) { try { await apiClient.post('/presenze/colore-colonna', {data:dateStr, colore}); alert("Colore aggiornato. Scorri per aggiornare o ricarica."); } catch(e) { alert("Errore"); } }
-    }
-
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
         
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
         
-        // Listener sui pallini colorati del popup HEADER
         document.querySelectorAll('.color-dot').forEach(dot => { 
             dot.addEventListener('click', async (e) => { 
                 const color = e.target.dataset.color; 
@@ -625,55 +659,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
-    }
-
-    function updateCellVisuals(td, record) {
-        td.innerHTML = ''; 
-        td.className = ''; 
-        
-        // 1. Ripristina classi base (Weekend)
-        if(td.dataset.isWeekend === "true") {
-            td.classList.add('weekend-column'); 
-        }
-        
-        // 2. Colore di Sfondo Manuale (es. Ferie Blu)
-        // Questo riguarda la cella INTERA, deciso manualmente dall'admin
-        if(record && record.colore && record.colore !== 'none') {
-            td.classList.add(`cell-color-${record.colore}`);
-        }
-
-        // 3. Renderizza Contenuto Testuale (Dato Manuale)
-        // Qui mostriamo "numero_ore" che è quello che tu scrivi a mano
-        if (record) {
-            renderCellContent(td, record); 
-        }
-        
-        // 4. Calcola SEMAFORO (Basato su Ore Lavorazioni Reali)
-        // NON usiamo record.numero_ore qui! Usiamo record.ore_effettive
-        let realWorkHours = 0;
-        
-        // Assicuriamoci di leggere il campo corretto dal backend
-        // Se record.ore_effettive non esiste, assume 0 (Rosso)
-        if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
-            realWorkHours = parseFloat(record.ore_effettive);
-        }
-
-        const indicator = document.createElement('div');
-        indicator.className = 'status-indicator';
-
-        // Logica Semaforo basata ESCLUSIVAMENTE sulle lavorazioni
-        if (realWorkHours >= 8) {
-            indicator.classList.add('status-ok'); // Verde (Ha lavorato >= 8h)
-        } else if (realWorkHours > 0 && realWorkHours < 8) {
-            indicator.classList.add('status-warning'); // Giallo (Ha lavorato un po')
-        } else if (td.dataset.isWeekend !== "true") {
-            // Se è feriale e NON ha inserito lavorazioni (0 ore reali), è ROSSO
-            // Indipendentemente dal fatto che tu abbia scritto "8" nella cella
-            indicator.classList.add('status-missing');
-        } else {
-            indicator.style.display = 'none'; // Weekend vuoto
-        }
-        
-        td.appendChild(indicator);
     }
 });
