@@ -313,15 +313,15 @@ const PrintPage = {
             monthData.forEach(row => rowsByDay[parseInt(row.data.split('-')[2])].push(row));
 
             const startY = 670;
-            const rowH = 15.7;
+            const rowH = 15.8;
             
             // COORDINATE
             const CX = {
                 Col_M_In: 96,   Col_M_Out: 127,
                 Col_P_In: 159,  Col_P_Out: 191,
-                Ore: 230, Straord: 261, Perm: 298,
+                Ore: 230, Straord: 261, Perm: 300,
                 Tipo: 342, 
-                Desc: 380, // Posizione Descrizione
+                Desc: 375, // Posizione Descrizione
                 VA: 513, VR: 551 
             };
 
