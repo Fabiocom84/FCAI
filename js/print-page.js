@@ -274,7 +274,7 @@ const PrintPage = {
     },
 
     // =========================================================
-    // GENERAZIONE PDF - LOGICA "PULITA" V2
+    // GENERAZIONE PDF - V3 (LOGICA ESSENZIALE)
     // =========================================================
     generatePreview: async function() {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
@@ -341,18 +341,23 @@ const PrintPage = {
                         types.add(it.tipo);
                         if (it.is_assenza) isAbs = true;
 
-                        // --- LOGICA DESCRIZIONE PULITA ---
+                        // --- LOGICA DESCRIZIONE V3 (ESSENZIALE) ---
                         let descText = "";
                         
-                        // 1. Caso Assenza o Cantiere: Usa la NOTA
-                        if (it.is_assenza || it.tipo === 'T' || (it.note && it.note.includes('['))) {
-                            descText = it.note || ""; 
+                        // 1. Caso CANTIERE: 
+                        // Rimuovi "[CANTIERE]" e tieni solo il resto della nota
+                        if (it.tipo === 'T' || (it.note && it.note.includes('[CANTIERE]'))) {
+                            descText = (it.note || "").replace('[CANTIERE]', '').trim();
                         } 
-                        // 2. Caso Lavoro Standard: Usa il COMPONENTE (Attività)
-                        //    Rimuoviamo completamente il riferimento alla Commessa/Cliente
+                        // 2. Caso ASSENZA (Ferie/Permessi):
+                        // Mantieni tutto (es. "[FERIE]")
+                        else if (it.is_assenza) {
+                            descText = it.note || "";
+                        }
+                        // 3. Caso LAVORO ORDINARIO (Officina):
+                        // NON stampare nulla (per evitare "inventario", "montaggio" che intasano)
                         else {
-                            descText = it.label_componente || "";
-                            if (it.note) descText += " " + it.note;
+                            descText = ""; 
                         }
 
                         if (descText) labels.push(descText);
@@ -389,8 +394,10 @@ const PrintPage = {
                     // 4. Descrizione
                     let fullDesc = labels.join(", ");
                     if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";
+                    
                     // Stampiamo ALLINEATI (Y), stessa dimensione (fs=9)
-                    page.drawText(fullDesc, { x: CX.Desc, y: Y + 1, size: fs, font });
+                    // Nota: Ho corretto Y + 1 a Y puro per allineamento perfetto con i numeri
+                    page.drawText(fullDesc, { x: CX.Desc, y: Y, size: fs, font });
 
                     // 5. Viaggio
                     if (totViaggio > 0) {
