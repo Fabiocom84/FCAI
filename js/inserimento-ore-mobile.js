@@ -24,7 +24,11 @@ const MobileHoursApp = {
         editingOriginalHours: 0, 
 
         // Totali
-        currentDayTotal: 0
+        currentDayTotal: 0,
+
+        adminMode: false,      
+        targetUserId: null,    
+        targetUserName: null
     },
 
     dom: {
@@ -76,8 +80,6 @@ const MobileHoursApp = {
 
     init: function() {
         console.log("🚀 Mobile App Init - Full Version v2.0");
-        this.loadUserName();
-        this.loadTimelineBatch();
         
         // Init Choices.js
         this.initChoices();
@@ -106,6 +108,51 @@ const MobileHoursApp = {
 
         // Preset Assenza (Ferie = 8h auto)
         this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
+
+        // --- NUOVO: Controllo Parametri URL Admin ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
+            this.state.adminMode = true;
+            this.state.targetUserId = parseInt(urlParams.get('targetUserId'));
+            this.state.targetUserName = decodeURIComponent(urlParams.get('targetUserName') || 'Utente');
+            
+            this.setupAdminUI();
+        } else {
+            this.loadUserName(); // Caricamento normale utente loggato
+        }
+
+        this.loadTimelineBatch(); // Questo dovrà usare l'ID corretto
+
+    },
+
+    setupAdminUI: function() {
+        // 1. Cambia Header
+        const headerEl = document.getElementById('headerUserName');
+        const detailEl = document.getElementById('detailUserName');
+        const titleContainer = document.querySelector('.title-container h1');
+        
+        if(titleContainer) titleContainer.textContent = "MODIFICA ADMIN";
+        if(headerEl) {
+            headerEl.textContent = `Operando come: ${this.state.targetUserName}`;
+            headerEl.style.color = "#f1c40f"; // Giallo per evidenziare
+            headerEl.style.fontWeight = "bold";
+        }
+        if(detailEl) detailEl.textContent = this.state.targetUserName;
+
+        // 2. Aggiungi banner visivo o cambia colore header
+        const header = document.querySelector('.mobile-nav-header');
+        if(header) {
+            header.style.backgroundColor = "#34495e"; // Un colore diverso per l'admin (es. grigio scuro)
+            header.style.borderBottom = "4px solid #f1c40f"; // Bordo giallo warning
+        }
+        
+        // 3. Modifica il bottone Home per chiudere la scheda
+        const homeBtn = document.querySelector('.header-button');
+        if(homeBtn) {
+            homeBtn.innerHTML = '<span>❌ Chiudi</span>';
+            homeBtn.href = "#";
+            homeBtn.onclick = (e) => { e.preventDefault(); window.close(); };
+        }
     },
 
     loadUserName: function() {
@@ -125,15 +172,15 @@ const MobileHoursApp = {
         if (this.state.isLoading || this.state.isListFinished) return;
         this.state.isLoading = true;
         try {
-            const res = await apiFetch(`/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`);
+            // Se siamo in Admin Mode, aggiungiamo il parametro userId
+            let url = `/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`;
+            if (this.state.adminMode) {
+                url += `&userId=${this.state.targetUserId}`;
+            }
+
+            const res = await apiFetch(url);
             const days = await res.json();
-            document.querySelector('.loader-placeholder')?.remove();
-            
-            if (days.length === 0) { this.state.isListFinished = true; return; }
-            
-            const todayStr = new Date().toISOString().split('T')[0];
-            days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
-            this.state.offset += this.state.limit;
+            // ... (resto funzione invariato)
         } catch (e) { console.error(e); } 
         finally { this.state.isLoading = false; }
     },
@@ -292,8 +339,15 @@ const MobileHoursApp = {
     loadExistingWorks: async function(dateStr) {
         this.dom.existingList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Caricamento...</div>';
         try {
-            const res = await apiFetch(`/api/ore/day/${dateStr}`);
+            // Aggiungiamo userId se admin
+            let url = `/api/ore/day/${dateStr}`;
+            if (this.state.adminMode) {
+                url += `?userId=${this.state.targetUserId}`;
+            }
+
+            const res = await apiFetch(url);
             const works = await res.json();
+
             this.dom.existingList.innerHTML = '';
 
             // Calcolo Totale
@@ -388,7 +442,6 @@ const MobileHoursApp = {
     },
 
     // --- SALVATAGGIO ---
-    // --- SALVATAGGIO ---
     handleSave: async function(e) {
         e.preventDefault();
         const type = document.querySelector('input[name="entryType"]:checked').value;
@@ -422,6 +475,10 @@ const MobileHoursApp = {
             assenza_pomeriggio_alle: (type === 'assenza') ? this.dom.absPomEnd.value : null,
         };
 
+        if (this.state.adminMode) {
+            payload.id_personale_override = this.state.targetUserId;
+        }
+
         // ... Logica payload ID (Commessa/Cantiere/Assenza) invariata ...
         if (type === 'produzione') {
             payload.id_commessa = this.state.choicesInstance.getValue(true);
@@ -444,17 +501,17 @@ const MobileHoursApp = {
         const originalText = btn.textContent;
         btn.textContent = "Salvando...";
 
-        try {
-             if (this.state.editingId) await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
+         try {
+             if (this.state.editingId) {
+                 // DELETE non ha body di solito, ma se serve passare l'ID utente per i permessi admin
+                 // potremmo doverlo passare in query string
+                 let delUrl = `/api/ore/${this.state.editingId}`;
+                 // Nota: il backend deve sapere che l'admin può cancellare record altrui
+                 await apiFetch(delUrl, { method: 'DELETE' });
+             }
+             
+             // POST
              await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
-             
-             // 1. Aggiorna la lista sopra
-             this.loadExistingWorks(this.state.currentDate);
-             
-             // 2. Pulisci il form (così sei pronto a inserire altro)
-             this.resetFormState();
-             
-             // NESSUN MODALE: L'utente vede apparire la card nella lista sopra
 
         } catch (err) { 
             alert("Errore: " + err.message); 

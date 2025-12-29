@@ -151,24 +151,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderBaseGridRows() {
         timelineBody.innerHTML = '';
-        
-        // --- APPLICAZIONE SUGGERIMENTO 4 ---
         const fragment = document.createDocumentFragment();
         
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
             tr.dataset.personId = person.id_personale;
+            
             const th = document.createElement('th');
-            th.textContent = person.nome_cognome;
-            th.title = person.nome_cognome;
-            th.addEventListener('click', () => openPersonnelDetail(person));
+            // Container flex per allineare nome e icona
+            th.style.display = 'flex';
+            th.style.justifyContent = 'space-between';
+            th.style.alignItems = 'center';
+
+            // Nome cliccabile per il dettaglio mensile (esistente)
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = person.nome_cognome;
+            nameSpan.title = person.nome_cognome;
+            nameSpan.style.cursor = 'pointer';
+            nameSpan.style.overflow = 'hidden';
+            nameSpan.style.textOverflow = 'ellipsis';
+            nameSpan.addEventListener('click', () => openPersonnelDetail(person));
+            
+            // --- NUOVO: Bottone Link Admin Mode ---
+            // Apre inserimento-ore.html con parametri URL
+            const editLink = document.createElement('a');
+            editLink.className = 'user-edit-btn';
+            editLink.innerHTML = '✏️'; // O usa un'immagine <img>
+            editLink.title = `Inserisci ore per ${person.nome_cognome}`;
+            editLink.href = `inserimento-ore.html?adminMode=true&targetUserId=${person.id_personale}&targetUserName=${encodeURIComponent(person.nome_cognome)}`;
+            editLink.target = '_blank'; // Apre nuova scheda
+            
+            // Preveniamo che il click sul link apra anche il modale dettaglio
+            editLink.addEventListener('click', (e) => e.stopPropagation());
+
+            th.appendChild(nameSpan);
+            th.appendChild(editLink);
             tr.appendChild(th);
             
-            // Appende al frammento, non ancora al DOM
             fragment.appendChild(tr);
         });
         
-        // Unico reflow finale
         timelineBody.appendChild(fragment);
     }
 
@@ -233,12 +255,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
         
+        // Imposta weekend
         if (isWeekend) {
             td.classList.add('weekend-column');
-            td.dataset.isWeekend = "true"; // <--- AGGIUNGI QUESTA RIGA
+            td.dataset.isWeekend = "true";
         }
 
         const record = loadedDataMap[`${pid}_${dateStr}`];
+        
+        // --- NUOVA LOGICA SEMAFORO ---
+        // Calcoliamo il totale ore (se il record esiste)
+        let totalHours = 0;
+        if (record && record.numero_ore) {
+            totalHours = parseFloat(record.numero_ore);
+        }
+
+        // Creiamo la barra indicatrice
+        const indicator = document.createElement('div');
+        indicator.className = 'status-indicator';
+
+        if (totalHours >= 8) {
+            indicator.classList.add('status-ok'); // Verde
+        } else if (totalHours > 0 && totalHours < 8) {
+            indicator.classList.add('status-warning'); // Giallo
+        } else if (!isWeekend && totalHours === 0) {
+            // Rosso solo se è un giorno feriale e non ci sono ore
+            // (Nota: se record.colore è impostato es. Ferie, magari vogliamo evitare il rosso?
+            // Per ora lo lasciamo rosso "missing input" se non ci sono ore registrate, 
+            // ma se c'è "Ferie" di solito le ore dovrebbero essere 8 nel DB).
+            indicator.classList.add('status-missing'); 
+        } else {
+            // Weekend o 0 ore giustificate (non visualizziamo barra o grigia)
+            indicator.style.display = 'none'; 
+        }
+        
+        td.appendChild(indicator); // Aggiungiamo la barra alla cella
+        // -----------------------------
+
         if (record) renderCellContent(td, record);
         
         td.addEventListener('click', (e) => handleQuickEdit(e, td));

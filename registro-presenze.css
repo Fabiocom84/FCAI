@@ -441,3 +441,37 @@ body {
 .detail-row-yellow  { background-color: #fff3cd !important; }
 .detail-row-green   { background-color: #d4edda !important; }
 .detail-row-blue    { background-color: #d1ecf1 !important; }
+
+/* Bottone Edit Utente nella colonna laterale */
+.user-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 8px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    text-decoration: none; /* Per il link */
+}
+.user-edit-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* --- INDICATORI SEMAFORO (Barra laterale destra) --- */
+/* Usiamo una barra laterale interna per non sovrascrivere il background-color */
+.status-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px; /* Spessore della barra */
+    z-index: 5;
+}
+
+.status-ok { background-color: #2ecc71; }      /* Verde (>= 8h) */
+.status-warning { background-color: #f1c40f; } /* Giallo (> 0h ma < 8h) */
+.status-missing { background-color: #e74c3c; } /* Rosso (0h nei giorni feriali) */
