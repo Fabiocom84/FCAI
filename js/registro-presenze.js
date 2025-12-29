@@ -626,4 +626,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
+
+    function updateCellVisuals(td, record) {
+        td.innerHTML = ''; 
+        td.className = ''; 
+        
+        // 1. Ripristina classi base (Weekend)
+        if(td.dataset.isWeekend === "true") {
+            td.classList.add('weekend-column'); 
+        }
+        
+        // 2. Colore di Sfondo Manuale (es. Ferie Blu)
+        // Questo riguarda la cella INTERA, deciso manualmente dall'admin
+        if(record && record.colore && record.colore !== 'none') {
+            td.classList.add(`cell-color-${record.colore}`);
+        }
+
+        // 3. Renderizza Contenuto Testuale (Dato Manuale)
+        // Qui mostriamo "numero_ore" che è quello che tu scrivi a mano
+        if (record) {
+            renderCellContent(td, record); 
+        }
+        
+        // 4. Calcola SEMAFORO (Basato su Ore Lavorazioni Reali)
+        // NON usiamo record.numero_ore qui! Usiamo record.ore_effettive
+        let realWorkHours = 0;
+        
+        // Assicuriamoci di leggere il campo corretto dal backend
+        // Se record.ore_effettive non esiste, assume 0 (Rosso)
+        if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
+            realWorkHours = parseFloat(record.ore_effettive);
+        }
+
+        const indicator = document.createElement('div');
+        indicator.className = 'status-indicator';
+
+        // Logica Semaforo basata ESCLUSIVAMENTE sulle lavorazioni
+        if (realWorkHours >= 8) {
+            indicator.classList.add('status-ok'); // Verde (Ha lavorato >= 8h)
+        } else if (realWorkHours > 0 && realWorkHours < 8) {
+            indicator.classList.add('status-warning'); // Giallo (Ha lavorato un po')
+        } else if (td.dataset.isWeekend !== "true") {
+            // Se è feriale e NON ha inserito lavorazioni (0 ore reali), è ROSSO
+            // Indipendentemente dal fatto che tu abbia scritto "8" nella cella
+            indicator.classList.add('status-missing');
+        } else {
+            indicator.style.display = 'none'; // Weekend vuoto
+        }
+        
+        td.appendChild(indicator);
+    }
 });
