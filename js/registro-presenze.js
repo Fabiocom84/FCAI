@@ -255,19 +255,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
         
-        // Imposta classe weekend
+        // Salviamo il fatto che è weekend nel dataset per ripristinarlo dopo
         if (isWeekend) {
-            td.classList.add('weekend-column');
             td.dataset.isWeekend = "true";
+            td.classList.add('weekend-column');
         }
 
-        // Recupera dati (può essere undefined se non c'è nulla nel DB)
         const record = loadedDataMap[`${pid}_${dateStr}`];
+
+        // 1. PRIMA RENDERIZZIAMO IL CONTENUTO (Numeri, Etichette)
+        // (Questo resetta l'HTML della cella, quindi va fatto per primo)
+        if (record) {
+            renderCellContent(td, record);
+        }
         
-        // --- LOGICA SEMAFORO (CORRETTA) ---
+        // 2. POI CALCOLIAMO E AGGIUNGIAMO IL SEMAFORO
+        // (Così viene appeso DOPO e non viene cancellato)
         let totalHours = 0;
-        
-        // Se il record esiste, prendiamo le ore. Se non esiste, restano 0.
         if (record && record.numero_ore) {
             totalHours = parseFloat(record.numero_ore);
         }
@@ -275,29 +279,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const indicator = document.createElement('div');
         indicator.className = 'status-indicator';
 
-        // Logica decisionale
         if (totalHours >= 8) {
             indicator.classList.add('status-ok'); // Verde
         } else if (totalHours > 0 && totalHours < 8) {
             indicator.classList.add('status-warning'); // Giallo
+        } else if (!isWeekend && totalHours === 0) {
+            // Rosso se feriale e vuoto
+            indicator.classList.add('status-missing'); 
         } else {
-            // Caso 0 ore (o record mancante)
-            if (isWeekend) {
-                // Se è weekend e 0 ore, nascondiamo la barra
-                indicator.style.display = 'none';
-            } else {
-                // Se è feriale e 0 ore, è ROSSO (Missing)
-                indicator.classList.add('status-missing'); 
-            }
+            indicator.style.display = 'none'; 
         }
         
-        td.appendChild(indicator);
-        // -----------------------------
-
-        if (record) renderCellContent(td, record);
+        td.appendChild(indicator); // Appende DIRETTAMENTE al TD
         
+        // Eventi Click
         td.addEventListener('click', (e) => handleQuickEdit(e, td));
         td.addEventListener('contextmenu', (e) => { e.preventDefault(); handleVisualEdit(e, td); });
+        
         return td;
     }
 
@@ -542,9 +540,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCellContent(td, record) {
-        td.innerHTML = ''; td.className = '';
-        if(td.dataset.isWeekend) td.classList.add('weekend-column'); 
-        if(record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
+        td.innerHTML = ''; 
+        td.className = ''; // <--- Questo pulisce le classi!
+        
+        // IMPORTANTE: Ripristiniamo la classe weekend se necessario
+        if(td.dataset.isWeekend === "true") {
+            td.classList.add('weekend-column'); 
+        }
+        
+        // Ripristiniamo il colore di sfondo personalizzato se c'è
+        if(record.colore && record.colore !== 'none') {
+            td.classList.add(`cell-color-${record.colore}`);
+        }
+        
         const wrapper = document.createElement('div'); wrapper.className = 'cell-content-wrapper';
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
