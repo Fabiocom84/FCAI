@@ -388,12 +388,14 @@ const MobileHoursApp = {
     },
 
     // --- SALVATAGGIO ---
+    // --- SALVATAGGIO ---
     handleSave: async function(e) {
         e.preventDefault();
         const type = document.querySelector('input[name="entryType"]:checked').value;
         const btn = this.dom.saveBtn;
         
         const hours = parseFloat(this.dom.hoursInput.value);
+        
         // Validazione base
         if (type !== 'assenza' && !hours) return alert("Inserire le ore di lavoro.");
         if (type === 'assenza' && !hours && !this.dom.absMattinaStart.value) return alert("Inserire le ore o l'orario di assenza.");
@@ -407,19 +409,20 @@ const MobileHoursApp = {
             ore_viaggio_andata: parseFloat(this.dom.travelAndata.value) || 0,
             ore_viaggio_ritorno: parseFloat(this.dom.travelRitorno.value) || 0,
             
-            // Straordinari (solo se visibili)
+            // Straordinari
             str_mattina_dalle: (this.dom.overtimeFields.style.display === 'block') ? this.dom.strMattinaStart.value : null,
             str_mattina_alle: (this.dom.overtimeFields.style.display === 'block') ? this.dom.strMattinaEnd.value : null,
             str_pomeriggio_dalle: (this.dom.overtimeFields.style.display === 'block') ? this.dom.strPomStart.value : null,
             str_pomeriggio_alle: (this.dom.overtimeFields.style.display === 'block') ? this.dom.strPomEnd.value : null,
 
-            // Assenza (solo se tipo assenza)
+            // Assenza
             assenza_mattina_dalle: (type === 'assenza') ? this.dom.absMattinaStart.value : null,
             assenza_mattina_alle: (type === 'assenza') ? this.dom.absMattinaEnd.value : null,
             assenza_pomeriggio_dalle: (type === 'assenza') ? this.dom.absPomStart.value : null,
             assenza_pomeriggio_alle: (type === 'assenza') ? this.dom.absPomEnd.value : null,
         };
 
+        // ... Logica payload ID (Commessa/Cantiere/Assenza) invariata ...
         if (type === 'produzione') {
             payload.id_commessa = this.state.choicesInstance.getValue(true);
             payload.id_componente = this.dom.componentSelect.value;
@@ -436,18 +439,31 @@ const MobileHoursApp = {
         }
 
         btn.disabled = true;
+        
+        // Feedback visivo immediato sul pulsante
+        const originalText = btn.textContent;
+        btn.textContent = "Salvando...";
+
         try {
              if (this.state.editingId) await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
              await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
              
+             // 1. Aggiorna la lista sopra
              this.loadExistingWorks(this.state.currentDate);
+             
+             // 2. Pulisci il form (così sei pronto a inserire altro)
              this.resetFormState();
-             showModal({title: 'Fatto!', message: 'Salvataggio completato.', confirmText:'OK'});
-        } catch (err) { alert("Errore: " + err.message); } 
-        finally { btn.disabled = false; }
+             
+             // NESSUN MODALE: L'utente vede apparire la card nella lista sopra
+
+        } catch (err) { 
+            alert("Errore: " + err.message); 
+        } finally { 
+            btn.disabled = false; 
+            btn.textContent = originalText; // Ripristina testo pulsante
+        }
     },
 
-    // --- MODIFICA (MAPPING INVERSO) ---
     // --- MODIFICA (MAPPING INVERSO) ---
     startEdit: async function(work) {
         console.log("✏️ Avvio modifica per:", work); // Debug
