@@ -273,9 +273,9 @@ const PrintPage = {
         } catch (e) { console.error("PDF Template Error:", e); }
     },
 
-    // ==========================================
-    //   GENERAZIONE PDF (LOGICA AGGIORNATA)
-    // ==========================================
+    // =========================================================
+    // GENERAZIONE PDF - LOGICA "PULITA" V2
+    // =========================================================
     generatePreview: async function() {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
         
@@ -289,14 +289,14 @@ const PrintPage = {
         btn.disabled = true;
 
         try {
-            // A. Recupero Dati Mese
+            // A. Recupero Dati
             const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
             const res = await apiFetch(`/api/report/analyze?start=${startDate}&end=${endDate}`);
             const payload = await res.json();
             const monthData = payload.data || [];
 
-            // B. Preparazione PDF
+            // B. PDF setup
             const pdfDoc = await PDFLib.PDFDocument.load(this.state.templateBytes);
             const page = pdfDoc.getPages()[0];
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -315,57 +315,64 @@ const PrintPage = {
             const startY = 645;
             const rowH = 15.6;
             
-            // --- NUOVE COORDINATE ---
+            // COORDINATE
             const CX = {
-                Col_M_In: 75,   // Mattino Entrata
-                Col_M_Out: 110, // Mattino Uscita
-                Col_P_In: 145,  // Pomeriggio Entrata
-                Col_P_Out: 180, // Pomeriggio Uscita
-                
-                Ore: 220, 
-                Straord: 245, 
-                Perm: 270,
+                Col_M_In: 75,   Col_M_Out: 110,
+                Col_P_In: 145,  Col_P_Out: 180,
+                Ore: 220, Straord: 245, Perm: 270,
                 Tipo: 295, 
-                Desc: 315, // SPOSTATO A SINISTRA (Era 410)
-                VA: 535, 
-                VR: 565 
+                Desc: 315, // Posizione Descrizione
+                VA: 535, VR: 565 
             };
+
+            // FONT SIZE UNIFICATO
+            const fs = 9; 
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
                 if (items.length > 0) {
                     let totOre = 0, totViaggio = 0;
                     let labels = [], types = new Set(), isAbs = false;
-                    
-                    // Variabili per gli orari da stampare (se presenti)
                     let timeM_In = "", timeM_Out = "", timeP_In = "", timeP_Out = "";
 
                     items.forEach(it => {
                         totOre += it.ore;
                         totViaggio += it.viaggio;
-                        labels.push(it.label_commessa + (it.note ? ` (${it.note})` : ''));
                         types.add(it.tipo);
                         if (it.is_assenza) isAbs = true;
 
-                        // RACCOLTA ORARI (Prende il primo disponibile della giornata)
+                        // --- LOGICA DESCRIZIONE PULITA ---
+                        let descText = "";
+                        
+                        // 1. Caso Assenza o Cantiere: Usa la NOTA
+                        if (it.is_assenza || it.tipo === 'T' || (it.note && it.note.includes('['))) {
+                            descText = it.note || ""; 
+                        } 
+                        // 2. Caso Lavoro Standard: Usa il COMPONENTE (Attività)
+                        //    Rimuoviamo completamente il riferimento alla Commessa/Cliente
+                        else {
+                            descText = it.label_componente || "";
+                            if (it.note) descText += " " + it.note;
+                        }
+
+                        if (descText) labels.push(descText);
+
+                        // Orari
                         if (it.str_mattina_dalle) { timeM_In = it.str_mattina_dalle; timeM_Out = it.str_mattina_alle; }
                         if (it.str_pomeriggio_dalle) { timeP_In = it.str_pomeriggio_dalle; timeP_Out = it.str_pomeriggio_alle; }
-                        
                         if (it.assenza_mattina_dalle) { timeM_In = it.assenza_mattina_dalle; timeM_Out = it.assenza_mattina_alle; }
                         if (it.assenza_pomeriggio_dalle) { timeP_In = it.assenza_pomeriggio_dalle; timeP_Out = it.assenza_pomeriggio_alle; }
                     });
 
                     const Y = startY - ((day - 1) * rowH);
-                    const fs = 8; 
 
-                    // 1. STAMPA ORARI NELLE PRIME 4 COLONNE
-                    if (timeM_In) page.drawText(timeM_In, { x: CX.Col_M_In, y: Y, size: 7, font });
-                    if (timeM_Out) page.drawText(timeM_Out, { x: CX.Col_M_Out, y: Y, size: 7, font });
-                    if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: 7, font });
-                    if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: 7, font });
+                    // 1. Orari
+                    if (timeM_In) page.drawText(timeM_In, { x: CX.Col_M_In, y: Y, size: fs, font });
+                    if (timeM_Out) page.drawText(timeM_Out, { x: CX.Col_M_Out, y: Y, size: fs, font });
+                    if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: fs, font });
+                    if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: fs, font });
 
-
-                    // 2. STAMPA ORE E PERMESSI
+                    // 2. Ore / Permessi
                     if (isAbs) {
                         page.drawText(totOre.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     } else {
@@ -375,18 +382,17 @@ const PrintPage = {
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
-                    // 3. TIPO E DESCRIZIONE
+                    // 3. Tipo
                     const finalType = types.has('T') ? 'T' : 'O';
                     page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
 
+                    // 4. Descrizione
                     let fullDesc = labels.join(", ");
-                    // Tronca se troppo lungo
                     if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";
-                    
-                    // DESCRIZIONE: Spostata a Sinistra (315) e Più in alto (Y + 4)
-                    page.drawText(fullDesc, { x: CX.Desc, y: Y + 4, size: 9, font }); // Size aumentato a 9
+                    // Stampiamo ALLINEATI (Y), stessa dimensione (fs=9)
+                    page.drawText(fullDesc, { x: CX.Desc, y: Y + 1, size: fs, font });
 
-                    // 4. VIAGGI
+                    // 5. Viaggio
                     if (totViaggio > 0) {
                         const v_andata = (totViaggio / 2); 
                         const v_ritorno = (totViaggio / 2); 
@@ -396,11 +402,11 @@ const PrintPage = {
                 }
             }
 
-            // SALVA BLOB PDF
+            // SALVA
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
-            // RENDER ANTEPRIMA (Canvas)
+            // RENDER ANTEPRIMA
             const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
             const pdf = await loadingTask.promise;
             const pdfPage = await pdf.getPage(1);
