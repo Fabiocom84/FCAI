@@ -43,7 +43,6 @@ const PrintPage = {
         pdfYear: document.getElementById('pdfYear'),
         
         btnGenerate: document.getElementById('btnGeneratePDF'),
-        // MODIFICATO: Ora puntiamo all'immagine, non all'iframe
         pdfPreviewImage: document.getElementById('pdfPreviewImage'),
         btnCancelPreview: document.getElementById('btnCancelPreview'),
         btnConfirmSave: document.getElementById('btnConfirmSave'),
@@ -59,7 +58,7 @@ const PrintPage = {
     init: async function() {
         console.log("📊 Analytics Page Init");
         this.loadUserInfo();
-        this.setupDates();
+        this.setupDates(); // Configura le date all'avvio
         this.initChoices();
         this.loadTemplate(); 
 
@@ -82,7 +81,8 @@ const PrintPage = {
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
         
-        this.loadAnalysisData();
+        // Carica i dati subito dopo aver impostato le date di default
+        this.loadAnalysisData(); 
     },
 
     loadUserInfo: function() {
@@ -95,12 +95,23 @@ const PrintPage = {
 
     setupDates: function() {
         const today = new Date();
-        const past = new Date();
-        past.setDate(today.getDate() - 90);
         
-        this.dom.dateEnd.value = today.toISOString().split('T')[0];
-        this.dom.dateStart.value = past.toISOString().split('T')[0];
+        // Calcola il primo giorno del mese corrente
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        // Funzione per formattare la data nel formato YYYY-MM-DD
+        const formatDate = (date) => {
+            // Adjust for timezone offset to ensure the date is correct after toISOString
+            const offset = date.getTimezoneOffset();
+            const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+            return adjustedDate.toISOString().split('T')[0];
+        };
+        
+        // Imposta i valori nei campi input per il mese corrente
+        this.dom.dateEnd.value = formatDate(today);
+        this.dom.dateStart.value = formatDate(firstDayOfMonth);
 
+        // Popola i selettori di Mese e Anno per il PDF
         const months = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
         months.forEach((m, i) => {
             const opt = document.createElement('option');
@@ -114,10 +125,10 @@ const PrintPage = {
             const opt = document.createElement('option');
             opt.value = y;
             opt.textContent = y;
-            if(y === curYear) opt.selected = true;
+            if(y === curYear) opt.selected = true; // Seleziona l'anno corrente di default
             this.dom.pdfYear.appendChild(opt);
         }
-        this.dom.pdfMonth.value = today.getMonth() + 1;
+        this.dom.pdfMonth.value = today.getMonth() + 1; // Seleziona il mese corrente di default
     },
 
     initChoices: function() {
@@ -318,7 +329,9 @@ const PrintPage = {
 
                     items.forEach(it => {
                         totOre += it.ore;
-                        totViaggio += it.viaggio;
+                        // Nota: il backend invia solo 'viaggio' aggregato.
+                        // Se vuoi dettaglio andata/ritorno nel PDF, devi estrarli dal backend
+                        totViaggio += it.viaggio; // it.ore_viaggio_andata + it.ore_viaggio_ritorno;
                         labels.push(it.label_commessa + (it.note ? ` (${it.note})` : ''));
                         types.add(it.tipo);
                         if (it.is_assenza) isAbs = true;
@@ -344,9 +357,12 @@ const PrintPage = {
                     page.drawText(fullDesc, { x: CX.Desc, y: Y, size: 7, font });
 
                     if (totViaggio > 0) {
-                        const v = (totViaggio / 2);
-                        page.drawText(v.toString().substr(0,3), { x: CX.VA, y: Y, size: fs, font });
-                        page.drawText(v.toString().substr(0,3), { x: CX.VR, y: Y, size: fs, font });
+                        // Supponendo che 'viaggio' sia la somma, e vogliamo dividerlo equamente per A/R nel report
+                        // Se il backend invia ore_viaggio_andata e ore_viaggio_ritorno, usare quelli!
+                        const v_andata = (totViaggio / 2); // Placeholder, da sostituire con dati reali se disponibili
+                        const v_ritorno = (totViaggio / 2); // Placeholder
+                        page.drawText(v_andata.toFixed(1), { x: CX.VA, y: Y, size: fs, font });
+                        page.drawText(v_ritorno.toFixed(1), { x: CX.VR, y: Y, size: fs, font });
                     }
                 }
             }
@@ -426,7 +442,6 @@ const PrintPage = {
         this.dom.stepFinalActions.style.display = 'none';
         this.dom.stepSelect.style.display = 'flex';
         
-        // Pulisce l'immagine
         this.dom.pdfPreviewImage.src = ''; 
         this.state.currentPdfBlob = null;
         this.dom.btnConfirmSave.disabled = false;
