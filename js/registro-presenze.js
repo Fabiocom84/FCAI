@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const LOAD_BATCH_DAYS = 30;
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 75;
+    const COLUMN_WIDTH = 95;
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
