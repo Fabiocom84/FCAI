@@ -40,6 +40,13 @@ const PrintPage = {
         
         pdfMonth: document.getElementById('pdfMonth'),
         pdfYear: document.getElementById('pdfYear'),
+
+        existingReportAlert: document.getElementById('existingReportAlert'),
+        newReportControls: document.getElementById('newReportControls'),
+        foundVersion: document.getElementById('foundVersion'),
+        btnQuickDownload: document.getElementById('btnQuickDownload'),
+        btnQuickWhatsapp: document.getElementById('btnQuickWhatsapp'),
+        btnForceRegenerate: document.getElementById('btnForceRegenerate'),
         
         btnGenerate: document.getElementById('btnGeneratePDF'),
         pdfPreviewImage: document.getElementById('pdfPreviewImage'),
@@ -79,8 +86,21 @@ const PrintPage = {
         this.dom.btnCancelPreview.addEventListener('click', () => this.resetPdfWorkflow());
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
-        
+
+        // NUOVO: Listener per "Crea Nuova Versione" (quando esiste già un report)
+        if(this.dom.btnForceRegenerate) {
+            this.dom.btnForceRegenerate.addEventListener('click', () => this.generatePreview());
+        }
+
+        // NUOVO: Listener cambio data per check report
+        this.dom.pdfMonth.addEventListener('change', () => this.checkExistingReport());
+        this.dom.pdfYear.addEventListener('change', () => this.checkExistingReport());
+
+        // Carica dati analisi
         this.loadAnalysisData(); 
+        
+        // Controlla subito se esiste il report del mese corrente
+        this.checkExistingReport();
     },
 
     loadUserInfo: function() {
@@ -271,6 +291,41 @@ const PrintPage = {
             if (!res.ok) throw new Error("Template non trovato");
             this.state.templateBytes = await res.arrayBuffer();
         } catch (e) { console.error("PDF Template Error:", e); }
+    },
+
+    checkExistingReport: async function() {
+        const month = this.dom.pdfMonth.value;
+        const year = this.dom.pdfYear.value;
+        
+        // Nascondi tutto durante il check
+        this.dom.existingReportAlert.style.display = 'none';
+        this.dom.newReportControls.style.display = 'block'; // Default mostra "Crea"
+
+        try {
+            const res = await apiFetch(`/api/report/latest?mese=${month}&anno=${year}`);
+            const data = await res.json();
+
+            if (data.exists) {
+                // REPORT TROVATO!
+                this.dom.newReportControls.style.display = 'none';
+                this.dom.existingReportAlert.style.display = 'block';
+                
+                this.dom.foundVersion.textContent = data.version;
+                this.dom.btnQuickDownload.href = data.url;
+                
+                // Setup WhatsApp Link
+                const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+                const waMsg = `Ciao, ecco il report presenze di ${mNames[month-1]} ${year} (v${data.version}): ${data.url}`;
+                this.dom.btnQuickWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+            } 
+            else {
+                // NESSUN REPORT -> Resta il default
+                this.dom.existingReportAlert.style.display = 'none';
+                this.dom.newReportControls.style.display = 'block';
+            }
+        } catch (e) {
+            console.error("Errore check report:", e);
+        }
     },
 
     // =========================================================
@@ -473,12 +528,15 @@ const PrintPage = {
     resetPdfWorkflow: function() {
         this.dom.stepPreview.style.display = 'none';
         this.dom.stepFinalActions.style.display = 'none';
-        this.dom.stepSelect.style.display = 'flex';
+        this.dom.stepSelect.style.display = 'flex'; // Torna alla selezione
         
         this.dom.pdfPreviewImage.src = ''; 
         this.state.currentPdfBlob = null;
         this.dom.btnConfirmSave.disabled = false;
         this.dom.btnConfirmSave.textContent = "💾 Salva e Archivia";
+        
+        // Rilancia il check per mostrare l'interfaccia corretta (se l'hai appena salvato, ora mostrerà "Esistente")
+        this.checkExistingReport();
     }
 };
 

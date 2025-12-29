@@ -49,10 +49,37 @@
                 <p class="info-text">Seleziona mese e anno per creare il report.</p>
                 
                 <!-- STEP 1: Selezione -->
-                <div id="stepSelect" class="pdf-controls compact-row">
-                    <select id="pdfMonth" class="pdf-select"></select>
-                    <select id="pdfYear" class="pdf-select"></select>
-                    <button id="btnGeneratePDF" class="button button--primary pdf-btn">Anteprima</button>
+                <div id="stepSelect">
+                    <div class="pdf-controls compact-row" style="margin-bottom: 15px;">
+                        <select id="pdfMonth" class="pdf-select"></select>
+                        <select id="pdfYear" class="pdf-select"></select>
+                    </div>
+
+                    <!-- CASO A: REPORT ESISTENTE (Nascosto di default) -->
+                    <div id="existingReportAlert" style="display: none; background: #d1fae5; border: 1px solid #10b981; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; justify-content:center;">
+                            <span style="font-size:1.5rem;">✅</span>
+                            <div style="text-align:left;">
+                                <strong style="color:#065f46; display:block;">Report già presente (v<span id="foundVersion"></span>)</strong>
+                                <span style="font-size:0.8rem; color:#047857;">Non serve rigenerarlo se non hai fatto modifiche.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pdf-controls compact-row">
+                            <a id="btnQuickDownload" href="#" target="_blank" class="button pdf-btn" style="background-color: #6c757d !important; text-decoration: none;">📥 Scarica</a>
+                            <a id="btnQuickWhatsapp" href="#" target="_blank" class="button pdf-btn" style="background-color: #25D366 !important; text-decoration: none;">💬 WhatsApp</a>
+                        </div>
+                        
+                        <div style="margin-top: 15px; border-top: 1px solid #10b981; padding-top: 10px;">
+                            <p style="font-size:0.8rem; color:#065f46; margin-bottom:5px;">Hai modificato delle ore? Crea una nuova versione:</p>
+                            <button id="btnForceRegenerate" class="button pdf-btn" style="background-color: #3498db !important; width:100%;">🔄 Crea Nuova Versione</button>
+                        </div>
+                    </div>
+
+                    <!-- CASO B: NESSUN REPORT (Visibile di default) -->
+                    <div id="newReportControls">
+                        <button id="btnGeneratePDF" class="button button--primary pdf-btn" style="width:100%;">Anteprima e Crea</button>
+                    </div>
                 </div>
 
                 <!-- STEP 2: Anteprima (IMMAGINE) -->
