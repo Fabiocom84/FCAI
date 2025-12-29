@@ -255,41 +255,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
         
-        // Imposta weekend
+        // Imposta classe weekend
         if (isWeekend) {
             td.classList.add('weekend-column');
             td.dataset.isWeekend = "true";
         }
 
+        // Recupera dati (può essere undefined se non c'è nulla nel DB)
         const record = loadedDataMap[`${pid}_${dateStr}`];
         
-        // --- NUOVA LOGICA SEMAFORO ---
-        // Calcoliamo il totale ore (se il record esiste)
+        // --- LOGICA SEMAFORO (CORRETTA) ---
         let totalHours = 0;
+        
+        // Se il record esiste, prendiamo le ore. Se non esiste, restano 0.
         if (record && record.numero_ore) {
             totalHours = parseFloat(record.numero_ore);
         }
 
-        // Creiamo la barra indicatrice
         const indicator = document.createElement('div');
         indicator.className = 'status-indicator';
 
+        // Logica decisionale
         if (totalHours >= 8) {
             indicator.classList.add('status-ok'); // Verde
         } else if (totalHours > 0 && totalHours < 8) {
             indicator.classList.add('status-warning'); // Giallo
-        } else if (!isWeekend && totalHours === 0) {
-            // Rosso solo se è un giorno feriale e non ci sono ore
-            // (Nota: se record.colore è impostato es. Ferie, magari vogliamo evitare il rosso?
-            // Per ora lo lasciamo rosso "missing input" se non ci sono ore registrate, 
-            // ma se c'è "Ferie" di solito le ore dovrebbero essere 8 nel DB).
-            indicator.classList.add('status-missing'); 
         } else {
-            // Weekend o 0 ore giustificate (non visualizziamo barra o grigia)
-            indicator.style.display = 'none'; 
+            // Caso 0 ore (o record mancante)
+            if (isWeekend) {
+                // Se è weekend e 0 ore, nascondiamo la barra
+                indicator.style.display = 'none';
+            } else {
+                // Se è feriale e 0 ore, è ROSSO (Missing)
+                indicator.classList.add('status-missing'); 
+            }
         }
         
-        td.appendChild(indicator); // Aggiungiamo la barra alla cella
+        td.appendChild(indicator);
         // -----------------------------
 
         if (record) renderCellContent(td, record);
