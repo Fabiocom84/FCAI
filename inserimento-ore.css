@@ -355,3 +355,62 @@ select:focus, input:focus { border-color: #3498db; outline: none; }
 .cantiere-mode #overtime-fields    { order: 2; margin-top: 10px; }
 .cantiere-mode #travel-fields      { order: 3; margin-top: 0; }
 .cantiere-mode #group-note         { order: 4; margin-top: 10px; }
+
+/* --- NUOVI STILI PER SEZIONI SPECIALI --- */
+
+/* Box Contenitori Colorati */
+.absence-box {
+    background: #e3f2fd; padding: 15px; border-radius: 12px;
+    border: 1px solid #90caf9; margin-bottom: 15px;
+}
+
+.travel-box {
+    background: #f3e5f5; padding: 15px; border-radius: 12px;
+    border: 1px solid #e1bee7; margin-bottom: 15px;
+}
+
+.overtime-box {
+    background: #fff5f5; padding: 15px; border-radius: 12px;
+    border: 1px solid #fc8181; margin-bottom: 15px;
+}
+
+/* Tipografia interna */
+.section-subtitle {
+    font-size: 0.75rem; margin: 0 0 10px 0; font-style: italic;
+}
+
+/* INPUT VIAGGIO */
+.travel-label {
+    font-size: 0.75rem; color: #6a1b9a; display: block; margin-bottom: 4px; font-weight: 600;
+}
+.travel-input {
+    width: 100%; border: 1px solid #ce93d8; text-align: center;
+    font-weight: bold; color: #4a148c; padding: 10px; border-radius: 8px;
+    background: white;
+}
+
+/* SELETTORI ORARI (Time Selects) */
+.time-range-row {
+    display: flex; gap: 5px; align-items: center; margin-bottom: 8px;
+}
+.time-range-row:last-child { margin-bottom: 0; }
+
+.icon-col { width: 25px; font-size: 1.1rem; text-align: center; }
+.select-col { flex: 1; }
+.arrow-col { color: #aaa; font-size: 0.8rem; padding-bottom: 3px; }
+
+.mobile-time-select {
+    width: 100%; padding: 8px 2px; font-size: 0.9rem;
+    text-align: center; text-align-last: center;
+    border-radius: 6px; font-weight: 500; appearance: none;
+    background-color: white;
+}
+
+/* Colori specifici per contesto */
+.str-select { border: 1px solid #feb2b2; color: #c53030; } /* Rosso Straord */
+.abs-select { border: 1px solid #90caf9; color: #1565c0; } /* Blu Assenza */
+
+/* Override Cantiere: gap ridotto */
+.cantiere-mode .simple-hours-group {
+    margin-top: -10px !important; /* Avvicina al blocco viaggio */
+}
