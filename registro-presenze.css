@@ -15,8 +15,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: -15px;
     margin-bottom: 5px;
-    padding: 10px 15px;
+    padding: 5px 15px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -67,7 +68,7 @@ body {
     border: 1px solid #d1d9e6;
     padding: 0;
     vertical-align: middle;
-    height: 50px;     
+    height: 40px;     
     box-sizing: border-box;
     white-space: nowrap;
     position: relative !important; /* Necessario per semaforo e note */
@@ -157,7 +158,8 @@ body {
     height: 100%;
     
     /* FIX VISIBILITÀ: Lasciamo spazio a destra per la barra */
-    padding-right: 12px; 
+    padding-left: 10px; 
+    padding-right: 2px; 
     box-sizing: border-box;
     
     /* Assicuriamoci che stia SOPRA al colore di sfondo della cella ma SOTTO al triangolo/barra */
@@ -193,12 +195,14 @@ body {
 .note-indicator {
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0; /* A DESTRA */
+    left: auto;
     width: 0;
     height: 0;
-    border-top: 14px solid #e74c3c; 
-    border-right: 14px solid transparent; 
-    z-index: 6; /* Sopra a tutto */
+    border-top: 10px solid #e74c3c; 
+    border-left: 10px solid transparent; /* Triangolo verso sinistra */
+    border-right: 0;
+    z-index: 11; /* Sopra anche alla barra se serve */
     pointer-events: none;
 }
 
@@ -482,13 +486,12 @@ body {
 .status-indicator {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;  /* SPOSTATO A SINISTRA */
     bottom: 0;
-    width: 8px; /* Un po' più spessa per visibilità */
-    z-index: 5; /* Sopra al contenuto */
-    display: block;
-    /* Opzionale: un'ombra leggera per staccarla */
-    box-shadow: -1px 0 2px rgba(0,0,0,0.1);
+    width: 6px; 
+    z-index: 10; /* Sopra a tutto il resto */
+    display: block !important; /* Forza la visualizzazione */
+    border-right: 1px solid rgba(255,255,255,0.5); /* Separatore */
 }
 
 .status-ok { background-color: #2ecc71; }      /* Verde (>= 8h) */
