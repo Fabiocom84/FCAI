@@ -151,6 +151,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderBaseGridRows() {
         timelineBody.innerHTML = '';
+        
+        // --- APPLICAZIONE SUGGERIMENTO 4 ---
+        const fragment = document.createDocumentFragment();
+        
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
             tr.dataset.personId = person.id_personale;
@@ -159,8 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.title = person.nome_cognome;
             th.addEventListener('click', () => openPersonnelDetail(person));
             tr.appendChild(th);
-            timelineBody.appendChild(tr);
+            
+            // Appende al frammento, non ancora al DOM
+            fragment.appendChild(tr);
         });
+        
+        // Unico reflow finale
+        timelineBody.appendChild(fragment);
     }
 
     function appendColumns(start, end) {
@@ -315,8 +324,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const recordMap = {};
             personRecords.forEach(r => recordMap[r.data] = r);
 
-            let leftRows = '';
-            let rightRows = '';
+            // --- APPLICAZIONE SUGGERIMENTO 4: Costruzione Stringa HTML ottimizzata ---
+            // Invece di manipolare il DOM, costruiamo stringhe HTML giganti e le iniettiamo una volta sola.
+            // (Nota: Per tabelle statiche come questa, costruire stringhe HTML è spesso più veloce di DocumentFragment)
+            
+            let leftRowsHtml = '';
+            let rightRowsHtml = '';
             
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
                 const dayNum = d.getDate();
@@ -325,15 +338,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
                 const rec = recordMap[dateStr] || {};
                 
-                // --- LOGICA COLORI ---
                 let rowClass = '';
-                
-                // 1. Se c'è un colore manuale, VINCE LUI
                 if (rec.colore && rec.colore !== 'none') {
                     rowClass = `detail-row-${rec.colore}`;
-                } 
-                // 2. Altrimenti, se è weekend, metti il grigio
-                else if (isWeekend) {
+                } else if (isWeekend) {
                     rowClass = 'detail-row-weekend';
                 }
                 
@@ -355,7 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </tr>
                 `;
 
-                if (dayNum <= 15) leftRows += rowHtml; else rightRows += rowHtml;
+                if (dayNum <= 15) leftRowsHtml += rowHtml; else rightRowsHtml += rowHtml;
             }
 
             const tableHeader = `<thead><tr><th class="detail-col-day">G</th><th class="detail-col-hours">H</th><th class="detail-col-status">St</th><th class="detail-col-notes">Note</th></tr></thead>`;
@@ -363,10 +371,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalBodyContainer.innerHTML = `
                 <div class="modal-split-container">
                     <div class="split-column">
-                        <table class="detail-table">${tableHeader}<tbody>${leftRows}</tbody></table>
+                        <table class="detail-table">${tableHeader}<tbody>${leftRowsHtml}</tbody></table>
                     </div>
                     <div class="split-column">
-                        <table class="detail-table">${tableHeader}<tbody>${rightRows}</tbody></table>
+                        <table class="detail-table">${tableHeader}<tbody>${rightRowsHtml}</tbody></table>
                     </div>
                 </div>
             `;

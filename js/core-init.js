@@ -10,6 +10,11 @@ if (profileStr) {
     try {
         _currentUser = JSON.parse(profileStr);
         
+        // Verifica minima validità oggetto
+        if (!_currentUser || typeof _currentUser !== 'object') {
+            throw new Error("Formato profilo non valido");
+        }
+
         // NORMALIZZAZIONE ADMIN (Gestisce 1, "1", true, "true")
         const raw = _currentUser.is_admin;
         if (raw === true || raw === "true" || raw === 1 || raw === "1") {
@@ -20,10 +25,15 @@ if (profileStr) {
             _isAdmin = false;
         }
     } catch (e) {
-        console.error("CoreInit: Profilo utente corrotto nel localStorage.", e);
+        console.error("CoreInit: Profilo utente corrotto. Eseguo logout di sicurezza.", e);
+        // --- APPLICAZIONE SUGGERIMENTO 1 ---
+        // Se il profilo è corrotto, puliamo tutto e rimandiamo al login
+        // per evitare che l'app giri in uno stato rotto.
+        localStorage.clear();
+        window.location.replace('login.html');
     }
 }
 
-// 2. EXPORT DELLE VARIABILI (Ora include anche CurrentUser!)
+// 2. EXPORT DELLE VARIABILI
 export const CurrentUser = _currentUser;
 export const IsAdmin = _isAdmin;

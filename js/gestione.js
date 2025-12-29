@@ -904,9 +904,12 @@ const App = {
         const config = this.viewConfig[this.state.currentView];
         if (!config) return;
 
+        // Creazione tabella (in memoria)
         const table = document.createElement('table');
         table.className = 'agile-table';
         table.dataset.view = this.state.currentView;
+        
+        // Header
         const thead = table.createTHead();
         const headerRow = thead.insertRow();
 
@@ -930,8 +933,7 @@ const App = {
             if (this.state.sortBy === col.key) {
                 sortIndicator = this.state.sortOrder === 'asc' ? ' 🔼' : ' 🔽';
             }
-                
-            // --- FIX: Use an <img> tag for the filter icon ---
+            
             const filterIcon = `<img src="img/filter.png" class="filter-icon" data-column-key="${col.key}" alt="Filtro">`;
 
             thContent.innerHTML = `<span>${col.label}${sortIndicator}</span>${filterIcon}`;
@@ -940,6 +942,7 @@ const App = {
             headerRow.appendChild(th);
         });
 
+        // Body
         const tbody = table.createTBody();
 
         if (data.length === 0) {
@@ -950,19 +953,33 @@ const App = {
             cell.style.textAlign = 'center'; cell.style.padding = '20px';
             cell.style.fontStyle = 'italic'; cell.style.color = '#666';
         } else {
+            // --- APPLICAZIONE SUGGERIMENTO 4: DocumentFragment ---
+            const fragment = document.createDocumentFragment();
+
             data.forEach((rowData, index) => {
-                const row = tbody.insertRow();
+                // Usiamo createElement invece di insertRow per lavorare in memoria
+                const row = document.createElement('tr');
                 row.className = 'agile-table-row';
                 row.dataset.id = rowData[config.idColumn];
+                
                 const pageOffset = (this.state.currentPage - 1) * 50;
-                row.insertCell().textContent = pageOffset + index + 1;
+                
+                // Cella Numero
+                const cellNum = document.createElement('td');
+                cellNum.textContent = pageOffset + index + 1;
+                row.appendChild(cellNum);
 
-                const cellSelect = row.insertCell();
+                // Cella Radio
+                const cellSelect = document.createElement('td');
                 const radio = document.createElement('input');
                 radio.type = 'radio'; radio.name = 'rowSelector';
-                radio.value = rowData[config.idColumn]; cellSelect.appendChild(radio);
+                radio.value = rowData[config.idColumn]; 
+                cellSelect.appendChild(radio);
+                row.appendChild(cellSelect);
                     
+                // Celle Dati
                 config.columns.forEach(col => {
+                    const cell = document.createElement('td');
                     let cellValue;
                     if (col.formatter) {
                         cellValue = col.formatter(rowData);
@@ -970,11 +987,16 @@ const App = {
                         const displayKey = col.displayKey || col.key;
                         cellValue = this.getPropertyByString(rowData, displayKey) || '';
                     }
-                    // --- FIX: Use .innerHTML instead of .textContent ---
-                    // This tells the browser to render the HTML link correctly.
-                    row.insertCell().innerHTML = cellValue;
+                    cell.innerHTML = cellValue;
+                    row.appendChild(cell);
                 });
+
+                // Aggiunge la riga completa al frammento
+                fragment.appendChild(row);
             });
+
+            // Inietta tutte le righe nel tbody in una sola operazione
+            tbody.appendChild(fragment);
         }
 
         this.dom.gridWrapper.innerHTML = '';
