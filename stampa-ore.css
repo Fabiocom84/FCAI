@@ -1,5 +1,5 @@
 /* ==========================================================================
-   stampa-ore.css - Fix Bottoni & Anteprima
+   stampa-ore.css - Fix Bottoni & Layout Report
    ========================================================================== */
 
 /* --- 1. LAYOUT GENERALE --- */
@@ -23,7 +23,6 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 
 .report-body { display: flex; flex-direction: column; gap: 15px; }
 
-/* --- FIX SPAZIATURA --- */
 .section-divider { display: none; }
 
 /* --- 2. SEZIONE PDF (Box Azzurro) --- */
@@ -40,7 +39,7 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     gap: 8px;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap; /* Permette a button lunghi di andare a capo se serve */
+    flex-wrap: wrap; 
 }
 
 /* MENU DATE */
@@ -52,10 +51,10 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     border: 1px solid #ccc;
     background: white;
     flex: 1;
-    min-width: 80px; /* Minimo per non schiacciare troppo */
+    min-width: 80px;
 }
 
-/* STILE UNICO PER TUTTI I BOTTONI PDF (Anteprima, Salva, Scarica, WhatsApp) */
+/* STILE UNICO PER TUTTI I BOTTONI PDF */
 .pdf-btn {
     height: 36px !important;
     min-height: unset !important;
@@ -65,8 +64,8 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     align-items: center !important;
     justify-content: center !important;
     
-    flex: 1; /* Si allargano uniformemente */
-    min-width: 100px; /* Larghezza minima dignitosa */
+    flex: 1; 
+    min-width: 100px;
     max-width: 200px;
     
     color: white !important;
@@ -77,7 +76,7 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     white-space: nowrap; 
     cursor: pointer;
     margin: 0 !important;
-    box-shadow: none !important; /* Rimuove ombre strane */
+    box-shadow: none !important; 
 }
 .pdf-btn:active { transform: scale(0.98); }
 
@@ -97,14 +96,17 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;
 }
 
-
 /* FIX PULSANTE CARICA DATI (Full Width) */
 #btnLoadData {
-    height: 40px !important;       /* Altezza comoda */
+    height: 42px !important;       
     min-height: unset !important;
-    width: 100% !important;        /* Occupa tutto lo spazio orizzontale */
+    
+    width: 100% !important;        /* Forza larghezza 100% */
+    max-width: none !important;    /* FONDAMENTALE: Rimuove limiti ereditati (es. 200px o 300px) */
+    flex: 1 1 auto !important;     /* Si espande in flex */
+    
     padding: 0 15px !important;
-    margin-top: 10px !important;
+    margin-top: 15px !important;   /* Spazio dai campi data */
     box-sizing: border-box;
     
     display: flex !important;
@@ -122,12 +124,12 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
 }
 #btnLoadData:active { transform: scale(0.99); }
 
-/* FIX PULSANTI FILTRI (Reset e Applica - Compatti) */
+/* FIX PULSANTI FILTRI (Reset e Applica) */
 #btnResetFilters, #btnApplyFilters {
-    height: 36px !important;       /* Stessa altezza dei bottoni PDF */
-    min-height: unset !important;  /* Rimuove l'altezza della dashboard */
+    height: 36px !important;       
+    min-height: unset !important;  
     padding: 0 20px !important;
-    width: auto !important;        /* Larghezza automatica in base al testo */
+    width: auto !important;        
     
     display: inline-flex !important;
     align-items: center !important;
@@ -141,17 +143,8 @@ body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
     box-shadow: none !important;
 }
 
-/* Colore specifico Reset */
-#btnResetFilters {
-    background-color: #95a5a6 !important;
-    color: white !important;
-}
-
-/* Colore specifico Applica */
-#btnApplyFilters {
-    background-color: #007bff !important; /* Blu standard */
-    color: white !important;
-}
+#btnResetFilters { background-color: #95a5a6 !important; color: white !important; }
+#btnApplyFilters { background-color: #007bff !important; color: white !important; }
 
 /* --- 4. ACCORDION --- */
 .accordion-container {
