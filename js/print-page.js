@@ -293,39 +293,93 @@ const PrintPage = {
         } catch (e) { console.error("PDF Template Error:", e); }
     },
 
+
+    convertPdfToImgBlob: async function(pdfUrl) {
+        // 1. Scarica il PDF
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1); // Pagina 1
+
+        // 2. Imposta scala alta per qualità (2.0 è buono per schermi retina/stampa)
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // 3. Renderizza
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // 4. Converti in Blob JPG
+        return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    },
+
     checkExistingReport: async function() {
         const month = this.dom.pdfMonth.value;
         const year = this.dom.pdfYear.value;
         
-        // Nascondi tutto durante il check
         this.dom.existingReportAlert.style.display = 'none';
-        this.dom.newReportControls.style.display = 'block'; // Default mostra "Crea"
+        this.dom.newReportControls.style.display = 'block';
 
         try {
             const res = await apiFetch(`/api/report/latest?mese=${month}&anno=${year}`);
             const data = await res.json();
 
             if (data.exists) {
-                // REPORT TROVATO!
+                // REPORT TROVATO
                 this.dom.newReportControls.style.display = 'none';
                 this.dom.existingReportAlert.style.display = 'block';
-                
                 this.dom.foundVersion.textContent = data.version;
-                this.dom.btnQuickDownload.href = data.url;
                 
-                // Setup WhatsApp Link
+                // --- SETUP AZIONI ---
+                
+                // 1. ANTEPRIMA (Apre immagine in nuova scheda)
+                this.dom.btnQuickPreview.onclick = async () => {
+                    const btn = this.dom.btnQuickPreview;
+                    const oldText = btn.textContent;
+                    btn.textContent = "Caricamento...";
+                    btn.disabled = true;
+                    try {
+                        const blob = await this.convertPdfToImgBlob(data.url);
+                        const imgUrl = URL.createObjectURL(blob);
+                        window.open(imgUrl, '_blank');
+                    } catch(e) { alert("Errore anteprima: " + e.message); }
+                    finally { btn.textContent = oldText; btn.disabled = false; }
+                };
+
+                // 2. DOWNLOAD (Scarica JPG in galleria)
+                this.dom.btnQuickDownload.onclick = async () => {
+                    const btn = this.dom.btnQuickDownload;
+                    const oldText = btn.textContent;
+                    btn.textContent = "Conversione...";
+                    btn.disabled = true;
+                    try {
+                        const blob = await this.convertPdfToImgBlob(data.url);
+                        const imgUrl = URL.createObjectURL(blob);
+                        
+                        // Link temporaneo per forzare il download
+                        const link = document.createElement('a');
+                        link.href = imgUrl;
+                        link.download = `Report_${year}_${month}_v${data.version}.jpg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        showSuccessFeedbackModal("Scaricato", "Immagine salvata in galleria.");
+                    } catch(e) { alert("Errore download: " + e.message); }
+                    finally { btn.textContent = oldText; btn.disabled = false; }
+                };
+                
+                // 3. WHATSAPP (Manda LINK al PDF originale per formalità)
                 const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-                const waMsg = `Ciao, ecco il report presenze di ${mNames[month-1]} ${year} (v${data.version}): ${data.url}`;
+                const waMsg = `Report ${mNames[month-1]} ${year}: ${data.url}`;
                 this.dom.btnQuickWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
             } 
             else {
-                // NESSUN REPORT -> Resta il default
                 this.dom.existingReportAlert.style.display = 'none';
                 this.dom.newReportControls.style.display = 'block';
             }
-        } catch (e) {
-            console.error("Errore check report:", e);
-        }
+        } catch (e) { console.error("Errore check:", e); }
     },
 
     // =========================================================
@@ -510,7 +564,26 @@ const PrintPage = {
             this.dom.stepFinalActions.style.display = 'block';
             
             this.dom.pdfStatus.textContent = `Documento v${result.version} salvato correttamente!`;
-            this.dom.btnDownload.href = result.url;
+            
+            // Aggiorniamo il tasto "Scarica" finale per scaricare l'IMG, non il PDF
+            // Dato che abbiamo già il BLOB PDF in memoria, lo convertiamo subito
+            this.dom.btnDownload.textContent = "Scarica Immagine";
+            this.dom.btnDownload.onclick = async (e) => {
+                e.preventDefault();
+                try {
+                    // Usiamo l'URL pubblico appena ottenuto per riconvertire (o usiamo il blob locale se preferisci)
+                    // Per coerenza con la funzione sopra, usiamo l'URL pubblico
+                    const blob = await this.convertPdfToImgBlob(result.url);
+                    const imgUrl = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = imgUrl;
+                    link.download = `Report_${this.state.currentPdfYear}_${this.state.currentPdfMonth}_v${result.version}.jpg`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch(err) { alert("Errore download img: " + err.message); }
+            };
             
             const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
             const waMsg = `Ciao, invio report presenze ${mNames[this.state.currentPdfMonth-1]} ${this.state.currentPdfYear}: ${result.url}`;
@@ -528,14 +601,13 @@ const PrintPage = {
     resetPdfWorkflow: function() {
         this.dom.stepPreview.style.display = 'none';
         this.dom.stepFinalActions.style.display = 'none';
-        this.dom.stepSelect.style.display = 'flex'; // Torna alla selezione
+        this.dom.stepSelect.style.display = 'flex';
         
         this.dom.pdfPreviewImage.src = ''; 
         this.state.currentPdfBlob = null;
         this.dom.btnConfirmSave.disabled = false;
         this.dom.btnConfirmSave.textContent = "💾 Salva e Archivia";
         
-        // Rilancia il check per mostrare l'interfaccia corretta (se l'hai appena salvato, ora mostrerà "Esistente")
         this.checkExistingReport();
     }
 };
