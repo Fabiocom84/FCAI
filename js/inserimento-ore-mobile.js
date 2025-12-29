@@ -79,50 +79,45 @@ const MobileHoursApp = {
     },
 
     init: function() {
-        console.log("🚀 Mobile App Init - Full Version v2.0");
+        console.log("🚀 Mobile App Init - Debug Version");
         
-        // Init Choices.js
-        this.initChoices();
+        // 1. Inizializza componenti UI base
+        try {
+            this.initChoices();
+            this.populateOvertimeSelects();
+        } catch (e) { console.error("Errore init UI:", e); }
 
-        // Popola i menu a tendina orari (05:00 - 22:00)
-        this.populateOvertimeSelects();
-        
         // Listeners Globali
         this.dom.timelineContainer.addEventListener('scroll', () => this.handleScroll());
         this.dom.closeDetailBtn.addEventListener('click', () => this.closeDetail());
-        
-        // Toggle Tipo (Produzione / Cantiere / Assenza)
         this.dom.typeRadios.forEach(r => r.addEventListener('change', (e) => this.handleTypeChange(e.target.value)));
-        
-        // Cascata Macro -> Componenti
         this.dom.macroSelect.addEventListener('change', (e) => this.renderComponentOptions(e.target.value));
-
-        // Pulsanti Azione
         this.dom.saveBtn.addEventListener('click', (e) => this.handleSave(e));
         this.dom.cancelEditBtn.addEventListener('click', () => this.resetFormState());
-
-        // Logic Check Straordinari / Totali (al digitare delle ore)
         this.dom.hoursInput.addEventListener('input', () => this.checkOvertimeLogic());
         this.dom.travelAndata.addEventListener('input', () => this.checkOvertimeLogic());
         this.dom.travelRitorno.addEventListener('input', () => this.checkOvertimeLogic());
-
-        // Preset Assenza (Ferie = 8h auto)
         this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
 
-        // --- NUOVO: Controllo Parametri URL Admin ---
+        // 2. Gestione Admin Mode
         const urlParams = new URLSearchParams(window.location.search);
+        // Debug parametri
+        console.log("URL Params:", Object.fromEntries(urlParams.entries()));
+
         if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
             this.state.adminMode = true;
             this.state.targetUserId = parseInt(urlParams.get('targetUserId'));
             this.state.targetUserName = decodeURIComponent(urlParams.get('targetUserName') || 'Utente');
             
+            console.log("🔒 Modo Admin Attivo per:", this.state.targetUserId);
             this.setupAdminUI();
         } else {
-            this.loadUserName(); // Caricamento normale utente loggato
+            this.loadUserName(); 
         }
 
-        this.loadTimelineBatch(); // Questo dovrà usare l'ID corretto
-
+        // 3. Avvia caricamento dati
+        console.log("⏳ Avvio loadTimelineBatch...");
+        this.loadTimelineBatch(); 
     },
 
     setupAdminUI: function() {
@@ -171,18 +166,49 @@ const MobileHoursApp = {
     loadTimelineBatch: async function() {
         if (this.state.isLoading || this.state.isListFinished) return;
         this.state.isLoading = true;
+        
         try {
-            // Se siamo in Admin Mode, aggiungiamo il parametro userId
+            // Costruzione URL
             let url = `/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`;
+            
             if (this.state.adminMode) {
                 url += `&userId=${this.state.targetUserId}`;
             }
 
+            console.log("📡 Fetching:", url); // <--- LOG IMPORTANTE
+
             const res = await apiFetch(url);
+            
+            // Gestione errori HTTP non gestiti da apiFetch
+            if (!res.ok) {
+                console.error("Errore HTTP:", res.status, res.statusText);
+                throw new Error(`Errore Server ${res.status}`);
+            }
+
             const days = await res.json();
-            // ... (resto funzione invariato)
-        } catch (e) { console.error(e); } 
-        finally { this.state.isLoading = false; }
+            console.log("📦 Dati ricevuti:", days.length, "giorni");
+
+            document.querySelector('.loader-placeholder')?.remove();
+            
+            if (days.length === 0) { 
+                this.state.isListFinished = true; 
+                if (this.state.offset === 0) {
+                    this.dom.timelineContainer.innerHTML = "<div style='padding:20px; text-align:center'>Nessun dato trovato per questo utente.</div>";
+                }
+                return; 
+            }
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
+            this.state.offset += this.state.limit;
+
+        } catch (e) { 
+            console.error("❌ Errore loadTimelineBatch:", e); 
+            this.dom.timelineContainer.innerHTML = `<div style='padding:20px; color:red; text-align:center'>Errore caricamento: ${e.message}</div>`;
+        } 
+        finally { 
+            this.state.isLoading = false; 
+        }
     },
 
     createDayRow: function(day, todayStr) {

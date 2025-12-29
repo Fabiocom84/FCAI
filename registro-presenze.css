@@ -64,6 +64,8 @@ body {
 /* FIX SFASAMENTO: Altezza fissa e padding identico per Header e Body */
 .timeline-table th,
 .timeline-table td {
+    position: relative; /* Mantiene gli elementi assoluti dentro la cella */
+    overflow: hidden;
     border: 1px solid #d1d9e6;
     padding: 0; /* Rimuovo padding per controllo totale */
     text-align: center;
@@ -75,10 +77,8 @@ body {
     max-width: 75px;
     height: 45px;     /* Altezza leggermente aumentata */
     
-    position: relative;
     box-sizing: border-box;
-    white-space: nowrap; 
-    overflow: hidden;    
+    white-space: nowrap;    
 }
 
 /* Intestazione Giorni */
@@ -179,12 +179,15 @@ body {
 .note-indicator {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0; /* Spostato a sinistra */
+    right: auto; /* Reset */
     width: 0;
     height: 0;
-    border-top: 8px solid #e74c3c;
-    border-left: 8px solid transparent;
-    z-index: 5;
+    border-top: 10px solid #e74c3c; /* Colore triangolo */
+    border-right: 10px solid transparent; /* Crea la forma diagonale verso destra */
+    border-left: 0;
+    z-index: 6; /* Sopra al semaforo */
+    pointer-events: none; /* Permette di cliccare la cella sottostante */
 }
 
 .cell-input {
@@ -465,11 +468,12 @@ body {
 /* Usiamo una barra laterale interna per non sovrascrivere il background-color */
 .status-indicator {
     position: absolute;
-    right: 0;
     top: 0;
+    right: 0;
     bottom: 0;
-    width: 5px; /* Spessore della barra */
+    width: 6px; /* Larghezza visibile */
     z-index: 5;
+    /* Rimuovi border-left se presente per pulizia */
 }
 
 .status-ok { background-color: #2ecc71; }      /* Verde (>= 8h) */
