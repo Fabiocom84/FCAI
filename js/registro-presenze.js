@@ -239,40 +239,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         return th;
     }
 
-    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO ---
+    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO (AGGIORNATA) ---
     function calculateStatusClass(record, isWeekend) {
-        // 1. Ore reali di produzione (calcolate dal backend)
+        // 1. Ore reali di produzione + viaggio (calcolate dal backend in 'ore_effettive')
         let realWorkHours = 0;
         if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
             realWorkHours = parseFloat(record.ore_effettive);
         }
 
-        // 2. Ore inserite MANUALMENTE nel registro (forzature)
-        let manualHours = 0;
-        if (record && record.numero_ore) {
-            manualHours = parseFloat(record.numero_ore);
-        }
-
-        // 3. Verifica se c'è una giustificazione (Ferie, Malattia, Permesso...)
+        // 2. Verifica se esiste una giustificazione (Ferie, Malattia, Permesso...)
+        // Se c'è un id_tipo_presenza_fk, significa che è stata registrata un'assenza/giustificativo
         const hasJustification = (record && record.id_tipo_presenza_fk);
 
         // --- LOGICA ---
-        // Verde: Se ha lavorato 8h oppure c'è una forzatura manuale >= 8h
-        if (realWorkHours >= 8) {
+        
+        // Verde: Se ha lavorato >= 8h OPPURE ha una giustificazione (es. Ferie)
+        if (realWorkHours >= 8 || hasJustification) {
             return 'status-ok';
         }
-        // Giallo: Ha lavorato qualcosa ma < 8h
+        
+        // Giallo: Ha lavorato qualcosa ma < 8h (e nessuna giustificazione piena)
         else if (realWorkHours > 0) {
             return 'status-warning';
         }
+        
         // Rosso (Assente Ingiustificato):
-        // Solo se è giorno feriale, NON ha lavorato, NON ha giustificazioni (Ferie) e NON ha ore manuali.
-        else if (!isWeekend && !hasJustification && manualHours === 0) {
+        // Solo se è giorno feriale, NON ha lavorato e NON ha giustificazioni.
+        // NOTA: Ignoriamo completamente record.numero_ore (ore manuali).
+        else if (!isWeekend) {
             return 'status-missing';
         }
         
-        // Se arriviamo qui (es. Weekend, oppure Ferie, o ore manuali < 8 su cui non vogliamo dare warning),
-        // non ritorniamo nessuna classe (nessun semaforo o semaforo nascosto)
         return null; 
     }
 

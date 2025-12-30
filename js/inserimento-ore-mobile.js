@@ -467,7 +467,7 @@ const MobileHoursApp = {
         else if (total === 8) el.classList.add('ok');
     },
 
-    // --- SALVATAGGIO ---
+    // --- SALVATAGGIO (RIVISTO PER ROBUSTEZZA) ---
     handleSave: async function(e) {
         e.preventDefault();
         const type = document.querySelector('input[name="entryType"]:checked').value;
@@ -505,16 +505,39 @@ const MobileHoursApp = {
             payload.id_personale_override = this.state.targetUserId;
         }
 
-        // ... Logica payload ID (Commessa/Cantiere/Assenza) invariata ...
+        // LOGICA DI COSTRUZIONE PAYLOAD E VALIDAZIONE
         if (type === 'produzione') {
-            payload.id_commessa = this.state.choicesInstance.getValue(true);
+            // Estrazione sicura del valore da Choices.js
+            let commessaVal = null;
+            if (this.state.choicesInstance) {
+                const choiceVal = this.state.choicesInstance.getValue(true);
+                // Choices.js a volte ritorna array o valore singolo
+                commessaVal = Array.isArray(choiceVal) ? choiceVal[0] : choiceVal;
+            }
+
+            if (!commessaVal) {
+                console.error("Errore: Commessa non selezionata o valore nullo.", commessaVal);
+                return alert("Seleziona una commessa valida.");
+            }
+
+            payload.id_commessa = commessaVal;
             payload.id_componente = this.dom.componentSelect.value;
-            if (!payload.id_commessa || !payload.id_componente) return alert("Dati incompleti (Commessa/Lavorazione)");
+            
+            if (!payload.id_componente) {
+                return alert("Seleziona una Lavorazione (Componente).");
+            }
         } 
         else if (type === 'cantiere') {
-            const commessaVal = this.state.choicesInstance.getValue(true);
+            let commessaVal = null;
+            if (this.state.choicesInstance) {
+                const choiceVal = this.state.choicesInstance.getValue(true);
+                commessaVal = Array.isArray(choiceVal) ? choiceVal[0] : choiceVal;
+            }
             payload.id_commessa = commessaVal ? commessaVal : null;
-            if (!payload.note.toUpperCase().includes('[CANTIERE]')) payload.note = `[CANTIERE] ${payload.note}`;
+            
+            if (!payload.note.toUpperCase().includes('[CANTIERE]')) {
+                payload.note = `[CANTIERE] ${payload.note}`;
+            }
         }
         else if (type === 'assenza') {
             payload.id_commessa = null;
@@ -529,18 +552,21 @@ const MobileHoursApp = {
 
          try {
              if (this.state.editingId) {
-                 // DELETE non ha body di solito, ma se serve passare l'ID utente per i permessi admin
-                 // potremmo doverlo passare in query string
-                 let delUrl = `/api/ore/${this.state.editingId}`;
-                 // Nota: il backend deve sapere che l'admin può cancellare record altrui
-                 await apiFetch(delUrl, { method: 'DELETE' });
+                 // DELETE per pulire prima di salvare (soluzione semplice per update complessi)
+                 await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
              }
              
              // POST
+             console.log("Inviando payload:", payload);
              await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+             
+             // Refresh
+             this.loadExistingWorks(this.state.currentDate);
+             this.resetFormState();
 
         } catch (err) { 
-            alert("Errore: " + err.message); 
+            console.error("Errore salvataggio:", err);
+            alert("Errore salvataggio: " + err.message); 
         } finally { 
             btn.disabled = false; 
             btn.textContent = originalText; // Ripristina testo pulsante
