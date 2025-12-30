@@ -438,39 +438,47 @@ const PrintPage = {
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
+                
+                // Se ci sono attività nel giorno
                 if (items.length > 0) {
-                    let totOre = 0, totViaggio = 0;
-                    let labels = [], types = new Set(), isAbs = false;
+                    // --- MODIFICA: Separazione contatori ---
+                    let totLavoro = 0;
+                    let totAssenza = 0;
+                    let totViaggio = 0;
+                    
+                    let labels = [], types = new Set();
                     let timeM_In = "", timeM_Out = "", timeP_In = "", timeP_Out = "";
 
                     items.forEach(it => {
-                        totOre += it.ore;
                         totViaggio += it.viaggio;
                         types.add(it.tipo);
-                        if (it.is_assenza) isAbs = true;
 
-                        // --- LOGICA DESCRIZIONE V3 (ESSENZIALE) ---
+                        // 1. SEPARAZIONE ORE
+                        if (it.is_assenza) {
+                            totAssenza += it.ore;
+                        } else {
+                            totLavoro += it.ore;
+                        }
+
+                        // --- LOGICA DESCRIZIONE ---
                         let descText = "";
                         
-                        // 1. Caso CANTIERE: 
-                        // Rimuovi "[CANTIERE]" e tieni solo il resto della nota
+                        // Caso CANTIERE
                         if (it.tipo === 'T' || (it.note && it.note.includes('[CANTIERE]'))) {
                             descText = (it.note || "").replace('[CANTIERE]', '').trim();
                         } 
-                        // 2. Caso ASSENZA (Ferie/Permessi):
-                        // Mantieni tutto (es. "[FERIE]")
+                        // Caso ASSENZA (Ferie/Permessi)
                         else if (it.is_assenza) {
                             descText = it.note || "";
                         }
-                        // 3. Caso LAVORO ORDINARIO (Officina):
-                        // NON stampare nulla (per evitare "inventario", "montaggio" che intasano)
+                        // Caso LAVORO ORDINARIO: non stampiamo nulla per pulizia
                         else {
                             descText = ""; 
                         }
 
                         if (descText) labels.push(descText);
 
-                        // Orari
+                        // Orari (Prendiamo il primo valido trovato)
                         if (it.str_mattina_dalle) { timeM_In = it.str_mattina_dalle; timeM_Out = it.str_mattina_alle; }
                         if (it.str_pomeriggio_dalle) { timeP_In = it.str_pomeriggio_dalle; timeP_Out = it.str_pomeriggio_alle; }
                         if (it.assenza_mattina_dalle) { timeM_In = it.assenza_mattina_dalle; timeM_Out = it.assenza_mattina_alle; }
@@ -479,35 +487,39 @@ const PrintPage = {
 
                     const Y = startY - ((day - 1) * rowH);
 
-                    // 1. Orari
+                    // --- STAMPA ORARI ---
                     if (timeM_In) page.drawText(timeM_In, { x: CX.Col_M_In, y: Y, size: fs, font });
                     if (timeM_Out) page.drawText(timeM_Out, { x: CX.Col_M_Out, y: Y, size: fs, font });
                     if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: fs, font });
                     if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: fs, font });
 
-                    // 2. Ore / Permessi
-                    if (isAbs) {
-                        page.drawText(totOre.toString(), { x: CX.Perm, y: Y, size: fs, font });
-                    } else {
-                        const ord = totOre > 8 ? 8 : totOre;
-                        const str = totOre > 8 ? totOre - 8 : 0;
+                    // --- STAMPA ORE LAVORO (Colonna Ore e Straordinari) ---
+                    if (totLavoro > 0) {
+                        const ord = totLavoro > 8 ? 8 : totLavoro;
+                        const str = totLavoro > 8 ? totLavoro - 8 : 0;
+                        
+                        // Colonna Ore Ordinarie
                         page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
+                        
+                        // Colonna Straordinari
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
-                    // 3. Tipo
+                    // --- STAMPA ORE ASSENZA (Colonna Permessi/Assenze) ---
+                    if (totAssenza > 0) {
+                         page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
+                    }
+
+                    // --- STAMPA TIPO ---
                     const finalType = types.has('T') ? 'T' : 'O';
                     page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
 
-                    // 4. Descrizione
+                    // --- STAMPA DESCRIZIONE ---
                     let fullDesc = labels.join(", ");
                     if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";
-                    
-                    // Stampiamo ALLINEATI (Y), stessa dimensione (fs=9)
-                    // Nota: Ho corretto Y + 1 a Y puro per allineamento perfetto con i numeri
                     page.drawText(fullDesc, { x: CX.Desc, y: Y, size: fs, font });
 
-                    // 5. Viaggio
+                    // --- STAMPA VIAGGIO ---
                     if (totViaggio > 0) {
                         const v_andata = (totViaggio / 2); 
                         const v_ritorno = (totViaggio / 2); 
