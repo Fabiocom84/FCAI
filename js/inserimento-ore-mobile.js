@@ -21,7 +21,8 @@ const MobileHoursApp = {
 
         // Gestione Modifica
         editingId: null,
-        editingOriginalHours: 0, 
+        editingOriginalHours: 0,
+        editingStato: 0, 
 
         // Totali
         currentDayTotal: 0,
@@ -483,6 +484,7 @@ const MobileHoursApp = {
             data: this.state.currentDate,
             ore: hours || 0,
             note: this.dom.noteInput.value,
+            stato: this.state.editingId ? this.state.editingStato : 0,
             
             // Viaggio
             ore_viaggio_andata: parseFloat(this.dom.travelAndata.value) || 0,
@@ -580,6 +582,7 @@ const MobileHoursApp = {
 
         this.state.editingId = work.id_registrazione;
         this.state.editingOriginalHours = work.ore || 0;
+        this.state.editingStato = (work.stato !== undefined && work.stato !== null) ? work.stato : 0;
 
         // UI Modifica
         this.dom.saveBtn.textContent = "AGGIORNA";
@@ -677,6 +680,7 @@ const MobileHoursApp = {
     resetFormState: function() {
         this.state.editingId = null;
         this.state.editingOriginalHours = 0;
+        this.state.editingStato = 0;
         this.dom.form.reset();
         this.state.choicesInstance.removeActiveItems();
         

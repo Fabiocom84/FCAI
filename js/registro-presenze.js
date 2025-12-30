@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
     const COLUMN_WIDTH = 95;
+    const REPORT_COLUMN_WIDTH = 50; // Larghezza colonna report
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -186,33 +187,119 @@ document.addEventListener('DOMContentLoaded', async () => {
         timelineBody.appendChild(fragment);
     }
 
+    // --- GESTIONE COLONNE (CON REPORT) ---
+
     function appendColumns(start, end) {
         const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        datesToAdd.forEach(d => headerRow.appendChild(createHeaderCell(d, todayStr)));
-        const rows = Array.from(timelineBody.querySelectorAll('tr'));
-        rows.forEach(tr => {
-            const pid = parseInt(tr.dataset.personId);
-            datesToAdd.forEach(d => tr.appendChild(createBodyCell(d, pid)));
+        
+        datesToAdd.forEach(d => {
+            // SE È IL PRIMO DEL MESE -> Aggiungi colonna Report PRIMA del giorno
+            if (d.getDate() === 1) {
+                insertReportColumn(d, 'append');
+            }
+
+            // Aggiungi colonna Giorno
+            headerRow.appendChild(createHeaderCell(d, todayStr));
+            const rows = Array.from(timelineBody.querySelectorAll('tr'));
+            rows.forEach(tr => {
+                const pid = parseInt(tr.dataset.personId);
+                tr.appendChild(createBodyCell(d, pid));
+            });
         });
     }
 
     function prependColumns(start, end) {
-        const datesToAdd = generateDateRange(start, end);
+        // Genera range e inverti (dal più recente al più vecchio)
+        let datesToAdd = generateDateRange(start, end);
+        datesToAdd.reverse(); 
+
         const todayStr = formatDateISO(new Date());
-        const addedWidth = datesToAdd.length * COLUMN_WIDTH; 
-        const currentScroll = container.scrollLeft;
-        const firstDayHeader = headerRow.children[1]; 
+        let addedWidthTotal = 0;
+
+        datesToAdd.forEach(d => {
+            const firstHeader = headerRow.children[1]; // Salta la colonna nomi
+
+            // 1. Inserisci Giorno
+            headerRow.insertBefore(createHeaderCell(d, todayStr), firstHeader);
+            const rows = Array.from(timelineBody.querySelectorAll('tr'));
+            rows.forEach(tr => {
+                const pid = parseInt(tr.dataset.personId);
+                const firstDataCell = tr.children[1];
+                tr.insertBefore(createBodyCell(d, pid), firstDataCell);
+            });
+            addedWidthTotal += COLUMN_WIDTH;
+
+            // 2. SE È IL PRIMO DEL MESE -> Inserisci Report ANCORA PRIMA del giorno appena inserito
+            if (d.getDate() === 1) {
+                insertReportColumn(d, 'prepend');
+                addedWidthTotal += REPORT_COLUMN_WIDTH;
+            }
+        });
         
-        datesToAdd.forEach(d => headerRow.insertBefore(createHeaderCell(d, todayStr), firstDayHeader));
+        // Mantieni la posizione di scroll
+        const currentScroll = container.scrollLeft;
+        container.scrollLeft = currentScroll + addedWidthTotal;
+    }
+
+    // NUOVA FUNZIONE PER COLONNA REPORT
+    function insertReportColumn(dateObj, mode) {
+        // Creazione Header
+        const th = document.createElement('th');
+        th.className = 'report-column-header';
+        const mName = dateObj.toLocaleString('it-IT', { month: 'short' }).toUpperCase();
+        th.innerHTML = `<span style="font-size:1.2rem">🖨️</span><br><small style="font-size:0.6rem">${mName}</small>`;
+        th.title = `Apri Report Mensile - ${dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' })}`;
         
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
-        rows.forEach(tr => {
-            const pid = parseInt(tr.dataset.personId);
-            const firstDataCell = tr.children[1];
-            datesToAdd.forEach(d => tr.insertBefore(createBodyCell(d, pid), firstDataCell));
-        });
-        container.scrollLeft = currentScroll + addedWidth;
+
+        // Funzione helper per creare cella pulsante
+        const createCell = (pid, personName) => {
+            const td = document.createElement('td');
+            td.className = 'report-column-cell';
+            
+            const btn = document.createElement('button');
+            btn.className = 'report-btn-icon';
+            btn.innerHTML = '📄'; // Icona documento
+            btn.title = `Vedi Report ${mName} per ${personName}`;
+            
+            // LINK DIRETTO ALLA PAGINA STAMPA (ADMIN MODE)
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                // Passiamo le date del mese di riferimento per pre-impostare le select
+                const targetMonth = dateObj.getMonth() + 1;
+                const targetYear = dateObj.getFullYear();
+                
+                // NOTA: stampa-ore.html deve gestire pre-selezione tramite URL se vogliamo raffinatezza,
+                // ma per ora apre la pagina in admin mode e l'admin seleziona il mese.
+                // Miglioria futura: passare &month=X&year=Y allo script di stampa-ore.
+                const url = `stampa-ore.html?adminMode=true&targetUserId=${pid}&targetUserName=${encodeURIComponent(personName)}`;
+                window.open(url, '_blank');
+            };
+            
+            td.appendChild(btn);
+            return td;
+        };
+
+        if (mode === 'append') {
+            headerRow.appendChild(th);
+            rows.forEach(tr => {
+                const pid = parseInt(tr.dataset.personId);
+                const name = tr.querySelector('span')?.textContent || 'Utente';
+                tr.appendChild(createCell(pid, name));
+            });
+        } else {
+            // Prepend: Inserisci prima della colonna 1 (la colonna 0 è sticky nomi)
+            const targetTh = headerRow.children[1]; 
+            headerRow.insertBefore(th, targetTh);
+            
+            rows.forEach(tr => {
+                const pid = parseInt(tr.dataset.personId);
+                const name = tr.querySelector('span')?.textContent || 'Utente';
+                const targetTd = tr.children[1];
+                tr.insertBefore(createCell(pid, name), targetTd);
+            });
+        }
     }
 
     function generateDateRange(start, end) {
@@ -239,34 +326,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return th;
     }
 
-    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO (CORRETTA) ---
+    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO ---
     function calculateStatusClass(record, isWeekend) {
-        // 1. Ore reali di produzione + viaggio (calcolate dal backend in 'ore_effettive')
-        // Questo valore include già: ore lavoro, ore viaggio e ore assenza (se inserite nel modulo Ore)
         let realWorkHours = 0;
         if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
             realWorkHours = parseFloat(record.ore_effettive);
         }
 
-        // --- LOGICA SEMAFORO PURA (Basata solo sulle ore) ---
-        
-        // Verde: Solo se il totale delle ore registrate è >= 8
-        // (Ignoriamo completamente se c'è un'etichetta manuale)
-        if (realWorkHours >= 8) {
-            return 'status-ok';
-        }
-        
-        // Giallo: Ha lavorato/giustificato qualcosa ma < 8h
-        else if (realWorkHours > 0) {
-            return 'status-warning';
-        }
-        
-        // Rosso (Assente Ingiustificato):
-        // Solo se è giorno feriale e NON ci sono ore registrate nel sistema.
-        else if (!isWeekend) {
-            return 'status-missing';
-        }
-        
+        if (realWorkHours >= 8) return 'status-ok';
+        else if (realWorkHours > 0) return 'status-warning';
+        else if (!isWeekend) return 'status-missing';
         return null; 
     }
 
@@ -284,12 +353,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const record = loadedDataMap[`${pid}_${dateStr}`];
 
-        // 1. Render Contenuto
-        if (record) {
-            renderCellContent(td, record);
-        }
+        if (record) renderCellContent(td, record);
         
-        // 2. Render Semaforo
         const statusClass = calculateStatusClass(record, isWeekend);
         if (statusClass) {
             const indicator = document.createElement('div');
@@ -529,7 +594,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiClient.post('/presenze', payload);
             loadedDataMap[`${payload.id_personale_fk}_${payload.data}`] = res;
-            updateCellVisuals(td, res); // Funzione aggiornata che ri-renderizza tutto
+            updateCellVisuals(td, res);
         } catch (err) { 
             console.error(err); 
             alert("Errore salvataggio"); 
@@ -539,11 +604,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCellContent(td, record) {
-        // Questa funzione ora si occupa SOLO del contenuto interno (badge, numeri, note)
-        // NON pulisce la cella, deve essere chiamata su un contenitore pulito o gestita
-        // Ma nel nostro flow, puliamo il td prima.
-        
-        // Colore sfondo
         if(record.colore && record.colore !== 'none') {
             td.classList.add(`cell-color-${record.colore}`);
         }
@@ -579,22 +639,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Funzione unificata per ri-renderizzare la cella dopo un salvataggio
     function updateCellVisuals(td, record) {
         td.innerHTML = '';
         td.className = ''; 
 
-        // Ripristino Weekend
         if (td.dataset.isWeekend === "true") {
             td.classList.add('weekend-column');
         }
 
-        // Render Contenuto
         if (record) {
             renderCellContent(td, record);
         }
 
-        // Render Semaforo (Usa la stessa logica del caricamento iniziale!)
         const statusClass = calculateStatusClass(record, td.dataset.isWeekend === "true");
         if (statusClass) {
             const indicator = document.createElement('div');
