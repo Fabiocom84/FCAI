@@ -600,7 +600,7 @@ const PrintPage = {
     resetPdfWorkflow: function() {
         this.dom.stepPreview.style.display = 'none';
         this.dom.stepFinalActions.style.display = 'none';
-        this.dom.stepSelect.style.display = 'flex';
+        this.dom.stepSelect.style.display = 'block';
         
         this.dom.pdfPreviewImage.src = ''; 
         this.state.currentPdfBlob = null;
