@@ -1,4 +1,4 @@
-// js/main.js (Versione Fix "Velo Scuro")
+// js/main.js (Versione Fix "Velo Scuro" & ID Match)
 
 import { IsAdmin, CurrentUser } from './core-init.js';
 import { apiFetch } from './api-client.js';
@@ -18,9 +18,6 @@ async function initializeApp() {
     const overlay = document.getElementById('modalOverlay');
     
     try {
-        // Mostra un caricamento visivo (opzionale, se vuoi l'effetto caricamento)
-        // if (overlay) overlay.style.display = 'block';
-
         // 1. Controllo di sicurezza base
         if (!CurrentUser) {
             throw new Error("Utente non identificato. Riesegui il login.");
@@ -31,36 +28,15 @@ async function initializeApp() {
         // 2. Setup dell'interfaccia (Nascondi/Mostra bottoni)
         setupUI();
         
-        // 3. (OPZIONALE) Caricamento Dati Iniziali
-        // Se in futuro dovrai caricare dati all'avvio, FALLO QUI.
-        // Esempio: 
-        // await loadDashboardData(); 
-
-        // ATTENZIONE: Se carichi dati ADMIN, devi proteggerli così:
-        /*
-        if (IsAdmin) {
-            try {
-                await apiFetch('/api/admin/init-data'); 
-            } catch (e) {
-                console.warn("Admin data error (ignorato):", e);
-            }
-        }
-        */
-
     } catch (error) {
         console.error("❌ Errore critico inizializzazione:", error);
-        // In caso di errore grave, slogghiamo per sicurezza
-        // localStorage.clear();
-        // window.location.href = 'login.html';
         alert("Errore durante il caricamento: " + error.message);
     } finally {
         // ============================================================
-        // IL FIX CHE RISOLVE IL BLOCCO:
-        // Qualsiasi cosa succeda (errore o successo), togliamo il velo.
+        // FIX VISIBILITÀ: Rimuoviamo sempre overlay e velo body
         // ============================================================
         if (overlay) overlay.style.display = 'none';
         
-        // Forziamo la visibilità del body (nel caso index.html lo nasconda)
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
         document.body.classList.remove('modal-open');
@@ -78,19 +54,17 @@ function setupUI() {
 
     // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
-        // ELENCO DI TUTTI I BOTTONI CHE UN UTENTE NORMALE NON DEVE VEDERE
-        // (Nota: Ho lasciato visibili solo quelli operativi)
         const buttonsToHide = [
-            'btn-inserisci-dati',        // Inserimento Knowledge Base
-            'openChatModalBtn',          // Chat AI
-            'openDataGridBtn',           // Vista Agile (Gestione)
+            'btn-inserisci-dati',        
+            'openChatModalBtn',          
+            'openDataGridBtn',           
             'openInsertProductionOrderBtn', 
             'openViewProductionOrdersBtn',
-            'openDashboardBtn',          // Dashboard
-            'btn-registro-presenze',     // Registro (meglio nasconderlo ai non admin o sola lettura)
-            'openConfigBtn',             // Configurazione
-            'btn-attivita',              // Task Manager
-            'openTrainingModalBtn'       // Addestramento
+            'openDashboardBtn',          
+            'btn-registro-presenze',     
+            'openConfigBtn',             
+            'btn-attivita',              
+            'openTrainingModalBtn'       
         ];
 
         buttonsToHide.forEach(id => {
@@ -98,11 +72,9 @@ function setupUI() {
             if (btn) btn.style.display = 'none';
         });
         
-        // Nascondi anche le voci della legenda corrispondenti
         hideLegendItemsForNonAdmin();
 
     } else {
-        // Se è Admin, assicuriamoci che i tasti speciali siano visibili
         ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'flex';
@@ -114,7 +86,6 @@ function setupUI() {
         window.uiEventsBound = true;
     }
     
-    // Inizializza la legenda
     new Legend();
 }
 
@@ -151,7 +122,9 @@ function bindGlobalEvents() {
         showModal({ title: 'Info', message: 'Dashboard in arrivo.', confirmText: 'OK' });
     });
     
-    document.getElementById('openPrintHoursBtn')?.addEventListener('click', (e) => {
+    // FIX: ID aggiornato per corrispondere a index.html (btn-stampa-ore)
+    const printBtn = document.getElementById('btn-stampa-ore') || document.getElementById('openPrintHoursBtn');
+    printBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         showModal({ title: 'Info', message: 'Stampa report in sviluppo.', confirmText: 'OK' });
     });
@@ -188,7 +161,6 @@ window.closeChatModal = () => { toggleModal('chatModal', false); };
 window.openTrainingModal = () => { toggleModal('trainingModal', true); };
 window.closeTrainingModal = () => { toggleModal('trainingModal', false); };
 
-// Helper unico per i modali
 function toggleModal(modalId, show) {
     const m = document.getElementById(modalId);
     const o = document.getElementById('modalOverlay');

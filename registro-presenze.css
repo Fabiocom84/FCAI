@@ -497,3 +497,14 @@ body {
 .status-ok { background-color: #2ecc71; }      /* Verde (>= 8h) */
 .status-warning { background-color: #f1c40f; } /* Giallo (> 0h ma < 8h) */
 .status-missing { background-color: #e74c3c; } /* Rosso (0h nei giorni feriali) */
+
+/* --- AGGIUNTO STYLE PER BADGE DETTAGLIO --- */
+.detail-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
