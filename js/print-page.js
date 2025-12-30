@@ -1,3 +1,7 @@
+/* ==========================================================================
+   js/print-page.js - Admin Ready
+   ========================================================================== */
+
 import { apiFetch, publicApiFetch } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 
@@ -13,7 +17,12 @@ const PrintPage = {
         
         currentPdfBlob: null,
         currentPdfMonth: null,
-        currentPdfYear: null
+        currentPdfYear: null,
+
+        // --- STATO ADMIN ---
+        adminMode: false,
+        targetUserId: null,
+        targetUserName: null
     },
 
     dom: {
@@ -64,6 +73,18 @@ const PrintPage = {
 
     init: async function() {
         console.log("📊 Analytics Page Init - Full Image Support");
+        
+        // 1. GESTIONE ADMIN MODE (Lettura URL)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
+            this.state.adminMode = true;
+            this.state.targetUserId = parseInt(urlParams.get('targetUserId'));
+            this.state.targetUserName = decodeURIComponent(urlParams.get('targetUserName') || 'Utente');
+            
+            console.log("🔒 Admin Mode Active for User:", this.state.targetUserId);
+            this.setupAdminUI();
+        }
+
         this.loadUserInfo();
         this.setupDates();
         this.initChoices();
@@ -102,12 +123,39 @@ const PrintPage = {
         this.checkExistingReport();
     },
 
+    setupAdminUI: function() {
+        // Cambia Header per indicare modalità admin
+        const header = document.querySelector('.mobile-nav-header');
+        if(header) {
+            header.style.backgroundColor = "#34495e"; 
+            header.style.borderBottom = "4px solid #f1c40f";
+        }
+        
+        // Cambia tasto Home -> Chiudi
+        const homeBtn = document.querySelector('.header-button');
+        if(homeBtn) {
+            homeBtn.innerHTML = '<span>❌ Chiudi</span>';
+            homeBtn.href = "#";
+            homeBtn.onclick = (e) => { e.preventDefault(); window.close(); };
+        }
+    },
+
     loadUserInfo: function() {
-        try {
-            const p = JSON.parse(localStorage.getItem('user_profile') || '{}');
-            this.state.currentUser = p;
-            if(p.nome_cognome) this.dom.userName.textContent = p.nome_cognome;
-        } catch(e) {}
+        if (this.state.adminMode) {
+            // In Admin Mode, l'utente "corrente" per la pagina è il dipendente target
+            this.state.currentUser = {
+                id_personale: this.state.targetUserId,
+                nome_cognome: this.state.targetUserName
+            };
+            this.dom.userName.innerHTML = `<span style="color:#f1c40f; font-weight:bold;">${this.state.targetUserName}</span>`;
+        } else {
+            // Modalità Normale
+            try {
+                const p = JSON.parse(localStorage.getItem('user_profile') || '{}');
+                this.state.currentUser = p;
+                if(p.nome_cognome) this.dom.userName.textContent = p.nome_cognome;
+            } catch(e) {}
+        }
     },
 
     setupDates: function() {
@@ -179,7 +227,14 @@ const PrintPage = {
         this.dom.tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Caricamento...</td></tr>';
 
         try {
-            const res = await apiFetch(`/api/report/analyze?start=${start}&end=${end}`);
+            // --- MODIFICA: Supporto Admin ---
+            let url = `/api/report/analyze?start=${start}&end=${end}`;
+            if (this.state.adminMode) {
+                url += `&userId=${this.state.targetUserId}`;
+            }
+            // --------------------------------
+
+            const res = await apiFetch(url);
             const payload = await res.json();
             this.state.rawData = payload.data || [];
             this.state.filteredData = [...this.state.rawData];
@@ -294,22 +349,15 @@ const PrintPage = {
 
 
     convertPdfToImgBlob: async function(pdfUrl) {
-        // 1. Scarica il PDF
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf = await loadingTask.promise;
-        const page = await pdf.getPage(1); // Pagina 1
-
-        // 2. Imposta scala alta per qualità (2.0 è buono per schermi retina/stampa)
+        const page = await pdf.getPage(1); 
         const viewport = page.getViewport({ scale: 2.0 });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-
-        // 3. Renderizza
         await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-        // 4. Converti in Blob JPG
         return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     },
 
@@ -321,18 +369,21 @@ const PrintPage = {
         this.dom.newReportControls.style.display = 'block';
 
         try {
-            const res = await apiFetch(`/api/report/latest?mese=${month}&anno=${year}`);
+            // --- MODIFICA: Supporto Admin ---
+            let url = `/api/report/latest?mese=${month}&anno=${year}`;
+            if (this.state.adminMode) {
+                url += `&userId=${this.state.targetUserId}`;
+            }
+            // --------------------------------
+
+            const res = await apiFetch(url);
             const data = await res.json();
 
             if (data.exists) {
-                // REPORT TROVATO
                 this.dom.newReportControls.style.display = 'none';
                 this.dom.existingReportAlert.style.display = 'block';
                 this.dom.foundVersion.textContent = data.version;
                 
-                // --- SETUP AZIONI ---
-                
-                // 1. ANTEPRIMA (Apre immagine in nuova scheda)
                 this.dom.btnQuickPreview.onclick = async () => {
                     const btn = this.dom.btnQuickPreview;
                     const oldText = btn.textContent;
@@ -346,7 +397,6 @@ const PrintPage = {
                     finally { btn.textContent = oldText; btn.disabled = false; }
                 };
 
-                // 2. DOWNLOAD (Scarica JPG in galleria)
                 this.dom.btnQuickDownload.onclick = async () => {
                     const btn = this.dom.btnQuickDownload;
                     const oldText = btn.textContent;
@@ -356,7 +406,6 @@ const PrintPage = {
                         const blob = await this.convertPdfToImgBlob(data.url);
                         const imgUrl = URL.createObjectURL(blob);
                         
-                        // Link temporaneo per forzare il download
                         const link = document.createElement('a');
                         link.href = imgUrl;
                         link.download = `Report_${year}_${month}_v${data.version}.jpg`;
@@ -369,7 +418,6 @@ const PrintPage = {
                     finally { btn.textContent = oldText; btn.disabled = false; }
                 };
                 
-                // 3. WHATSAPP (Manda LINK al PDF originale per formalità)
                 const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
                 const waMsg = `Report ${mNames[month-1]} ${year}: ${data.url}`;
                 this.dom.btnQuickWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
@@ -400,7 +448,15 @@ const PrintPage = {
             // A. Recupero Dati
             const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
-            const res = await apiFetch(`/api/report/analyze?start=${startDate}&end=${endDate}`);
+            
+            // --- MODIFICA: Supporto Admin ---
+            let url = `/api/report/analyze?start=${startDate}&end=${endDate}`;
+            if (this.state.adminMode) {
+                url += `&userId=${this.state.targetUserId}`;
+            }
+            // --------------------------------
+
+            const res = await apiFetch(url);
             const payload = await res.json();
             const monthData = payload.data || [];
 
@@ -433,15 +489,13 @@ const PrintPage = {
                 VA: 513, VR: 551 
             };
 
-            // FONT SIZE UNIFICATO
             const fs = 10; 
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
                 
-                // Se ci sono attività nel giorno
                 if (items.length > 0) {
-                    // --- MODIFICA: Separazione contatori ---
+                    // --- Separazione contatori ---
                     let totLavoro = 0;
                     let totAssenza = 0;
                     let totViaggio = 0;
@@ -463,22 +517,18 @@ const PrintPage = {
                         // --- LOGICA DESCRIZIONE ---
                         let descText = "";
                         
-                        // Caso CANTIERE
                         if (it.tipo === 'T' || (it.note && it.note.includes('[CANTIERE]'))) {
                             descText = (it.note || "").replace('[CANTIERE]', '').trim();
                         } 
-                        // Caso ASSENZA (Ferie/Permessi)
                         else if (it.is_assenza) {
                             descText = it.note || "";
                         }
-                        // Caso LAVORO ORDINARIO: non stampiamo nulla per pulizia
                         else {
                             descText = ""; 
                         }
 
                         if (descText) labels.push(descText);
 
-                        // Orari (Prendiamo il primo valido trovato)
                         if (it.str_mattina_dalle) { timeM_In = it.str_mattina_dalle; timeM_Out = it.str_mattina_alle; }
                         if (it.str_pomeriggio_dalle) { timeP_In = it.str_pomeriggio_dalle; timeP_Out = it.str_pomeriggio_alle; }
                         if (it.assenza_mattina_dalle) { timeM_In = it.assenza_mattina_dalle; timeM_Out = it.assenza_mattina_alle; }
@@ -493,19 +543,16 @@ const PrintPage = {
                     if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: fs, font });
                     if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: fs, font });
 
-                    // --- STAMPA ORE LAVORO (Colonna Ore e Straordinari) ---
+                    // --- STAMPA ORE LAVORO ---
                     if (totLavoro > 0) {
                         const ord = totLavoro > 8 ? 8 : totLavoro;
                         const str = totLavoro > 8 ? totLavoro - 8 : 0;
                         
-                        // Colonna Ore Ordinarie
                         page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
-                        
-                        // Colonna Straordinari
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
-                    // --- STAMPA ORE ASSENZA (Colonna Permessi/Assenze) ---
+                    // --- STAMPA ORE ASSENZA ---
                     if (totAssenza > 0) {
                          page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     }
@@ -529,11 +576,9 @@ const PrintPage = {
                 }
             }
 
-            // SALVA
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
-            // RENDER ANTEPRIMA
             const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
             const pdf = await loadingTask.promise;
             const pdfPage = await pdf.getPage(1);
@@ -568,6 +613,12 @@ const PrintPage = {
             formData.append('mese', this.state.currentPdfMonth);
             formData.append('anno', this.state.currentPdfYear);
 
+            // --- MODIFICA: Supporto Admin ---
+            if (this.state.adminMode) {
+                formData.append('id_personale_override', this.state.targetUserId);
+            }
+            // --------------------------------
+
             const uploadRes = await apiFetch('/api/report/archive', { method: 'POST', body: formData });
             const result = await uploadRes.json();
 
@@ -576,14 +627,10 @@ const PrintPage = {
             
             this.dom.pdfStatus.textContent = `Documento v${result.version} salvato correttamente!`;
             
-            // Aggiorniamo il tasto "Scarica" finale per scaricare l'IMG, non il PDF
-            // Dato che abbiamo già il BLOB PDF in memoria, lo convertiamo subito
             this.dom.btnDownload.textContent = "Scarica Immagine";
             this.dom.btnDownload.onclick = async (e) => {
                 e.preventDefault();
                 try {
-                    // Usiamo l'URL pubblico appena ottenuto per riconvertire (o usiamo il blob locale se preferisci)
-                    // Per coerenza con la funzione sopra, usiamo l'URL pubblico
                     const blob = await this.convertPdfToImgBlob(result.url);
                     const imgUrl = URL.createObjectURL(blob);
                     

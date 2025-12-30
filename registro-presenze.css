@@ -555,3 +555,26 @@ body {
     background-color: #e2e6ea;
     transform: scale(1.1);
 }
+
+/* Stile per i bottoni nella colonna Nome */
+.user-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 2px 4px;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: all 0.2s;
+    text-decoration: none; /* Rimuove sottolineatura dai link */
+}
+
+.user-action-btn:hover {
+    opacity: 1;
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    transform: scale(1.1);
+}

@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activePopup = null;
     let activeHeaderDate = null; 
     
-    // Variabili Dettaglio
     let detailCurrentPerson = null;
     let detailCurrentDate = new Date();
 
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const PRE_LOAD_DAYS = 15;
     const POST_LOAD_DAYS = 45;
     const COLUMN_WIDTH = 95;
-    const REPORT_COLUMN_WIDTH = 50; // Larghezza colonna report
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -148,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { console.error("Errore fetch dati:", err); }
     }
 
+    // --- MODIFICA QUI: AGGIUNTA DOPPIO BOTTONE NELLA COLONNA NOME ---
     function renderBaseGridRows() {
         timelineBody.innerHTML = '';
         const fragment = document.createDocumentFragment();
@@ -161,24 +160,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.style.justifyContent = 'space-between';
             th.style.alignItems = 'center';
 
+            // 1. Nome Utente
             const nameSpan = document.createElement('span');
             nameSpan.textContent = person.nome_cognome;
             nameSpan.title = person.nome_cognome;
             nameSpan.style.cursor = 'pointer';
             nameSpan.style.overflow = 'hidden';
             nameSpan.style.textOverflow = 'ellipsis';
+            nameSpan.style.flexGrow = '1';
             nameSpan.addEventListener('click', () => openPersonnelDetail(person));
             
+            // 2. Contenitore Icone (Matita + Stampante)
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.display = 'flex';
+            actionsDiv.style.gap = '2px';
+            actionsDiv.style.flexShrink = '0';
+
+            // A. Bottone Modifica (Matita) -> inserimento-ore.html
             const editLink = document.createElement('a');
-            editLink.className = 'user-edit-btn';
+            editLink.className = 'user-action-btn'; // Classe CSS aggiornata
             editLink.innerHTML = '✏️';
             editLink.title = `Inserisci ore per ${person.nome_cognome}`;
             editLink.href = `inserimento-ore.html?adminMode=true&targetUserId=${person.id_personale}&targetUserName=${encodeURIComponent(person.nome_cognome)}`;
             editLink.target = '_blank';
             editLink.addEventListener('click', (e) => e.stopPropagation());
 
+            // B. Bottone Report (Stampante) -> stampa-ore.html
+            const reportLink = document.createElement('a');
+            reportLink.className = 'user-action-btn';
+            reportLink.innerHTML = '📄';
+            reportLink.title = `Report Mensile per ${person.nome_cognome}`;
+            // NOTA: Qui costruiamo l'URL per l'accesso ADMIN
+            reportLink.href = `stampa-ore.html?adminMode=true&targetUserId=${person.id_personale}&targetUserName=${encodeURIComponent(person.nome_cognome)}`;
+            reportLink.target = '_blank';
+            reportLink.addEventListener('click', (e) => e.stopPropagation());
+
+            actionsDiv.appendChild(editLink);
+            actionsDiv.appendChild(reportLink);
+
             th.appendChild(nameSpan);
-            th.appendChild(editLink);
+            th.appendChild(actionsDiv);
             tr.appendChild(th);
             
             fragment.appendChild(tr);
@@ -187,119 +208,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         timelineBody.appendChild(fragment);
     }
 
-    // --- GESTIONE COLONNE (CON REPORT) ---
-
     function appendColumns(start, end) {
         const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        
-        datesToAdd.forEach(d => {
-            // SE È IL PRIMO DEL MESE -> Aggiungi colonna Report PRIMA del giorno
-            if (d.getDate() === 1) {
-                insertReportColumn(d, 'append');
-            }
-
-            // Aggiungi colonna Giorno
-            headerRow.appendChild(createHeaderCell(d, todayStr));
-            const rows = Array.from(timelineBody.querySelectorAll('tr'));
-            rows.forEach(tr => {
-                const pid = parseInt(tr.dataset.personId);
-                tr.appendChild(createBodyCell(d, pid));
-            });
+        datesToAdd.forEach(d => headerRow.appendChild(createHeaderCell(d, todayStr)));
+        const rows = Array.from(timelineBody.querySelectorAll('tr'));
+        rows.forEach(tr => {
+            const pid = parseInt(tr.dataset.personId);
+            datesToAdd.forEach(d => tr.appendChild(createBodyCell(d, pid)));
         });
     }
 
     function prependColumns(start, end) {
-        // Genera range e inverti (dal più recente al più vecchio)
-        let datesToAdd = generateDateRange(start, end);
-        datesToAdd.reverse(); 
-
+        const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        let addedWidthTotal = 0;
-
-        datesToAdd.forEach(d => {
-            const firstHeader = headerRow.children[1]; // Salta la colonna nomi
-
-            // 1. Inserisci Giorno
-            headerRow.insertBefore(createHeaderCell(d, todayStr), firstHeader);
-            const rows = Array.from(timelineBody.querySelectorAll('tr'));
-            rows.forEach(tr => {
-                const pid = parseInt(tr.dataset.personId);
-                const firstDataCell = tr.children[1];
-                tr.insertBefore(createBodyCell(d, pid), firstDataCell);
-            });
-            addedWidthTotal += COLUMN_WIDTH;
-
-            // 2. SE È IL PRIMO DEL MESE -> Inserisci Report ANCORA PRIMA del giorno appena inserito
-            if (d.getDate() === 1) {
-                insertReportColumn(d, 'prepend');
-                addedWidthTotal += REPORT_COLUMN_WIDTH;
-            }
-        });
-        
-        // Mantieni la posizione di scroll
+        const addedWidth = datesToAdd.length * COLUMN_WIDTH; 
         const currentScroll = container.scrollLeft;
-        container.scrollLeft = currentScroll + addedWidthTotal;
-    }
-
-    // NUOVA FUNZIONE PER COLONNA REPORT
-    function insertReportColumn(dateObj, mode) {
-        // Creazione Header
-        const th = document.createElement('th');
-        th.className = 'report-column-header';
-        const mName = dateObj.toLocaleString('it-IT', { month: 'short' }).toUpperCase();
-        th.innerHTML = `<span style="font-size:1.2rem">🖨️</span><br><small style="font-size:0.6rem">${mName}</small>`;
-        th.title = `Apri Report Mensile - ${dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' })}`;
+        const firstDayHeader = headerRow.children[1]; 
+        
+        datesToAdd.forEach(d => headerRow.insertBefore(createHeaderCell(d, todayStr), firstDayHeader));
         
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
-
-        // Funzione helper per creare cella pulsante
-        const createCell = (pid, personName) => {
-            const td = document.createElement('td');
-            td.className = 'report-column-cell';
-            
-            const btn = document.createElement('button');
-            btn.className = 'report-btn-icon';
-            btn.innerHTML = '📄'; // Icona documento
-            btn.title = `Vedi Report ${mName} per ${personName}`;
-            
-            // LINK DIRETTO ALLA PAGINA STAMPA (ADMIN MODE)
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                // Passiamo le date del mese di riferimento per pre-impostare le select
-                const targetMonth = dateObj.getMonth() + 1;
-                const targetYear = dateObj.getFullYear();
-                
-                // NOTA: stampa-ore.html deve gestire pre-selezione tramite URL se vogliamo raffinatezza,
-                // ma per ora apre la pagina in admin mode e l'admin seleziona il mese.
-                // Miglioria futura: passare &month=X&year=Y allo script di stampa-ore.
-                const url = `stampa-ore.html?adminMode=true&targetUserId=${pid}&targetUserName=${encodeURIComponent(personName)}`;
-                window.open(url, '_blank');
-            };
-            
-            td.appendChild(btn);
-            return td;
-        };
-
-        if (mode === 'append') {
-            headerRow.appendChild(th);
-            rows.forEach(tr => {
-                const pid = parseInt(tr.dataset.personId);
-                const name = tr.querySelector('span')?.textContent || 'Utente';
-                tr.appendChild(createCell(pid, name));
-            });
-        } else {
-            // Prepend: Inserisci prima della colonna 1 (la colonna 0 è sticky nomi)
-            const targetTh = headerRow.children[1]; 
-            headerRow.insertBefore(th, targetTh);
-            
-            rows.forEach(tr => {
-                const pid = parseInt(tr.dataset.personId);
-                const name = tr.querySelector('span')?.textContent || 'Utente';
-                const targetTd = tr.children[1];
-                tr.insertBefore(createCell(pid, name), targetTd);
-            });
-        }
+        rows.forEach(tr => {
+            const pid = parseInt(tr.dataset.personId);
+            const firstDataCell = tr.children[1];
+            datesToAdd.forEach(d => tr.insertBefore(createBodyCell(d, pid), firstDataCell));
+        });
+        container.scrollLeft = currentScroll + addedWidth;
     }
 
     function generateDateRange(start, end) {
@@ -326,7 +261,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return th;
     }
 
-    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO ---
     function calculateStatusClass(record, isWeekend) {
         let realWorkHours = 0;
         if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
@@ -379,7 +313,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- COLOR PICKER ---
+    // ... (Resto delle funzioni: openColorPicker, DetailModal, VisualEdit, QuickEdit, etc. rimangono invariate) ...
+    
     function openColorPicker(e, dateStr) {
         e.stopPropagation();
         activeHeaderDate = dateStr; 
@@ -393,13 +328,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             await apiClient.post('/presenze/colore-colonna', { data: dateStr, colore: color });
             alert("Colore aggiornato. La pagina verrà ricaricata.");
             location.reload(); 
-        } catch(e) { 
-            console.error(e);
-            alert("Errore aggiornamento colonna."); 
-        }
+        } catch(e) { console.error(e); alert("Errore aggiornamento colonna."); }
     }
 
-    // --- MODALE DETTAGLIO ---
     function openPersonnelDetail(person) {
         detailCurrentPerson = person;
         detailCurrentDate = new Date(); 
@@ -410,15 +341,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalOverlay.style.display = 'block';
     }
 
-    document.getElementById('btnDetailPrev').addEventListener('click', () => {
-        detailCurrentDate.setMonth(detailCurrentDate.getMonth() - 1);
-        updateDetailModal();
-    });
-    
-    document.getElementById('btnDetailNext').addEventListener('click', () => {
-        detailCurrentDate.setMonth(detailCurrentDate.getMonth() + 1);
-        updateDetailModal();
-    });
+    document.getElementById('btnDetailPrev').addEventListener('click', () => { detailCurrentDate.setMonth(detailCurrentDate.getMonth() - 1); updateDetailModal(); });
+    document.getElementById('btnDetailNext').addEventListener('click', () => { detailCurrentDate.setMonth(detailCurrentDate.getMonth() + 1); updateDetailModal(); });
 
     async function updateDetailModal() {
         if (!detailCurrentPerson) return;
@@ -431,7 +355,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const month = detailCurrentDate.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
-        
         const sStr = formatDateISO(firstDay);
         const eStr = formatDateISO(lastDay);
 
@@ -442,22 +365,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const recordMap = {};
             personRecords.forEach(r => recordMap[r.data] = r);
 
-            let leftRowsHtml = '';
-            let rightRowsHtml = '';
-            
+            let leftRowsHtml = ''; let rightRowsHtml = '';
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
                 const dayNum = d.getDate();
                 const dateStr = formatDateISO(d); 
                 const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
                 const rec = recordMap[dateStr] || {};
-                
                 let rowClass = '';
-                if (rec.colore && rec.colore !== 'none') {
-                    rowClass = `detail-row-${rec.colore}`;
-                } else if (isWeekend) {
-                    rowClass = 'detail-row-weekend';
-                }
+                if (rec.colore && rec.colore !== 'none') rowClass = `detail-row-${rec.colore}`;
+                else if (isWeekend) rowClass = 'detail-row-weekend';
                 
                 let tipoHtml = '';
                 if (rec.id_tipo_presenza_fk && typesById[rec.id_tipo_presenza_fk]) {
@@ -467,38 +384,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                         tipoHtml = `<span class="detail-badge" style="background-color:${bg}">${t.etichetta}</span>`;
                     }
                 }
-
                 const rowHtml = `
                     <tr class="${rowClass}">
                         <td class="detail-col-day"><strong>${dayNum}</strong> <small>${dayName}</small></td>
                         <td class="detail-col-hours"><strong>${rec.numero_ore || ''}</strong></td>
                         <td class="detail-col-status">${tipoHtml}</td>
                         <td class="detail-col-notes"><div class="detail-note-text">${rec.note || ''}</div></td>
-                    </tr>
-                `;
-
+                    </tr>`;
                 if (dayNum <= 15) leftRowsHtml += rowHtml; else rightRowsHtml += rowHtml;
             }
-
             const tableHeader = `<thead><tr><th class="detail-col-day">G</th><th class="detail-col-hours">H</th><th class="detail-col-status">St</th><th class="detail-col-notes">Note</th></tr></thead>`;
-            
-            modalBodyContainer.innerHTML = `
-                <div class="modal-split-container">
-                    <div class="split-column">
-                        <table class="detail-table">${tableHeader}<tbody>${leftRowsHtml}</tbody></table>
-                    </div>
-                    <div class="split-column">
-                        <table class="detail-table">${tableHeader}<tbody>${rightRowsHtml}</tbody></table>
-                    </div>
-                </div>
-            `;
-        } catch (err) {
-            console.error(err);
-            modalBodyContainer.innerHTML = '<div style="color:red; text-align:center;">Errore caricamento dati.</div>';
-        }
+            modalBodyContainer.innerHTML = `<div class="modal-split-container"><div class="split-column"><table class="detail-table">${tableHeader}<tbody>${leftRowsHtml}</tbody></table></div><div class="split-column"><table class="detail-table">${tableHeader}<tbody>${rightRowsHtml}</tbody></table></div></div>`;
+        } catch (err) { console.error(err); modalBodyContainer.innerHTML = '<div style="color:red; text-align:center;">Errore caricamento dati.</div>'; }
     }
 
-    // --- VISUAL POPUP ---
     function handleVisualEdit(e, td) {
         if (activePopup) activePopup.remove();
         const pid = td.dataset.personId;
@@ -538,20 +437,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(popup);
         activePopup = popup;
 
-        popup.querySelectorAll('.type-option-btn').forEach(btn => {
-            btn.onclick = () => {
-                popup.querySelectorAll('.type-option-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                popup.querySelector('#v-tipo-val').value = btn.dataset.id;
-            };
-        });
-        popup.querySelectorAll('.color-dot-sm').forEach(dot => {
-            dot.onclick = () => {
-                popup.querySelectorAll('.color-dot-sm').forEach(d => d.classList.remove('selected'));
-                dot.classList.add('selected');
-                popup.querySelector('#v-color-val').value = dot.dataset.color;
-            };
-        });
+        popup.querySelectorAll('.type-option-btn').forEach(btn => { btn.onclick = () => { popup.querySelectorAll('.type-option-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); popup.querySelector('#v-tipo-val').value = btn.dataset.id; }; });
+        popup.querySelectorAll('.color-dot-sm').forEach(dot => { dot.onclick = () => { popup.querySelectorAll('.color-dot-sm').forEach(d => d.classList.remove('selected')); dot.classList.add('selected'); popup.querySelector('#v-color-val').value = dot.dataset.color; }; });
         popup.querySelector('#v-save').onclick = async () => {
             const ore = popup.querySelector('#v-ore').value;
             const tipo = popup.querySelector('#v-tipo-val').value;
@@ -559,8 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const color = popup.querySelector('#v-color-val').value;
             const payload = { id_personale_fk: parseInt(pid), data: date, numero_ore: ore ? parseFloat(ore) : null, id_tipo_presenza_fk: tipo ? parseInt(tipo) : null, note: note, colore: color };
             await saveData(payload, td);
-            popup.remove();
-            activePopup = null;
+            popup.remove(); activePopup = null;
         };
         popup.querySelector('#v-close').onclick = () => { popup.remove(); activePopup = null; };
     }
@@ -604,13 +490,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCellContent(td, record) {
-        if(record.colore && record.colore !== 'none') {
-            td.classList.add(`cell-color-${record.colore}`);
-        }
-        
+        if(record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
         const wrapper = document.createElement('div'); 
         wrapper.className = 'cell-content-wrapper';
-        
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
             if (t.etichetta) {
@@ -621,42 +503,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 wrapper.appendChild(badge);
             }
         }
-        
-        if (record.numero_ore) { 
-            const chip = document.createElement('span'); 
-            chip.className = 'chip ore'; 
-            chip.textContent = record.numero_ore; 
-            wrapper.appendChild(chip); 
-        }
-        
+        if (record.numero_ore) { const chip = document.createElement('span'); chip.className = 'chip ore'; chip.textContent = record.numero_ore; wrapper.appendChild(chip); }
         td.appendChild(wrapper);
-        
-        if (record.note) { 
-            const ind = document.createElement('div'); 
-            ind.className = 'note-indicator'; 
-            ind.title = record.note; 
-            td.appendChild(ind); 
-        }
+        if (record.note) { const ind = document.createElement('div'); ind.className = 'note-indicator'; ind.title = record.note; td.appendChild(ind); }
     }
     
     function updateCellVisuals(td, record) {
         td.innerHTML = '';
         td.className = ''; 
-
-        if (td.dataset.isWeekend === "true") {
-            td.classList.add('weekend-column');
-        }
-
-        if (record) {
-            renderCellContent(td, record);
-        }
-
+        if (td.dataset.isWeekend === "true") td.classList.add('weekend-column');
+        if (record) renderCellContent(td, record);
         const statusClass = calculateStatusClass(record, td.dataset.isWeekend === "true");
-        if (statusClass) {
-            const indicator = document.createElement('div');
-            indicator.className = `status-indicator ${statusClass}`;
-            td.appendChild(indicator);
-        }
+        if (statusClass) { const indicator = document.createElement('div'); indicator.className = `status-indicator ${statusClass}`; td.appendChild(indicator); }
     }
 
     async function loadTypes() {
@@ -695,19 +553,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function initGlobalEvents() {
         document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
-        
         if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
-        
-        document.querySelectorAll('.color-dot').forEach(dot => { 
-            dot.addEventListener('click', async (e) => { 
-                const color = e.target.dataset.color; 
-                if (activeHeaderDate) { 
-                    await applyColumnColor(activeHeaderDate, color); 
-                } 
-                colorPickerPopup.style.display = 'none'; 
-            }); 
-        });
-        
+        document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', async (e) => { const color = e.target.dataset.color; if (activeHeaderDate) { await applyColumnColor(activeHeaderDate, color); } colorPickerPopup.style.display = 'none'; }); });
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
 });
