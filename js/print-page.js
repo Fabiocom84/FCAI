@@ -1,5 +1,5 @@
 /* ==========================================================================
-   js/print-page.js - Admin Ready
+   js/print-page.js - Admin Ready & Fixed Logic
    ========================================================================== */
 
 import { apiFetch, publicApiFetch } from './api-client.js';
@@ -124,14 +124,18 @@ const PrintPage = {
     },
 
     setupAdminUI: function() {
-        // Cambia Header per indicare modalità admin
+        // 1. Uniformiamo il Titolo
+        const titleEl = document.querySelector('.title-container h1');
+        if(titleEl) titleEl.textContent = "REPORT ADMIN";
+
+        // 2. Stile Header
         const header = document.querySelector('.mobile-nav-header');
         if(header) {
             header.style.backgroundColor = "#34495e"; 
-            header.style.borderBottom = "4px solid #f1c40f";
+            header.style.borderBottom = "4px solid #f1c40f"; // Stesso giallo dell'inserimento
         }
         
-        // Cambia tasto Home -> Chiudi
+        // 3. Tasto Chiudi
         const homeBtn = document.querySelector('.header-button');
         if(homeBtn) {
             homeBtn.innerHTML = '<span>❌ Chiudi</span>';
@@ -147,7 +151,8 @@ const PrintPage = {
                 id_personale: this.state.targetUserId,
                 nome_cognome: this.state.targetUserName
             };
-            this.dom.userName.innerHTML = `<span style="color:#f1c40f; font-weight:bold;">${this.state.targetUserName}</span>`;
+            // Mostriamo il nome in GIALLO per evidenziare che stiamo operando su di lui
+            this.dom.userName.innerHTML = `Operando come: <span style="color:#f1c40f; font-weight:bold;">${this.state.targetUserName}</span>`;
         } else {
             // Modalità Normale
             try {
@@ -227,12 +232,12 @@ const PrintPage = {
         this.dom.tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Caricamento...</td></tr>';
 
         try {
-            // --- MODIFICA: Supporto Admin ---
+            // --- FIX ADMIN MODE ---
             let url = `/api/report/analyze?start=${start}&end=${end}`;
             if (this.state.adminMode) {
                 url += `&userId=${this.state.targetUserId}`;
             }
-            // --------------------------------
+            // ---------------------
 
             const res = await apiFetch(url);
             const payload = await res.json();
@@ -369,12 +374,12 @@ const PrintPage = {
         this.dom.newReportControls.style.display = 'block';
 
         try {
-            // --- MODIFICA: Supporto Admin ---
+            // --- FIX ADMIN MODE: Passiamo l'ID utente corretto ---
             let url = `/api/report/latest?mese=${month}&anno=${year}`;
             if (this.state.adminMode) {
                 url += `&userId=${this.state.targetUserId}`;
             }
-            // --------------------------------
+            // -----------------------------------------------------
 
             const res = await apiFetch(url);
             const data = await res.json();
@@ -449,12 +454,12 @@ const PrintPage = {
             const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
             
-            // --- MODIFICA: Supporto Admin ---
+            // --- FIX ADMIN MODE ---
             let url = `/api/report/analyze?start=${startDate}&end=${endDate}`;
             if (this.state.adminMode) {
                 url += `&userId=${this.state.targetUserId}`;
             }
-            // --------------------------------
+            // ---------------------
 
             const res = await apiFetch(url);
             const payload = await res.json();
@@ -613,11 +618,11 @@ const PrintPage = {
             formData.append('mese', this.state.currentPdfMonth);
             formData.append('anno', this.state.currentPdfYear);
 
-            // --- MODIFICA: Supporto Admin ---
+            // --- FIX ADMIN MODE: Override Utente ---
             if (this.state.adminMode) {
                 formData.append('id_personale_override', this.state.targetUserId);
             }
-            // --------------------------------
+            // ---------------------------------------
 
             const uploadRes = await apiFetch('/api/report/archive', { method: 'POST', body: formData });
             const result = await uploadRes.json();
