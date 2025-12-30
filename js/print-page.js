@@ -1,5 +1,5 @@
 /* ==========================================================================
-   js/print-page.js - Admin Ready & Fixed Logic
+   js/print-page.js - Versione Admin Fixed & Filenames
    ========================================================================== */
 
 import { apiFetch, publicApiFetch } from './api-client.js';
@@ -72,7 +72,7 @@ const PrintPage = {
     },
 
     init: async function() {
-        console.log("📊 Analytics Page Init - Full Image Support");
+        console.log("📊 Analytics Page Init - Admin Fixed");
         
         // 1. GESTIONE ADMIN MODE (Lettura URL)
         const urlParams = new URLSearchParams(window.location.search);
@@ -112,7 +112,10 @@ const PrintPage = {
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
         
         if(this.dom.btnForceRegenerate) {
-            this.dom.btnForceRegenerate.addEventListener('click', () => this.generatePreview());
+            this.dom.btnForceRegenerate.addEventListener('click', () => {
+                this.dom.existingReportAlert.style.display = 'none';
+                this.generatePreview();
+            });
         }
 
         // Cambio data -> Check Report
@@ -128,11 +131,11 @@ const PrintPage = {
         const titleEl = document.querySelector('.title-container h1');
         if(titleEl) titleEl.textContent = "REPORT ADMIN";
 
-        // 2. Stile Header
+        // 2. Stile Header (Grigio scuro + Bordo Giallo)
         const header = document.querySelector('.mobile-nav-header');
         if(header) {
             header.style.backgroundColor = "#34495e"; 
-            header.style.borderBottom = "4px solid #f1c40f"; // Stesso giallo dell'inserimento
+            header.style.borderBottom = "4px solid #f1c40f"; 
         }
         
         // 3. Tasto Chiudi
@@ -232,12 +235,12 @@ const PrintPage = {
         this.dom.tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Caricamento...</td></tr>';
 
         try {
-            // --- FIX ADMIN MODE ---
+            // --- FIX ADMIN MODE: Passiamo ID target ---
             let url = `/api/report/analyze?start=${start}&end=${end}`;
             if (this.state.adminMode) {
                 url += `&userId=${this.state.targetUserId}`;
             }
-            // ---------------------
+            // ------------------------------------------
 
             const res = await apiFetch(url);
             const payload = await res.json();
@@ -389,53 +392,46 @@ const PrintPage = {
                 this.dom.existingReportAlert.style.display = 'block';
                 this.dom.foundVersion.textContent = data.version;
                 
-                this.dom.btnQuickPreview.onclick = async () => {
-                    const btn = this.dom.btnQuickPreview;
-                    const oldText = btn.textContent;
-                    btn.textContent = "Caricamento...";
-                    btn.disabled = true;
-                    try {
-                        const blob = await this.convertPdfToImgBlob(data.url);
-                        const imgUrl = URL.createObjectURL(blob);
-                        window.open(imgUrl, '_blank');
-                    } catch(e) { alert("Errore anteprima: " + e.message); }
-                    finally { btn.textContent = oldText; btn.disabled = false; }
-                };
-
-                this.dom.btnQuickDownload.onclick = async () => {
-                    const btn = this.dom.btnQuickDownload;
-                    const oldText = btn.textContent;
-                    btn.textContent = "Conversione...";
-                    btn.disabled = true;
-                    try {
-                        const blob = await this.convertPdfToImgBlob(data.url);
-                        const imgUrl = URL.createObjectURL(blob);
-                        
-                        const link = document.createElement('a');
-                        link.href = imgUrl;
-                        link.download = `Report_${year}_${month}_v${data.version}.jpg`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        showSuccessFeedbackModal("Scaricato", "Immagine salvata in galleria.");
-                    } catch(e) { alert("Errore download: " + e.message); }
-                    finally { btn.textContent = oldText; btn.disabled = false; }
-                };
-                
-                const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-                const waMsg = `Report ${mNames[month-1]} ${year}: ${data.url}`;
-                this.dom.btnQuickWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+                // Configura i bottoni "Rapidi"
+                this.configureQuickButtons(data.url, data.version, year, month);
             } 
-            else {
-                this.dom.existingReportAlert.style.display = 'none';
-                this.dom.newReportControls.style.display = 'block';
-            }
         } catch (e) { console.error("Errore check:", e); }
     },
 
+    configureQuickButtons: function(url, version, year, month) {
+        const btnView = document.getElementById('btnQuickPreview');
+        const btnDown = document.getElementById('btnQuickDownload');
+        const btnWa = document.getElementById('btnQuickWhatsapp');
+        
+        // Nome File Univoco: Report_2025_12_Mario_Rossi_v1.jpg
+        const safeName = this.state.currentUser.nome_cognome.replace(/\s+/g, '_');
+        const fileName = `Report_${year}_${month}_${safeName}_v${version}.jpg`;
+
+        btnView.onclick = async () => window.open(url, '_blank'); 
+        
+        btnDown.onclick = async () => {
+            const oldText = btnDown.textContent;
+            btnDown.textContent = "Scarico...";
+            try {
+                // Scarichiamo come blob per forzare il nome file
+                const resp = await fetch(url);
+                const blob = await resp.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName; // <--- NOME SIGNIFICATIVO QUI
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch(e) { alert("Errore download"); }
+            finally { btnDown.textContent = oldText; }
+        };
+
+        const waMsg = `Report ${this.state.currentUser.nome_cognome} - ${month}/${year}: ${url}`;
+        btnWa.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+    },
+
     // =========================================================
-    // GENERAZIONE PDF - V3 (LOGICA ESSENZIALE)
+    // GENERAZIONE PDF
     // =========================================================
     generatePreview: async function() {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
@@ -512,23 +508,15 @@ const PrintPage = {
                         totViaggio += it.viaggio;
                         types.add(it.tipo);
 
-                        // 1. SEPARAZIONE ORE
-                        if (it.is_assenza) {
-                            totAssenza += it.ore;
-                        } else {
-                            totLavoro += it.ore;
-                        }
+                        if (it.is_assenza) totAssenza += it.ore;
+                        else totLavoro += it.ore;
 
-                        // --- LOGICA DESCRIZIONE ---
                         let descText = "";
-                        
                         if (it.tipo === 'T' || (it.note && it.note.includes('[CANTIERE]'))) {
                             descText = (it.note || "").replace('[CANTIERE]', '').trim();
-                        } 
-                        else if (it.is_assenza) {
+                        } else if (it.is_assenza) {
                             descText = it.note || "";
-                        }
-                        else {
+                        } else {
                             descText = ""; 
                         }
 
@@ -542,36 +530,29 @@ const PrintPage = {
 
                     const Y = startY - ((day - 1) * rowH);
 
-                    // --- STAMPA ORARI ---
                     if (timeM_In) page.drawText(timeM_In, { x: CX.Col_M_In, y: Y, size: fs, font });
                     if (timeM_Out) page.drawText(timeM_Out, { x: CX.Col_M_Out, y: Y, size: fs, font });
                     if (timeP_In) page.drawText(timeP_In, { x: CX.Col_P_In, y: Y, size: fs, font });
                     if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: fs, font });
 
-                    // --- STAMPA ORE LAVORO ---
                     if (totLavoro > 0) {
                         const ord = totLavoro > 8 ? 8 : totLavoro;
                         const str = totLavoro > 8 ? totLavoro - 8 : 0;
-                        
                         page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
-                    // --- STAMPA ORE ASSENZA ---
                     if (totAssenza > 0) {
                          page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     }
 
-                    // --- STAMPA TIPO ---
                     const finalType = types.has('T') ? 'T' : 'O';
                     page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
 
-                    // --- STAMPA DESCRIZIONE ---
                     let fullDesc = labels.join(", ");
                     if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";
                     page.drawText(fullDesc, { x: CX.Desc, y: Y, size: fs, font });
 
-                    // --- STAMPA VIAGGIO ---
                     if (totViaggio > 0) {
                         const v_andata = (totViaggio / 2); 
                         const v_ritorno = (totViaggio / 2); 
@@ -630,8 +611,11 @@ const PrintPage = {
             this.dom.stepPreview.style.display = 'none';
             this.dom.stepFinalActions.style.display = 'block';
             
-            this.dom.pdfStatus.textContent = `Documento v${result.version} salvato correttamente!`;
+            // FIX: Versione sicura
+            const ver = result.version || 1;
+            this.dom.pdfStatus.textContent = `Documento v${ver} salvato correttamente!`;
             
+            // Configura Download Finale con NOME SIGNIFICATIVO
             this.dom.btnDownload.textContent = "Scarica Immagine";
             this.dom.btnDownload.onclick = async (e) => {
                 e.preventDefault();
@@ -639,17 +623,20 @@ const PrintPage = {
                     const blob = await this.convertPdfToImgBlob(result.url);
                     const imgUrl = URL.createObjectURL(blob);
                     
+                    const safeName = this.state.currentUser.nome_cognome.replace(/\s+/g, '_');
+                    const fName = `Report_${this.state.currentPdfYear}_${this.state.currentPdfMonth}_${safeName}_v${ver}.jpg`;
+
                     const link = document.createElement('a');
                     link.href = imgUrl;
-                    link.download = `Report_${this.state.currentPdfYear}_${this.state.currentPdfMonth}_v${result.version}.jpg`;
+                    link.download = fName; // <-- NOME SIGNIFICATIVO
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                 } catch(err) { alert("Errore download img: " + err.message); }
             };
             
-            const mNames = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-            const waMsg = `Ciao, invio report presenze ${mNames[this.state.currentPdfMonth-1]} ${this.state.currentPdfYear}: ${result.url}`;
+            // Configura WhatsApp
+            const waMsg = `Report ${this.state.currentUser.nome_cognome}: ${result.url}`;
             this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
 
             showSuccessFeedbackModal("Salvato", "Il PDF è stato archiviato.");
