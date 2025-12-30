@@ -505,35 +505,41 @@ const MobileHoursApp = {
             payload.id_personale_override = this.state.targetUserId;
         }
 
-        // LOGICA DI COSTRUZIONE PAYLOAD E VALIDAZIONE
+        // LOGICA DI COSTRUZIONE PAYLOAD ROBUSTA
         if (type === 'produzione') {
             // Estrazione sicura del valore da Choices.js
             let commessaVal = null;
             if (this.state.choicesInstance) {
-                const choiceVal = this.state.choicesInstance.getValue(true);
-                // Choices.js a volte ritorna array o valore singolo
-                commessaVal = Array.isArray(choiceVal) ? choiceVal[0] : choiceVal;
+                // getValue(true) a volte è instabile, prendiamo l'oggetto e leggiamo .value
+                const rawVal = this.state.choicesInstance.getValue(); 
+                if (rawVal) {
+                    const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
+                    commessaVal = item ? item.value : null;
+                }
             }
 
             if (!commessaVal) {
-                console.error("Errore: Commessa non selezionata o valore nullo.", commessaVal);
                 return alert("Seleziona una commessa valida.");
             }
 
             payload.id_commessa = commessaVal;
             payload.id_componente = this.dom.componentSelect.value;
             
-            if (!payload.id_componente) {
+            // Controllo stringa vuota
+            if (!payload.id_componente || payload.id_componente === "") {
                 return alert("Seleziona una Lavorazione (Componente).");
             }
         } 
         else if (type === 'cantiere') {
             let commessaVal = null;
             if (this.state.choicesInstance) {
-                const choiceVal = this.state.choicesInstance.getValue(true);
-                commessaVal = Array.isArray(choiceVal) ? choiceVal[0] : choiceVal;
+                const rawVal = this.state.choicesInstance.getValue();
+                if (rawVal) {
+                    const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
+                    commessaVal = item ? item.value : null;
+                }
             }
-            payload.id_commessa = commessaVal ? commessaVal : null;
+            payload.id_commessa = commessaVal;
             
             if (!payload.note.toUpperCase().includes('[CANTIERE]')) {
                 payload.note = `[CANTIERE] ${payload.note}`;
@@ -545,22 +551,17 @@ const MobileHoursApp = {
         }
 
         btn.disabled = true;
-        
-        // Feedback visivo immediato sul pulsante
         const originalText = btn.textContent;
         btn.textContent = "Salvando...";
 
          try {
              if (this.state.editingId) {
-                 // DELETE per pulire prima di salvare (soluzione semplice per update complessi)
                  await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
              }
              
-             // POST
              console.log("Inviando payload:", payload);
              await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
              
-             // Refresh
              this.loadExistingWorks(this.state.currentDate);
              this.resetFormState();
 
@@ -569,7 +570,7 @@ const MobileHoursApp = {
             alert("Errore salvataggio: " + err.message); 
         } finally { 
             btn.disabled = false; 
-            btn.textContent = originalText; // Ripristina testo pulsante
+            btn.textContent = originalText;
         }
     },
 
