@@ -1,0 +1,124 @@
+/* inserimento-ordini.css */
+
+.orders-page {
+    background-color: #f4f7f9;
+}
+
+.drop-zone {
+    background: #ffffff;
+    border: 3px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: #3498db;
+    background-color: #f0f8ff;
+}
+
+.drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-icon {
+    width: 64px;
+    height: 64px;
+    opacity: 0.6;
+    margin-bottom: 10px;
+}
+
+.drop-zone h3 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.4em;
+}
+
+.drop-zone p {
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.file-select-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.file-select-btn:hover {
+    background-color: #2980b9;
+}
+
+/* Spinner caricamento */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tabella Anteprima */
+.preview-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    animation: fadeIn 0.5s ease;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.preview-table th, .preview-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.preview-table th {
+    background-color: #f8f9fa;
+    color: #555;
+    font-weight: 600;
+}
+
+/* Status Badges nella tabella */
+.badge-ok { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+.badge-new { background: #cce5ff; color: #004085; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+.badge-err { background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+.row-error { background-color: #fff5f5; }
