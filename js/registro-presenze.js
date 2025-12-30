@@ -239,33 +239,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         return th;
     }
 
-    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO (AGGIORNATA) ---
+    // --- FUNZIONE LOGICA PRINCIPALE SEMAFORO (CORRETTA) ---
     function calculateStatusClass(record, isWeekend) {
         // 1. Ore reali di produzione + viaggio (calcolate dal backend in 'ore_effettive')
+        // Questo valore include già: ore lavoro, ore viaggio e ore assenza (se inserite nel modulo Ore)
         let realWorkHours = 0;
         if (record && record.ore_effettive !== undefined && record.ore_effettive !== null) {
             realWorkHours = parseFloat(record.ore_effettive);
         }
 
-        // 2. Verifica se esiste una giustificazione (Ferie, Malattia, Permesso...)
-        // Se c'è un id_tipo_presenza_fk, significa che è stata registrata un'assenza/giustificativo
-        const hasJustification = (record && record.id_tipo_presenza_fk);
-
-        // --- LOGICA ---
+        // --- LOGICA SEMAFORO PURA (Basata solo sulle ore) ---
         
-        // Verde: Se ha lavorato >= 8h OPPURE ha una giustificazione (es. Ferie)
-        if (realWorkHours >= 8 || hasJustification) {
+        // Verde: Solo se il totale delle ore registrate è >= 8
+        // (Ignoriamo completamente se c'è un'etichetta manuale)
+        if (realWorkHours >= 8) {
             return 'status-ok';
         }
         
-        // Giallo: Ha lavorato qualcosa ma < 8h (e nessuna giustificazione piena)
+        // Giallo: Ha lavorato/giustificato qualcosa ma < 8h
         else if (realWorkHours > 0) {
             return 'status-warning';
         }
         
         // Rosso (Assente Ingiustificato):
-        // Solo se è giorno feriale, NON ha lavorato e NON ha giustificazioni.
-        // NOTA: Ignoriamo completamente record.numero_ore (ore manuali).
+        // Solo se è giorno feriale e NON ci sono ore registrate nel sistema.
         else if (!isWeekend) {
             return 'status-missing';
         }
