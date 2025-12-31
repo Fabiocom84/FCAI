@@ -4,67 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Ordini - Segretario AI</title>
-    
-    <!-- Stili -->
     <link rel="stylesheet" href="style-v2.css">
-    <link rel="stylesheet" href="inserimento-ore.css"> <!-- Per header standard -->
-    <link rel="stylesheet" href="registro-ordini.css"> <!-- Specifico -->
+    <link rel="stylesheet" href="inserimento-ore.css">
+    <link rel="stylesheet" href="registro-ordini.css">
 </head>
 <body>
 
-    <!-- HEADER STANDARD (Uguale alle altre pagine) -->
-    <header class="mobile-nav-header">
-        <a href="index.html" class="header-button">
-            <img src="img/log-out.png" alt="Back" style="width: 16px; height: 16px; filter: brightness(0) invert(1); transform: rotate(180deg);">
-            <span>Home</span>
-        </a>
-        <div class="title-container">
+    <!-- HEADER FULL WIDTH -->
+    <header class="mobile-nav-header full-width-header">
+        <div class="header-left">
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Back" style="transform: rotate(180deg);">
+                <span>Home</span>
+            </a>
+        </div>
+        <div class="header-center">
             <h1>Registro Ordini</h1>
             <span class="header-username">Controllo Produzione</span>
         </div>
-        <!-- Spazio vuoto per bilanciare il flex -->
-        <div style="width: 70px;"></div> 
+        <div class="header-right"></div>
     </header>
 
-    <!-- CONTENITORE SPLIT VIEW -->
     <div class="split-view-container">
         
-        <!-- COLONNA SINISTRA: LISTA (Master) - Più larga -->
+        <!-- MASTER: LISTA (65%) -->
         <div class="master-pane">
             
-            <!-- Barra Filtri Completa -->
+            <!-- BARRA FILTRI DINAMICA -->
             <div class="filters-header">
-                <div class="filters-row">
-                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca OP, Articolo, Commessa...">
-                    <select id="repartoFilter" class="filter-select">
-                        <option value="">Tutti i Reparti</option>
-                        <!-- Popolato dinamicamente -->
-                    </select>
+                <div class="filter-row-top">
+                    <!-- Commessa Select -->
+                    <div class="filter-group-item" style="flex: 2;">
+                        <label>Commessa</label>
+                        <select id="commessaFilter" class="filter-select">
+                            <option value="">Tutte le Commesse</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Stato Radio -->
+                    <div class="filter-group-item status-toggle">
+                        <label>Stato</label>
+                        <div class="radio-group">
+                            <input type="radio" id="stOpen" name="status" value="aperti" checked>
+                            <label for="stOpen">Aperti</label>
+                            
+                            <input type="radio" id="stClosed" name="status" value="chiusi">
+                            <label for="stClosed">Chiusi</label>
+                            
+                            <input type="radio" id="stAll" name="status" value="tutti">
+                            <label for="stAll">Tutti</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-row-bottom">
+                    <!-- Ricerca Testo -->
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca in Descrizione, Codice, OP...">
+                    
+                    <!-- Reset -->
                     <button id="resetFiltersBtn" class="reset-button" title="Azzera Filtri">
-                        ✖
+                        Azzera
                     </button>
                 </div>
             </div>
 
-            <!-- Lista Card -->
-            <div id="ordersList" class="cards-list">
+            <!-- LISTA RAGGRUPPATA -->
+            <div id="ordersList" class="grouped-list">
                 <div class="loader-placeholder">Caricamento ordini...</div>
             </div>
         </div>
 
-        <!-- COLONNA DESTRA: DETTAGLIO (Detail) - Più stretta -->
+        <!-- DETAIL: DETTAGLIO (35%) -->
         <div class="detail-pane">
             <div id="emptyState" class="empty-state-detail">
                 <img src="img/tasks.png" alt="Select">
-                <p>Seleziona un ordine dalla lista<br>per lavorarlo</p>
+                <p>Seleziona una riga<br>per i dettagli</p>
             </div>
 
             <div id="detailContent" class="detail-content" style="display: none;">
-                <!-- TESTATA -->
                 <div class="detail-header">
                     <div class="header-badges">
                         <span class="badge-op" id="detOP">OP-XXX</span>
-                        <span class="badge-rep" id="detReparto">Reparto</span>
                     </div>
                     <h2 id="detArticolo">Codice</h2>
                     <p id="detDescrizione" class="desc-text">Descrizione...</p>
@@ -76,12 +96,11 @@
 
                 <hr class="divider">
 
-                <!-- INPUT OPERATIVI -->
                 <div class="input-section">
                     <h3>Registrazione</h3>
                     <div class="form-row">
                         <div class="form-group half">
-                            <label>Ore Totali</label>
+                            <label>Ore Totali (h)</label>
                             <input type="number" id="inputOre" step="0.1" placeholder="es. 2.5" class="big-input">
                         </div>
                         <div class="form-group half">
@@ -96,27 +115,25 @@
                     <button id="btnCloseOrder" class="action-button">✅ SALVA E CHIUDI</button>
                 </div>
 
-                <!-- STATISTICHE (Compatte) -->
                 <div class="stats-section">
-                    <h4>Info Contesto</h4>
+                    <h4>Statistiche</h4>
                     <div class="mini-stat-row">
-                        <span>⏱️ Mediana Storica:</span>
+                        <span>⏱️ Mediana Articolo:</span>
                         <strong id="statMediana">-</strong>
                     </div>
                     <div class="mini-stat-row">
-                        <span>📊 Tot. Commessa:</span>
+                        <span>📊 Commessa Tot:</span>
                         <strong id="statCommessaTot">-</strong>
                     </div>
                     <div class="chart-container">
                         <div id="distributionChart" class="stacked-bar"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- Modali Standard -->
+    <!-- Modali -->
     <div id="modalOverlay" class="modal-overlay" style="display: none;"></div>
     <div id="success-feedback-modal" class="modal" style="display: none;">
         <div class="modal-content">
