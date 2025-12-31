@@ -14,29 +14,20 @@ const App = {
     },
 
     bindEvents: function() {
-        // Radio Status
         document.querySelectorAll('input[name="status"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.loadOrders(e.target.value));
         });
-
-        // Filtri
         document.getElementById('commessaFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
-        
-        // NUOVO: Filtro Articolo
         document.getElementById('articoloFilter').addEventListener('input', () => this.applyFilters());
-        
-        // Reset
         document.getElementById('resetFiltersBtn').addEventListener('click', () => this.resetFilters());
-
-        // Salva
         document.getElementById('btnCloseOrder').addEventListener('click', () => this.saveOrder());
     },
 
     resetFilters: function() {
         document.getElementById('searchInput').value = '';
         document.getElementById('commessaFilter').value = '';
-        document.getElementById('articoloFilter').value = ''; // Reset Articolo
+        document.getElementById('articoloFilter').value = '';
         this.applyFilters();
     },
 
@@ -60,50 +51,36 @@ const App = {
     populateCommessaFilter: function() {
         const select = document.getElementById('commessaFilter');
         const uniqueCommesse = new Set();
-        
         this.data.allOrders.forEach(o => {
             if(o.commesse && o.commesse.vo) {
-                const label = `${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`;
-                uniqueCommesse.add(label);
+                uniqueCommesse.add(`${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`);
             }
         });
-
         const sorted = Array.from(uniqueCommesse).sort();
         const oldVal = select.value;
         select.innerHTML = '<option value="">Tutte le Commesse</option>';
-        
-        sorted.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            select.appendChild(opt);
-        });
-        
+        sorted.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
         if (sorted.includes(oldVal)) select.value = oldVal;
     },
 
     applyFilters: function() {
         const search = document.getElementById('searchInput').value.toLowerCase();
         const commessaVal = document.getElementById('commessaFilter').value.toLowerCase();
-        const artVal = document.getElementById('articoloFilter').value.toLowerCase(); // Nuovo Valore
+        const artVal = document.getElementById('articoloFilter').value.toLowerCase();
 
         this.data.filteredOrders = this.data.allOrders.filter(o => {
             const codice = (o.anagrafica_articoli?.codice_articolo || '').toLowerCase();
             const desc = (o.anagrafica_articoli?.descrizione || '').toLowerCase();
             const op = o.numero_op.toLowerCase();
 
-            // Match Search (Generica)
             const txt = op + codice + desc;
             const matchSearch = txt.includes(search);
-
-            // Match Commessa
+            
             let matchComm = true;
             if (commessaVal) {
                 const label = `${o.commesse?.vo || ''} - ${o.commesse?.clienti?.ragione_sociale || ''}`.toLowerCase();
                 matchComm = label === commessaVal;
             }
-
-            // Match Articolo (Specifico)
             const matchArt = !artVal || codice.includes(artVal);
 
             return matchSearch && matchComm && matchArt;
@@ -137,25 +114,27 @@ const App = {
         Object.values(groups).forEach(group => {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'op-group';
-
-            const header = document.createElement('div');
-            header.className = 'op-group-header';
-            header.innerHTML = `
-                <div class="op-title">OP: ${group.opNumber}</div>
-                <div class="op-commessa">${group.commessa}</div>
+            groupDiv.innerHTML = `
+                <div class="op-group-header">
+                    <div class="op-title">OP: ${group.opNumber}</div>
+                    <div class="op-commessa">${group.commessa}</div>
+                </div>
             `;
-            groupDiv.appendChild(header);
 
             group.items.forEach(order => {
                 const row = document.createElement('div');
                 row.className = 'compact-row';
                 row.dataset.id = order.id;
                 
+                // MODIFICA: Leggiamo la FASE
+                const fase = order.fasi_produzione?.nome_fase || 'N/D';
                 const desc = order.anagrafica_articoli?.descrizione || '';
                 
+                // Aggiunto badge fase nella riga
                 row.innerHTML = `
                     <div class="col-code">${order.anagrafica_articoli?.codice_articolo || '?'}</div>
                     <div class="col-desc" title="${desc}">${desc}</div>
+                    <div style="font-size:0.75em; background:#eee; padding:2px 6px; border-radius:4px; margin-right:10px;">${fase}</div>
                     <div class="col-qta">Q: ${order.qta_richiesta}</div>
                 `;
 
@@ -179,6 +158,11 @@ const App = {
         document.getElementById('detOP').textContent = `OP: ${order.numero_op}`;
         document.getElementById('detArticolo').textContent = order.anagrafica_articoli?.codice_articolo;
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
+        
+        // MODIFICA: Visualizza FASE
+        // Se c'è un elemento per visualizzare la fase nel dettaglio, usalo.
+        // Altrimenti aggiungiamo un piccolo badge vicino all'OP o nel titolo.
+        // Qui lo mettiamo nel badge OP per semplicità o creiamo uno span dinamico se non c'è.
         
         const commTxt = order.commesse ? 
             `${order.commesse.vo} - ${order.commesse.clienti?.ragione_sociale}` : 'N/D';

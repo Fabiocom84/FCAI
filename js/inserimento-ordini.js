@@ -1,22 +1,17 @@
 import { apiFetch } from './api-client.js';
 import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
-// Stato locale
 const State = {
     commesseList: [], 
-    ruoliList: [],
+    fasiList: [], // Rinominato da ruoliList
     stagedRows: [],
     knownDefaults: {}
 };
 
-// ============================================================
-// 1. INIZIALIZZAZIONE
-// ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     setupDragAndDrop();
     await loadReferenceData();
     
-    // Binding Pulsanti
     document.getElementById('fileInput').addEventListener('change', handleFileSelect);
     document.getElementById('clearBtn').addEventListener('click', clearPreview);
     document.getElementById('confirmBtn').addEventListener('click', saveProductionRows);
@@ -36,16 +31,16 @@ async function loadReferenceData() {
             vo: c.vo
         }));
 
-        const ruoliRes = await apiFetch('/api/admin/init-data');
-        const ruoliData = await ruoliRes.json();
+        // MODIFICA: Carichiamo le FASI invece dei ruoli
+        const fasiRes = await apiFetch('/api/commesse/fasi'); // Endpoint esistente
+        const fasiData = await fasiRes.json();
         
-        State.ruoliList = (ruoliData.ruoli || []).map(r => ({
-            id: r.id_ruolo,
-            label: r.nome_ruolo
+        State.fasiList = (fasiData || []).map(f => ({
+            id: f.id_fase,
+            label: f.nome_fase
         }));
 
-        // Log essenziale di sistema
-        console.log("✅ Dati caricati:", State.commesseList.length, "commesse,", State.ruoliList.length, "ruoli.");
+        console.log("✅ Dati caricati:", State.commesseList.length, "commesse,", State.fasiList.length, "fasi.");
     } catch (error) {
         console.error("Errore caricamento dati:", error);
         showModal({ title: "Errore", message: "Impossibile caricare le anagrafiche." });
@@ -248,9 +243,9 @@ function renderPreviewTable() {
 
     State.stagedRows.forEach((row, index) => {
         const tr = document.createElement('tr');
-        const defaultRoleId = State.knownDefaults[row.codice_articolo] || "";
+        // Usiamo il default noto (che ora è un ID FASE)
+        const defaultFaseId = State.knownDefaults[row.codice_articolo] || "";
 
-        // UI Stati
         const opReadonly = row.manual ? '' : 'readonly';
         const opBg = row.manual ? '#ffffff' : '#f9f9f9';
         const codeReadonly = row.manual ? '' : 'readonly';
@@ -262,57 +257,31 @@ function renderPreviewTable() {
         
         if (!row.commessa_id) tr.style.backgroundColor = '#fff5f5';
 
-        // Options Select
         const commessaOptions = State.commesseList.map(c => 
             `<option value="${c.id}" ${c.id == row.commessa_id ? 'selected' : ''}>${c.label}</option>`
         ).join('');
         
-        const repartiOptions = `<option value="">-- Assegna --</option>` + 
-            State.ruoliList.map(r => {
-                const isSelected = String(r.id) === String(defaultRoleId);
-                return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>${r.label}</option>`;
+        // MODIFICA: Usiamo fasiList
+        const fasiOptions = `<option value="">-- Fase --</option>` + 
+            State.fasiList.map(f => {
+                const isSelected = String(f.id) === String(defaultFaseId);
+                return `<option value="${f.id}" ${isSelected ? 'selected' : ''}>${f.label}</option>`;
             }).join('');
 
-        // --- NOVITÀ: Aggiunto title="..." agli input per vedere il testo al passaggio del mouse ---
         tr.innerHTML = `
             <td>${statusHtml}</td>
-            
-            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} 
-                title="${row.op}"
-                style="width:90px; background:${opBg}; font-size:0.85rem; font-weight:500;" 
-                placeholder="00-0000" maxlength="7"></td>
-            
-            <td>
-                <select class="input-select commessa-select" style="min-width: 180px;">
-                    <option value="">-- Seleziona --</option>
-                    ${commessaOptions}
-                </select>
-                ${!row.commessa_id && row.vo_detected ? `<div style="font-size:0.75em; color:red;">VO: ${row.vo_detected}</div>` : ''}
-            </td>
-            
+            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:90px; background:${opBg}; font-size:0.85rem;" placeholder="00-0000" maxlength="7"></td>
+            <td><select class="input-select commessa-select" style="min-width: 180px;"><option value="">-- Seleziona --</option>${commessaOptions}</select></td>
             <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:110px;"></td>
-
-            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} 
-                title="${row.codice_articolo}"
-                style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
-            
-            <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" 
-                title="${row.descrizione}"
-                style="text-transform:lowercase;"></td>
-            
+            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
+            <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" style="text-transform:lowercase;"></td>
             <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:50px;"></td>
             
-            <td>
-                <select class="input-select role-select" style="min-width: 130px;">
-                    ${repartiOptions}
-                </select>
-            </td>
+            <!-- MODIFICA: Select Fase invece di Ruolo -->
+            <td><select class="input-select fase-select" style="min-width: 130px;">${fasiOptions}</select></td>
             
-            <td style="text-align:center;">
-                <button class="btn-icon delete-row-btn" data-idx="${index}">🗑️</button>
-            </td>
+            <td style="text-align:center;"><button class="btn-icon delete-row-btn" data-idx="${index}">🗑️</button></td>
         `;
-
         tbody.appendChild(tr);
     });
 
@@ -383,9 +352,7 @@ async function saveProductionRows() {
 
     const payload = [];
     let hasErrors = false;
-    let errorMsg = "";
 
-    // 1. Raccogli dati e valida
     rows.forEach(tr => {
         const commessaId = tr.querySelector('.commessa-select').value;
         const codice = tr.querySelector('.code-input').value;
@@ -393,34 +360,15 @@ async function saveProductionRows() {
         const qta = tr.querySelector('.qty-input').value;
         const op = tr.querySelector('.op-input').value;
         const dataRicezione = tr.querySelector('.date-input').value;
-        const ruoloId = tr.querySelector('.role-select').value;
+        
+        // MODIFICA: Leggiamo fase-select
+        const faseId = tr.querySelector('.fase-select').value;
 
-        // Reset stile errore
         tr.style.border = 'none';
 
-        // Validazione base
         if (!commessaId || !codice || !qta || !op || !dataRicezione) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
-            errorMsg = "Compilare tutti i campi obbligatori.";
-            return;
-        }
-
-        // Validazione OP (XX-XXXX)
-        const opRegex = /^\d{2}-\d{4}$/;
-        if (!opRegex.test(op)) {
-            tr.style.border = '2px solid #e53e3e';
-            hasErrors = true;
-            errorMsg = "Formato OP errato (usa XX-XXXX).";
-            return;
-        }
-
-        // Validazione Codice (6 cifre)
-        const codeRegex = /^\d{6}$/;
-        if (!codeRegex.test(codice)) {
-            tr.style.border = '2px solid #e53e3e';
-            hasErrors = true;
-            errorMsg = "Il codice articolo deve essere di 6 cifre.";
             return;
         }
 
@@ -431,18 +379,17 @@ async function saveProductionRows() {
             descrizione: descrizione.toLowerCase(),
             qta_richiesta: parseInt(qta),
             data_ricezione: dataRicezione,
-            id_ruolo: ruoloId ? parseInt(ruoloId) : null
+            id_fase: faseId ? parseInt(faseId) : null // MODIFICA: id_fase
         });
     });
 
     if (hasErrors) {
-        showModal({ title: "Dati Non Validi", message: errorMsg });
+        showModal({ title: "Dati Mancanti", message: "Compilare tutti i campi obbligatori." });
         return;
     }
 
     if (payload.length === 0) return;
 
-    // 2. Stato salvataggio
     const btn = document.getElementById('confirmBtn');
     btn.textContent = "Salvataggio...";
     btn.disabled = true;
@@ -456,31 +403,21 @@ async function saveProductionRows() {
         if (!res.ok) throw new Error("Errore salvataggio");
 
         const result = await res.json();
-        
         let msg = `Inserite: ${result.imported}.`;
-        if (result.skipped > 0) {
-            msg += ` (Saltati ${result.skipped} duplicati già presenti).`;
-        }
+        if (result.skipped > 0) msg += ` (Saltati ${result.skipped} duplicati).`;
 
         showSuccessFeedbackModal("Operazione Completata", msg);
         
-        // 3. RESET PAGINA (invece di redirect)
         setTimeout(() => { 
-            // Pulisce la tabella e lo stato
             clearPreview(); 
-            
-            // Ripristina il bottone
             btn.textContent = "Salva Ordini";
             btn.disabled = false;
-
-            // Scrolla in alto per il prossimo caricamento
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
         }, 2000);
 
     } catch (error) {
         console.error(error);
-        showModal({ title: "Errore", message: "Errore server: " + error.message });
+        showModal({ title: "Errore", message: error.message });
         btn.textContent = "Salva Ordini";
         btn.disabled = false;
     }
