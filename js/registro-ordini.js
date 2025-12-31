@@ -98,6 +98,7 @@ const App = {
             return;
         }
 
+        // 1. Raggruppa per OP
         const groups = {};
         this.data.filteredOrders.forEach(order => {
             const op = order.numero_op;
@@ -111,7 +112,16 @@ const App = {
             groups[op].items.push(order);
         });
 
-        Object.values(groups).forEach(group => {
+        // 2. Ordinamento Decrescente delle Chiavi OP
+        // Object.keys(groups) ci da ["25-0768", "25-0614", ...]
+        // .sort((a, b) => b.localeCompare(a)) ordina Z -> A (Decrescente)
+        const sortedOpKeys = Object.keys(groups).sort((a, b) => {
+            return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        // 3. Renderizza seguendo l'ordine
+        sortedOpKeys.forEach(opKey => {
+            const group = groups[opKey];
             const groupDiv = document.createElement('div');
             groupDiv.className = 'op-group';
             groupDiv.innerHTML = `
@@ -126,11 +136,9 @@ const App = {
                 row.className = 'compact-row';
                 row.dataset.id = order.id;
                 
-                // MODIFICA: Leggiamo la FASE
                 const fase = order.fasi_produzione?.nome_fase || 'N/D';
                 const desc = order.anagrafica_articoli?.descrizione || '';
                 
-                // Aggiunto badge fase nella riga
                 row.innerHTML = `
                     <div class="col-code">${order.anagrafica_articoli?.codice_articolo || '?'}</div>
                     <div class="col-desc" title="${desc}">${desc}</div>
