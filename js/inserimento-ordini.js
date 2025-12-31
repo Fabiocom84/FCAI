@@ -98,6 +98,7 @@ async function handleFiles(files) {
                 processedCount++;
             } catch (err) {
                 console.error(`Errore parsing file ${file.name}:`, err);
+                showModal({ title: "Errore Lettura", message: `Impossibile leggere ${file.name}. Verifica che sia un PDF valido.` });
             }
         }
     }
@@ -118,13 +119,28 @@ async function handleFiles(files) {
 
     spinner.style.display = 'none';
     
-    if (processedCount > 0) {
+    if (processedCount > 0 && State.stagedRows.length > 0) {
         dropZone.classList.add('file-loaded');
         subtitle.textContent = "Righe aggiunte alla tabella sottostante";
         renderPreviewTable();
     } else {
-        title.textContent = "Errore o File non valido";
-        subtitle.textContent = "Riprova con un PDF valido";
+        // Se processedCount > 0 ma stagedRows è vuoto, significa che ha letto il PDF ma non ha trovato i dati (Regex fallite)
+        if (processedCount > 0 && State.stagedRows.length === 0) {
+            title.textContent = "Nessun dato trovato nel PDF";
+            subtitle.textContent = "Il formato del file potrebbe non essere supportato.";
+            console.warn("PDF letto ma nessun dato estratto. Controlla i log per vedere il testo grezzo.");
+        } else {
+            title.textContent = "Errore o File non valido";
+            subtitle.textContent = "Riprova con un PDF valido";
+        }
+        
+        // Reset visuale dopo 3 secondi
+        setTimeout(() => {
+            if (!dropZone.classList.contains('file-loaded')) {
+                title.textContent = "Trascina qui il PDF";
+                subtitle.textContent = "oppure clicca per selezionare";
+            }
+        }, 4000);
     }
 }
 
@@ -135,55 +151,78 @@ async function parsePDF(file) {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     
+    console.log(`--- INIZIO PARSING FILE: ${file.name} (${pdf.numPages} pagine) ---`);
+
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
+        // Uniamo il testo con spazi per evitare parole attaccate
         const pageText = textContent.items.map(item => item.str).join(' ');
         
-        // 1. OP
-        const opMatch = pageText.match(/Ordine di Produzione n\.\s*(?:OP)?([\d-]+)/i);
+        // DEBUG: Stampa il testo grezzo per capire perché le regex falliscono
+        console.log(`[PAGINA ${i}] Testo estratto:`, pageText);
+
+        // --- 1. ESTRAZIONE OP ---
+        // Cerca "Ordine di Produzione n." oppure "OP" seguito da numeri e trattini
+        // Permissivo: accetta spazi extra
+        const opMatch = pageText.match(/(?:Ordine\s+di\s+Produzione\s+n\.|OP)\s*[:.]?\s*([0-9-]{6,})/i);
         const opNumber = opMatch ? opMatch[1].trim() : "???";
 
-        // 2. Commessa
-        const voMatch = pageText.match(/Commessa\s*(?:VO)?([\d-]+)/i);
-        const voNumber = voMatch ? voMatch[1].trim() : null;
-
-        // 3. Codice Articolo
-        const codeMatch = pageText.match(/Nr\. Articolo\s+(\d+)/i);
+        // --- 2. ESTRAZIONE COMMESSA ---
+        // Cerca "Commessa" o "VO" seguito da codice
+        const voMatch = pageText.match(/(?:Commessa|VO)\s*[:.]?\s*(VO\s*[\d-]+|[\d-]{5,})/i);
+        let voNumber = voMatch ? voMatch[1].trim() : null;
+        // Pulizia: se ha preso anche "VO", lo teniamo per la ricerca
+        
+        // --- 3. ESTRAZIONE CODICE ARTICOLO ---
+        // Cerca "Nr. Articolo" con possibili spazi o punti in mezzo
+        const codeMatch = pageText.match(/Nr\.?\s*Articolo\s*[:.]?\s*(\d+)/i);
         const codice = codeMatch ? codeMatch[1].trim() : "";
 
-        // 4. Quantità
-        const qtyMatch = pageText.match(/Quantità\s+(\d+)/i);
+        // --- 4. ESTRAZIONE QUANTITÀ ---
+        // Cerca "Quantità" (con o senza accento)
+        const qtyMatch = pageText.match(/Quantit[àa]\s*[:.]?\s*(\d+)/i);
         const qta = qtyMatch ? parseFloat(qtyMatch[1]) : 1;
 
-        // 5. Descrizione
-        const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio)/i);
-        let descrizione = descMatch ? descMatch[1].trim() : "";
-        // Pulizia e Minuscolo forzato
-        descrizione = descrizione.replace("Qtà riordino fissa", "").trim().toLowerCase();
-
-        // 6. DATA INTESTAZIONE (Modificato: cerca 4 cifre per l'anno es. 23/12/2025)
-        // La regex cerca una data DD/MM/YYYY. Nel PDF la data del titolo ha l'anno a 4 cifre.
+        // --- 5. ESTRAZIONE DATA (Intestazione) ---
+        // Cerca una data nel formato GG/MM/AAAA (es. 23/12/2025)
         const dateMatch = pageText.match(/(\d{2}\/\d{2}\/\d{4})/);
         let dataRicezione = new Date().toISOString().split('T')[0]; // Default Oggi
         
         if (dateMatch) {
-            const rawDate = dateMatch[1]; // es: 23/12/2025
+            const rawDate = dateMatch[1]; 
             const parts = rawDate.split('/');
             if (parts.length === 3) {
-                // Formato DB: YYYY-MM-DD
                 dataRicezione = `${parts[2]}-${parts[1]}-${parts[0]}`;
             }
         }
 
-        // Matching Commessa
+        // --- 6. ESTRAZIONE DESCRIZIONE ---
+        // Cerca testo tra "Descrizione" e una delle parole chiave successive (Magazzino, Data, ecc.)
+        // [^]*? è un match non-greedy su tutto
+        const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio|ENEL|Cod\.)/i);
+        let descrizione = descMatch ? descMatch[1].trim() : "";
+        
+        // Pulizia e formattazione
+        descrizione = descrizione.replace(/Qt[àa] riordino fissa/gi, "").trim().toLowerCase();
+        // Se la descrizione è vuota, proviamo un fallback generico
+        if (!descrizione && codice) {
+            descrizione = "descrizione non rilevata";
+        }
+
+        console.log(`[PAGINA ${i}] DATI RILEVATI -> Codice: ${codice}, Qta: ${qta}, OP: ${opNumber}`);
+
+        // --- MATCHING COMMESSA ---
         let preselectedCommessaId = "";
         if (voNumber) {
-            const found = State.commesseList.find(c => c.vo && c.vo.includes(voNumber));
+            // Puliamo il VO trovato per cercare meglio (es. togliamo VO)
+            const cleanVO = voNumber.replace(/^VO/i, '').trim(); 
+            const found = State.commesseList.find(c => c.vo && c.vo.includes(cleanVO));
             if (found) preselectedCommessaId = found.id;
         }
 
+        // Se abbiamo trovato il codice, aggiungiamo la riga
         if (codice) {
             State.stagedRows.push({
                 op: opNumber,
@@ -192,7 +231,7 @@ async function parsePDF(file) {
                 codice_articolo: codice,
                 descrizione: descrizione,
                 qta: qta,
-                data_ricezione: dataRicezione, // Usiamo la data del titolo
+                data_ricezione: dataRicezione,
                 manual: false
             });
         }
@@ -211,7 +250,7 @@ function addManualRow() {
         codice_articolo: "",
         descrizione: "",
         qta: 1,
-        data_ricezione: new Date().toISOString().split('T')[0], // Default Oggi
+        data_ricezione: new Date().toISOString().split('T')[0],
         manual: true
     });
     renderPreviewTable();
@@ -260,13 +299,7 @@ function renderPreviewTable() {
 
         tr.innerHTML = `
             <td>${statusHtml}</td>
-            
-            <!-- OP -->
-            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} 
-                style="width:90px; background:${opBg}; font-size:0.85rem; font-weight:500;" 
-                placeholder="00-0000" maxlength="7"></td>
-            
-            <!-- Commessa -->
+            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:90px; background:${opBg}; font-size:0.85rem; font-weight:500;" placeholder="00-0000" maxlength="7"></td>
             <td>
                 <select class="input-select commessa-select" style="min-width: 180px;">
                     <option value="">-- Seleziona --</option>
@@ -274,28 +307,15 @@ function renderPreviewTable() {
                 </select>
                 ${!row.commessa_id && row.vo_detected ? `<div style="font-size:0.75em; color:red;">VO: ${row.vo_detected}</div>` : ''}
             </td>
-            
-            <!-- Data -->
             <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:110px;"></td>
-
-            <!-- Codice -->
-            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} 
-                style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
-            
-            <!-- Descrizione -->
+            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
             <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" style="text-transform:lowercase;"></td>
-            
-            <!-- Q.tà -->
             <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:50px;"></td>
-            
-            <!-- Reparto -->
             <td>
                 <select class="input-select role-select" style="min-width: 130px;">
                     ${repartiOptions}
                 </select>
             </td>
-            
-            <!-- Azioni -->
             <td style="text-align:center;">
                 <button class="btn-icon delete-row-btn" data-idx="${index}">🗑️</button>
             </td>
@@ -308,7 +328,6 @@ function renderPreviewTable() {
 }
 
 function bindTableEvents() {
-    // Delete
     document.querySelectorAll('.delete-row-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx);
@@ -375,10 +394,8 @@ async function saveProductionRows() {
         const dataRicezione = tr.querySelector('.date-input').value;
         const ruoloId = tr.querySelector('.role-select').value;
 
-        // Reset
         tr.style.border = 'none';
 
-        // Validazione base
         if (!commessaId || !codice || !qta || !op || !dataRicezione) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
@@ -436,7 +453,6 @@ async function saveProductionRows() {
 
         const result = await res.json();
         
-        // Messaggio più dettagliato
         let msg = `Inserite: ${result.imported}.`;
         if (result.skipped > 0) {
             msg += ` (Saltati ${result.skipped} duplicati già presenti).`;
