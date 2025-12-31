@@ -4,53 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Ordini - Segretario AI</title>
+    
+    <!-- Stili -->
     <link rel="stylesheet" href="style-v2.css">
-    <link rel="stylesheet" href="inserimento-ore.css"> <!-- Per header -->
+    <link rel="stylesheet" href="inserimento-ore.css"> <!-- Per header standard -->
     <link rel="stylesheet" href="registro-ordini.css"> <!-- Specifico -->
 </head>
 <body>
 
+    <!-- HEADER STANDARD (Uguale alle altre pagine) -->
+    <header class="mobile-nav-header">
+        <a href="index.html" class="header-button">
+            <img src="img/log-out.png" alt="Back" style="width: 16px; height: 16px; filter: brightness(0) invert(1); transform: rotate(180deg);">
+            <span>Home</span>
+        </a>
+        <div class="title-container">
+            <h1>Registro Ordini</h1>
+            <span class="header-username">Controllo Produzione</span>
+        </div>
+        <!-- Spazio vuoto per bilanciare il flex -->
+        <div style="width: 70px;"></div> 
+    </header>
+
+    <!-- CONTENITORE SPLIT VIEW -->
     <div class="split-view-container">
         
-        <!-- COLONNA SINISTRA: LISTA (Master) -->
+        <!-- COLONNA SINISTRA: LISTA (Master) - Più larga -->
         <div class="master-pane">
-            <header class="pane-header">
-                <a href="index.html" class="back-link">&larr; Home</a>
-                <h2>Ordini Aperti</h2>
-            </header>
             
-            <div class="filters-bar">
-                <input type="text" id="searchInput" placeholder="Cerca OP, Articolo, Commessa...">
-                <select id="repartoFilter">
-                    <option value="">Tutti i Reparti</option>
-                    <!-- Popolato dinamicamente -->
-                </select>
+            <!-- Barra Filtri Completa -->
+            <div class="filters-header">
+                <div class="filters-row">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca OP, Articolo, Commessa...">
+                    <select id="repartoFilter" class="filter-select">
+                        <option value="">Tutti i Reparti</option>
+                        <!-- Popolato dinamicamente -->
+                    </select>
+                    <button id="resetFiltersBtn" class="reset-button" title="Azzera Filtri">
+                        ✖
+                    </button>
+                </div>
             </div>
 
+            <!-- Lista Card -->
             <div id="ordersList" class="cards-list">
-                <!-- Le card verranno iniettate qui -->
                 <div class="loader-placeholder">Caricamento ordini...</div>
             </div>
         </div>
 
-        <!-- COLONNA DESTRA: DETTAGLIO (Detail) -->
+        <!-- COLONNA DESTRA: DETTAGLIO (Detail) - Più stretta -->
         <div class="detail-pane">
             <div id="emptyState" class="empty-state-detail">
                 <img src="img/tasks.png" alt="Select">
-                <p>Seleziona un ordine a sinistra<br>per visualizzare i dettagli</p>
+                <p>Seleziona un ordine dalla lista<br>per lavorarlo</p>
             </div>
 
             <div id="detailContent" class="detail-content" style="display: none;">
                 <!-- TESTATA -->
                 <div class="detail-header">
-                    <div class="detail-badges">
+                    <div class="header-badges">
                         <span class="badge-op" id="detOP">OP-XXX</span>
                         <span class="badge-rep" id="detReparto">Reparto</span>
                     </div>
-                    <h1 id="detArticolo">Codice Articolo</h1>
-                    <p id="detDescrizione">Descrizione completa articolo</p>
-                    <div class="commessa-info">
-                        <strong>Commessa:</strong> <span id="detCommessa">VO-XXX - Cliente</span>
+                    <h2 id="detArticolo">Codice</h2>
+                    <p id="detDescrizione" class="desc-text">Descrizione...</p>
+                    <div class="commessa-box">
+                        <small>COMMESSA</small>
+                        <span id="detCommessa">...</span>
                     </div>
                 </div>
 
@@ -58,53 +78,37 @@
 
                 <!-- INPUT OPERATIVI -->
                 <div class="input-section">
-                    <h3>Registrazione Produzione</h3>
+                    <h3>Registrazione</h3>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Tempo Totale (Ore)</label>
-                            <input type="number" id="inputOre" step="0.1" placeholder="es. 1.5">
+                        <div class="form-group half">
+                            <label>Ore Totali</label>
+                            <input type="number" id="inputOre" step="0.1" placeholder="es. 2.5" class="big-input">
                         </div>
-                        <div class="form-group">
-                            <label>Q.tà Prodotta</label>
-                            <input type="number" id="inputQta" step="1">
+                        <div class="form-group half">
+                            <label>Q.tà Fatta</label>
+                            <input type="number" id="inputQta" step="1" class="big-input">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Note (Opzionale)</label>
-                        <textarea id="inputNote" rows="2" placeholder="Eventuali problemi..."></textarea>
+                        <label>Note</label>
+                        <textarea id="inputNote" rows="2" placeholder="Note opzionali..."></textarea>
                     </div>
-                    <button id="btnCloseOrder" class="action-button">✅ CONFERMA E CHIUDI</button>
+                    <button id="btnCloseOrder" class="action-button">✅ SALVA E CHIUDI</button>
                 </div>
 
-                <!-- ANALISI STATISTICA -->
+                <!-- STATISTICHE (Compatte) -->
                 <div class="stats-section">
-                    <h3>Analisi Contesto</h3>
-                    
-                    <!-- 1. Benchmark Articolo -->
-                    <div class="stat-card">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-info">
-                            <small>Tempo Storico (Mediana)</small>
-                            <strong id="statMediana">Calcolo...</strong>
-                        </div>
-                        <div class="stat-delta" id="statDelta"></div>
+                    <h4>Info Contesto</h4>
+                    <div class="mini-stat-row">
+                        <span>⏱️ Mediana Storica:</span>
+                        <strong id="statMediana">-</strong>
                     </div>
-
-                    <!-- 2. Avanzamento Commessa -->
-                    <div class="commessa-stats">
-                        <div class="stat-row-header">
-                            <small>Totale Ore Commessa</small>
-                            <strong id="statCommessaTot">0h</strong>
-                        </div>
-                        <!-- Grafico a barre CSS -->
-                        <div class="chart-container">
-                            <div id="distributionChart" class="stacked-bar">
-                                <!-- Segmenti colorati via JS -->
-                            </div>
-                        </div>
-                        <div id="distributionLegend" class="chart-legend">
-                            <!-- Legenda via JS -->
-                        </div>
+                    <div class="mini-stat-row">
+                        <span>📊 Tot. Commessa:</span>
+                        <strong id="statCommessaTot">-</strong>
+                    </div>
+                    <div class="chart-container">
+                        <div id="distributionChart" class="stacked-bar"></div>
                     </div>
                 </div>
 

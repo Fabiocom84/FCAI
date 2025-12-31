@@ -8,18 +8,24 @@ const App = {
     },
     
     init: async function() {
-        console.log("🚀 Registro Ordini Init");
         this.bindEvents();
         await this.loadOrders();
     },
 
     bindEvents: function() {
-        // Filtro Reparto
-        document.getElementById('repartoFilter').addEventListener('change', (e) => this.filterOrders());
-        // Filtro Ricerca
-        document.getElementById('searchInput').addEventListener('input', (e) => this.filterOrders());
-        // Bottone Salva
+        document.getElementById('repartoFilter').addEventListener('change', () => this.filterOrders());
+        document.getElementById('searchInput').addEventListener('input', () => this.filterOrders());
         document.getElementById('btnCloseOrder').addEventListener('click', () => this.saveOrder());
+        
+        // NUOVO: Listener Tasto Reset
+        document.getElementById('resetFiltersBtn').addEventListener('click', () => this.resetFilters());
+    },
+
+    // Funzione Reset Filtri
+    resetFilters: function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('repartoFilter').value = '';
+        this.filterOrders(); // Ricarica lista completa
     },
 
     loadOrders: async function() {
@@ -28,9 +34,7 @@ const App = {
             const res = await apiFetch('/api/produzione/op-aperti');
             this.data.orders = await res.json();
             
-            // Popola Select Reparti
             this.populateRepartoFilter();
-            
             this.renderList(this.data.orders);
         } catch (e) {
             console.error(e);
@@ -40,8 +44,10 @@ const App = {
 
     populateRepartoFilter: function() {
         const select = document.getElementById('repartoFilter');
-        // Estrai reparti unici
         const reparti = [...new Set(this.data.orders.map(o => o.ruoli?.nome_ruolo || 'N/D'))].sort();
+        
+        // Salva selezione corrente se c'è
+        const currentVal = select.value;
         
         select.innerHTML = '<option value="">Tutti i Reparti</option>';
         reparti.forEach(r => {
@@ -50,6 +56,9 @@ const App = {
             opt.textContent = r;
             select.appendChild(opt);
         });
+        
+        // Ripristina selezione (utile se ricarichi dati senza reset)
+        if (reparti.includes(currentVal)) select.value = currentVal;
     },
 
     renderList: function(ordersToRender) {
@@ -57,7 +66,7 @@ const App = {
         container.innerHTML = '';
 
         if(ordersToRender.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Nessun ordine trovato.</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">Nessun ordine trovato.</div>';
             return;
         }
 
@@ -66,9 +75,14 @@ const App = {
             card.className = 'order-card';
             card.dataset.id = order.id;
             
-            // Stile bordo per reparto (Semplice hash colore o random)
             const repName = order.ruoli?.nome_ruolo || 'N/D';
-            
+            // Colore bordo laterale basato sul reparto (semplice switch)
+            let borderColor = '#ccc';
+            if(repName.toLowerCase().includes('montaggio')) borderColor = '#e67e22'; // Arancio
+            if(repName.toLowerCase().includes('cablaggio')) borderColor = '#9b59b6'; // Viola
+            if(repName.toLowerCase().includes('collaudo')) borderColor = '#2ecc71'; // Verde
+            card.style.borderLeftColor = borderColor;
+
             card.innerHTML = `
                 <div class="card-top">
                     <span class="op-number">OP: ${order.numero_op}</span>
@@ -77,8 +91,8 @@ const App = {
                 <div class="card-title">${order.anagrafica_articoli?.codice_articolo}</div>
                 <div class="card-desc">${order.anagrafica_articoli?.descrizione || ''}</div>
                 <div class="card-meta">
-                    <span class="badge-reparto">${repName}</span>
-                    <span>Q.tà: <strong>${order.qta_richiesta}</strong></span>
+                    <span class="badge-reparto" style="color:${borderColor === '#ccc' ? '#555' : borderColor}">${repName}</span>
+                    <span class="qta-badge">Q.tà: ${order.qta_richiesta}</span>
                 </div>
             `;
 
@@ -95,7 +109,8 @@ const App = {
             const matchSearch = (
                 o.numero_op.toLowerCase().includes(search) ||
                 (o.anagrafica_articoli?.codice_articolo || '').includes(search) ||
-                (o.commesse?.vo || '').toLowerCase().includes(search)
+                (o.commesse?.vo || '').toLowerCase().includes(search) ||
+                (o.anagrafica_articoli?.descrizione || '').toLowerCase().includes(search)
             );
             const matchRep = rep === "" || (o.ruoli?.nome_ruolo === rep);
             return matchSearch && matchRep;
@@ -107,17 +122,17 @@ const App = {
     selectOrder: async function(order, cardElement) {
         this.data.currentOrder = order;
 
-        // UI Active Class
         document.querySelectorAll('.order-card').forEach(c => c.classList.remove('selected'));
         cardElement.classList.add('selected');
 
-        // Show Pane
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('detailContent').style.display = 'block';
 
         // Fill Data
         document.getElementById('detOP').textContent = `OP: ${order.numero_op}`;
-        document.getElementById('detReparto').textContent = order.ruoli?.nome_ruolo || 'N/D';
+        const repName = order.ruoli?.nome_ruolo || 'N/D';
+        document.getElementById('detReparto').textContent = repName;
+        
         document.getElementById('detArticolo').textContent = order.anagrafica_articoli?.codice_articolo;
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
         
@@ -126,81 +141,59 @@ const App = {
             'Commessa non assegnata';
         document.getElementById('detCommessa').textContent = commessaTxt;
 
-        // Pre-fill Inputs
+        // Pre-fill
         document.getElementById('inputQta').value = order.qta_richiesta;
         document.getElementById('inputOre').value = '';
         document.getElementById('inputNote').value = '';
 
-        // Load Stats
+        // Focus primo input per velocità
+        document.getElementById('inputOre').focus();
+
         this.loadStats(order);
     },
 
     loadStats: async function(order) {
-        // Reset Visuale
-        document.getElementById('statMediana').textContent = 'Calcolo...';
+        document.getElementById('statMediana').textContent = '...';
+        document.getElementById('statCommessaTot').textContent = '...';
         document.getElementById('distributionChart').innerHTML = '';
         
         try {
-            // 1. Statistiche Articolo (Mediana)
             if(order.id_articolo) {
                 const resArt = await apiFetch(`/api/produzione/stats-articolo/${order.id_articolo}`);
                 const dataArt = await resArt.json();
-                
                 if(dataArt.count > 0) {
-                    // La mediana arriva in MINUTI dal backend. Convertiamo in Ore.
                     const oreMediane = (dataArt.mediana / 60).toFixed(1);
-                    document.getElementById('statMediana').textContent = `${oreMediane}h`;
+                    document.getElementById('statMediana').textContent = `${oreMediane}h (${dataArt.count} ordini)`;
                 } else {
                     document.getElementById('statMediana').textContent = 'N/D (Nuovo)';
                 }
             }
 
-            // 2. Statistiche Commessa
             if(order.id_commessa) {
                 const resCom = await apiFetch(`/api/produzione/stats-commessa/${order.id_commessa}`);
                 const dataCom = await resCom.json();
-                
                 const oreTot = (dataCom.totale_minuti / 60).toFixed(1);
                 document.getElementById('statCommessaTot').textContent = `${oreTot}h`;
-                
                 this.renderChart(dataCom.distribuzione, dataCom.totale_minuti);
             }
-
-        } catch(e) {
-            console.warn("Stats error", e);
-        }
+        } catch(e) { console.warn(e); }
     },
 
     renderChart: function(dist, totalMin) {
         const chart = document.getElementById('distributionChart');
-        const legend = document.getElementById('distributionLegend');
         chart.innerHTML = '';
-        legend.innerHTML = '';
-        
         if(totalMin === 0) return;
 
-        // Colori fissi per reparti comuni (o random)
         const colors = ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
         let i = 0;
-
         for (const [ruolo, minuti] of Object.entries(dist)) {
             const perc = (minuti / totalMin) * 100;
-            const color = colors[i % colors.length];
-            
-            // Barra
             const bar = document.createElement('div');
             bar.className = 'bar-segment';
             bar.style.width = `${perc}%`;
-            bar.style.backgroundColor = color;
+            bar.style.backgroundColor = colors[i % colors.length];
             bar.title = `${ruolo}: ${(minuti/60).toFixed(1)}h`;
             chart.appendChild(bar);
-
-            // Legenda
-            const item = document.createElement('div');
-            item.className = 'legend-item';
-            item.innerHTML = `<div class="legend-dot" style="background:${color}"></div> ${ruolo} (${Math.round(perc)}%)`;
-            legend.appendChild(item);
-            
             i++;
         }
     },
@@ -214,7 +207,7 @@ const App = {
         const note = document.getElementById('inputNote').value;
 
         if(!oreStr || !qtaStr) {
-            alert("Inserisci Ore e Quantità.");
+            showModal({ title: "Dati Mancanti", message: "Inserisci Ore lavorate e Quantità prodotta." });
             return;
         }
 
@@ -229,7 +222,7 @@ const App = {
         try {
             const payload = {
                 qta_prodotta: qta,
-                tempo_impiegato: minuti, // Salva in minuti per consistenza DB
+                tempo_impiegato: minuti,
                 data_fine: new Date().toISOString(),
                 note: note
             };
@@ -241,20 +234,20 @@ const App = {
 
             if(!res.ok) throw new Error("Errore API");
 
-            showSuccessFeedbackModal("Ordine Chiuso", `OP ${order.numero_op} registrato correttamente.`);
+            showSuccessFeedbackModal("Ordine Chiuso", `OP ${order.numero_op} registrato.`);
             
-            // Rimuovi dalla lista locale e resetta view
+            // Rimuovi dalla lista locale e aggiorna UI
             this.data.orders = this.data.orders.filter(o => o.id !== order.id);
-            this.filterOrders(); // Re-render lista
+            this.filterOrders(); 
             
-            // Reset Detail Pane
+            // Pulisci Dettaglio
             document.getElementById('detailContent').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('emptyState').style.display = 'block';
 
         } catch (e) {
-            alert("Errore salvataggio: " + e.message);
+            showModal({ title: "Errore", message: "Impossibile salvare: " + e.message });
         } finally {
-            btn.textContent = "✅ CONFERMA E CHIUDI";
+            btn.textContent = "✅ SALVA E CHIUDI";
             btn.disabled = false;
         }
     }
