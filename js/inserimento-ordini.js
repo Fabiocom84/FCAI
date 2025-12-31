@@ -132,7 +132,7 @@ async function handleFiles(files) {
 }
 
 // ============================================================
-// 3. PARSING PDF (NUOVA LOGICA PAGINA X PAGINA)
+// 3. PARSING PDF
 // ============================================================
 async function parsePDF(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -143,46 +143,36 @@ async function parsePDF(file) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        // Uniamo il testo della pagina
         const pageText = textContent.items.map(item => item.str).join(' ');
         
-        // --- ESTRAZIONE DATI HEADER (Regex mirate) ---
-        
-        // 1. OP (Es: "OP25-0768" -> Prende "25-0768")
-        // Cerca "Ordine di Produzione n." seguito opzionalmente da "OP" e poi cattura cifre e trattini
+        // 1. OP
         const opMatch = pageText.match(/Ordine di Produzione n\.\s*(?:OP)?([\d-]+)/i);
         const opNumber = opMatch ? opMatch[1].trim() : "???";
 
-        // 2. Commessa (Es: "VO25-0241" -> Prende "25-0241")
+        // 2. Commessa
         const voMatch = pageText.match(/Commessa\s*(?:VO)?([\d-]+)/i);
         const voNumber = voMatch ? voMatch[1].trim() : null;
 
-        // 3. Codice Articolo (Es: "Nr. Articolo 125708")
+        // 3. Codice Articolo
         const codeMatch = pageText.match(/Nr\. Articolo\s+(\d+)/i);
         const codice = codeMatch ? codeMatch[1].trim() : "";
 
-        // 4. Quantità (Es: "Quantità 3")
+        // 4. Quantità
         const qtyMatch = pageText.match(/Quantità\s+(\d+)/i);
         const qta = qtyMatch ? parseFloat(qtyMatch[1]) : 1;
 
         // 5. Descrizione
-        // Cerca tutto dopo "Descrizione" fino a incontrare "Magazzino" (che di solito è il campo successivo)
-        // Usiamo un lookahead positivo (?=...) per fermarci prima di "Magazzino"
         const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio)/i);
         let descrizione = descMatch ? descMatch[1].trim() : "";
-        
-        // Pulizia extra descrizione se serve
         descrizione = descrizione.replace("Qtà riordino fissa", "").trim();
 
-        // --- Matching Commessa ---
+        // Matching Commessa
         let preselectedCommessaId = "";
         if (voNumber) {
-            // Cerchiamo nel formato "VO25-XXXX" o "25-XXXX"
             const found = State.commesseList.find(c => c.vo && c.vo.includes(voNumber));
             if (found) preselectedCommessaId = found.id;
         }
 
-        // Se abbiamo trovato almeno il codice, aggiungiamo la riga
         if (codice) {
             State.stagedRows.push({
                 op: opNumber,
@@ -191,7 +181,7 @@ async function parsePDF(file) {
                 codice_articolo: codice,
                 descrizione: descrizione,
                 qta: qta,
-                manual: false
+                manual: false // Indica che viene dal PDF -> OP non modificabile
             });
         }
     }
@@ -203,16 +193,16 @@ async function parsePDF(file) {
 
 function addManualRow() {
     State.stagedRows.push({
-        op: "MANUALE",
+        op: "", // Vuoto per permettere l'inserimento
         vo_detected: null,
         commessa_id: "",
         codice_articolo: "",
         descrizione: "",
         qta: 1,
-        manual: true
+        manual: true // Indica riga manuale -> OP modificabile
     });
     renderPreviewTable();
-    // Scroll auto
+    
     const tableContainer = document.querySelector('.table-responsive');
     if(tableContainer) {
         setTimeout(() => tableContainer.scrollTop = tableContainer.scrollHeight, 100);
@@ -232,11 +222,19 @@ function renderPreviewTable() {
         const tr = document.createElement('tr');
         const defaultRoleId = State.knownDefaults[row.codice_articolo] || "";
 
+        // --- GESTIONE CAMPO OP (MODIFICA QUI) ---
+        // Se è manuale: sfondo bianco, modificabile. Se PDF: sfondo grigio, readonly.
+        const opReadonly = row.manual ? '' : 'readonly';
+        const opBg = row.manual ? '#ffffff' : '#f9f9f9';
+        
+        // --- GESTIONE CAMPO CODICE ---
+        const codeReadonly = row.manual ? '' : 'readonly';
+        const codeBg = row.manual ? '#ffffff' : '#f9f9f9';
+
         const statusHtml = row.commessa_id 
             ? `<span class="badge-ok">OK</span>` 
             : `<span class="badge-new">Check</span>`;
         
-        // Evidenzia righe problematiche (solo se non manuali o incomplete)
         if (!row.commessa_id) tr.style.backgroundColor = '#fff5f5';
 
         // Select Commessa
@@ -251,11 +249,12 @@ function renderPreviewTable() {
                 return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>${r.label}</option>`;
             }).join('');
 
-        const codeInputAttr = row.manual ? '' : 'readonly style="background:#f9f9f9;"';
-
         tr.innerHTML = `
             <td>${statusHtml}</td>
-            <td><input type="text" value="${row.op}" class="input-flat" readonly style="width:100px; background:#f9f9f9; font-size:0.8rem;"></td>
+            
+            <!-- Campo OP con classe .op-input e logica readonly dinamica -->
+            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:100px; background:${opBg}; font-size:0.8rem;"></td>
+            
             <td>
                 <select class="input-select commessa-select" style="min-width: 200px;">
                     <option value="">-- Seleziona --</option>
@@ -263,7 +262,10 @@ function renderPreviewTable() {
                 </select>
                 ${!row.commessa_id && row.vo_detected ? `<div style="font-size:0.75em; color:red;">VO: ${row.vo_detected}</div>` : ''}
             </td>
-            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeInputAttr}></td>
+            
+            <!-- Campo Codice con logica readonly dinamica -->
+            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}"></td>
+            
             <td><input type="text" value="${row.descrizione}" class="input-flat desc-input"></td>
             <td><input type="number" value="${row.qta}" class="input-flat qty-input"></td>
             <td>
@@ -292,7 +294,6 @@ function clearPreview() {
     State.stagedRows = [];
     State.knownDefaults = {};
     
-    // Reset Drop Zone Visuals
     const dropZone = document.getElementById('drop-zone');
     dropZone.classList.remove('file-loaded');
     document.getElementById('drop-title').textContent = "Trascina qui il PDF";
@@ -316,10 +317,12 @@ async function saveProductionRows() {
         const codice = tr.querySelector('.code-input').value;
         const descrizione = tr.querySelector('.desc-input').value;
         const qta = tr.querySelector('.qty-input').value;
-        const op = tr.querySelector('input[readonly]').value;
+        
+        // ORA LEGGIAMO DALL'INPUT CON CLASSE .op-input (che ora può essere editabile)
+        const op = tr.querySelector('.op-input').value; 
+        
         const ruoloId = tr.querySelector('.role-select').value;
 
-        // Validazione minima
         if (!commessaId || !codice || !qta) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
