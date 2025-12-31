@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Analisi - Segretario AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="dashboard.css"> <!-- Nuovo CSS specifico -->
+    <!-- Chart.js per i grafici -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="page-wrapper full-width">
+        
+        <!-- Header -->
+        <header class="mobile-nav-header">
+            <a href="index.html" class="header-button">
+                <span>🔙 Home</span>
+            </a>
+            <div class="title-container">
+                <h1>DASHBOARD ANALISI</h1>
+                <span class="header-username">Controllo di Gestione</span>
+            </div>
+        </header>
+
+        <!-- Filtri -->
+        <section class="filters-bar">
+            <div class="filter-group">
+                <label>Periodo</label>
+                <div class="date-inputs">
+                    <input type="date" id="dateStart">
+                    <input type="date" id="dateEnd">
+                </div>
+            </div>
+            <div class="filter-group grow">
+                <label>Dipendente</label>
+                <select id="filterPersonale" class="choice-filter"></select>
+            </div>
+            <div class="filter-group grow">
+                <label>Commessa</label>
+                <select id="filterCommessa" class="choice-filter"></select>
+            </div>
+            <div class="filter-group">
+                <label>Stato</label>
+                <select id="filterStato">
+                    <option value="">Tutti</option>
+                    <option value="0" selected>Da Contabilizzare</option>
+                    <option value="1">Contabilizzato</option>
+                </select>
+            </div>
+            <button id="btnRefresh" class="button compact-btn">🔄 Aggiorna</button>
+        </section>
+
+        <!-- KPI Cards -->
+        <section class="kpi-container">
+            <div class="kpi-card blue">
+                <h3>Totale Ore</h3>
+                <span id="kpiTotal">0</span>
+            </div>
+            <div class="kpi-card orange">
+                <h3>Da Contabilizzare</h3>
+                <span id="kpiPending">0</span>
+            </div>
+            <div class="kpi-card green">
+                <h3>Già Contabilizzate</h3>
+                <span id="kpiDone">0</span>
+            </div>
+        </section>
+
+        <!-- Grafici e Tabella (Layout a griglia) -->
+        <div class="dashboard-grid">
+            
+            <!-- Grafico -->
+            <div class="chart-container">
+                <h4>Distribuzione per Commessa</h4>
+                <canvas id="commessaChart"></canvas>
+            </div>
+
+            <!-- Tabella Dati -->
+            <div class="table-wrapper">
+                <div class="table-controls">
+                    <input type="text" id="globalSearch" placeholder="🔍 Cerca nelle note, codici, nomi...">
+                    <div id="selectionActions" style="display:none;">
+                        <span id="selectedCount">0 selezionati</span>
+                        <button id="btnContabilizza" class="action-btn-primary">✅ Contabilizza</button>
+                    </div>
+                </div>
+                <table id="analysisTable">
+                    <thead>
+                        <tr>
+                            <th width="30"><input type="checkbox" id="selectAll"></th>
+                            <th>Data</th>
+                            <th>Dipendente</th>
+                            <th>Commessa</th>
+                            <th>Lavorazione</th>
+                            <th>Ore</th>
+                            <th>Note</th>
+                            <th>Stato</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- JS render -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
