@@ -1,24 +1,37 @@
-/* inserimento-ordini.css */
+/* inserimento-ordini.css - Modern UI Refactoring */
 
-.orders-page {
+body {
     background-color: #f4f7f9;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
 }
 
-.drop-zone {
-    background: #ffffff;
-    border: 3px dashed #cbd5e0;
+/* --- Layout Generale (Più largo per la tabella) --- */
+.page-wrapper {
+    width: 95%;
+    max-width: 1200px; /* Più largo rispetto alle ore per ospitare la tabella */
+    margin: 20px auto;
+    padding-bottom: 100px; /* Spazio per il footer fisso */
+}
+
+/* --- Drop Zone Card --- */
+.drop-zone-card {
+    background: white;
     border-radius: 12px;
-    padding: 60px 20px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
     text-align: center;
-    margin-bottom: 30px;
+    border: 2px dashed #cbd5e0;
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
 }
 
-.drop-zone:hover, .drop-zone.dragover {
+.drop-zone-card:hover, .drop-zone-card.dragover {
     border-color: #3498db;
     background-color: #f0f8ff;
+    transform: translateY(-2px);
 }
 
 .drop-content {
@@ -28,97 +41,173 @@
     gap: 15px;
 }
 
-.upload-icon {
-    width: 64px;
-    height: 64px;
+.drop-content img {
+    width: 50px;
     opacity: 0.6;
-    margin-bottom: 10px;
 }
 
-.drop-zone h3 {
+.drop-content h3 {
+    margin: 0;
     color: #2c3e50;
-    margin: 0;
-    font-size: 1.4em;
+    font-size: 1.2rem;
 }
 
-.drop-zone p {
+.drop-content p {
     color: #7f8c8d;
+    font-size: 0.9rem;
     margin: 0;
+}
+
+/* Stato file caricato */
+.drop-zone-card.file-loaded {
+    border-style: solid;
+    border-color: #27ae60;
+    background-color: #f0fff4;
+}
+
+.drop-zone-card.file-loaded .drop-content h3 {
+    color: #27ae60;
 }
 
 .file-select-btn {
     background-color: #3498db;
     color: white;
-    padding: 10px 25px;
+    padding: 10px 20px;
+    border-radius: 8px;
     border: none;
-    border-radius: 6px;
-    font-size: 1em;
+    font-weight: 500;
     cursor: pointer;
+    margin-top: 10px;
     transition: background 0.2s;
 }
+.file-select-btn:hover { background-color: #2980b9; }
 
-.file-select-btn:hover {
-    background-color: #2980b9;
-}
-
-/* Spinner caricamento */
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Tabella Anteprima */
-.preview-section {
+/* --- Table Card --- */
+.table-card {
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    animation: fadeIn 0.5s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+    overflow: hidden; /* Per i bordi arrotondati */
 }
 
-.section-header {
+.table-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #edf2f7;
 }
 
+.table-header-row h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    text-transform: uppercase;
+}
+
+.add-row-btn {
+    background-color: #fff;
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+.add-row-btn:hover { background-color: #3498db; color: white; }
+
+/* --- Tabella Responsiva --- */
 .table-responsive {
+    width: 100%;
     overflow-x: auto;
 }
 
 .preview-table {
     width: 100%;
     border-collapse: collapse;
-}
-
-.preview-table th, .preview-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    min-width: 800px; /* Forza lo scroll su mobile se troppo stretta */
 }
 
 .preview-table th {
-    background-color: #f8f9fa;
-    color: #555;
-    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    color: #718096;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #edf2f7;
 }
 
-/* Status Badges nella tabella */
-.badge-ok { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
-.badge-new { background: #cce5ff; color: #004085; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
-.badge-err { background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+.preview-table td {
+    padding: 10px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
 
-.row-error { background-color: #fff5f5; }
+/* Inputs nella tabella */
+.input-flat {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+.input-flat:focus { border-color: #3498db; outline: none; }
+.input-flat[readonly] { background-color: #f7fafc; color: #718096; }
+
+.input-select {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    background: white;
+    font-size: 0.95rem;
+}
+
+/* Badge e Icone */
+.badge-ok { background: #c6f6d5; color: #22543d; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+.badge-new { background: #bee3f8; color: #2a4365; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+
+.btn-icon {
+    background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.6; transition: 0.2s;
+}
+.btn-icon:hover { opacity: 1; color: #e53e3e; transform: scale(1.1); }
+
+/* Riga Vuota Placeholder */
+.empty-state-row td {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* --- Footer Fisso (stile Inserimento Ore) --- */
+.sticky-footer {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background: white;
+    padding: 15px 20px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    display: flex; gap: 10px; box-sizing: border-box; z-index: 500;
+}
+
+.save-button {
+    flex: 1; background: #27ae60; color: white;
+    border: none; padding: 14px; border-radius: 10px;
+    font-size: 1rem; font-weight: 700; text-transform: uppercase;
+    box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+    cursor: pointer;
+}
+.save-button:active { transform: scale(0.98); }
+
+.cancel-button {
+    background: #e2e8f0; color: #4a5568; border: none;
+    border-radius: 10px; padding: 0 20px; font-weight: 600;
+    cursor: pointer;
+}
