@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Ordini - Segretario AI</title>
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="inserimento-ore.css"> <!-- Per header -->
+    <link rel="stylesheet" href="registro-ordini.css"> <!-- Specifico -->
+</head>
+<body>
+
+    <div class="split-view-container">
+        
+        <!-- COLONNA SINISTRA: LISTA (Master) -->
+        <div class="master-pane">
+            <header class="pane-header">
+                <a href="index.html" class="back-link">&larr; Home</a>
+                <h2>Ordini Aperti</h2>
+            </header>
+            
+            <div class="filters-bar">
+                <input type="text" id="searchInput" placeholder="Cerca OP, Articolo, Commessa...">
+                <select id="repartoFilter">
+                    <option value="">Tutti i Reparti</option>
+                    <!-- Popolato dinamicamente -->
+                </select>
+            </div>
+
+            <div id="ordersList" class="cards-list">
+                <!-- Le card verranno iniettate qui -->
+                <div class="loader-placeholder">Caricamento ordini...</div>
+            </div>
+        </div>
+
+        <!-- COLONNA DESTRA: DETTAGLIO (Detail) -->
+        <div class="detail-pane">
+            <div id="emptyState" class="empty-state-detail">
+                <img src="img/tasks.png" alt="Select">
+                <p>Seleziona un ordine a sinistra<br>per visualizzare i dettagli</p>
+            </div>
+
+            <div id="detailContent" class="detail-content" style="display: none;">
+                <!-- TESTATA -->
+                <div class="detail-header">
+                    <div class="detail-badges">
+                        <span class="badge-op" id="detOP">OP-XXX</span>
+                        <span class="badge-rep" id="detReparto">Reparto</span>
+                    </div>
+                    <h1 id="detArticolo">Codice Articolo</h1>
+                    <p id="detDescrizione">Descrizione completa articolo</p>
+                    <div class="commessa-info">
+                        <strong>Commessa:</strong> <span id="detCommessa">VO-XXX - Cliente</span>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- INPUT OPERATIVI -->
+                <div class="input-section">
+                    <h3>Registrazione Produzione</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tempo Totale (Ore)</label>
+                            <input type="number" id="inputOre" step="0.1" placeholder="es. 1.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Q.tà Prodotta</label>
+                            <input type="number" id="inputQta" step="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Note (Opzionale)</label>
+                        <textarea id="inputNote" rows="2" placeholder="Eventuali problemi..."></textarea>
+                    </div>
+                    <button id="btnCloseOrder" class="action-button">✅ CONFERMA E CHIUDI</button>
+                </div>
+
+                <!-- ANALISI STATISTICA -->
+                <div class="stats-section">
+                    <h3>Analisi Contesto</h3>
+                    
+                    <!-- 1. Benchmark Articolo -->
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <small>Tempo Storico (Mediana)</small>
+                            <strong id="statMediana">Calcolo...</strong>
+                        </div>
+                        <div class="stat-delta" id="statDelta"></div>
+                    </div>
+
+                    <!-- 2. Avanzamento Commessa -->
+                    <div class="commessa-stats">
+                        <div class="stat-row-header">
+                            <small>Totale Ore Commessa</small>
+                            <strong id="statCommessaTot">0h</strong>
+                        </div>
+                        <!-- Grafico a barre CSS -->
+                        <div class="chart-container">
+                            <div id="distributionChart" class="stacked-bar">
+                                <!-- Segmenti colorati via JS -->
+                            </div>
+                        </div>
+                        <div id="distributionLegend" class="chart-legend">
+                            <!-- Legenda via JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modali Standard -->
+    <div id="modalOverlay" class="modal-overlay" style="display: none;"></div>
+    <div id="success-feedback-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="feedback-modal-title"></h2>
+                <button class="close-button" data-close-feedback>&times;</button>
+            </div>
+            <div class="modal-body feedback-body">
+                <h3 id="feedback-modal-message"></h3>
+                <p id="feedback-modal-countdown"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="feedback-modal-close-btn" class="save-button" style="width: auto;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module" src="js/api-client.js"></script>
+    <script type="module" src="js/shared-ui.js"></script>
+    <script type="module" src="js/registro-ordini.js"></script>
+</body>
+</html>
