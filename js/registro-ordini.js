@@ -10,17 +10,25 @@ const App = {
     
     init: async function() {
         this.bindEvents();
-        await this.loadOrders('aperti');
+        // Carica tutti per default (o aperti, come preferisci)
+        await this.loadOrders('aperti'); 
     },
 
     bindEvents: function() {
+        // Radio Status
         document.querySelectorAll('input[name="status"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.loadOrders(e.target.value));
         });
+
+        // Filtri
         document.getElementById('commessaFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
         document.getElementById('articoloFilter').addEventListener('input', () => this.applyFilters());
+        
+        // Reset
         document.getElementById('resetFiltersBtn').addEventListener('click', () => this.resetFilters());
+
+        // Salva
         document.getElementById('btnCloseOrder').addEventListener('click', () => this.saveOrder());
     },
 
@@ -34,6 +42,10 @@ const App = {
     loadOrders: async function(status = 'aperti') {
         const listContainer = document.getElementById('ordersList');
         listContainer.innerHTML = '<div style="padding:20px; text-align:center;">Caricamento...</div>';
+        
+        // Svuota dettaglio se cambio stato massivo
+        document.getElementById('detailContent').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
         
         try {
             const res = await apiFetch(`/api/produzione/ordini?status=${status}`);
@@ -51,15 +63,25 @@ const App = {
     populateCommessaFilter: function() {
         const select = document.getElementById('commessaFilter');
         const uniqueCommesse = new Set();
+        
         this.data.allOrders.forEach(o => {
             if(o.commesse && o.commesse.vo) {
-                uniqueCommesse.add(`${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`);
+                const label = `${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`;
+                uniqueCommesse.add(label);
             }
         });
+
         const sorted = Array.from(uniqueCommesse).sort();
         const oldVal = select.value;
         select.innerHTML = '<option value="">Tutte le Commesse</option>';
-        sorted.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+        
+        sorted.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            select.appendChild(opt);
+        });
+        
         if (sorted.includes(oldVal)) select.value = oldVal;
     },
 
@@ -73,14 +95,18 @@ const App = {
             const desc = (o.anagrafica_articoli?.descrizione || '').toLowerCase();
             const op = o.numero_op.toLowerCase();
 
+            // Match Search
             const txt = op + codice + desc;
             const matchSearch = txt.includes(search);
-            
+
+            // Match Commessa
             let matchComm = true;
             if (commessaVal) {
                 const label = `${o.commesse?.vo || ''} - ${o.commesse?.clienti?.ragione_sociale || ''}`.toLowerCase();
                 matchComm = label === commessaVal;
             }
+
+            // Match Articolo
             const matchArt = !artVal || codice.includes(artVal);
 
             return matchSearch && matchComm && matchArt;
@@ -98,7 +124,6 @@ const App = {
             return;
         }
 
-        // 1. Raggruppa per OP
         const groups = {};
         this.data.filteredOrders.forEach(order => {
             const op = order.numero_op;
@@ -112,14 +137,11 @@ const App = {
             groups[op].items.push(order);
         });
 
-        // 2. Ordinamento Decrescente delle Chiavi OP
-        // Object.keys(groups) ci da ["25-0768", "25-0614", ...]
-        // .sort((a, b) => b.localeCompare(a)) ordina Z -> A (Decrescente)
+        // Ordinamento Decrescente OP
         const sortedOpKeys = Object.keys(groups).sort((a, b) => {
             return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
         });
 
-        // 3. Renderizza seguendo l'ordine
         sortedOpKeys.forEach(opKey => {
             const group = groups[opKey];
             const groupDiv = document.createElement('div');
@@ -139,11 +161,14 @@ const App = {
                 const fase = order.fasi_produzione?.nome_fase || 'N/D';
                 const desc = order.anagrafica_articoli?.descrizione || '';
                 
+                // Se l'ordine è chiuso (ha data invio), mettiamo un indicatore visivo
+                const statusIcon = order.data_invio ? '✅' : '';
+
                 row.innerHTML = `
                     <div class="col-code">${order.anagrafica_articoli?.codice_articolo || '?'}</div>
                     <div class="col-desc" title="${desc}">${desc}</div>
                     <div style="font-size:0.75em; background:#eee; padding:2px 6px; border-radius:4px; margin-right:10px;">${fase}</div>
-                    <div class="col-qta">Q: ${order.qta_richiesta}</div>
+                    <div class="col-qta">${statusIcon} Q: ${order.qta_richiesta}</div>
                 `;
 
                 row.addEventListener('click', () => this.selectOrder(order, row));
@@ -163,22 +188,49 @@ const App = {
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('detailContent').style.display = 'block';
 
+        // Header Dettaglio
         document.getElementById('detOP').textContent = `OP: ${order.numero_op}`;
         document.getElementById('detArticolo').textContent = order.anagrafica_articoli?.codice_articolo;
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
-        
-        // MODIFICA: Visualizza FASE
-        // Se c'è un elemento per visualizzare la fase nel dettaglio, usalo.
-        // Altrimenti aggiungiamo un piccolo badge vicino all'OP o nel titolo.
-        // Qui lo mettiamo nel badge OP per semplicità o creiamo uno span dinamico se non c'è.
         
         const commTxt = order.commesse ? 
             `${order.commesse.vo} - ${order.commesse.clienti?.ragione_sociale}` : 'N/D';
         document.getElementById('detCommessa').textContent = commTxt;
 
-        document.getElementById('inputQta').value = order.qta_richiesta;
-        document.getElementById('inputOre').value = '';
-        document.getElementById('inputNote').value = '';
+        // --- LOGICA DI POPOLAMENTO CAMPI (MODIFICATA) ---
+        const btn = document.getElementById('btnCloseOrder');
+        
+        // Verifica se l'ordine è CHIUSO (ha dati salvati)
+        // Usiamo data_invio come flag di chiusura, oppure controlliamo se tempo_impiegato > 0
+        const isClosed = (order.data_invio !== null); 
+
+        if (isClosed) {
+            // ORDINE CHIUSO: Mostra i dati salvati
+            document.getElementById('inputQta').value = order.qta_prodotta; // Quelli fatti
+            
+            // Converti minuti DB in ore decimali per l'input
+            let oreSalvato = 0;
+            if (order.tempo_impiegato) {
+                oreSalvato = parseFloat((order.tempo_impiegato / 60).toFixed(2));
+            }
+            document.getElementById('inputOre').value = oreSalvato > 0 ? oreSalvato : '';
+            
+            document.getElementById('inputNote').value = order.note || '';
+            
+            // Cambia testo bottone
+            btn.textContent = "🔄 AGGIORNA DATI";
+            btn.style.backgroundColor = "#f39c12"; // Arancione per modifica
+        } else {
+            // ORDINE APERTO: Default
+            document.getElementById('inputQta').value = order.qta_richiesta; // Suggerisci la richiesta
+            document.getElementById('inputOre').value = '';
+            document.getElementById('inputNote').value = '';
+            
+            // Cambia testo bottone
+            btn.textContent = "✅ SALVA E CHIUDI";
+            btn.style.backgroundColor = "#27ae60"; // Verde per salvataggio
+        }
+
         document.getElementById('inputOre').focus();
 
         this.loadStats(order);
@@ -255,21 +307,41 @@ const App = {
 
             if(!res.ok) throw new Error("Errore API");
 
-            showSuccessFeedbackModal("Registrato", `OP ${order.numero_op} salvato.`);
+            // Aggiorna l'oggetto locale in memoria per riflettere le modifiche senza ricaricare tutto
+            order.qta_prodotta = payload.qta_prodotta;
+            order.tempo_impiegato = payload.tempo_impiegato;
+            order.note = payload.note;
+            order.data_invio = payload.data_fine; // Marca come chiuso
+
+            showSuccessFeedbackModal("Registrato", `OP ${order.numero_op} aggiornato.`);
             
+            // Gestione Refresh Lista
             const currentStatus = document.querySelector('input[name="status"]:checked').value;
+            
+            // Se eravamo su "Aperti" e ora l'abbiamo chiuso, rimuoviamolo dalla lista
             if(currentStatus === 'aperti') {
                 this.data.allOrders = this.data.allOrders.filter(o => o.id !== order.id);
+                // Pulisci Dettaglio
+                document.getElementById('detailContent').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+            } else {
+                // Se eravamo su "Tutti" o "Chiusi", rimaniamo lì e aggiorniamo solo il colore del bottone
+                // Ricarichiamo la lista per aggiornare eventuali icone di stato
             }
-            this.applyFilters(); 
-
-            document.getElementById('detailContent').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'flex';
+            
+            this.applyFilters(); // Rerender lista
 
         } catch(e) {
             showModal({ title: "Errore", message: e.message });
         } finally {
-            btn.textContent = "✅ SALVA E CHIUDI";
+            // Ripristina testo in base allo stato attuale dell'ordine in memoria
+            if (order.data_invio) {
+                btn.textContent = "🔄 AGGIORNA DATI";
+                btn.style.backgroundColor = "#f39c12";
+            } else {
+                btn.textContent = "✅ SALVA E CHIUDI";
+                btn.style.backgroundColor = "#27ae60";
+            }
             btn.disabled = false;
         }
     }
