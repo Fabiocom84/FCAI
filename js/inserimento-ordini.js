@@ -138,13 +138,12 @@ async function parsePDF(file) {
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
+        
         const pageText = textContent.items.map(item => item.str).join(' ');
         
-        // 1. OP (Formato atteso OP25-XXXX o 25-XXXX)
+        // 1. OP
         const opMatch = pageText.match(/Ordine di Produzione n\.\s*(?:OP)?([\d-]+)/i);
-        let opNumber = opMatch ? opMatch[1].trim() : "???";
-        // Forza formato standard XX-XXXX se possibile
-        // (La logica di formattazione stretta la facciamo all'input, qui prendiamo il raw)
+        const opNumber = opMatch ? opMatch[1].trim() : "???";
 
         // 2. Commessa
         const voMatch = pageText.match(/Commessa\s*(?:VO)?([\d-]+)/i);
@@ -161,10 +160,22 @@ async function parsePDF(file) {
         // 5. Descrizione
         const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio)/i);
         let descrizione = descMatch ? descMatch[1].trim() : "";
-        descrizione = descrizione.replace("Qtà riordino fissa", "").trim();
+        // Pulizia e Minuscolo forzato
+        descrizione = descrizione.replace("Qtà riordino fissa", "").trim().toLowerCase();
+
+        // 6. DATA INTESTAZIONE (Modificato: cerca 4 cifre per l'anno es. 23/12/2025)
+        // La regex cerca una data DD/MM/YYYY. Nel PDF la data del titolo ha l'anno a 4 cifre.
+        const dateMatch = pageText.match(/(\d{2}\/\d{2}\/\d{4})/);
+        let dataRicezione = new Date().toISOString().split('T')[0]; // Default Oggi
         
-        // --- FORMATTAZIONE FORZATA (Minuscolo) ---
-        descrizione = descrizione.toLowerCase();
+        if (dateMatch) {
+            const rawDate = dateMatch[1]; // es: 23/12/2025
+            const parts = rawDate.split('/');
+            if (parts.length === 3) {
+                // Formato DB: YYYY-MM-DD
+                dataRicezione = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+        }
 
         // Matching Commessa
         let preselectedCommessaId = "";
@@ -181,6 +192,7 @@ async function parsePDF(file) {
                 codice_articolo: codice,
                 descrizione: descrizione,
                 qta: qta,
+                data_ricezione: dataRicezione, // Usiamo la data del titolo
                 manual: false
             });
         }
@@ -199,6 +211,7 @@ function addManualRow() {
         codice_articolo: "",
         descrizione: "",
         qta: 1,
+        data_ricezione: new Date().toISOString().split('T')[0], // Default Oggi
         manual: true
     });
     renderPreviewTable();
@@ -214,7 +227,7 @@ function renderPreviewTable() {
     tbody.innerHTML = '';
 
     if (State.stagedRows.length === 0) {
-        tbody.innerHTML = `<tr class="empty-state-row"><td colspan="8">Nessun dato. Carica un PDF o aggiungi una riga manuale.</td></tr>`;
+        tbody.innerHTML = `<tr class="empty-state-row"><td colspan="9">Nessun dato. Carica un PDF o aggiungi una riga manuale.</td></tr>`;
         return;
     }
 
@@ -248,32 +261,41 @@ function renderPreviewTable() {
         tr.innerHTML = `
             <td>${statusHtml}</td>
             
-            <!-- OP: Placeholder 00-0000 -->
+            <!-- OP -->
             <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} 
-                style="width:100px; background:${opBg}; font-size:0.85rem; font-weight:500;" 
+                style="width:90px; background:${opBg}; font-size:0.85rem; font-weight:500;" 
                 placeholder="00-0000" maxlength="7"></td>
             
+            <!-- Commessa -->
             <td>
-                <select class="input-select commessa-select" style="min-width: 200px;">
+                <select class="input-select commessa-select" style="min-width: 180px;">
                     <option value="">-- Seleziona --</option>
                     ${commessaOptions}
                 </select>
                 ${!row.commessa_id && row.vo_detected ? `<div style="font-size:0.75em; color:red;">VO: ${row.vo_detected}</div>` : ''}
             </td>
             
-            <!-- CODICE: Placeholder 000000 -->
+            <!-- Data -->
+            <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:110px;"></td>
+
+            <!-- Codice -->
             <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} 
                 style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
             
-            <!-- DESCRIZIONE: Lowercase visivo -->
+            <!-- Descrizione -->
             <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" style="text-transform:lowercase;"></td>
             
-            <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:60px;"></td>
+            <!-- Q.tà -->
+            <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:50px;"></td>
+            
+            <!-- Reparto -->
             <td>
                 <select class="input-select role-select" style="min-width: 130px;">
                     ${repartiOptions}
                 </select>
             </td>
+            
+            <!-- Azioni -->
             <td style="text-align:center;">
                 <button class="btn-icon delete-row-btn" data-idx="${index}">🗑️</button>
             </td>
@@ -282,12 +304,11 @@ function renderPreviewTable() {
         tbody.appendChild(tr);
     });
 
-    // --- AGGIUNTA EVENT LISTENERS PER FORMATTAZIONE ---
     bindTableEvents();
 }
 
 function bindTableEvents() {
-    // 1. Cancellazione Riga
+    // Delete
     document.querySelectorAll('.delete-row-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx);
@@ -296,15 +317,11 @@ function bindTableEvents() {
         });
     });
 
-    // 2. Formattazione OP (00-0000)
+    // Masking OP
     document.querySelectorAll('.op-input:not([readonly])').forEach(input => {
         input.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, ''); // Rimuovi tutto tranne numeri
-            
-            // Limita a 6 cifre (2 + 4)
+            let val = e.target.value.replace(/[^0-9]/g, '');
             if (val.length > 6) val = val.substring(0, 6);
-
-            // Inserisci trattino dopo la 2° cifra
             if (val.length > 2) {
                 e.target.value = val.substring(0, 2) + '-' + val.substring(2);
             } else {
@@ -313,14 +330,14 @@ function bindTableEvents() {
         });
     });
 
-    // 3. Formattazione Codice (Solo Numeri, Max 6)
+    // Masking Codice
     document.querySelectorAll('.code-input:not([readonly])').forEach(input => {
         input.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/[^0-9]/g, '').substring(0, 6);
         });
     });
 
-    // 4. Formattazione Descrizione (Forza Minuscolo)
+    // Masking Descrizione
     document.querySelectorAll('.desc-input').forEach(input => {
         input.addEventListener('input', (e) => {
             e.target.value = e.target.value.toLowerCase();
@@ -355,34 +372,35 @@ async function saveProductionRows() {
         const descrizione = tr.querySelector('.desc-input').value;
         const qta = tr.querySelector('.qty-input').value;
         const op = tr.querySelector('.op-input').value;
+        const dataRicezione = tr.querySelector('.date-input').value;
         const ruoloId = tr.querySelector('.role-select').value;
 
-        // Reset bordo
+        // Reset
         tr.style.border = 'none';
 
-        // Validazione Obbligatoria
-        if (!commessaId || !codice || !qta || !op) {
+        // Validazione base
+        if (!commessaId || !codice || !qta || !op || !dataRicezione) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
-            errorMsg = "Compilare tutti i campi obbligatori (OP, Commessa, Codice, Qta).";
+            errorMsg = "Compilare tutti i campi obbligatori.";
             return;
         }
 
-        // Validazione Formato OP (XX-XXXX)
+        // Validazione OP (XX-XXXX)
         const opRegex = /^\d{2}-\d{4}$/;
         if (!opRegex.test(op)) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
-            errorMsg = `Formato OP errato nella riga con codice ${codice}. Usa: 00-0000.`;
+            errorMsg = "Formato OP errato (usa XX-XXXX).";
             return;
         }
 
-        // Validazione Formato Codice (6 cifre)
+        // Validazione Codice (6 cifre)
         const codeRegex = /^\d{6}$/;
         if (!codeRegex.test(codice)) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
-            errorMsg = `Il codice articolo deve essere di 6 cifre (Riga OP: ${op}).`;
+            errorMsg = "Il codice articolo deve essere di 6 cifre.";
             return;
         }
 
@@ -390,8 +408,9 @@ async function saveProductionRows() {
             numero_op: op,
             id_commessa: parseInt(commessaId),
             codice_articolo: codice,
-            descrizione: descrizione.toLowerCase(), // Doppia sicurezza
+            descrizione: descrizione.toLowerCase(),
             qta_richiesta: parseInt(qta),
+            data_ricezione: dataRicezione,
             id_ruolo: ruoloId ? parseInt(ruoloId) : null
         });
     });
