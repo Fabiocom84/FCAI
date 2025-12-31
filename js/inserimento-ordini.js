@@ -385,6 +385,7 @@ async function saveProductionRows() {
     let hasErrors = false;
     let errorMsg = "";
 
+    // 1. Raccogli dati e valida
     rows.forEach(tr => {
         const commessaId = tr.querySelector('.commessa-select').value;
         const codice = tr.querySelector('.code-input').value;
@@ -394,8 +395,10 @@ async function saveProductionRows() {
         const dataRicezione = tr.querySelector('.date-input').value;
         const ruoloId = tr.querySelector('.role-select').value;
 
+        // Reset stile errore
         tr.style.border = 'none';
 
+        // Validazione base
         if (!commessaId || !codice || !qta || !op || !dataRicezione) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
@@ -439,6 +442,7 @@ async function saveProductionRows() {
 
     if (payload.length === 0) return;
 
+    // 2. Stato salvataggio
     const btn = document.getElementById('confirmBtn');
     btn.textContent = "Salvataggio...";
     btn.disabled = true;
@@ -460,7 +464,19 @@ async function saveProductionRows() {
 
         showSuccessFeedbackModal("Operazione Completata", msg);
         
-        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+        // 3. RESET PAGINA (invece di redirect)
+        setTimeout(() => { 
+            // Pulisce la tabella e lo stato
+            clearPreview(); 
+            
+            // Ripristina il bottone
+            btn.textContent = "Salva Ordini";
+            btn.disabled = false;
+
+            // Scrolla in alto per il prossimo caricamento
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+        }, 2000);
 
     } catch (error) {
         console.error(error);

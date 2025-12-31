@@ -180,3 +180,40 @@ body {
     background: #e2e8f0; color: #4a5568; border: none;
     border-radius: 10px; padding: 0 20px; font-weight: 600; cursor: pointer;
 }
+
+/* Stili per il Modale Custom (Errori) */
+#custom-modal-overlay { 
+    z-index: 2000; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+.custom-modal { 
+    background: white; 
+    padding: 25px 30px; 
+    border-radius: 12px; 
+    max-width: 450px; 
+    text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.custom-modal h2 { margin-top: 0; color: #e53e3e; }
+.custom-modal p { color: #4a5568; margin: 15px 0 25px; line-height: 1.5; }
+
+.custom-modal-buttons { 
+    display: flex; 
+    justify-content: center; 
+    gap: 15px; 
+}
+
+.custom-modal-buttons button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.custom-modal-buttons button.button { background-color: #3498db; color: white; }
+.custom-modal-buttons button.button--secondary { background-color: #cbd5e0; color: #4a5568; }
