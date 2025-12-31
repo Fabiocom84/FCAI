@@ -435,9 +435,16 @@ async function saveProductionRows() {
         if (!res.ok) throw new Error("Errore salvataggio");
 
         const result = await res.json();
-        showSuccessFeedbackModal("Salvato", `Inserite ${result.imported} righe.`);
         
-        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        // Messaggio più dettagliato
+        let msg = `Inserite: ${result.imported}.`;
+        if (result.skipped > 0) {
+            msg += ` (Saltati ${result.skipped} duplicati già presenti).`;
+        }
+
+        showSuccessFeedbackModal("Operazione Completata", msg);
+        
+        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
 
     } catch (error) {
         console.error(error);
