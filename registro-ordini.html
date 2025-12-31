@@ -10,123 +10,134 @@
 </head>
 <body>
 
-    <!-- HEADER FULL WIDTH -->
-    <header class="mobile-nav-header full-width-header">
-        <div class="header-left">
-            <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Back" style="transform: rotate(180deg);">
-                <span>Home</span>
-            </a>
-        </div>
-        <div class="header-center">
-            <h1>Registro Ordini</h1>
-            <span class="header-username">Controllo Produzione</span>
-        </div>
-        <div class="header-right"></div>
-    </header>
+    <!-- CONTENITORE PRINCIPALE (Stile Gestione Agile) -->
+    <div class="main-registry-container">
 
-    <div class="split-view-container">
-        
-        <!-- MASTER: LISTA (65%) -->
-        <div class="master-pane">
+        <!-- HEADER INTERNO -->
+        <header class="registry-header">
+            <div class="header-left">
+                <a href="index.html" class="header-button">
+                    <img src="img/log-out.png" alt="Back" style="transform: rotate(180deg);">
+                    <span>Home</span>
+                </a>
+            </div>
+            <div class="header-center">
+                <h1>Registro Ordini</h1>
+                <span class="header-subtitle">Controllo Produzione</span>
+            </div>
+            <div class="header-right"></div>
+        </header>
+
+        <!-- SPLIT VIEW -->
+        <div class="split-view-container">
             
-            <!-- BARRA FILTRI DINAMICA -->
-            <div class="filters-header">
-                <div class="filter-row-top">
-                    <!-- Commessa Select -->
-                    <div class="filter-group-item" style="flex: 2;">
-                        <label>Commessa</label>
-                        <select id="commessaFilter" class="filter-select">
-                            <option value="">Tutte le Commesse</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Stato Radio -->
-                    <div class="filter-group-item status-toggle">
-                        <label>Stato</label>
-                        <div class="radio-group">
-                            <input type="radio" id="stOpen" name="status" value="aperti" checked>
-                            <label for="stOpen">Aperti</label>
-                            
-                            <input type="radio" id="stClosed" name="status" value="chiusi">
-                            <label for="stClosed">Chiusi</label>
-                            
-                            <input type="radio" id="stAll" name="status" value="tutti">
-                            <label for="stAll">Tutti</label>
+            <!-- MASTER: LISTA -->
+            <div class="master-pane">
+                
+                <!-- BARRA FILTRI -->
+                <div class="filters-header">
+                    <div class="filter-row-top">
+                        <!-- Filtro Commessa -->
+                        <div class="filter-group-item" style="flex: 2;">
+                            <label>Commessa</label>
+                            <select id="commessaFilter" class="filter-select">
+                                <option value="">Tutte le Commesse</option>
+                            </select>
                         </div>
+
+                        <!-- NUOVO: Filtro Articolo -->
+                        <div class="filter-group-item" style="flex: 1;">
+                            <label>Codice Articolo</label>
+                            <input type="text" id="articoloFilter" class="filter-input" placeholder="Es. 106234">
+                        </div>
+                        
+                        <!-- Filtro Stato -->
+                        <div class="filter-group-item status-toggle">
+                            <label>Stato</label>
+                            <div class="radio-group">
+                                <input type="radio" id="stOpen" name="status" value="aperti" checked>
+                                <label for="stOpen">Aperti</label>
+                                
+                                <input type="radio" id="stClosed" name="status" value="chiusi">
+                                <label for="stClosed">Chiusi</label>
+                                
+                                <input type="radio" id="stAll" name="status" value="tutti">
+                                <label for="stAll">Tutti</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-row-bottom">
+                        <!-- Ricerca Generica -->
+                        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca in Descrizione, OP...">
+                        
+                        <!-- Reset -->
+                        <button id="resetFiltersBtn" class="reset-button" title="Azzera Filtri">
+                            Azzera
+                        </button>
                     </div>
                 </div>
 
-                <div class="filter-row-bottom">
-                    <!-- Ricerca Testo -->
-                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cerca in Descrizione, Codice, OP...">
-                    
-                    <!-- Reset -->
-                    <button id="resetFiltersBtn" class="reset-button" title="Azzera Filtri">
-                        Azzera
-                    </button>
+                <!-- LISTA -->
+                <div id="ordersList" class="grouped-list">
+                    <div class="loader-placeholder">Caricamento ordini...</div>
                 </div>
             </div>
 
-            <!-- LISTA RAGGRUPPATA -->
-            <div id="ordersList" class="grouped-list">
-                <div class="loader-placeholder">Caricamento ordini...</div>
-            </div>
-        </div>
-
-        <!-- DETAIL: DETTAGLIO (35%) -->
-        <div class="detail-pane">
-            <div id="emptyState" class="empty-state-detail">
-                <img src="img/tasks.png" alt="Select">
-                <p>Seleziona una riga<br>per i dettagli</p>
-            </div>
-
-            <div id="detailContent" class="detail-content" style="display: none;">
-                <div class="detail-header">
-                    <div class="header-badges">
-                        <span class="badge-op" id="detOP">OP-XXX</span>
-                    </div>
-                    <h2 id="detArticolo">Codice</h2>
-                    <p id="detDescrizione" class="desc-text">Descrizione...</p>
-                    <div class="commessa-box">
-                        <small>COMMESSA</small>
-                        <span id="detCommessa">...</span>
-                    </div>
+            <!-- DETAIL: DETTAGLIO -->
+            <div class="detail-pane">
+                <div id="emptyState" class="empty-state-detail">
+                    <img src="img/tasks.png" alt="Select">
+                    <p>Seleziona una riga<br>per i dettagli</p>
                 </div>
 
-                <hr class="divider">
-
-                <div class="input-section">
-                    <h3>Registrazione</h3>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label>Ore Totali (h)</label>
-                            <input type="number" id="inputOre" step="0.1" placeholder="es. 2.5" class="big-input">
+                <div id="detailContent" class="detail-content" style="display: none;">
+                    <div class="detail-header">
+                        <div class="header-badges">
+                            <span class="badge-op" id="detOP">OP-XXX</span>
                         </div>
-                        <div class="form-group half">
-                            <label>Q.tà Fatta</label>
-                            <input type="number" id="inputQta" step="1" class="big-input">
+                        <h2 id="detArticolo">Codice</h2>
+                        <p id="detDescrizione" class="desc-text">Descrizione...</p>
+                        <div class="commessa-box">
+                            <small>COMMESSA</small>
+                            <span id="detCommessa">...</span>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Note</label>
-                        <textarea id="inputNote" rows="2" placeholder="Note opzionali..."></textarea>
-                    </div>
-                    <button id="btnCloseOrder" class="action-button">✅ SALVA E CHIUDI</button>
-                </div>
 
-                <div class="stats-section">
-                    <h4>Statistiche</h4>
-                    <div class="mini-stat-row">
-                        <span>⏱️ Mediana Articolo:</span>
-                        <strong id="statMediana">-</strong>
+                    <hr class="divider">
+
+                    <div class="input-section">
+                        <h3>Registrazione</h3>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Ore Totali (h)</label>
+                                <input type="number" id="inputOre" step="0.1" placeholder="es. 2.5" class="big-input">
+                            </div>
+                            <div class="form-group half">
+                                <label>Q.tà Fatta</label>
+                                <input type="number" id="inputQta" step="1" class="big-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Note</label>
+                            <textarea id="inputNote" rows="2" placeholder="Note opzionali..."></textarea>
+                        </div>
+                        <button id="btnCloseOrder" class="action-button">✅ SALVA E CHIUDI</button>
                     </div>
-                    <div class="mini-stat-row">
-                        <span>📊 Commessa Tot:</span>
-                        <strong id="statCommessaTot">-</strong>
-                    </div>
-                    <div class="chart-container">
-                        <div id="distributionChart" class="stacked-bar"></div>
+
+                    <div class="stats-section">
+                        <h4>Statistiche</h4>
+                        <div class="mini-stat-row">
+                            <span>⏱️ Mediana Articolo:</span>
+                            <strong id="statMediana">-</strong>
+                        </div>
+                        <div class="mini-stat-row">
+                            <span>📊 Commessa Tot:</span>
+                            <strong id="statCommessaTot">-</strong>
+                        </div>
+                        <div class="chart-container">
+                            <div id="distributionChart" class="stacked-bar"></div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -10,19 +10,21 @@ const App = {
     
     init: async function() {
         this.bindEvents();
-        // Default: carica aperti
         await this.loadOrders('aperti');
     },
 
     bindEvents: function() {
-        // Radio Button Stato (Ricarica dal server)
+        // Radio Status
         document.querySelectorAll('input[name="status"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.loadOrders(e.target.value));
         });
 
-        // Filtri Locali
+        // Filtri
         document.getElementById('commessaFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
+        
+        // NUOVO: Filtro Articolo
+        document.getElementById('articoloFilter').addEventListener('input', () => this.applyFilters());
         
         // Reset
         document.getElementById('resetFiltersBtn').addEventListener('click', () => this.resetFilters());
@@ -34,6 +36,7 @@ const App = {
     resetFilters: function() {
         document.getElementById('searchInput').value = '';
         document.getElementById('commessaFilter').value = '';
+        document.getElementById('articoloFilter').value = ''; // Reset Articolo
         this.applyFilters();
     },
 
@@ -42,12 +45,11 @@ const App = {
         listContainer.innerHTML = '<div style="padding:20px; text-align:center;">Caricamento...</div>';
         
         try {
-            // Chiamata all'endpoint aggiornato (che supporta ?status=...)
             const res = await apiFetch(`/api/produzione/ordini?status=${status}`);
             this.data.allOrders = await res.json();
             
             this.populateCommessaFilter();
-            this.applyFilters(); // Triggera il render iniziale
+            this.applyFilters();
             
         } catch (e) {
             console.error(e);
@@ -61,15 +63,12 @@ const App = {
         
         this.data.allOrders.forEach(o => {
             if(o.commesse && o.commesse.vo) {
-                // Formato: VO - Cliente
                 const label = `${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`;
                 uniqueCommesse.add(label);
             }
         });
 
         const sorted = Array.from(uniqueCommesse).sort();
-        
-        // Mantieni valore se esiste, altrimenti resetta
         const oldVal = select.value;
         select.innerHTML = '<option value="">Tutte le Commesse</option>';
         
@@ -86,25 +85,28 @@ const App = {
     applyFilters: function() {
         const search = document.getElementById('searchInput').value.toLowerCase();
         const commessaVal = document.getElementById('commessaFilter').value.toLowerCase();
+        const artVal = document.getElementById('articoloFilter').value.toLowerCase(); // Nuovo Valore
 
         this.data.filteredOrders = this.data.allOrders.filter(o => {
-            // Match Search (Desc, Codice, OP)
-            const txt = (
-                o.numero_op + 
-                (o.anagrafica_articoli?.codice_articolo || '') + 
-                (o.anagrafica_articoli?.descrizione || '')
-            ).toLowerCase();
-            
+            const codice = (o.anagrafica_articoli?.codice_articolo || '').toLowerCase();
+            const desc = (o.anagrafica_articoli?.descrizione || '').toLowerCase();
+            const op = o.numero_op.toLowerCase();
+
+            // Match Search (Generica)
+            const txt = op + codice + desc;
             const matchSearch = txt.includes(search);
 
-            // Match Commessa Select
+            // Match Commessa
             let matchComm = true;
             if (commessaVal) {
                 const label = `${o.commesse?.vo || ''} - ${o.commesse?.clienti?.ragione_sociale || ''}`.toLowerCase();
                 matchComm = label === commessaVal;
             }
 
-            return matchSearch && matchComm;
+            // Match Articolo (Specifico)
+            const matchArt = !artVal || codice.includes(artVal);
+
+            return matchSearch && matchComm && matchArt;
         });
 
         this.renderGroupedList();
@@ -119,7 +121,6 @@ const App = {
             return;
         }
 
-        // 1. Raggruppa per OP
         const groups = {};
         this.data.filteredOrders.forEach(order => {
             const op = order.numero_op;
@@ -133,12 +134,10 @@ const App = {
             groups[op].items.push(order);
         });
 
-        // 2. Renderizza Gruppi
         Object.values(groups).forEach(group => {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'op-group';
 
-            // Header Gruppo
             const header = document.createElement('div');
             header.className = 'op-group-header';
             header.innerHTML = `
@@ -147,13 +146,11 @@ const App = {
             `;
             groupDiv.appendChild(header);
 
-            // Lista Items
             group.items.forEach(order => {
                 const row = document.createElement('div');
                 row.className = 'compact-row';
-                row.dataset.id = order.id; // Per evidenziare selezione
+                row.dataset.id = order.id;
                 
-                // Tooltip su descrizione (title)
                 const desc = order.anagrafica_articoli?.descrizione || '';
                 
                 row.innerHTML = `
@@ -173,14 +170,12 @@ const App = {
     selectOrder: async function(order, rowElement) {
         this.data.currentOrder = order;
 
-        // UI Active Class
         document.querySelectorAll('.compact-row').forEach(el => el.classList.remove('selected'));
         rowElement.classList.add('selected');
 
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('detailContent').style.display = 'block';
 
-        // Fill Dettagli
         document.getElementById('detOP').textContent = `OP: ${order.numero_op}`;
         document.getElementById('detArticolo').textContent = order.anagrafica_articoli?.codice_articolo;
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
@@ -189,8 +184,7 @@ const App = {
             `${order.commesse.vo} - ${order.commesse.clienti?.ragione_sociale}` : 'N/D';
         document.getElementById('detCommessa').textContent = commTxt;
 
-        // Reset Form
-        document.getElementById('inputQta').value = order.qta_richiesta; // Default alla richiesta
+        document.getElementById('inputQta').value = order.qta_richiesta;
         document.getElementById('inputOre').value = '';
         document.getElementById('inputNote').value = '';
         document.getElementById('inputOre').focus();
@@ -220,7 +214,6 @@ const App = {
                 const ore = (d.totale_minuti / 60).toFixed(1);
                 document.getElementById('statCommessaTot').textContent = `${ore}h`;
                 
-                // Chart
                 const chart = document.getElementById('distributionChart');
                 const colors = ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
                 let i = 0;
@@ -272,14 +265,12 @@ const App = {
 
             showSuccessFeedbackModal("Registrato", `OP ${order.numero_op} salvato.`);
             
-            // Aggiorna lista: Rimuovi se stiamo vedendo "Aperti", mantieni se "Tutti"
             const currentStatus = document.querySelector('input[name="status"]:checked').value;
             if(currentStatus === 'aperti') {
                 this.data.allOrders = this.data.allOrders.filter(o => o.id !== order.id);
             }
-            this.applyFilters(); // Rerender
+            this.applyFilters(); 
 
-            // Reset UI
             document.getElementById('detailContent').style.display = 'none';
             document.getElementById('emptyState').style.display = 'flex';
 
