@@ -111,14 +111,34 @@ body {
     text-align: left; padding: 12px; color: #718096;
     font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid #edf2f7;
 }
-.preview-table td { padding: 10px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
+.preview-table td {position: relative; padding: 10px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
 
 /* Inputs */
 .input-flat {
-    width: 100%; border: 1px solid #e2e8f0; border-radius: 6px;
-    padding: 8px; font-size: 0.95rem; box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    
+    /* Novità: Gestione testo lungo */
+    white-space: nowrap;       /* Niente a capo */
+    overflow: hidden;          /* Nascondi eccesso */
+    text-overflow: ellipsis;   /* Aggiungi i tre puntini ... */
+    transition: all 0.2s ease-in-out; /* Animazione fluida */
 }
-.input-flat:focus { border-color: #3498db; outline: none; }
+.input-flat:focus { 
+    position: absolute;    /* Si sgancia dalla griglia */
+    z-index: 10;           /* Va in primo piano */
+    width: 400px !important; /* Diventa larga */
+    background-color: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Ombra per stacco */
+    border-color: #3498db;
+    white-space: normal;   /* Permetti a capo se serve */
+    overflow: visible;     /* Mostra tutto */
+    height: auto;          /* Altezza automatica */
+    min-height: 40px; }
 .input-select {
     width: 100%; border: 1px solid #e2e8f0; border-radius: 6px;
     padding: 8px; background: white; font-size: 0.95rem;
