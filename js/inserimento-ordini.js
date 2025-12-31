@@ -20,11 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('fileInput').addEventListener('change', handleFileSelect);
     document.getElementById('clearBtn').addEventListener('click', clearPreview);
     document.getElementById('confirmBtn').addEventListener('click', saveProductionRows);
-    
-    // Nuovo: Tasto Aggiungi Riga Manuale
     document.getElementById('addManualRowBtn').addEventListener('click', addManualRow);
     
-    // Render iniziale (tabella vuota)
     renderPreviewTable();
 });
 
@@ -81,17 +78,22 @@ async function handleFiles(files) {
     const fileArray = [...files];
     let processedCount = 0;
     
-    // Update UI Drop Zone
+    // --- UI Update: Mantieni nome file ---
     const dropZone = document.getElementById('drop-zone');
     const title = document.getElementById('drop-title');
     const subtitle = document.getElementById('drop-subtitle');
     
     if (fileArray.length > 0) {
-        title.textContent = `Analisi: ${fileArray[0].name}...`;
-        subtitle.textContent = fileArray.length > 1 ? `+ altri ${fileArray.length - 1} file` : '';
+        // Mostra il nome del primo file + conteggio altri
+        const fileName = fileArray[0].name;
+        const extra = fileArray.length > 1 ? ` (+ altri ${fileArray.length - 1})` : '';
+        
+        // Sostituiamo il contenuto con il nome file stilizzato
+        title.innerHTML = `<div class="filename-display">📄 ${fileName}${extra}</div>`;
+        subtitle.textContent = "Analisi in corso...";
     }
 
-    // Parsing
+    // --- Parsing ---
     for (const file of fileArray) {
         if (file.type === 'application/pdf') {
             try {
@@ -103,7 +105,7 @@ async function handleFiles(files) {
         }
     }
 
-    // Check Auto-learning
+    // --- Check Auto-learning ---
     if (State.stagedRows.length > 0) {
         const uniqueCodes = [...new Set(State.stagedRows.map(r => r.codice_articolo))];
         try {
@@ -120,62 +122,78 @@ async function handleFiles(files) {
     spinner.style.display = 'none';
     
     if (processedCount > 0) {
-        // UI Successo
         dropZone.classList.add('file-loaded');
-        title.textContent = "File Caricato Correttamente";
         subtitle.textContent = "Righe aggiunte alla tabella sottostante";
-        
         renderPreviewTable();
     } else {
         title.textContent = "Errore o File non valido";
-        setTimeout(() => {
-            title.textContent = "Trascina qui il PDF";
-            subtitle.textContent = "oppure clicca per selezionare";
-        }, 2000);
+        subtitle.textContent = "Riprova con un PDF valido";
     }
 }
 
 // ============================================================
-// 3. PARSING PDF
+// 3. PARSING PDF (NUOVA LOGICA PAGINA X PAGINA)
 // ============================================================
 async function parsePDF(file) {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = "";
     
+    // Iteriamo su OGNI pagina perché ogni pagina è un ordine a sé
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        fullText += " " + textContent.items.map(item => item.str).join(' ');
-    }
+        
+        // Uniamo il testo della pagina
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        
+        // --- ESTRAZIONE DATI HEADER (Regex mirate) ---
+        
+        // 1. OP (Es: "OP25-0768" -> Prende "25-0768")
+        // Cerca "Ordine di Produzione n." seguito opzionalmente da "OP" e poi cattura cifre e trattini
+        const opMatch = pageText.match(/Ordine di Produzione n\.\s*(?:OP)?([\d-]+)/i);
+        const opNumber = opMatch ? opMatch[1].trim() : "???";
 
-    const opMatch = fullText.match(/Ordine di Produzione n\.\s*([A-Z0-9-]+)/i);
-    const opNumber = opMatch ? opMatch[1].trim() : "OP-???";
-    const voMatch = fullText.match(/Commessa\s*([A-Z0-9-]+)/i);
-    const voNumber = voMatch ? voMatch[1].trim() : null;
+        // 2. Commessa (Es: "VO25-0241" -> Prende "25-0241")
+        const voMatch = pageText.match(/Commessa\s*(?:VO)?([\d-]+)/i);
+        const voNumber = voMatch ? voMatch[1].trim() : null;
 
-    const rowRegex = /(\d{5,7})\s+(.+?)\s+No\s+([A-Z]{2})\s+([\d,.]+)/g;
-    let match;
-    while ((match = rowRegex.exec(fullText)) !== null) {
-        const codice = match[1];
-        let descrizione = match[2].replace("Qtà riordino fissa", "").trim();
-        const qta = parseFloat(match[4].replace(',', '.'));
+        // 3. Codice Articolo (Es: "Nr. Articolo 125708")
+        const codeMatch = pageText.match(/Nr\. Articolo\s+(\d+)/i);
+        const codice = codeMatch ? codeMatch[1].trim() : "";
 
+        // 4. Quantità (Es: "Quantità 3")
+        const qtyMatch = pageText.match(/Quantità\s+(\d+)/i);
+        const qta = qtyMatch ? parseFloat(qtyMatch[1]) : 1;
+
+        // 5. Descrizione
+        // Cerca tutto dopo "Descrizione" fino a incontrare "Magazzino" (che di solito è il campo successivo)
+        // Usiamo un lookahead positivo (?=...) per fermarci prima di "Magazzino"
+        const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio)/i);
+        let descrizione = descMatch ? descMatch[1].trim() : "";
+        
+        // Pulizia extra descrizione se serve
+        descrizione = descrizione.replace("Qtà riordino fissa", "").trim();
+
+        // --- Matching Commessa ---
         let preselectedCommessaId = "";
         if (voNumber) {
-            const found = State.commesseList.find(c => c.vo && c.vo.toUpperCase() === voNumber.toUpperCase());
+            // Cerchiamo nel formato "VO25-XXXX" o "25-XXXX"
+            const found = State.commesseList.find(c => c.vo && c.vo.includes(voNumber));
             if (found) preselectedCommessaId = found.id;
         }
 
-        State.stagedRows.push({
-            op: opNumber,
-            vo_detected: voNumber,
-            commessa_id: preselectedCommessaId,
-            codice_articolo: codice,
-            descrizione: descrizione,
-            qta: qta,
-            manual: false
-        });
+        // Se abbiamo trovato almeno il codice, aggiungiamo la riga
+        if (codice) {
+            State.stagedRows.push({
+                op: opNumber,
+                vo_detected: voNumber,
+                commessa_id: preselectedCommessaId,
+                codice_articolo: codice,
+                descrizione: descrizione,
+                qta: qta,
+                manual: false
+            });
+        }
     }
 }
 
@@ -194,9 +212,11 @@ function addManualRow() {
         manual: true
     });
     renderPreviewTable();
-    // Scrolla in fondo
+    // Scroll auto
     const tableContainer = document.querySelector('.table-responsive');
-    if(tableContainer) tableContainer.scrollTop = tableContainer.scrollHeight;
+    if(tableContainer) {
+        setTimeout(() => tableContainer.scrollTop = tableContainer.scrollHeight, 100);
+    }
 }
 
 function renderPreviewTable() {
@@ -216,7 +236,8 @@ function renderPreviewTable() {
             ? `<span class="badge-ok">OK</span>` 
             : `<span class="badge-new">Check</span>`;
         
-        if (!row.commessa_id) tr.style.backgroundColor = '#fff5f5'; // Light red background for attention
+        // Evidenzia righe problematiche (solo se non manuali o incomplete)
+        if (!row.commessa_id) tr.style.backgroundColor = '#fff5f5';
 
         // Select Commessa
         const commessaOptions = State.commesseList.map(c => 
@@ -230,7 +251,6 @@ function renderPreviewTable() {
                 return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>${r.label}</option>`;
             }).join('');
 
-        // Input readonly logic: se è manuale, il codice è modificabile
         const codeInputAttr = row.manual ? '' : 'readonly style="background:#f9f9f9;"';
 
         tr.innerHTML = `
@@ -286,7 +306,6 @@ function clearPreview() {
 // ============================================================
 async function saveProductionRows() {
     const rows = document.querySelectorAll('#preview-body tr');
-    // Salta se è la riga empty state
     if (rows.length === 1 && rows[0].classList.contains('empty-state-row')) return;
 
     const payload = [];
@@ -297,9 +316,10 @@ async function saveProductionRows() {
         const codice = tr.querySelector('.code-input').value;
         const descrizione = tr.querySelector('.desc-input').value;
         const qta = tr.querySelector('.qty-input').value;
-        const op = tr.querySelector('input[readonly]').value; // Primo input (OP)
+        const op = tr.querySelector('input[readonly]').value;
         const ruoloId = tr.querySelector('.role-select').value;
 
+        // Validazione minima
         if (!commessaId || !codice || !qta) {
             tr.style.border = '2px solid #e53e3e';
             hasErrors = true;
@@ -319,7 +339,7 @@ async function saveProductionRows() {
     });
 
     if (hasErrors) {
-        showModal({ title: "Dati Incompleti", message: "Tutte le righe devono avere Commessa, Codice e Qta." });
+        showModal({ title: "Dati Incompleti", message: "Assicurati che tutte le righe abbiano Commessa, Codice e Qta." });
         return;
     }
 
