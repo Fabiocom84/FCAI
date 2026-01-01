@@ -599,32 +599,34 @@ body {
     box-sizing: border-box;
 }
 
-/* 5. Il Pulsante OK: Rettangolare */
+/* 5. Il Pulsante OK: Rettangolare e Sottile */
 #custom-modal-buttons .button {
     background-color: #2ecc71 !important;
     color: white !important;
     border: none !important;
     
-    /* MODIFICA: Reset dimensioni e forma */
-    min-width: 80px; 
-    padding: 8px 25px !important;
+    /* FORZA DIMENSIONI STANDARD */
+    height: 36px !important;      /* Altezza fissa standard */
+    min-height: 0 !important;     /* Azzera eredità home page */
+    width: auto !important;
+    min-width: 90px;              /* Larghezza minima */
+    
+    /* PADDING RIDOTTO */
+    padding: 0 20px !important;   /* Solo orizzontale, verticale gestito da height */
     margin: 0 !important;
     
-    /* RETTANGOLARE (con leggero stondamento standard) */
-    border-radius: 4px !important; 
-    
+    border-radius: 4px !important;
     font-size: 0.9rem !important;
     font-weight: 700 !important;
     text-transform: uppercase;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
     
-    /* Reset flex */
-    height: auto !important;
-    width: auto !important;
-    flex: none !important; 
-    display: inline-block !important;
-    line-height: normal !important;
+    /* FLEX PER CENTRARE IL TESTO PERFETTAMENTE */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: none !important;
 }
 
 #custom-modal-buttons .button:hover {
