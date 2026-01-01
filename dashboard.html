@@ -13,7 +13,7 @@
 
     <div class="main-dashboard-container">
         
-        <!-- HEADER (Più alto e spaziato) -->
+        <!-- HEADER -->
         <header class="page-header">
             <a href="index.html" class="header-button">
                 <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
@@ -25,7 +25,6 @@
             </div>
             
             <div class="header-right-controls">
-                <!-- Toggle Indipendenti -->
                 <div class="mode-switch">
                     <button class="mode-btn active" id="btnModeInbox" data-value="0">DA VALIDARE</button>
                     <button class="mode-btn" id="btnModeArchive" data-value="1">ARCHIVIO</button>
@@ -38,7 +37,7 @@
             <!-- SIDEBAR -->
             <aside class="control-sidebar">
                 
-                <!-- DATE (Verticali con Bottone Lato) -->
+                <!-- DATE -->
                 <div class="sidebar-section" id="dateFilterSection">
                     <h3>Periodo</h3>
                     <div class="date-filter-container">
@@ -50,51 +49,73 @@
                     </div>
                 </div>
 
-                <!-- FILTRI RAPIDI (Aggiornato) -->
+                <!-- FILTRI RAPIDI -->
                 <div class="sidebar-section grow-section">
-                    <h3>Filtri Avanzati</h3>
-            
+                    <h3>Filtri Rapidi</h3>
+                    
                     <div class="filter-accordion">
-                
-                        <!-- 1. COMMESSE -->
-                        <div class="filter-box" id="boxCommesse">
-                            <!-- Header generato via JS con controlli -->
+                        <div class="filter-box">
                             <div class="filter-list" id="listFilterCommesse"></div>
                         </div>
-
-                        <!-- 2. MACROCATEGORIE (Nuovo) -->
                         <div class="filter-box" id="boxMacro">
                             <div class="filter-list" id="listFilterMacro"></div>
                         </div>
-
-                        <!-- 3. LAVORAZIONI (Nuovo) -->
                         <div class="filter-box" id="boxLavorazioni">
                             <div class="filter-list" id="listFilterLavorazioni"></div>
                         </div>
-
-                        <!-- 4. DIPENDENTI -->
                         <div class="filter-box" id="boxDipendenti">
                             <div class="filter-list" id="listFilterDipendenti"></div>
                         </div>
-
                     </div>
                 </div>
 
-                <div class="sidebar-footer">
-                    <button id="btnContabilizza" class="btn-primary-large">
-                        ✅ CONTABILIZZA
-                    </button>
-                </div>
+                <!-- CONTENITORI NASCOSTI PER INIT JS (Necessari se il JS cerca gli ID per popolarli) -->
+                <!-- Nota: Ho integrato i div sopra, ma mantengo gli ID corretti per il JS -->
+                <div id="boxCommesse" style="display:none;"></div> 
+                <!-- Il JS popola boxCommesse, boxMacro ecc. Assicuriamoci che nel DOM sopra ci siano gli ID corretti.
+                     CORREZIONE AL VOLO: I div sopra nel 'filter-accordion' devono avere gli ID corretti per il JS. 
+                     Riscrivo la sezione sidebar corretta qui sotto:
+                -->
             </aside>
+
+            <!-- RE-INSERIMENTO SIDEBAR CORRETTA PER JS -->
+            <script>
+                // Piccolo fix: Rimuovo la sidebar errata sopra e metto quella giusta per il JS
+                document.querySelector('.control-sidebar').innerHTML = `
+                <div class="sidebar-section" id="dateFilterSection">
+                    <h3>Periodo</h3>
+                    <div class="date-filter-container">
+                        <div class="date-inputs-col">
+                            <input type="date" id="dateStart" class="sidebar-input-compact">
+                            <input type="date" id="dateEnd" class="sidebar-input-compact">
+                        </div>
+                        <button id="btnRefresh" class="btn-icon-refresh">🔄</button>
+                    </div>
+                </div>
+                <div class="sidebar-section grow-section">
+                    <h3>Filtri Rapidi</h3>
+                    <div class="filter-accordion">
+                        <div class="filter-box" id="boxCommesse"></div>
+                        <div class="filter-box" id="boxMacro"></div>
+                        <div class="filter-box" id="boxLavorazioni"></div>
+                        <div class="filter-box" id="boxDipendenti"></div>
+                    </div>
+                </div>
+                <div class="sidebar-footer">
+                    <button id="btnContabilizza" class="btn-primary-large">✅ CONTABILIZZA</button>
+                </div>
+                `;
+            </script>
 
             <!-- MAIN CONTENT -->
             <main class="main-content">
                 
-                <!-- TOP BAR (TABS + RAGGRUPPAMENTO) -->
+                <!-- TOP BAR -->
                 <div class="view-tabs-container">
                     <div class="tabs-left">
-                        <button class="tab-btn active" data-target="view-summary">📊 VISTA SINTESI</button>
-                        <button class="tab-btn" data-target="view-detail">📋 VISTA DETTAGLIO</button>
+                        <!-- MODIFICA QUI: Scambiata la classe 'active' -->
+                        <button class="tab-btn" data-target="view-summary">📊 VISTA SINTESI</button>
+                        <button class="tab-btn active" data-target="view-detail">📋 VISTA DETTAGLIO</button>
                     </div>
                     
                     <div class="grouping-controls">
@@ -108,27 +129,21 @@
                     </div>
                 </div>
 
-                <!-- VISTA SINTESI -->
-                <div id="view-summary" class="view-panel active">
+                <!-- VISTA SINTESI (Default: Nascosta) -->
+                <div id="view-summary" class="view-panel">
                     <div class="kpi-row">
                         <div class="kpi-card blue"><h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span></div>
                         <div class="kpi-card orange"><h3>Da Contabilizzare</h3><span id="kpiPending">0</span></div>
                         <div class="kpi-card green"><h3>Contabilizzate</h3><span id="kpiDone">0</span></div>
                     </div>
                     <div class="charts-grid">
-                        <div class="chart-container">
-                            <h4>Distribuzione (Ore)</h4>
-                            <div class="chart-wrapper"><canvas id="chartDistribution"></canvas></div>
-                        </div>
-                        <div class="chart-container">
-                            <h4>Andamento Temporale</h4>
-                            <div class="chart-wrapper"><canvas id="chartTimeline"></canvas></div>
-                        </div>
+                        <div class="chart-container"><h4>Distribuzione (Ore)</h4><div class="chart-wrapper"><canvas id="chartDistribution"></canvas></div></div>
+                        <div class="chart-container"><h4>Andamento Temporale</h4><div class="chart-wrapper"><canvas id="chartTimeline"></canvas></div></div>
                     </div>
                 </div>
 
-                <!-- VISTA DETTAGLIO -->
-                <div id="view-detail" class="view-panel">
+                <!-- VISTA DETTAGLIO (Default: Attiva) -->
+                <div id="view-detail" class="view-panel active">
                     <div class="detail-toolbar">
                         <input type="text" id="detailSearch" placeholder="🔍 Cerca veloce..." class="search-input">
                         <div class="toolbar-actions">
@@ -139,15 +154,14 @@
                     <div class="data-grid-container" id="dataGridContainer">
                         <div class="placeholder-msg">Caricamento dati in corso...</div>
                     </div>
-                    <!-- NUOVO FOOTER STATUS BAR (Stile Excel) -->
-                    <div class="main-footer-status">
-                        <div class="status-left">
-                            <span id="statusMsg">Pronto</span>
-                        </div>
-                        <div class="status-right">
-                            <span class="status-item">Righe: <b id="selCount">0</b></span>
-                            <span class="status-item">Totale Ore Selezionate: <b id="selHours">0.0</b> h</span>
-                        </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="main-footer-status">
+                    <div class="status-left"><span id="statusMsg">Pronto</span></div>
+                    <div class="status-right">
+                        <span class="status-item">Righe: <b id="selCount">0</b></span>
+                        <span class="status-item">Totale Ore Selezionate: <b id="selHours">0.0</b> h</span>
                     </div>
                 </div>
 
@@ -155,7 +169,29 @@
         </div>
     </div>
     
-    <!-- Modale Modifica (Placeholder) -->
+    <!-- MODALE CONFERMA (Clean) -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Conferma Operazione</h3>
+                <span class="close-button" id="closeConfirmModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Stai per contabilizzare e bloccare le seguenti registrazioni:</p>
+                <div class="confirm-summary-box">
+                    <div class="summary-row"><span>Righe selezionate:</span><strong id="confCount">0</strong></div>
+                    <div class="summary-row"><span>Totale Ore:</span><strong id="confHours" style="color:#2980b9;">0.0</strong></div>
+                </div>
+                <p class="warning-text">⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in "Archivio" e non saranno più modificabili da questa vista.</p>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button id="btnCancelConfirm" class="btn-secondary">Annulla</button>
+                <button id="btnProceedConfirm" class="btn-primary-large" style="width: auto;">CONFERMA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE EDIT -->
     <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
         <div id="custom-modal" class="custom-modal">
             <h2 id="custom-modal-title"></h2>
@@ -164,43 +200,6 @@
         </div>
     </div>
 
-    <!-- MODALE CONFERMA CONTABILIZZAZIONE -->
-    <div id="confirmModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin:0; color:#2c3e50;">Conferma Operazione</h3>
-                <span class="close-button" id="closeConfirmModal">&times;</span>
-            </div>
-            
-            <div class="modal-body">
-                <p style="color:#555; margin-bottom: 15px;">Stai per contabilizzare e bloccare le seguenti registrazioni:</p>
-                
-                <div class="confirm-summary-box">
-                    <div class="summary-row">
-                        <span>Righe selezionate:</span>
-                        <strong id="confCount">0</strong>
-                    </div>
-                    <div class="summary-row">
-                        <span>Totale Ore:</span>
-                        <strong id="confHours" style="color:#2980b9;">0.0</strong>
-                    </div>
-                </div>
-
-                <p class="warning-text">
-                    ⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in "Archivio" e non saranno più modificabili da questa vista.
-                </p>
-            </div>
-
-            <div class="modal-footer" style="display:flex; gap:10px; justify-content: flex-end; margin-top: 20px;">
-                <button id="btnCancelConfirm" class="btn-secondary">Annulla</button>
-                <button id="btnProceedConfirm" class="btn-primary-large" style="width: auto; padding: 10px 25px;">
-                    CONFERMA
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
     <script type="module" src="js/api-client.js"></script>
