@@ -4,21 +4,16 @@
     <meta charset="UTF-8">
     <title>Dashboard Analisi - Segretario AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Fonts & Libraries -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Stili Condivisi + Specifico Dashboard -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 
-    <!-- CONTENITORE PRINCIPALE (Stesso stile di Registro Ordini/Commesse) -->
     <div class="main-dashboard-container">
         
-        <!-- HEADER STANDARD (Uniformato) -->
+        <!-- HEADER (Più alto e spaziato) -->
         <header class="page-header">
             <a href="index.html" class="header-button">
                 <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
@@ -30,21 +25,20 @@
             </div>
             
             <div class="header-right-controls">
-                <!-- Switch Inbox/Archivio -->
+                <!-- Toggle Indipendenti -->
                 <div class="mode-switch">
-                    <button class="mode-btn active" id="btnModeInbox">DA VALIDARE</button>
-                    <button class="mode-btn" id="btnModeArchive">ARCHIVIO</button>
+                    <button class="mode-btn active" id="btnModeInbox" data-value="0">DA VALIDARE</button>
+                    <button class="mode-btn" id="btnModeArchive" data-value="1">ARCHIVIO</button>
                 </div>
             </div>
         </header>
 
-        <!-- CORPO APP (Flex Row: Sidebar + Main) -->
         <div class="dashboard-body-wrapper">
 
-            <!-- COLONNA SINISTRA: PANNELLO DI CONTROLLO -->
+            <!-- SIDEBAR -->
             <aside class="control-sidebar">
                 
-                <!-- SEZIONE DATE (Layout modificato) -->
+                <!-- DATE (Verticali con Bottone Lato) -->
                 <div class="sidebar-section" id="dateFilterSection">
                     <h3>Periodo</h3>
                     <div class="date-filter-container">
@@ -56,18 +50,7 @@
                     </div>
                 </div>
 
-                <!-- SEZIONE RAGGRUPPAMENTO -->
-                <div class="sidebar-section">
-                    <h3>Raggruppa Per</h3>
-                    <div class="radio-list">
-                        <label class="radio-item"><input type="radio" name="grouping" value="commessa" checked> 📂 Commessa</label>
-                        <label class="radio-item"><input type="radio" name="grouping" value="macro"> 🏗️ Macrocategoria</label>
-                        <label class="radio-item"><input type="radio" name="grouping" value="lavorazione"> 🔧 Lavorazione</label>
-                        <label class="radio-item"><input type="radio" name="grouping" value="dipendente"> 👤 Dipendente</label>
-                    </div>
-                </div>
-
-                <!-- SEZIONE FILTRI DINAMICI -->
+                <!-- FILTRI RAPIDI -->
                 <div class="sidebar-section grow-section">
                     <h3>Filtri Rapidi</h3>
                     
@@ -77,14 +60,13 @@
                             <div class="filter-list" id="listFilterCommesse"></div>
                         </div>
 
-                        <div class="filter-box">
+                        <div class="filter-box" style="margin-top: 10px;">
                             <div class="filter-header">Dipendenti (<span id="countDipendenti">0</span>)</div>
                             <div class="filter-list" id="listFilterDipendenti"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- FOOTER SIDEBAR (AZIONI) -->
                 <div class="sidebar-footer">
                     <div class="selection-info">
                         <span id="selectionSummary">0 righe selezionate</span>
@@ -95,35 +77,34 @@
                 </div>
             </aside>
 
-            <!-- AREA PRINCIPALE (SWITCHABLE) -->
+            <!-- MAIN CONTENT -->
             <main class="main-content">
                 
-                <!-- TAB NAVIGAZIONE -->
-                <div class="view-tabs">
-                    <button class="tab-btn active" data-target="view-summary">📊 VISTA SINTESI</button>
-                    <button class="tab-btn" data-target="view-detail">📋 VISTA DETTAGLIO</button>
+                <!-- TOP BAR (TABS + RAGGRUPPAMENTO) -->
+                <div class="view-tabs-container">
+                    <div class="tabs-left">
+                        <button class="tab-btn active" data-target="view-summary">📊 VISTA SINTESI</button>
+                        <button class="tab-btn" data-target="view-detail">📋 VISTA DETTAGLIO</button>
+                    </div>
+                    
+                    <div class="grouping-controls">
+                        <span class="grouping-label">Raggruppa Per:</span>
+                        <select id="groupingSelect" class="grouping-select">
+                            <option value="commessa" selected>📂 Commessa</option>
+                            <option value="macro">🏗️ Macrocategoria</option>
+                            <option value="lavorazione">🔧 Lavorazione</option>
+                            <option value="dipendente">👤 Dipendente</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- VISTA 1: SINTESI (Grafici) -->
+                <!-- VISTA SINTESI -->
                 <div id="view-summary" class="view-panel active">
-                    
-                    <!-- KPI Row -->
                     <div class="kpi-row">
-                        <div class="kpi-card blue">
-                            <h3>Ore Totali</h3>
-                            <span id="kpiTotalHours">0.0</span>
-                        </div>
-                        <div class="kpi-card orange">
-                            <h3>Da Contabilizzare</h3>
-                            <span id="kpiPending">0</span>
-                        </div>
-                        <div class="kpi-card green">
-                            <h3>Contabilizzate</h3>
-                            <span id="kpiDone">0</span>
-                        </div>
+                        <div class="kpi-card blue"><h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span></div>
+                        <div class="kpi-card orange"><h3>Da Contabilizzare</h3><span id="kpiPending">0</span></div>
+                        <div class="kpi-card green"><h3>Contabilizzate</h3><span id="kpiDone">0</span></div>
                     </div>
-
-                    <!-- Charts Grid -->
                     <div class="charts-grid">
                         <div class="chart-container">
                             <h4>Distribuzione (Ore)</h4>
@@ -136,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- VISTA 2: DETTAGLIO (Griglia Dati) -->
+                <!-- VISTA DETTAGLIO -->
                 <div id="view-detail" class="view-panel">
                     <div class="detail-toolbar">
                         <input type="text" id="detailSearch" placeholder="🔍 Cerca veloce..." class="search-input">
@@ -145,18 +126,16 @@
                             <button class="btn-small" id="btnCollapseAll">Chiudi Tutto</button>
                         </div>
                     </div>
-
                     <div class="data-grid-container" id="dataGridContainer">
                         <div class="placeholder-msg">Caricamento dati in corso...</div>
                     </div>
                 </div>
 
             </main>
-
         </div>
     </div>
     
-    <!-- Modale Modifica Rapida (Useremo quello esistente o uno custom veloce) -->
+    <!-- Modale Modifica (Placeholder) -->
     <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
         <div id="custom-modal" class="custom-modal">
             <h2 id="custom-modal-title"></h2>
