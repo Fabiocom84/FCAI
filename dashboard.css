@@ -546,70 +546,80 @@ body {
 }
 
 /* =========================================
-   FIX MODALE SUCCESSO & SISTEMA (Layout Gradevole)
+   FIX MODALE SUCCESSO (Compatto & Rettangolare)
    ========================================= */
 
-/* 1. La Finestra (Contenitore) */
+/* 1. La Finestra: Più stretta */
 #custom-modal.cdm-content {
-    text-align: center; /* Centra tutto il testo di default */
-    padding: 0; /* Gestiamo il padding nei figli per avere i bordi */
+    text-align: center;
+    padding: 0;
     border: none;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    max-width: 400px; /* Più compatta */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    
+    /* MODIFICA: Larghezza ridotta */
+    max-width: 320px !important; 
+    width: 90%;
+    margin: auto;
 }
 
-/* 2. Titolo ("SUCCESSO") */
+/* 2. Titolo: Più compatto */
 #custom-modal-title {
     background-color: #f8f9fa;
     color: #2c3e50;
-    font-size: 1.1rem;
+    font-size: 1rem; /* Font ridotto */
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 15px 20px; /* Spaziatura interna */
+    
+    /* MODIFICA: Padding ridotto */
+    padding: 10px 15px; 
     margin: 0;
     border-bottom: 1px solid #eee;
-    text-align: center; /* Centrato */
 }
 
-/* 3. Messaggio ("1 registrazioni contabilizzate") */
+/* 3. Messaggio: Meno spazio bianco */
 #custom-modal-message {
-    padding: 30px 20px;
-    font-size: 1rem;
+    /* MODIFICA: Padding ridotto drasticamente */
+    padding: 20px 15px; 
+    font-size: 0.95rem;
     color: #555;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
-/* 4. Footer Pulsanti */
+/* 4. Footer Pulsanti: Compatto */
 #custom-modal-buttons {
     display: flex !important;
-    justify-content: center !important; /* Centra orizzontalmente */
+    justify-content: center !important;
     align-items: center !important;
-    padding: 15px 20px;
-    background-color: #fff; /* O #f8f9fa se vuoi lo stacco */
+    
+    /* MODIFICA: Padding ridotto */
+    padding: 10px 15px 15px 15px; 
+    
+    background-color: #fff;
     width: 100%;
-    box-sizing: border-box; /* Fondamentale per non sforare */
+    box-sizing: border-box;
 }
 
-/* 5. Il Pulsante OK */
+/* 5. Il Pulsante OK: Rettangolare */
 #custom-modal-buttons .button {
     background-color: #2ecc71 !important;
     color: white !important;
     border: none !important;
     
-    /* Dimensioni fisse ma gradevoli */
-    min-width: 100px;
-    padding: 10px 20px !important;
+    /* MODIFICA: Reset dimensioni e forma */
+    min-width: 80px; 
+    padding: 8px 25px !important;
     margin: 0 !important;
     
-    border-radius: 50px !important; /* Arrotondato "a pillola" */
+    /* RETTANGOLARE (con leggero stondamento standard) */
+    border-radius: 4px !important; 
+    
     font-size: 0.9rem !important;
     font-weight: 700 !important;
     text-transform: uppercase;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
     
-    /* Reset layout ereditati */
+    /* Reset flex */
     height: auto !important;
     width: auto !important;
     flex: none !important; 
@@ -620,5 +630,4 @@ body {
 #custom-modal-buttons .button:hover {
     background-color: #27ae60 !important;
     transform: translateY(-1px);
-    box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3) !important;
 }
