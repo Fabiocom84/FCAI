@@ -544,3 +544,32 @@ body {
     .view-tabs-container { flex-direction: column; height: auto; padding: 10px; gap: 10px; }
     .grow-section { max-height: 300px; }
 }
+
+/* FIX PULSANTE OK DEL MODALE SUCCESSO */
+#custom-modal-buttons .button {
+    background-color: #2ecc71; /* Verde */
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background 0.2s;
+}
+
+#custom-modal-buttons .button:hover {
+    background-color: #27ae60; /* Verde scuro */
+    transform: translateY(-1px);
+}
+
+/* Se ci fosse un tasto annulla secondario generato da shared-ui */
+#custom-modal-buttons .button--secondary {
+    background-color: #e2e6ea;
+    color: #495057;
+    border: 1px solid #ced4da;
+}
+#custom-modal-buttons .button--secondary:hover {
+    background-color: #d3d9df;
+}
