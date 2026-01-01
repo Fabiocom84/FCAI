@@ -335,45 +335,100 @@ const Dashboard = {
     },
 
     renderCharts: function() {
+        // Distruggi grafici precedenti se esistono
         if (this.state.charts.dist) this.state.charts.dist.destroy();
         if (this.state.charts.time) this.state.charts.time.destroy();
 
         if(!this.dom.canvasDist || !this.dom.canvasTimeline) return;
 
-        // Distribuzione
-        const labels = {};
+        // --- GRAFICO 1: DISTRIBUZIONE (Torta) ---
+        const distLabels = {};
         this.state.filteredData.forEach(r => {
             let key = this.getGroupKey(r, this.state.grouping).label;
-            key = key.replace(/📂|🏗️|🔧|👤/g, '').trim(); 
-            labels[key] = (labels[key] || 0) + r.ore;
+            key = key.replace(/📂|🏗️|🔧|👤/g, '').trim(); // Pulisci emoji
+            distLabels[key] = (distLabels[key] || 0) + r.ore;
         });
 
         const ctxDist = this.dom.canvasDist.getContext('2d');
         this.state.charts.dist = new Chart(ctxDist, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(labels),
-                datasets: [{ data: Object.values(labels), backgroundColor: this.getColors(Object.keys(labels).length) }]
+                labels: Object.keys(distLabels),
+                datasets: [{ 
+                    data: Object.values(distLabels), 
+                    backgroundColor: this.getColors(Object.keys(distLabels).length) 
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } 
+                } 
+            }
         });
 
-        // Timeline
-        const days = {};
+        // --- GRAFICO 2: ANDAMENTO TEMPORALE (Per Mese) ---
+        const timeData = {};
+        
         this.state.filteredData.forEach(r => {
-            const d = r.data_lavoro.split('T')[0];
-            days[d] = (days[d] || 0) + r.ore;
+            const d = new Date(r.data_lavoro);
+            // Chiave ordinabile: YYYY-MM (es. "2025-12")
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            timeData[key] = (timeData[key] || 0) + r.ore;
         });
-        const sortedDays = Object.keys(days).sort();
+
+        // Ordina le chiavi cronologicamente
+        const sortedKeys = Object.keys(timeData).sort();
+        
+        // Genera etichette leggibili (es. "Dicembre 2025")
+        const timeLabels = sortedKeys.map(k => {
+            const [year, month] = k.split('-');
+            // Mese in JS parte da 0
+            const date = new Date(year, month - 1);
+            // Formatta in Italiano: "Dicembre 2025"
+            let label = date.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
+            return label.charAt(0).toUpperCase() + label.slice(1); // Capitalizza prima lettera
+        });
+
+        const timeValues = sortedKeys.map(k => timeData[k]);
         
         const ctxTime = this.dom.canvasTimeline.getContext('2d');
         this.state.charts.time = new Chart(ctxTime, {
             type: 'bar',
             data: {
-                labels: sortedDays,
-                datasets: [{ label: 'Ore', data: sortedDays.map(d => days[d]), backgroundColor: '#3498db' }]
+                labels: timeLabels,
+                datasets: [{ 
+                    label: 'Ore Mensili', 
+                    data: timeValues, 
+                    backgroundColor: '#3498db',
+                    borderRadius: 4, // Arrotonda le barre
+                    barPercentage: 0.6 // Barre un po' più larghe
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }, // Nasconde legenda ridondante
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' ore';
+                            }
+                        }
+                    }
+                }
+            }
         });
     },
 
