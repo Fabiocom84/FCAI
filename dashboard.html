@@ -2,150 +2,249 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Analisi - Segretario AI</title>
+    <title>Dashboard Controllo - Segretario AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Fonts & Libraries -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- CSS -->
+    <!-- Stili -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 
-    <!-- CONTENITORE PRINCIPALE (Stile App Desktop) -->
-    <div class="main-dashboard-container">
+    <div class="app-container">
         
-        <!-- HEADER -->
-        <header class="dashboard-header">
+        <!-- HEADER (Fisso in alto) -->
+        <header class="app-header">
             <div class="header-left">
                 <a href="index.html" class="header-btn-link">
-                    <img src="img/log-out.png" alt="Back" class="header-btn-icon" style="transform: rotate(180deg);">
-                    <span>Home</span>
+                    <span style="font-size: 1.2rem;">🔙</span> <span>Home</span>
                 </a>
             </div>
-            
             <div class="header-center">
-                <h1>DASHBOARD ANALISI</h1>
-                <span class="header-subtitle">Controllo di Gestione & Ore</span>
+                <h1>DASHBOARD DI CONTROLLO</h1>
             </div>
-            
             <div class="header-right">
-                <!-- Spazio per futuri pulsanti o user info -->
+                <div class="mode-switch">
+                    <button class="mode-btn active" id="btnModeInbox">DA VALIDARE</button>
+                    <button class="mode-btn" id="btnModeArchive">ARCHIVIO</button>
+                </div>
             </div>
         </header>
 
-        <!-- CORPO SCROLLABILE -->
-        <div class="dashboard-body">
+        <!-- CORPO APP (Flex Row) -->
+        <div class="app-body">
 
-            <!-- 1. BARRA DEI FILTRI -->
-            <div class="filters-container">
-                <div class="filter-group">
-                    <label>Periodo (Da - A)</label>
-                    <div class="date-row">
-                        <input type="date" id="dateStart" class="dash-input">
-                        <input type="date" id="dateEnd" class="dash-input">
-                    </div>
-                </div>
-
-                <div class="filter-group grow">
-                    <label>Dipendente</label>
-                    <select id="filterPersonale" class="dash-select"></select>
-                </div>
-
-                <div class="filter-group grow">
-                    <label>Commessa</label>
-                    <select id="filterCommessa" class="dash-select"></select>
-                </div>
-
-                <div class="filter-group">
-                    <label>Stato</label>
-                    <select id="filterStato" class="dash-select" style="min-width: 150px;">
-                        <option value="">Tutti</option>
-                        <option value="0" selected>Da Contabilizzare</option>
-                        <option value="1">Contabilizzato</option>
-                    </select>
-                </div>
-
-                <button id="btnRefresh" class="btn-refresh">
-                    <span>🔄 Aggiorna</span>
-                </button>
-            </div>
-
-            <!-- 2. KPI CARDS -->
-            <div class="kpi-grid">
-                <div class="kpi-card blue">
-                    <h3>Totale Ore</h3>
-                    <span id="kpiTotal" class="kpi-value">0</span>
-                </div>
-                <div class="kpi-card orange">
-                    <h3>Da Contabilizzare</h3>
-                    <span id="kpiPending" class="kpi-value">0</span>
-                </div>
-                <div class="kpi-card green">
-                    <h3>Contabilizzate</h3>
-                    <span id="kpiDone" class="kpi-value">0</span>
-                </div>
-            </div>
-
-            <!-- 3. GRIGLIA CONTENUTO (Grafico + Tabella) -->
-            <div class="content-grid">
+            <!-- COLONNA SINISTRA: PANNELLO DI CONTROLLO -->
+            <aside class="control-sidebar">
                 
-                <!-- Box Grafico -->
-                <div class="chart-box">
-                    <div class="box-header">Distribuzione per Commessa</div>
-                    <div style="position: relative; height: 320px; width: 100%;">
-                        <canvas id="commessaChart"></canvas>
+                <!-- SEZIONE RAGGRUPPAMENTO -->
+                <div class="sidebar-section">
+                    <h3>Raggruppa Dati Per</h3>
+                    <div class="radio-list">
+                        <label class="radio-item">
+                            <input type="radio" name="grouping" value="commessa" checked>
+                            <span>📂 Commessa</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="grouping" value="macro">
+                            <span>🏗️ Macrocategoria</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="grouping" value="lavorazione">
+                            <span>🔧 Lavorazione</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="grouping" value="dipendente">
+                            <span>👤 Dipendente</span>
+                        </label>
                     </div>
                 </div>
 
-                <!-- Box Tabella -->
-                <div class="table-box">
-                    <div class="table-controls">
-                        <input type="text" id="globalSearch" class="search-bar" placeholder="🔍 Cerca veloce...">
-                        
-                        <!-- Azioni di Massa (Nascoste di default) -->
-                        <div id="selectionActions" style="display:none;">
-                            <span id="selectedCount" style="font-size:0.85rem; font-weight:bold; color:#2e7d32;">0 selezionati</span>
-                            <button id="btnContabilizza" class="btn-action-primary">✅ Contabilizza</button>
+                <!-- SEZIONE FILTRI DINAMICI -->
+                <div class="sidebar-section grow-section">
+                    <h3>Filtri Rapidi</h3>
+                    
+                    <div class="filter-box">
+                        <div class="filter-header">Commesse <small>(<span id="countCommesse">0</span>)</small></div>
+                        <div class="filter-list" id="listFilterCommesse">
+                            <!-- Popolato via JS: -->
+                            <label><input type="checkbox"> Caricamento...</label>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table id="analysisTable">
-                            <thead>
-                                <tr>
-                                    <th width="40"><input type="checkbox" id="selectAll"></th>
-                                    <th>Data</th>
-                                    <th>Dipendente</th>
-                                    <th>Commessa</th>
-                                    <th>Attività</th>
-                                    <th>Ore</th>
-                                    <th>Note</th>
-                                    <th>Stato</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <!-- Righe generate via JS -->
-                            </tbody>
-                        </table>
+                    <div class="filter-box">
+                        <div class="filter-header">Lavorazioni <small>(<span id="countLavorazioni">0</span>)</small></div>
+                        <div class="filter-list" id="listFilterLavorazioni">
+                            <!-- Popolato via JS -->
+                        </div>
+                    </div>
+                    
+                     <div class="filter-box">
+                        <div class="filter-header">Dipendenti <small>(<span id="countDipendenti">0</span>)</small></div>
+                        <div class="filter-list" id="listFilterDipendenti">
+                            <!-- Popolato via JS -->
+                        </div>
                     </div>
                 </div>
 
-            </div> <!-- Fine Content Grid -->
+                <!-- FOOTER SIDEBAR (AZIONI) -->
+                <div class="sidebar-footer">
+                    <div class="selection-info">
+                        <span id="selectionSummary">0 righe selezionate</span>
+                    </div>
+                    <button id="btnContabilizza" class="btn-primary-large">
+                        ✅ CONTABILIZZA
+                    </button>
+                </div>
+            </aside>
 
-        </div> <!-- Fine Dashboard Body -->
-    </div> <!-- Fine Main Container -->
+            <!-- AREA PRINCIPALE (SWITCHABLE) -->
+            <main class="main-content">
+                
+                <!-- TAB NAVIGAZIONE -->
+                <div class="view-tabs">
+                    <button class="tab-btn active" data-target="view-summary">
+                        📊 VISTA SINTESI
+                    </button>
+                    <button class="tab-btn" data-target="view-detail">
+                        📋 VISTA DETTAGLIO
+                    </button>
+                </div>
+
+                <!-- VISTA 1: SINTESI (Grafici) -->
+                <div id="view-summary" class="view-panel active">
+                    
+                    <!-- KPI Row -->
+                    <div class="kpi-row">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Totale Ore Filtrate</div>
+                            <div class="kpi-val" id="kpiTotalHours">0.0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Registrazioni</div>
+                            <div class="kpi-val" id="kpiRecordCount">0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Persone Coinvolte</div>
+                            <div class="kpi-val" id="kpiPeopleCount">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <h4>Distribuzione (Torta)</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="chartDistribution"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Andamento Temporale (Barre)</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="chartTimeline"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container wide">
+                            <h4>Top Contributors / Commesse</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="chartTop"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: DETTAGLIO (Griglia Dati) -->
+                <div id="view-detail" class="view-panel">
+                    
+                    <div class="detail-toolbar">
+                        <input type="text" id="detailSearch" placeholder="🔍 Cerca nelle note o codici..." class="search-input">
+                        <button class="btn-small" id="btnExpandAll">Espandi Tutto</button>
+                        <button class="btn-small" id="btnCollapseAll">Chiudi Tutto</button>
+                    </div>
+
+                    <div class="data-grid-container" id="dataGridContainer">
+                        <!-- ESEMPIO STRUTTURA ACCORDION (Sarà generato da JS) -->
+                        <!--
+                        <div class="group-header">
+                            <div class="gh-left">
+                                <span class="toggle-icon">▼</span>
+                                <strong>COMMESSA: IMPIANTO ROSSI (2024-001)</strong>
+                            </div>
+                            <div class="gh-right">
+                                <span>35.5 Ore</span>
+                                <input type="checkbox" title="Seleziona gruppo">
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th width="30"><input type="checkbox"></th>
+                                        <th>Data</th>
+                                        <th>Chi</th>
+                                        <th>Cosa (Lavorazione)</th>
+                                        <th>Ore</th>
+                                        <th>Note</th>
+                                        <th width="50">Az.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>12/10</td>
+                                        <td>Mario Rossi</td>
+                                        <td>Saldatura</td>
+                                        <td><strong>8.0</strong></td>
+                                        <td>Saldatura staffe supporto</td>
+                                        <td><button class="btn-icon">✏️</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        -->
+                        <div class="placeholder-msg">Caricamento dati in corso...</div>
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+    </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script type="module" src="js/config.js"></script>
-    <script type="module" src="js/auth-guard.js"></script>
     <script type="module" src="js/api-client.js"></script>
     <script type="module" src="js/dashboard.js"></script>
+
+    <!-- Script per Switch Tab (UI Only) -->
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Rimuovi active da tutti i bottoni e pannelli
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+                
+                // Attiva corrente
+                btn.classList.add('active');
+                const targetId = btn.dataset.target;
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+        
+        // Switch Inbox/Archivio (UI Toggle)
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Qui andrà la logica JS per ricaricare i dati
+            });
+        });
+    </script>
 </body>
 </html>
