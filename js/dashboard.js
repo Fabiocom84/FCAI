@@ -404,6 +404,15 @@ const Dashboard = {
                 label: row.personale ? row.personale.nome_cognome : 'Ignoto'
             };
         }
+        // --- MODIFICA QUI PER MACROCATEGORIA ---
+        if (mode === 'macro') {
+            // Ora usiamo il campo 'nome_macro' calcolato dal backend
+            const macroLabel = row.nome_macro || 'Nessun Reparto';
+            return {
+                id: macroLabel, // Usiamo il nome come ID per il raggruppamento
+                label: `🏗️ ${macroLabel}`
+            };
+        }
         if (mode === 'lavorazione') {
             return {
                 id: row.componenti ? row.componenti.id_componente : 'nl',
