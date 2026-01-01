@@ -11,7 +11,8 @@ const Dashboard = {
         grouping: 'commessa', // commessa | macro | lavorazione | dipendente
         filters: {
             commesse: new Set(),
-            dipendenti: new Set()
+            dipendenti: new Set(),
+            lavorazioni: new Set()
         },
         charts: {
             dist: null,
@@ -30,6 +31,8 @@ const Dashboard = {
         
         listCommesse: document.getElementById('listFilterCommesse'),
         listDipendenti: document.getElementById('listFilterDipendenti'),
+        // Se hai aggiunto altri filtri nell'HTML, aggiungili qui
+        
         countCommesse: document.getElementById('countCommesse'),
         countDipendenti: document.getElementById('countDipendenti'),
         
@@ -56,29 +59,26 @@ const Dashboard = {
         btnCollapseAll: document.getElementById('btnCollapseAll')
     },
 
-    initDates: function() {
-        // NON impostiamo date di default. 
-        // Lasciamo vuoto per indicare "Tutto lo storico" (comportamento richiesto).
-        this.dom.dateStart.value = '';
-        this.dom.dateEnd.value = '';
+    init: function() {
+        console.log("🚀 Dashboard Init");
+        this.initDates();
+        this.addListeners();
+        this.fetchData(); // Caricamento iniziale
     },
 
     initDates: function() {
-        // Default: Mese corrente
-        const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
-        this.dom.dateStart.valueAsDate = firstDay;
-        this.dom.dateEnd.valueAsDate = lastDay;
+        // NON impostiamo date di default. 
+        // Lasciamo vuoto per indicare "Tutto lo storico" (comportamento richiesto).
+        if(this.dom.dateStart) this.dom.dateStart.value = '';
+        if(this.dom.dateEnd) this.dom.dateEnd.value = '';
     },
 
     addListeners: function() {
         // 1. Refresh & Mode
-        this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
+        if(this.dom.btnRefresh) this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
         
-        this.dom.btnInbox.addEventListener('click', () => this.setMode('inbox'));
-        this.dom.btnArchive.addEventListener('click', () => this.setMode('archive'));
+        if(this.dom.btnInbox) this.dom.btnInbox.addEventListener('click', () => this.setMode('inbox'));
+        if(this.dom.btnArchive) this.dom.btnArchive.addEventListener('click', () => this.setMode('archive'));
 
         // 2. Raggruppamento
         this.dom.radioGroup.forEach(r => {
@@ -95,17 +95,18 @@ const Dashboard = {
                 this.dom.views.forEach(v => v.classList.remove('active'));
                 
                 e.target.classList.add('active');
-                document.getElementById(e.target.dataset.target).classList.add('active');
+                const target = document.getElementById(e.target.dataset.target);
+                if(target) target.classList.add('active');
             });
         });
 
         // 4. Grid Actions
-        this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
-        this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
-        this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
+        if(this.dom.btnExpandAll) this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
+        if(this.dom.btnCollapseAll) this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
+        if(this.dom.detailSearch) this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
         
         // 5. Contabilizza
-        this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
+        if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
     },
 
     setMode: function(mode) {
@@ -157,8 +158,7 @@ const Dashboard = {
             
         } catch (e) {
             console.error(e);
-            // Non mostriamo alert bloccanti al caricamento iniziale se fallisce per filtri vuoti
-            // ma mostriamo errore in console o un toast
+            // Non blocchiamo tutto con alert se è il primo caricamento
         } finally {
             btn.innerHTML = originalIcon;
             btn.disabled = false;
@@ -185,8 +185,9 @@ const Dashboard = {
     },
 
     renderFilterList: function(container, map, filterKey, countEl) {
+        if(!container) return;
         container.innerHTML = '';
-        countEl.textContent = map.size;
+        if(countEl) countEl.textContent = map.size;
         
         // Ordina alfabetico
         const sorted = Array.from(map.entries()).sort((a,b) => a[1].localeCompare(b[1]));
@@ -208,6 +209,8 @@ const Dashboard = {
 
     updateFilterSet: function(key) {
         const container = key === 'commesse' ? this.dom.listCommesse : this.dom.listDipendenti;
+        if(!container) return;
+        
         const checkboxes = container.querySelectorAll('input:checked');
         const set = this.state.filters[key];
         set.clear();
@@ -221,6 +224,9 @@ const Dashboard = {
             const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
             const dId = row.personale ? String(row.personale.id_personale) : 'null';
             
+            // Se il set è vuoto (nessuna checkbox), consideriamo "tutto deselezionato" -> mostra nulla?
+            // Oppure logica "se ho caricato le checkbox e l'utente le toglie tutte..."
+            // Per ora: logica standard AND
             return commesse.has(cId) && dipendenti.has(dId);
         });
 
@@ -243,15 +249,18 @@ const Dashboard = {
             else done += r.ore;
         });
 
-        this.dom.kpiTotal.textContent = total.toFixed(1);
-        this.dom.kpiPending.textContent = pending.toFixed(1);
-        this.dom.kpiDone.textContent = done.toFixed(1);
+        if(this.dom.kpiTotal) this.dom.kpiTotal.textContent = total.toFixed(1);
+        if(this.dom.kpiPending) this.dom.kpiPending.textContent = pending.toFixed(1);
+        if(this.dom.kpiDone) this.dom.kpiDone.textContent = done.toFixed(1);
     },
 
     renderCharts: function() {
-        // Destroy old
+        // Se non siamo nella vista sintesi, potremmo saltare il render per performance,
+        // ma chart.js è leggero.
         if (this.state.charts.dist) this.state.charts.dist.destroy();
         if (this.state.charts.time) this.state.charts.time.destroy();
+
+        if(!this.dom.canvasDist || !this.dom.canvasTimeline) return;
 
         // 1. Distribution (Grouping corrente)
         const labels = {};
@@ -292,6 +301,8 @@ const Dashboard = {
 
     renderGrid: function() {
         const container = this.dom.gridContainer;
+        if(!container) return;
+        
         container.innerHTML = '';
         
         if (this.state.filteredData.length === 0) {
@@ -352,7 +363,7 @@ const Dashboard = {
             
             body.innerHTML = `<table><thead><tr><th><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Cosa</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
             
-            // Eventi
+            // Eventi Accordion
             header.addEventListener('click', (e) => {
                 if(e.target.type !== 'checkbox') {
                     body.classList.toggle('open');
@@ -395,6 +406,12 @@ const Dashboard = {
                 label: row.personale ? row.personale.nome_cognome : 'Ignoto'
             };
         }
+        if (mode === 'lavorazione') {
+            return {
+                id: row.componenti ? row.componenti.id_componente : 'nl',
+                label: row.componenti ? row.componenti.nome_componente : 'Nessuna Lavorazione'
+            };
+        }
         // Fallback generico
         return { id: 'all', label: 'Tutti' };
     },
@@ -411,7 +428,7 @@ const Dashboard = {
 
     updateSelectionSummary: function() {
         const count = document.querySelectorAll('.row-check:checked').length;
-        this.dom.selectionSummary.textContent = `${count} righe selezionate`;
+        if(this.dom.selectionSummary) this.dom.selectionSummary.textContent = `${count} righe selezionate`;
     },
 
     contabilizzaSelection: async function() {
