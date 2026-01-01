@@ -545,31 +545,49 @@ body {
     .grow-section { max-height: 300px; }
 }
 
-/* FIX PULSANTE OK DEL MODALE SUCCESSO */
+/* =========================================
+   FIX MODALE SUCCESSO (Layout & Bottone)
+   ========================================= */
+
+/* 1. Contenitore dei bottoni: Forza il centramento ed evita lo stretch */
+#custom-modal-buttons {
+    display: flex;
+    justify-content: center; /* Centra orizzontalmente */
+    align-items: center;     /* Centra verticalmente (RISOLVE L'ALTEZZA ESAGERATA) */
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* 2. Stile del Pulsante OK */
 #custom-modal-buttons .button {
-    background-color: #2ecc71; /* Verde */
-    color: white;
-    border: none;
-    padding: 10px 25px;
+    background-color: #2ecc71 !important; /* Verde */
+    color: white !important;
+    border: none !important;
+    
+    /* Dimensioni controllate */
+    padding: 10px 30px !important;
+    width: auto !important;      /* Non 100% */
+    min-width: 100px;            /* Larghezza minima estetica */
+    height: auto !important;     /* Altezza automatica basata sul testo */
+    
     border-radius: 4px;
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.1s;
+    margin: 0 !important;
 }
 
 #custom-modal-buttons .button:hover {
-    background-color: #27ae60; /* Verde scuro */
+    background-color: #27ae60 !important;
     transform: translateY(-1px);
 }
 
-/* Se ci fosse un tasto annulla secondario generato da shared-ui */
+/* 3. Eventuale bottone secondario (se presente in futuro) */
 #custom-modal-buttons .button--secondary {
-    background-color: #e2e6ea;
-    color: #495057;
-    border: 1px solid #ced4da;
-}
-#custom-modal-buttons .button--secondary:hover {
-    background-color: #d3d9df;
+    background-color: #e2e6ea !important;
+    color: #495057 !important;
+    border: 1px solid #ced4da !important;
 }
