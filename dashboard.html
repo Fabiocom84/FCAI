@@ -81,9 +81,6 @@
                 </div>
 
                 <div class="sidebar-footer">
-                    <div class="selection-info">
-                        <span id="selectionSummary">0 righe selezionate</span>
-                    </div>
                     <button id="btnContabilizza" class="btn-primary-large">
                         ✅ CONTABILIZZA
                     </button>
@@ -141,6 +138,16 @@
                     </div>
                     <div class="data-grid-container" id="dataGridContainer">
                         <div class="placeholder-msg">Caricamento dati in corso...</div>
+                    </div>
+                    <!-- NUOVO FOOTER STATUS BAR (Stile Excel) -->
+                    <div class="main-footer-status">
+                        <div class="status-left">
+                            <span id="statusMsg">Pronto</span>
+                        </div>
+                        <div class="status-right">
+                            <span class="status-item">Righe: <b id="selCount">0</b></span>
+                            <span class="status-item">Totale Ore Selezionate: <b id="selHours">0.0</b> h</span>
+                        </div>
                     </div>
                 </div>
 
