@@ -1,65 +1,307 @@
-.full-width { max-width: 1400px; } /* Più largo del solito */
+/* ==========================================================================
+   dashboard.css - Stile Desktop-App (Simile a Registro Ordini)
+   ========================================================================== */
 
-.filters-bar {
-    background: white; padding: 15px; border-radius: 8px;
-    display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;
+body {
+    background-color: #f4f7f9;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden; /* Evita scroll sul body, scrolliamo dentro il container */
 }
-.filter-group { display: flex; flex-direction: column; gap: 5px; }
+
+/* --- CONTENITORE PRINCIPALE (Stile App) --- */
+.main-dashboard-container {
+    width: 95vw;
+    height: 95vh;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid #dcdcdc;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Il contenuto interno scrollerà */
+}
+
+/* --- HEADER (Stile Registro Ordini) --- */
+.dashboard-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid #1a252f;
+}
+
+.header-left, .header-right { 
+    display: flex; 
+    align-items: center;
+    min-width: 100px; 
+}
+.header-center { text-align: center; flex-grow: 1; }
+
+.dashboard-header h1 { 
+    margin: 0; 
+    font-size: 1.2rem; 
+    color: #3498db; 
+    letter-spacing: 0.5px; 
+    text-transform: uppercase;
+}
+.header-subtitle { 
+    font-size: 0.75rem; 
+    color: #bdc3c7; 
+    text-transform: uppercase; 
+    display: block;
+    margin-top: 2px;
+}
+
+/* Pulsante Home nell'header */
+.header-btn-link {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.header-btn-link:hover { background: rgba(255,255,255,0.2); }
+.header-btn-icon { width: 16px; height: 16px; filter: brightness(0) invert(1); }
+
+
+/* --- CORPO SCROLLABILE --- */
+.dashboard-body {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #f4f7f9; /* Leggermente grigio per stacco */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- BARRA DEI FILTRI (Stile Registro Ordini) --- */
+.filters-container {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .filter-group.grow { flex-grow: 1; min-width: 200px; }
-.date-inputs { display: flex; gap: 5px; }
-.date-inputs input { width: 140px; }
 
-.kpi-container {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px; margin-bottom: 20px;
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
 }
+
+/* Input standardizzati */
+.dash-input, .dash-select {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background-color: white;
+    box-sizing: border-box;
+}
+.dash-input:focus, .dash-select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.date-row { display: flex; gap: 5px; }
+.date-row input { width: 135px; }
+
+/* Pulsante Aggiorna */
+.btn-refresh {
+    height: 38px;
+    padding: 0 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+.btn-refresh:hover { background-color: #2980b9; }
+
+/* --- KPI CARDS --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
 .kpi-card {
-    background: white; padding: 20px; border-radius: 8px; text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #ccc;
-}
-.kpi-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #666; text-transform: uppercase; }
-.kpi-card span { font-size: 2rem; font-weight: 700; color: #333; }
-.kpi-card.blue { border-color: #3498db; }
-.kpi-card.orange { border-color: #e67e22; }
-.kpi-card.green { border-color: #2ecc71; }
-
-.dashboard-grid {
-    display: grid; grid-template-columns: 350px 1fr; gap: 20px;
-    align-items: start;
-}
-@media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } }
-
-.chart-container {
-    background: white; padding: 15px; border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    border-left: 5px solid #ccc;
+    text-align: center;
 }
 
-.table-wrapper {
-    background: white; padding: 15px; border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow-x: auto;
+.kpi-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-weight: 600;
 }
+
+.kpi-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    display: block;
+}
+
+.kpi-card.blue { border-left-color: #3498db; }
+.kpi-card.orange { border-left-color: #e67e22; }
+.kpi-card.green { border-left-color: #2ecc71; }
+
+/* --- GRIGLIA CONTENUTO (Chart + Table) --- */
+.content-grid {
+    display: grid;
+    grid-template-columns: 400px 1fr; /* Colonna fissa per grafico, resto tabella */
+    gap: 20px;
+    align-items: start; /* Allinea in alto */
+    flex: 1; /* Prende lo spazio rimanente */
+}
+
+/* Grafico */
+.chart-box {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    height: 400px;
+}
+.box-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Tabella */
+.table-box {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Si adatta alla griglia */
+    min-height: 400px;
+}
+
 .table-controls {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 15px; gap: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
-#globalSearch { max-width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.search-bar {
+    width: 300px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
 
+/* Azioni Selezione */
 #selectionActions {
     display: flex; align-items: center; gap: 10px;
     background: #e8f5e9; padding: 5px 15px; border-radius: 20px;
     border: 1px solid #c8e6c9; animation: fadeIn 0.3s;
 }
-.action-btn-primary {
+.btn-action-primary {
     background: #2ecc71; color: white; border: none; padding: 6px 12px;
-    border-radius: 4px; cursor: pointer; font-weight: bold;
+    border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
 }
 
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th { background: #f8f9fa; text-align: left; padding: 10px; border-bottom: 2px solid #eee; position: sticky; top: 0; }
-td { padding: 8px 10px; border-bottom: 1px solid #eee; }
-tr:hover { background-color: #f9f9f9; }
+/* Stile Tabella */
+.table-responsive {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
 
-.badge-status { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-.status-0 { background: #ffe0b2; color: #e65100; } /* Pending */
-.status-1 { background: #c8e6c9; color: #2e7d32; } /* Done */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+thead th {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+}
+
+tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    vertical-align: middle;
+}
+tbody tr:hover { background-color: #f1f8ff; }
+
+/* Badge Stato */
+.badge-status { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+.status-0 { background: #fff3cd; color: #856404; } /* Da Contabilizzare */
+.status-1 { background: #d4edda; color: #155724; } /* Contabilizzato */
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .content-grid { grid-template-columns: 1fr; } /* Stack verticale su schermi medi */
+    .chart-box { height: 300px; }
+}
+
+@media (max-width: 768px) {
+    .main-dashboard-container { width: 100%; height: 100vh; border-radius: 0; border: none; }
+    .filters-container { flex-direction: column; align-items: stretch; }
+    .date-row input { width: 100%; }
+    .header-btn-link span { display: none; } /* Solo icona su mobile */
+}
