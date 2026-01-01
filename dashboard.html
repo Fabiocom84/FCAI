@@ -44,12 +44,14 @@
             <!-- COLONNA SINISTRA: PANNELLO DI CONTROLLO -->
             <aside class="control-sidebar">
                 
-                <!-- SEZIONE DATE COMPATTA -->
+                <!-- SEZIONE DATE (Layout modificato) -->
                 <div class="sidebar-section" id="dateFilterSection">
-                    <h3>Periodo</h3> <!-- Titolo minimal -->
-                    <div class="date-compact-row">
-                        <input type="date" id="dateStart" class="sidebar-input-compact" title="Data Inizio">
-                        <input type="date" id="dateEnd" class="sidebar-input-compact" title="Data Fine">
+                    <h3>Periodo</h3>
+                    <div class="date-filter-container">
+                        <div class="date-inputs-col">
+                            <input type="date" id="dateStart" class="sidebar-input-compact" title="Data Inizio (Vuoto = Tutto)">
+                            <input type="date" id="dateEnd" class="sidebar-input-compact" title="Data Fine (Vuoto = Tutto)">
+                        </div>
                         <button id="btnRefresh" class="btn-icon-refresh" title="Aggiorna Dati">🔄</button>
                     </div>
                 </div>

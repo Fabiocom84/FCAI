@@ -109,30 +109,33 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* GRUPPO DATE COMPATTO (Richiesta Specifica) */
-.date-compact-row {
+/* --- DATA PICKER COMPATTO (Layout Verticale + Bottone a destra) --- */
+.date-filter-container {
     display: flex;
-    align-items: center;
-    gap: 5px;
-    width: 100%;
+    gap: 5px; /* Spazio tra colonna date e bottone */
+    align-items: stretch; /* Il bottone si allunga quanto le date */
+}
+
+.date-inputs-col {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Spazio verticale tra start ed end */
+    flex: 1; /* Prende tutto lo spazio orizzontale disponibile */
 }
 
 .sidebar-input-compact {
-    flex: 1;
-    width: 0; /* Hack Flexbox per farli stringere */
-    padding: 4px 2px;
+    width: 100%;
+    padding: 4px 6px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.8rem;
-    background: #fdfdfd;
-    text-align: center;
-    height: 28px;
-    box-sizing: border-box;
+    background: #fff;
+    box-sizing: border-box; /* Importante per non sforare */
+    height: 30px; /* Altezza fissa per allineamento */
 }
 
 .btn-icon-refresh {
-    width: 28px;
-    height: 28px;
+    width: 40px; /* Larghezza fissa bottone */
     background-color: #3498db;
     color: white;
     border: none;
@@ -141,12 +144,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.2rem;
     transition: background 0.2s;
-    flex-shrink: 0;
+    /* Il bottone eredita l'altezza del container (stretch) */
 }
 .btn-icon-refresh:hover { background-color: #2980b9; }
-.btn-icon-refresh:disabled { background-color: #ccc; cursor: not-allowed; }
+.btn-icon-refresh:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
 /* Lista Radio Button (Raggruppamento) */
 .radio-list {

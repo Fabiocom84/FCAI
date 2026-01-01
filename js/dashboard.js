@@ -56,11 +56,11 @@ const Dashboard = {
         btnCollapseAll: document.getElementById('btnCollapseAll')
     },
 
-    init: function() {
-        console.log("🚀 Dashboard Init");
-        this.initDates();
-        this.addListeners();
-        this.fetchData(); // Caricamento iniziale
+    initDates: function() {
+        // NON impostiamo date di default. 
+        // Lasciamo vuoto per indicare "Tutto lo storico" (comportamento richiesto).
+        this.dom.dateStart.value = '';
+        this.dom.dateEnd.value = '';
     },
 
     initDates: function() {
@@ -123,7 +123,6 @@ const Dashboard = {
     // --- DATA FETCHING ---
     fetchData: async function() {
         const btn = this.dom.btnRefresh;
-        // Feedback visivo sul bottone piccolo
         const originalIcon = btn.innerHTML; 
         btn.innerHTML = "⏳"; 
         btn.disabled = true;
@@ -131,36 +130,37 @@ const Dashboard = {
         try {
             const params = new URLSearchParams();
             
-            // 1. DATE: Le inviamo SEMPRE, sia per Inbox che per Archivio.
-            //    Così il backend filtra effettivamente i dati.
-            params.append('start', this.dom.dateStart.value);
-            params.append('end', this.dom.dateEnd.value);
+            // 1. DATE: Inviamo i parametri SOLO se compilati dall'utente.
+            //    Se vuoti, il backend caricherà tutto lo storico.
+            if (this.dom.dateStart.value) {
+                params.append('start', this.dom.dateStart.value);
+            }
+            if (this.dom.dateEnd.value) {
+                params.append('end', this.dom.dateEnd.value);
+            }
 
-            // 2. STATO: Determinato dalla modalità
-            //    inbox = 0 (Aperte), archive = 1 (Chiuse)
+            // 2. STATO: inbox=0, archive=1
             const statoVal = this.state.mode === 'archive' ? '1' : '0';
             params.append('stato', statoVal);
 
-            console.log("Fetching dashboard con params:", params.toString());
+            console.log("Fetching con params:", params.toString());
 
             const res = await apiFetch(`/api/dashboard/stats?${params.toString()}`);
             const payload = await res.json();
             
             this.state.rawData = payload.rows || [];
             
-            // Applichiamo i filtri locali (checkbox commessa/dipendente)
-            // Nota: filteredData viene rigenerato qui
+            // Reset dei dati filtrati e ricostruzione sidebar
             this.state.filteredData = [...this.state.rawData]; 
-            
-            // Ricostruiamo le checkbox della sidebar in base ai NUOVI dati filtrati per data
             this.buildSidebarFilters(); 
-            this.applySidebarFilters(); // Questo chiama renderAll()
+            this.applySidebarFilters();
             
         } catch (e) {
             console.error(e);
-            alert("Errore caricamento: " + e.message);
+            // Non mostriamo alert bloccanti al caricamento iniziale se fallisce per filtri vuoti
+            // ma mostriamo errore in console o un toast
         } finally {
-            btn.innerHTML = originalIcon; // Ripristina icona
+            btn.innerHTML = originalIcon;
             btn.disabled = false;
         }
     },
