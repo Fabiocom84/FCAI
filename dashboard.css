@@ -405,3 +405,45 @@ body {
     .dashboard-body-wrapper { flex-direction: column; overflow: auto; }
     .view-tabs-container { flex-direction: column; height: auto; padding: 10px; gap: 10px; }
 }
+
+/* Stili Modale Conferma */
+.confirm-summary-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    color: #34495e;
+}
+.summary-row:last-child { margin-bottom: 0; }
+
+.warning-text {
+    font-size: 0.85rem;
+    color: #d35400; /* Arancio scuro */
+    background-color: #fff3cd;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+    border-left: 4px solid #f39c12;
+}
+
+/* Bottone secondario (Grigio) */
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-secondary:hover { background-color: #7f8c8d; }

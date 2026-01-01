@@ -18,6 +18,8 @@ const Dashboard = {
             macro: new Set(),
             lavorazioni: new Set()
         },
+
+        pendingIds: [],
         
         charts: { dist: null, time: null }
     },
@@ -64,7 +66,15 @@ const Dashboard = {
         gridContainer: document.getElementById('dataGridContainer'),
         detailSearch: document.getElementById('detailSearch'),
         btnExpandAll: document.getElementById('btnExpandAll'),
-        btnCollapseAll: document.getElementById('btnCollapseAll')
+        btnCollapseAll: document.getElementById('btnCollapseAll'),
+
+        // NUOVI ELEMENTI MODALE CONFERMA
+        confirmModal: document.getElementById('confirmModal'),
+        confCount: document.getElementById('confCount'),
+        confHours: document.getElementById('confHours'),
+        btnCancelConfirm: document.getElementById('btnCancelConfirm'),
+        btnProceedConfirm: document.getElementById('btnProceedConfirm'),
+        closeConfirmModal: document.getElementById('closeConfirmModal')
     },
 
     init: function() {
@@ -72,6 +82,7 @@ const Dashboard = {
         this.initDates();
         this.addListeners();
         this.fetchData();
+        this.addListeners();
     },
 
     initDates: function() {
@@ -114,6 +125,13 @@ const Dashboard = {
         
         // 5. Contabilizza
         if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
+
+        // NUOVI LISTENERS PER IL MODALE
+        if(this.dom.btnCancelConfirm) this.dom.btnCancelConfirm.addEventListener('click', () => this.closeConfirmModal());
+        if(this.dom.closeConfirmModal) this.dom.closeConfirmModal.addEventListener('click', () => this.closeConfirmModal());
+        
+        // Cliccando "CONFERMA" nel modale
+        if(this.dom.btnProceedConfirm) this.dom.btnProceedConfirm.addEventListener('click', () => this.finalizeContabilizzazione());
     },
 
     toggleStatus: function(statusValue, btnElement) {
@@ -539,13 +557,39 @@ const Dashboard = {
         if(this.dom.selHours) this.dom.selHours.textContent = totalHours.toFixed(1);
     },
 
-    contabilizzaSelection: async function() {
+    contabilizzaSelection: function() {
         const checked = document.querySelectorAll('.row-check:checked');
         if (checked.length === 0) return alert("Seleziona almeno una riga.");
         
+        // 1. Raccogli gli ID
         const ids = Array.from(checked).map(cb => parseInt(cb.value));
+        this.state.pendingIds = ids; // Salva nello stato temporaneo
+
+        // 2. Calcola i totali per il riepilogo
+        let totalHours = 0;
+        const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
+        ids.forEach(id => {
+            totalHours += (rowsMap.get(id) || 0);
+        });
+
+        // 3. Popola e Mostra Modale
+        this.dom.confCount.textContent = ids.length;
+        this.dom.confHours.textContent = totalHours.toFixed(1) + " h";
         
-        if (!confirm(`Confermi la contabilizzazione di ${ids.length} registrazioni?`)) return;
+        // Usa flex per centrare (come definito nel CSS .modal)
+        this.dom.confirmModal.style.display = 'flex'; 
+    },
+
+    // --- NUOVA: Esegue l'API dopo la conferma ---
+    finalizeContabilizzazione: async function() {
+        const ids = this.state.pendingIds;
+        if (!ids || ids.length === 0) return;
+
+        // Feedback visivo sul bottone conferma
+        const btn = this.dom.btnProceedConfirm;
+        const oldText = btn.textContent;
+        btn.textContent = "Elaborazione...";
+        btn.disabled = true;
 
         try {
             await apiFetch('/api/dashboard/contabilizza', {
@@ -553,12 +597,21 @@ const Dashboard = {
                 body: JSON.stringify({ ids })
             });
             
-            showModal({ title: "Successo", message: "Righe contabilizzate correttamente." });
-            this.fetchData(); // Ricarica
+            this.closeConfirmModal();
+            showModal({ title: "Successo", message: `${ids.length} registrazioni contabilizzate.` });
+            this.fetchData(); // Ricarica la tabella
             
         } catch(e) {
             alert("Errore: " + e.message);
+        } finally {
+            btn.textContent = oldText;
+            btn.disabled = false;
         }
+    },
+
+    closeConfirmModal: function() {
+        this.dom.confirmModal.style.display = 'none';
+        this.state.pendingIds = [];
     },
 
     filterGridLocal: function(term) {

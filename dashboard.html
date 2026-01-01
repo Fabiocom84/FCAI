@@ -164,6 +164,42 @@
         </div>
     </div>
 
+    <!-- MODALE CONFERMA CONTABILIZZAZIONE -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin:0; color:#2c3e50;">Conferma Operazione</h3>
+                <span class="close-button" id="closeConfirmModal">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <p style="color:#555; margin-bottom: 15px;">Stai per contabilizzare e bloccare le seguenti registrazioni:</p>
+                
+                <div class="confirm-summary-box">
+                    <div class="summary-row">
+                        <span>Righe selezionate:</span>
+                        <strong id="confCount">0</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Totale Ore:</span>
+                        <strong id="confHours" style="color:#2980b9;">0.0</strong>
+                    </div>
+                </div>
+
+                <p class="warning-text">
+                    ⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in "Archivio" e non saranno più modificabili da questa vista.
+                </p>
+            </div>
+
+            <div class="modal-footer" style="display:flex; gap:10px; justify-content: flex-end; margin-top: 20px;">
+                <button id="btnCancelConfirm" class="btn-secondary">Annulla</button>
+                <button id="btnProceedConfirm" class="btn-primary-large" style="width: auto; padding: 10px 25px;">
+                    CONFERMA
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
