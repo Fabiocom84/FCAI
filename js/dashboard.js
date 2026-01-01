@@ -1,203 +1,450 @@
+// js/dashboard.js
+
 import { apiFetch } from './api-client.js';
+import { showModal } from './shared-ui.js';
 
-let rowsData = [];
-let chartInstance = null;
-let choicesPersonale, choicesCommessa;
+const Dashboard = {
+    state: {
+        rawData: [],
+        filteredData: [],
+        mode: 'inbox', // 'inbox' (da validare) | 'archive' (storico)
+        grouping: 'commessa', // commessa | macro | lavorazione | dipendente
+        filters: {
+            commesse: new Set(),
+            dipendenti: new Set()
+        },
+        charts: {
+            dist: null,
+            time: null
+        }
+    },
 
-// INIT
-document.addEventListener('DOMContentLoaded', async () => {
-    initFilters();
-    initListeners();
-    await loadOptions();
-    loadDashboard(); // Primo caricamento
-});
-
-function initFilters() {
-    const today = new Date();
-    // Default: Primo giorno del mese corrente -> Oggi
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    
-    document.getElementById('dateStart').valueAsDate = firstDay;
-    document.getElementById('dateEnd').valueAsDate = today;
-    
-    choicesPersonale = new Choices('#filterPersonale', { removeItemButton: true, placeholderValue: 'Tutti i dipendenti' });
-    choicesCommessa = new Choices('#filterCommessa', { removeItemButton: true, placeholderValue: 'Tutte le commesse' });
-}
-
-function initListeners() {
-    document.getElementById('btnRefresh').addEventListener('click', loadDashboard);
-    document.getElementById('globalSearch').addEventListener('input', (e) => filterLocalData(e.target.value));
-    
-    document.getElementById('selectAll').addEventListener('change', (e) => {
-        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
-        updateSelectionUI();
-    });
-    
-    document.getElementById('btnContabilizza').addEventListener('click', contabilizzaSelezionati);
-}
-
-// CARICAMENTO DROPDOWN
-async function loadOptions() {
-    try {
-        const [pRes, cRes] = await Promise.all([
-            apiFetch('/api/personale'),
-            apiFetch('/api/commesse')
-        ]);
+    dom: {
+        dateStart: document.getElementById('dateStart'),
+        dateEnd: document.getElementById('dateEnd'),
+        btnRefresh: document.getElementById('btnRefresh'),
+        btnInbox: document.getElementById('btnModeInbox'),
+        btnArchive: document.getElementById('btnModeArchive'),
         
-        const pData = await pRes.json();
-        const cData = await cRes.json();
+        radioGroup: document.querySelectorAll('input[name="grouping"]'),
         
-        choicesPersonale.setChoices(pData.data.map(p => ({ value: p.id_personale, label: p.nome_cognome })), 'value', 'label', true);
-        choicesCommessa.setChoices(cData.data.map(c => ({ value: c.id_commessa, label: `${c.impianto} (${c.codice_commessa || ''})` })), 'value', 'label', true);
-    } catch(e) { console.error("Err loading options", e); }
-}
-
-// CORE FETCH
-async function loadDashboard() {
-    const start = document.getElementById('dateStart').value;
-    const end = document.getElementById('dateEnd').value;
-    const pers = document.getElementById('filterPersonale').value;
-    const comm = document.getElementById('filterCommessa').value;
-    const stato = document.getElementById('filterStato').value;
-    
-    const params = new URLSearchParams({ start, end });
-    if(pers) params.append('id_personale', pers);
-    if(comm) params.append('id_commessa', comm);
-    if(stato) params.append('stato', stato);
-    
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8">Caricamento...</td></tr>';
-    
-    try {
-        const res = await apiFetch(`/api/dashboard/stats?${params}`);
-        const data = await res.json();
+        listCommesse: document.getElementById('listFilterCommesse'),
+        listDipendenti: document.getElementById('listFilterDipendenti'),
+        countCommesse: document.getElementById('countCommesse'),
+        countDipendenti: document.getElementById('countDipendenti'),
         
-        rowsData = data.rows; // Salvo dati raw per ricerca locale
+        selectionSummary: document.getElementById('selectionSummary'),
+        btnContabilizza: document.getElementById('btnContabilizza'),
         
-        updateKPI(data.kpi);
-        renderChart(data.charts);
-        renderTable(rowsData);
+        // Viste
+        viewTabs: document.querySelectorAll('.tab-btn'),
+        views: document.querySelectorAll('.view-panel'),
         
-    } catch(e) {
-        console.error(e);
-        alert("Errore caricamento dashboard");
-    }
-}
-
-function updateKPI(kpi) {
-    document.getElementById('kpiTotal').textContent = kpi.total_ore;
-    document.getElementById('kpiPending').textContent = kpi.da_contabilizzare;
-    document.getElementById('kpiDone').textContent = kpi.contabilizzate;
-}
-
-function renderTable(data) {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-    
-    if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8">Nessun dato trovato.</td></tr>';
-        return;
-    }
-
-    data.forEach(row => {
-        const tr = document.createElement('tr');
-        const commessa = row.commesse ? row.commesse.impianto : 'N/D';
-        const componente = row.componenti ? row.componenti.nome_componente : '';
-        const personale = row.personale ? row.personale.nome_cognome : 'Ex Dipendente';
-        const dateStr = new Date(row.data_lavoro).toLocaleDateString('it-IT');
-        const statusLabel = row.stato === 1 ? 'Contabilizzato' : 'Aperto';
-        const statusClass = `status-${row.stato}`;
-
-        // Checkbox disabilitata se già contabilizzato (opzionale, o permetti revert)
-        const chkDisabled = row.stato === 1 ? 'disabled' : '';
-
-        tr.innerHTML = `
-            <td><input type="checkbox" class="row-checkbox" value="${row.id_registrazione}" ${chkDisabled}></td>
-            <td>${dateStr}</td>
-            <td><strong>${personale}</strong></td>
-            <td>${commessa}</td>
-            <td>${componente}</td>
-            <td style="font-weight:bold;">${row.ore}</td>
-            <td style="font-size:0.85em; color:#666;">${row.note || ''}</td>
-            <td><span class="badge-status ${statusClass}">${statusLabel}</span></td>
-        `;
+        // KPI
+        kpiTotal: document.getElementById('kpiTotalHours'),
+        kpiPending: document.getElementById('kpiPending'),
+        kpiDone: document.getElementById('kpiDone'),
         
-        tr.querySelector('.row-checkbox').addEventListener('change', updateSelectionUI);
-        tbody.appendChild(tr);
-    });
-    updateSelectionUI();
-}
+        // Charts
+        canvasDist: document.getElementById('chartDistribution'),
+        canvasTimeline: document.getElementById('chartTimeline'),
+        
+        // Grid
+        gridContainer: document.getElementById('dataGridContainer'),
+        detailSearch: document.getElementById('detailSearch'),
+        btnExpandAll: document.getElementById('btnExpandAll'),
+        btnCollapseAll: document.getElementById('btnCollapseAll')
+    },
 
-function updateSelectionUI() {
-    const selected = document.querySelectorAll('.row-checkbox:checked');
-    const panel = document.getElementById('selectionActions');
-    
-    if(selected.length > 0) {
-        panel.style.display = 'flex';
-        document.getElementById('selectedCount').textContent = `${selected.length} righe`;
-    } else {
-        panel.style.display = 'none';
-    }
-}
+    init: function() {
+        console.log("🚀 Dashboard Init");
+        this.initDates();
+        this.addListeners();
+        this.fetchData(); // Caricamento iniziale
+    },
 
-// AZIONE DI MASSA
-async function contabilizzaSelezionati() {
-    const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
-    
-    if(!ids.length) return;
-    if(!confirm(`Vuoi contabilizzare (bloccare) ${ids.length} registrazioni?`)) return;
-    
-    try {
-        await apiFetch('/api/dashboard/contabilizza', {
-            method: 'POST',
-            body: JSON.stringify({ ids })
+    initDates: function() {
+        // Default: Mese corrente
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
+        this.dom.dateStart.valueAsDate = firstDay;
+        this.dom.dateEnd.valueAsDate = lastDay;
+    },
+
+    addListeners: function() {
+        // 1. Refresh & Mode
+        this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
+        
+        this.dom.btnInbox.addEventListener('click', () => this.setMode('inbox'));
+        this.dom.btnArchive.addEventListener('click', () => this.setMode('archive'));
+
+        // 2. Raggruppamento
+        this.dom.radioGroup.forEach(r => {
+            r.addEventListener('change', (e) => {
+                this.state.grouping = e.target.value;
+                this.renderAll();
+            });
+        });
+
+        // 3. Tab Switching
+        this.dom.viewTabs.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.dom.viewTabs.forEach(b => b.classList.remove('active'));
+                this.dom.views.forEach(v => v.classList.remove('active'));
+                
+                e.target.classList.add('active');
+                document.getElementById(e.target.dataset.target).classList.add('active');
+            });
+        });
+
+        // 4. Grid Actions
+        this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
+        this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
+        this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
+        
+        // 5. Contabilizza
+        this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
+    },
+
+    setMode: function(mode) {
+        this.state.mode = mode;
+        this.dom.btnInbox.classList.toggle('active', mode === 'inbox');
+        this.dom.btnArchive.classList.toggle('active', mode === 'archive');
+        
+        // Reset filtri manuali quando cambio modalità
+        this.state.filters.commesse.clear();
+        this.state.filters.dipendenti.clear();
+        
+        this.fetchData();
+    },
+
+    // --- DATA FETCHING ---
+    fetchData: async function() {
+        const btn = this.dom.btnRefresh;
+        btn.textContent = "⏳...";
+        btn.disabled = true;
+
+        try {
+            const params = new URLSearchParams();
+            
+            // Logica Filtri Server-Side
+            if (this.state.mode === 'archive') {
+                // In archivio serve obbligatoriamente la data e stato=1
+                params.append('start', this.dom.dateStart.value);
+                params.append('end', this.dom.dateEnd.value);
+                params.append('stato', '1'); 
+            } else {
+                // In inbox carichiamo TUTTO ciò che è aperto (stato=0)
+                // Ignoriamo le date per non perdere pezzi
+                params.append('stato', '0');
+            }
+
+            const res = await apiFetch(`/api/dashboard/stats?${params.toString()}`);
+            const payload = await res.json();
+            
+            this.state.rawData = payload.rows || [];
+            this.state.filteredData = [...this.state.rawData]; // Inizialmente tutto
+            
+            this.buildSidebarFilters(); // Costruisce le checkbox
+            this.applySidebarFilters(); // Applica (inizialmente seleziona tutto)
+            
+        } catch (e) {
+            console.error(e);
+            alert("Errore caricamento: " + e.message);
+        } finally {
+            btn.textContent = "🔄 Aggiorna Dati";
+            btn.disabled = false;
+        }
+    },
+
+    // --- SIDEBAR FILTERS ---
+    buildSidebarFilters: function() {
+        const commesse = new Map();
+        const dipendenti = new Map();
+        
+        this.state.rawData.forEach(row => {
+            const cName = row.commesse ? row.commesse.impianto : 'N/D';
+            const cId = row.commesse ? row.commesse.id_commessa : 'null';
+            const dName = row.personale ? row.personale.nome_cognome : 'Ex Dipendente';
+            const dId = row.personale ? row.personale.id_personale : 'null';
+            
+            commesse.set(cId, cName);
+            dipendenti.set(dId, dName);
+        });
+
+        this.renderFilterList(this.dom.listCommesse, commesse, 'commesse', this.dom.countCommesse);
+        this.renderFilterList(this.dom.listDipendenti, dipendenti, 'dipendenti', this.dom.countDipendenti);
+    },
+
+    renderFilterList: function(container, map, filterKey, countEl) {
+        container.innerHTML = '';
+        countEl.textContent = map.size;
+        
+        // Ordina alfabetico
+        const sorted = Array.from(map.entries()).sort((a,b) => a[1].localeCompare(b[1]));
+
+        sorted.forEach(([id, label]) => {
+            const div = document.createElement('label');
+            div.innerHTML = `<input type="checkbox" value="${id}" checked> ${label}`;
+            
+            div.querySelector('input').addEventListener('change', () => {
+                this.updateFilterSet(filterKey);
+                this.applySidebarFilters();
+            });
+            container.appendChild(div);
         });
         
-        // Ricarica tutto
-        loadDashboard();
-        document.getElementById('selectAll').checked = false;
+        // Aggiorna il set interno per rispecchiare che inizialmente sono tutti checkati
+        this.updateFilterSet(filterKey);
+    },
+
+    updateFilterSet: function(key) {
+        const container = key === 'commesse' ? this.dom.listCommesse : this.dom.listDipendenti;
+        const checkboxes = container.querySelectorAll('input:checked');
+        const set = this.state.filters[key];
+        set.clear();
+        checkboxes.forEach(cb => set.add(cb.value));
+    },
+
+    applySidebarFilters: function() {
+        const { commesse, dipendenti } = this.state.filters;
         
-    } catch(e) { alert("Errore durante l'aggiornamento"); }
-}
+        this.state.filteredData = this.state.rawData.filter(row => {
+            const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
+            const dId = row.personale ? String(row.personale.id_personale) : 'null';
+            
+            return commesse.has(cId) && dipendenti.has(dId);
+        });
 
-// RICERCA LOCALE VELOCE
-function filterLocalData(term) {
-    const lowerTerm = term.toLowerCase();
-    const filtered = rowsData.filter(r => {
-        return (r.note || '').toLowerCase().includes(lowerTerm) ||
-               (r.commesse?.impianto || '').toLowerCase().includes(lowerTerm) ||
-               (r.personale?.nome_cognome || '').toLowerCase().includes(lowerTerm) ||
-               (r.componenti?.nome_componente || '').toLowerCase().includes(lowerTerm);
-    });
-    renderTable(filtered);
-}
+        this.renderAll();
+    },
 
-// CHART.JS RENDERING
-function renderChart(chartData) {
-    const ctx = document.getElementById('commessaChart').getContext('2d');
-    
-    // Prepara dati
-    const labels = Object.keys(chartData.by_commessa);
-    const dataValues = Object.values(chartData.by_commessa);
-    
-    if (chartInstance) chartInstance.destroy(); // Pulisci precedente
-    
-    chartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: dataValues,
-                backgroundColor: ['#3498db', '#e74c3c', '#9b59b6', '#2ecc71', '#f1c40f', '#34495e'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right' }
-            }
+    // --- RENDER MAIN ---
+    renderAll: function() {
+        this.calculateKPI();
+        this.renderCharts();
+        this.renderGrid();
+        this.updateSelectionSummary();
+    },
+
+    calculateKPI: function() {
+        let total = 0, pending = 0, done = 0;
+        this.state.filteredData.forEach(r => {
+            total += r.ore;
+            if (r.stato === 0) pending += r.ore;
+            else done += r.ore;
+        });
+
+        this.dom.kpiTotal.textContent = total.toFixed(1);
+        this.dom.kpiPending.textContent = pending.toFixed(1);
+        this.dom.kpiDone.textContent = done.toFixed(1);
+    },
+
+    renderCharts: function() {
+        // Destroy old
+        if (this.state.charts.dist) this.state.charts.dist.destroy();
+        if (this.state.charts.time) this.state.charts.time.destroy();
+
+        // 1. Distribution (Grouping corrente)
+        const labels = {};
+        this.state.filteredData.forEach(r => {
+            let key = this.getGroupKey(r, this.state.grouping).label;
+            labels[key] = (labels[key] || 0) + r.ore;
+        });
+
+        const ctxDist = this.dom.canvasDist.getContext('2d');
+        this.state.charts.dist = new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(labels),
+                datasets: [{ data: Object.values(labels), backgroundColor: this.getColors(Object.keys(labels).length) }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. Timeline (Per giorno)
+        const days = {};
+        this.state.filteredData.forEach(r => {
+            const d = r.data_lavoro.split('T')[0];
+            days[d] = (days[d] || 0) + r.ore;
+        });
+        // Sort dates
+        const sortedDays = Object.keys(days).sort();
+        
+        const ctxTime = this.dom.canvasTimeline.getContext('2d');
+        this.state.charts.time = new Chart(ctxTime, {
+            type: 'bar',
+            data: {
+                labels: sortedDays,
+                datasets: [{ label: 'Ore', data: sortedDays.map(d => days[d]), backgroundColor: '#3498db' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    },
+
+    renderGrid: function() {
+        const container = this.dom.gridContainer;
+        container.innerHTML = '';
+        
+        if (this.state.filteredData.length === 0) {
+            container.innerHTML = '<div class="placeholder-msg">Nessun dato trovato con i filtri attuali.</div>';
+            return;
         }
-    });
-}
+
+        // 1. Raggruppa i dati
+        const groups = {};
+        this.state.filteredData.forEach(row => {
+            const { id, label } = this.getGroupKey(row, this.state.grouping);
+            if (!groups[id]) groups[id] = { label, rows: [], total: 0 };
+            groups[id].rows.push(row);
+            groups[id].total += row.ore;
+        });
+
+        // 2. Crea HTML
+        Object.values(groups).forEach(g => {
+            const groupHtml = document.createElement('div');
+            groupHtml.className = 'grid-group';
+            
+            const header = document.createElement('div');
+            header.className = 'group-header';
+            header.innerHTML = `
+                <div class="gh-left">
+                    <span class="toggle-icon">▶</span> 
+                    <span>${g.label}</span>
+                </div>
+                <div class="gh-right">
+                    <span style="margin-right:15px;">Tot: ${g.total.toFixed(1)}h</span>
+                    <input type="checkbox" class="group-check" title="Seleziona Gruppo">
+                </div>
+            `;
+            
+            const body = document.createElement('div');
+            body.className = 'group-body';
+            
+            // Tabella righe
+            let rowsHtml = '';
+            g.rows.forEach(r => {
+                const date = new Date(r.data_lavoro).toLocaleDateString();
+                const person = r.personale ? r.personale.nome_cognome : '-';
+                const task = r.componenti ? r.componenti.nome_componente : (r.commesse ? r.commesse.impianto : '-');
+                const note = r.note || '';
+                
+                rowsHtml += `
+                    <tr>
+                        <td width="30"><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
+                        <td>${date}</td>
+                        <td>${person}</td>
+                        <td>${task}</td>
+                        <td width="60" style="font-weight:bold;">${r.ore}</td>
+                        <td><small>${note}</small></td>
+                        <td width="40"><button class="btn-icon">✏️</button></td>
+                    </tr>
+                `;
+            });
+            
+            body.innerHTML = `<table><thead><tr><th><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Cosa</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+            
+            // Eventi
+            header.addEventListener('click', (e) => {
+                if(e.target.type !== 'checkbox') {
+                    body.classList.toggle('open');
+                    header.querySelector('.toggle-icon').textContent = body.classList.contains('open') ? '▼' : '▶';
+                }
+            });
+
+            // Checkbox Gruppo
+            const groupCheck = header.querySelector('.group-check');
+            groupCheck.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                body.querySelectorAll('.row-check').forEach(cb => {
+                    cb.checked = isChecked;
+                });
+                this.updateSelectionSummary();
+            });
+
+            // Checkbox Righe (aggiorna conteggio)
+            body.querySelectorAll('.row-check').forEach(cb => {
+                cb.addEventListener('change', () => this.updateSelectionSummary());
+            });
+            
+            groupHtml.appendChild(header);
+            groupHtml.appendChild(body);
+            container.appendChild(groupHtml);
+        });
+    },
+
+    // --- UTILS ---
+    getGroupKey: function(row, mode) {
+        if (mode === 'commessa') {
+            return { 
+                id: row.commesse ? row.commesse.id_commessa : 'nc', 
+                label: row.commesse ? `${row.commesse.impianto} (${row.commesse.codice_commessa})` : 'Nessuna Commessa'
+            };
+        }
+        if (mode === 'dipendente') {
+            return {
+                id: row.personale ? row.personale.id_personale : 'np',
+                label: row.personale ? row.personale.nome_cognome : 'Ignoto'
+            };
+        }
+        // Fallback generico
+        return { id: 'all', label: 'Tutti' };
+    },
+
+    toggleAllGroups: function(open) {
+        document.querySelectorAll('.group-body').forEach(el => {
+            if(open) el.classList.add('open');
+            else el.classList.remove('open');
+        });
+        document.querySelectorAll('.toggle-icon').forEach(el => {
+            el.textContent = open ? '▼' : '▶';
+        });
+    },
+
+    updateSelectionSummary: function() {
+        const count = document.querySelectorAll('.row-check:checked').length;
+        this.dom.selectionSummary.textContent = `${count} righe selezionate`;
+    },
+
+    contabilizzaSelection: async function() {
+        const checked = document.querySelectorAll('.row-check:checked');
+        if (checked.length === 0) return alert("Seleziona almeno una riga.");
+        
+        const ids = Array.from(checked).map(cb => parseInt(cb.value));
+        
+        if (!confirm(`Confermi la contabilizzazione di ${ids.length} registrazioni?`)) return;
+
+        try {
+            await apiFetch('/api/dashboard/contabilizza', {
+                method: 'POST',
+                body: JSON.stringify({ ids })
+            });
+            
+            showModal({ title: "Successo", message: "Righe contabilizzate correttamente." });
+            this.fetchData(); // Ricarica
+            
+        } catch(e) {
+            alert("Errore: " + e.message);
+        }
+    },
+
+    filterGridLocal: function(term) {
+        // Implementazione semplice: nasconde le righe che non matchano
+        const lower = term.toLowerCase();
+        document.querySelectorAll('.group-body tbody tr').forEach(tr => {
+            const text = tr.innerText.toLowerCase();
+            tr.style.display = text.includes(lower) ? '' : 'none';
+        });
+    },
+
+    getColors: function(count) {
+        const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c'];
+        const res = [];
+        for(let i=0; i<count; i++) res.push(pal[i % pal.length]);
+        return res;
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => Dashboard.init());
