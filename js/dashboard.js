@@ -7,41 +7,41 @@ const Dashboard = {
     state: {
         rawData: [],
         filteredData: [],
-        // Set attivo per gli stati (0=Inbox, 1=Archivio). Default: solo Inbox
-        activeStatuses: new Set(['0']), 
+        activeStatuses: new Set(['0']), // '0'=Da Validare, '1'=Archivio
         grouping: 'commessa', 
         
-        // Stati dei filtri laterali
         filters: {
             commesse: new Set(),
             dipendenti: new Set(),
             macro: new Set(),
             lavorazioni: new Set()
         },
-
-        pendingIds: [],
         
-        charts: { dist: null, time: null }
+        charts: { dist: null, time: null },
+        
+        // Stati temporanei per azioni
+        editingRow: null,
+        pendingIds: []
     },
 
     dom: {
-        // Date
+        // Date e Refresh
         dateStart: document.getElementById('dateStart'),
         dateEnd: document.getElementById('dateEnd'),
         btnRefresh: document.getElementById('btnRefresh'),
         
-        // Mode & Grouping
+        // Modalità e Raggruppamento
         btnInbox: document.getElementById('btnModeInbox'),
         btnArchive: document.getElementById('btnModeArchive'),
         groupSelect: document.getElementById('groupingSelect'),
         
-        // Contenitori Filtri (DIV nel DOM)
+        // Container Filtri Sidebar
         boxCommesse: document.getElementById('boxCommesse'),
         boxDipendenti: document.getElementById('boxDipendenti'),
         boxMacro: document.getElementById('boxMacro'),
         boxLavorazioni: document.getElementById('boxLavorazioni'),
         
-        // Azioni
+        // Azioni Principali
         btnContabilizza: document.getElementById('btnContabilizza'),
         
         // Footer Status Bar
@@ -49,11 +49,11 @@ const Dashboard = {
         selHours: document.getElementById('selHours'),
         statusMsg: document.getElementById('statusMsg'),
 
-        // Viste e Tab
+        // Navigazione Viste
         viewTabs: document.querySelectorAll('.tab-btn'),
         views: document.querySelectorAll('.view-panel'),
         
-        // KPI Sintesi
+        // KPI
         kpiTotal: document.getElementById('kpiTotalHours'),
         kpiPending: document.getElementById('kpiPending'),
         kpiDone: document.getElementById('kpiDone'),
@@ -68,21 +68,27 @@ const Dashboard = {
         btnExpandAll: document.getElementById('btnExpandAll'),
         btnCollapseAll: document.getElementById('btnCollapseAll'),
 
-        // NUOVI ELEMENTI MODALE CONFERMA
+        // --- ELEMENTI MODALE CONFERMA (Custom) ---
         confirmModal: document.getElementById('confirmModal'),
         confCount: document.getElementById('confCount'),
         confHours: document.getElementById('confHours'),
         btnCancelConfirm: document.getElementById('btnCancelConfirm'),
         btnProceedConfirm: document.getElementById('btnProceedConfirm'),
-        closeConfirmModal: document.getElementById('closeConfirmModal')
+        closeConfirmModal: document.getElementById('closeConfirmModal'),
+
+        // --- ELEMENTI MODALE EDIT (Generico riutilizzato) ---
+        customModalOverlay: document.getElementById('custom-modal-overlay'),
+        customModal: document.getElementById('custom-modal'),
+        customModalTitle: document.getElementById('custom-modal-title'),
+        customModalMessage: document.getElementById('custom-modal-message'),
+        customModalButtons: document.getElementById('custom-modal-buttons')
     },
 
     init: function() {
-        console.log("🚀 Dashboard Init Complete v3.0");
+        console.log("🚀 Dashboard Init v4.0 (Full Features)");
         this.initDates();
         this.addListeners();
         this.fetchData();
-        this.addListeners();
     },
 
     initDates: function() {
@@ -123,14 +129,12 @@ const Dashboard = {
         if(this.dom.btnCollapseAll) this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
         if(this.dom.detailSearch) this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
         
-        // 5. Contabilizza
-        if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
+        // 5. Contabilizza (Apre Modale Conferma)
+        if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.openContabilizzaModal());
 
-        // NUOVI LISTENERS PER IL MODALE
+        // 6. Listeners Modale Conferma
         if(this.dom.btnCancelConfirm) this.dom.btnCancelConfirm.addEventListener('click', () => this.closeConfirmModal());
         if(this.dom.closeConfirmModal) this.dom.closeConfirmModal.addEventListener('click', () => this.closeConfirmModal());
-        
-        // Cliccando "CONFERMA" nel modale
         if(this.dom.btnProceedConfirm) this.dom.btnProceedConfirm.addEventListener('click', () => this.finalizeContabilizzazione());
     },
 
@@ -145,7 +149,6 @@ const Dashboard = {
             this.state.activeStatuses.add(statusValue);
             btnElement.classList.add('active');
         }
-        // Resetta i filtri laterali quando cambi modalità per coerenza
         this.resetAllFilters();
         this.fetchData();
     },
@@ -173,8 +176,7 @@ const Dashboard = {
             if (this.dom.dateStart.value) params.append('start', this.dom.dateStart.value);
             if (this.dom.dateEnd.value) params.append('end', this.dom.dateEnd.value);
 
-            // Gestione Stato (0, 1 o Entrambi)
-            // Se sono selezionati entrambi (size=2), non inviamo 'stato' -> il backend restituisce tutto.
+            // Gestione Stato: se entrambi attivi, non invio parametro (backend restituisce tutto)
             if (this.state.activeStatuses.size === 1) {
                 const val = Array.from(this.state.activeStatuses)[0];
                 params.append('stato', val);
@@ -184,17 +186,16 @@ const Dashboard = {
             const payload = await res.json();
             
             this.state.rawData = payload.rows || [];
-            // Inizialmente i dati filtrati coincidono con quelli grezzi
             this.state.filteredData = [...this.state.rawData]; 
             
             this.buildSidebarFilters(); 
             this.applySidebarFilters();
             
-            if(this.dom.statusMsg) this.dom.statusMsg.textContent = "Dati aggiornati.";
+            if(this.dom.statusMsg) this.dom.statusMsg.textContent = "Pronto.";
             
         } catch (e) {
             console.error(e);
-            if(this.dom.statusMsg) this.dom.statusMsg.textContent = "Errore caricamento.";
+            if(this.dom.statusMsg) this.dom.statusMsg.textContent = "Errore.";
         } finally {
             btn.innerHTML = originalIcon;
             btn.disabled = false;
@@ -202,7 +203,7 @@ const Dashboard = {
     },
 
     // --- HELPER: FORMATTAZIONE ETICHETTA COMMESSA ---
-    getCommessaLabel: function(c) {
+    formatCommessaLabel: function(c) {
         if (!c) return 'Nessuna Commessa';
         const parts = [];
         // Ordine: Cliente | Impianto | VO | Rif
@@ -210,8 +211,7 @@ const Dashboard = {
         if (c.impianto) parts.push(c.impianto);
         if (c.vo) parts.push(c.vo);
         if (c.riferimento_tecnico) parts.push(c.riferimento_tecnico);
-        
-        return parts.length > 0 ? parts.join(' | ') : 'Dati mancanti';
+        return parts.length > 0 ? parts.join(' | ') : 'Dati incompleti';
     },
 
     // --- SIDEBAR FILTERS ---
@@ -224,27 +224,22 @@ const Dashboard = {
         };
         
         this.state.rawData.forEach(row => {
-            // Commessa (Etichetta complessa)
-            const cName = this.getCommessaLabel(row.commesse);
+            const cName = this.formatCommessaLabel(row.commesse);
             const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
             maps.commesse.set(cId, cName);
 
-            // Dipendente
             const dName = row.personale ? row.personale.nome_cognome : 'Ex Dipendente';
             const dId = row.personale ? String(row.personale.id_personale) : 'null';
             maps.dipendenti.set(dId, dName);
 
-            // Macro Categoria (usa nome backend)
             const mName = row.nome_macro || 'Nessun Reparto';
             maps.macro.set(mName, mName); 
 
-            // Lavorazione
             const lName = row.componenti ? row.componenti.nome_componente : 'Generico';
             const lId = row.componenti ? String(row.componenti.id_componente) : 'null';
             maps.lavorazioni.set(lId, lName);
         });
 
-        // Rendering dei Box Filtro
         this.renderSmartFilterBox(this.dom.boxCommesse, 'Commesse', maps.commesse, 'commesse');
         this.renderSmartFilterBox(this.dom.boxDipendenti, 'Dipendenti', maps.dipendenti, 'dipendenti');
         this.renderSmartFilterBox(this.dom.boxMacro, 'Macrocategorie', maps.macro, 'macro');
@@ -255,7 +250,7 @@ const Dashboard = {
         if(!containerBox) return;
         containerBox.innerHTML = ''; 
 
-        // Header con azioni
+        // Header
         const header = document.createElement('div');
         header.className = 'filter-header-smart';
         header.innerHTML = `
@@ -277,7 +272,6 @@ const Dashboard = {
         sorted.forEach(([id, label]) => {
             const row = document.createElement('label');
             row.innerHTML = `<input type="checkbox" value="${id}" checked> ${label}`;
-            
             row.querySelector('input').addEventListener('change', () => {
                 this.updateFilterSet(filterKey, listDiv);
                 this.applySidebarFilters();
@@ -285,30 +279,13 @@ const Dashboard = {
             listDiv.appendChild(row);
         });
 
-        // Eventi Toggle Apertura/Chiusura
-        header.querySelector('.fh-title').addEventListener('click', () => {
-            containerBox.classList.toggle('collapsed');
-        });
-
-        // Eventi Azioni di Massa
-        header.querySelector('.btn-check-all').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setAllCheckboxes(listDiv, true);
-            this.updateFilterSet(filterKey, listDiv);
-            this.applySidebarFilters();
-        });
-
-        header.querySelector('.btn-uncheck-all').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setAllCheckboxes(listDiv, false);
-            this.updateFilterSet(filterKey, listDiv);
-            this.applySidebarFilters();
-        });
+        // Eventi
+        header.querySelector('.fh-title').addEventListener('click', () => { containerBox.classList.toggle('collapsed'); });
+        header.querySelector('.btn-check-all').addEventListener('click', (e) => { e.stopPropagation(); this.setAllCheckboxes(listDiv, true); this.updateFilterSet(filterKey, listDiv); this.applySidebarFilters(); });
+        header.querySelector('.btn-uncheck-all').addEventListener('click', (e) => { e.stopPropagation(); this.setAllCheckboxes(listDiv, false); this.updateFilterSet(filterKey, listDiv); this.applySidebarFilters(); });
 
         containerBox.appendChild(header);
         containerBox.appendChild(listDiv);
-
-        // Init Set
         this.updateFilterSet(filterKey, listDiv);
     },
 
@@ -325,19 +302,14 @@ const Dashboard = {
 
     applySidebarFilters: function() {
         const f = this.state.filters;
-        
         this.state.filteredData = this.state.rawData.filter(row => {
             const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
             const dId = row.personale ? String(row.personale.id_personale) : 'null';
             const lId = row.componenti ? String(row.componenti.id_componente) : 'null';
             const mName = row.nome_macro || 'Nessun Reparto'; 
 
-            return f.commesse.has(cId) && 
-                   f.dipendenti.has(dId) &&
-                   f.macro.has(mName) &&
-                   f.lavorazioni.has(lId);
+            return f.commesse.has(cId) && f.dipendenti.has(dId) && f.macro.has(mName) && f.lavorazioni.has(lId);
         });
-
         this.renderAll();
     },
 
@@ -368,11 +340,10 @@ const Dashboard = {
 
         if(!this.dom.canvasDist || !this.dom.canvasTimeline) return;
 
-        // Distribuzione (in base al raggruppamento attivo)
+        // Distribuzione
         const labels = {};
         this.state.filteredData.forEach(r => {
             let key = this.getGroupKey(r, this.state.grouping).label;
-            // Pulizia label per il grafico (toglie le emoji se presenti)
             key = key.replace(/📂|🏗️|🔧|👤/g, '').trim(); 
             labels[key] = (labels[key] || 0) + r.ore;
         });
@@ -384,11 +355,7 @@ const Dashboard = {
                 labels: Object.keys(labels),
                 datasets: [{ data: Object.values(labels), backgroundColor: this.getColors(Object.keys(labels).length) }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
 
         // Timeline
@@ -410,10 +377,10 @@ const Dashboard = {
         });
     },
 
+    // --- GRID RENDER ---
     renderGrid: function() {
         const container = this.dom.gridContainer;
         if(!container) return;
-        
         container.innerHTML = '';
         
         if (this.state.filteredData.length === 0) {
@@ -449,7 +416,10 @@ const Dashboard = {
             const body = document.createElement('div');
             body.className = 'group-body';
             
-            let rowsHtml = '';
+            const table = document.createElement('table');
+            table.innerHTML = `<thead><tr><th width="30"><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Lavorazione</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+
             g.rows.forEach(r => {
                 const date = new Date(r.data_lavoro).toLocaleDateString();
                 const person = r.personale ? r.personale.nome_cognome : '-';
@@ -457,20 +427,30 @@ const Dashboard = {
                 const macro = r.nome_macro || ''; 
                 const note = r.note || '';
                 
-                rowsHtml += `
-                    <tr>
-                        <td width="30"><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
-                        <td width="90">${date}</td>
-                        <td width="150" title="${person}">${person}</td>
-                        <td title="${macro} > ${task}">${task} <span style="color:#999; font-size:0.7em;">(${macro})</span></td>
-                        <td width="60" style="font-weight:bold; text-align:center;">${r.ore}</td>
-                        <td><small>${note}</small></td>
-                        <td width="40" style="text-align:center;"><button class="btn-icon">✏️</button></td>
-                    </tr>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td width="30"><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
+                    <td width="90">${date}</td>
+                    <td width="150" title="${person}">${person}</td>
+                    <td title="${macro} > ${task}">${task} <span style="color:#999; font-size:0.7em;">(${macro})</span></td>
+                    <td width="60" style="font-weight:bold; text-align:center;">${r.ore}</td>
+                    <td><small>${note}</small></td>
+                    <td width="40" style="text-align:center;"><button class="btn-icon" title="Modifica">✏️</button></td>
                 `;
+                
+                // EVENTO EDIT
+                tr.querySelector('.btn-icon').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openEditModal(r);
+                });
+
+                // EVENTO CHECKBOX SINGOLA
+                tr.querySelector('.row-check').addEventListener('change', () => this.updateSelectionSummary());
+                
+                tbody.appendChild(tr);
             });
             
-            body.innerHTML = `<table><thead><tr><th><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Lavorazione</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+            body.appendChild(table);
             
             // Accordion Toggle
             header.addEventListener('click', (e) => {
@@ -488,15 +468,158 @@ const Dashboard = {
                 this.updateSelectionSummary();
             });
 
-            // Checkbox Righe Singole
-            body.querySelectorAll('.row-check').forEach(cb => {
-                cb.addEventListener('change', () => this.updateSelectionSummary());
-            });
-            
             groupHtml.appendChild(header);
             groupHtml.appendChild(body);
             container.appendChild(groupHtml);
         });
+    },
+
+    // --- FUNZIONI MODIFICA RAPIDA ---
+    openEditModal: function(row) {
+        this.state.editingRow = row;
+        
+        const overlay = this.dom.customModalOverlay;
+        const title = document.getElementById('custom-modal-title');
+        const message = document.getElementById('custom-modal-message');
+        const buttons = document.getElementById('custom-modal-buttons');
+
+        title.textContent = "Modifica Registrazione";
+        message.innerHTML = "";
+
+        // Form HTML
+        const formHtml = `
+            <div class="edit-form-row">
+                <label>Data</label>
+                <input type="date" id="editData" class="edit-input" value="${row.data_lavoro.split('T')[0]}">
+            </div>
+            <div class="edit-form-row">
+                <label>Ore</label>
+                <input type="number" id="editOre" class="edit-input" value="${row.ore}" step="0.5">
+            </div>
+            <div class="edit-form-row">
+                <label>Note</label>
+                <textarea id="editNote" class="edit-input">${row.note || ''}</textarea>
+            </div>
+            <div class="edit-form-row">
+                <label>Stato</label>
+                <select id="editStato" class="edit-input">
+                    <option value="0" ${row.stato === 0 ? 'selected' : ''}>Da Validare</option>
+                    <option value="1" ${row.stato === 1 ? 'selected' : ''}>Contabilizzato</option>
+                </select>
+            </div>
+        `;
+        
+        const formContainer = document.createElement('div');
+        formContainer.innerHTML = formHtml;
+        message.appendChild(formContainer);
+
+        // Bottoni
+        buttons.innerHTML = '';
+        const btnCancel = document.createElement('button');
+        btnCancel.textContent = "Annulla";
+        btnCancel.className = "btn-secondary"; 
+        btnCancel.onclick = () => { overlay.style.display = 'none'; };
+
+        const btnSave = document.createElement('button');
+        btnSave.textContent = "Salva";
+        btnSave.className = "btn-primary-large";
+        btnSave.style.width = "auto";
+        btnSave.onclick = () => this.saveEdit();
+
+        buttons.appendChild(btnCancel);
+        buttons.appendChild(btnSave);
+
+        overlay.style.display = 'flex';
+    },
+
+    saveEdit: async function() {
+        const row = this.state.editingRow;
+        if (!row) return;
+
+        const newData = document.getElementById('editData').value;
+        const newOre = parseFloat(document.getElementById('editOre').value);
+        const newNote = document.getElementById('editNote').value;
+        const newStato = parseInt(document.getElementById('editStato').value);
+
+        if (!newData || isNaN(newOre)) return alert("Dati non validi.");
+
+        this.dom.customModalOverlay.style.display = 'none';
+        
+        // Payload di aggiornamento (Strategia Delete + Insert per ricalcolo)
+        const payload = {
+            id_personale_override: row.personale.id_personale, 
+            data: newData,
+            ore: newOre,
+            note: newNote,
+            stato: newStato,
+            id_commessa: row.commesse ? row.commesse.id_commessa : null,
+            id_componente: row.componenti ? row.componenti.id_componente : null
+        };
+
+        try {
+            await apiFetch(`/api/ore/${row.id_registrazione}`, { method: 'DELETE' });
+            await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+            
+            showModal({ title: "Successo", message: "Modifica salvata." });
+            this.fetchData(); 
+
+        } catch (e) {
+            console.error(e);
+            alert("Errore salvataggio: " + e.message);
+        }
+    },
+
+    // --- CONFERMA CONTABILIZZAZIONE ---
+    updateSelectionSummary: function() {
+        const checkedBoxes = document.querySelectorAll('.row-check:checked');
+        const count = checkedBoxes.length;
+        let totalHours = 0;
+        
+        const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
+        checkedBoxes.forEach(cb => {
+            totalHours += (rowsMap.get(parseInt(cb.value)) || 0);
+        });
+
+        if(this.dom.selCount) this.dom.selCount.textContent = count;
+        if(this.dom.selHours) this.dom.selHours.textContent = totalHours.toFixed(1);
+    },
+
+    openContabilizzaModal: function() {
+        const checked = document.querySelectorAll('.row-check:checked');
+        if (checked.length === 0) return alert("Seleziona almeno una riga.");
+        
+        const ids = Array.from(checked).map(cb => parseInt(cb.value));
+        this.state.pendingIds = ids; 
+
+        // Totali
+        let totalHours = 0;
+        const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
+        ids.forEach(id => totalHours += (rowsMap.get(id) || 0));
+
+        // Popola Modale
+        this.dom.confCount.textContent = ids.length;
+        this.dom.confHours.textContent = totalHours.toFixed(1) + " h";
+        this.dom.confirmModal.style.display = 'flex';
+    },
+
+    finalizeContabilizzazione: async function() {
+        const ids = this.state.pendingIds;
+        if (!ids || ids.length === 0) return;
+        const btn = this.dom.btnProceedConfirm;
+        btn.textContent = "Elaborazione..."; btn.disabled = true;
+
+        try {
+            await apiFetch('/api/dashboard/contabilizza', { method: 'POST', body: JSON.stringify({ ids }) });
+            this.closeConfirmModal();
+            showModal({ title: "Successo", message: `${ids.length} registrazioni contabilizzate.` });
+            this.fetchData();
+        } catch(e) { alert("Errore: " + e.message); } 
+        finally { btn.textContent = "CONFERMA"; btn.disabled = false; }
+    },
+
+    closeConfirmModal: function() {
+        this.dom.confirmModal.style.display = 'none';
+        this.state.pendingIds = [];
     },
 
     // --- UTILS ---
@@ -504,7 +627,7 @@ const Dashboard = {
         if (mode === 'commessa') {
             return { 
                 id: row.commesse ? row.commesse.id_commessa : 'nc', 
-                label: `📂 ${this.getCommessaLabel(row.commesse)}`
+                label: `📂 ${this.formatCommessaLabel(row.commesse)}`
             };
         }
         if (mode === 'dipendente') {
@@ -534,84 +657,6 @@ const Dashboard = {
         document.querySelectorAll('.toggle-icon').forEach(el => {
             el.textContent = open ? '▼' : '▶';
         });
-    },
-
-    // --- CALCOLO TOTALI FOOTER ---
-    updateSelectionSummary: function() {
-        const checkedBoxes = document.querySelectorAll('.row-check:checked');
-        const count = checkedBoxes.length;
-        
-        let totalHours = 0;
-        
-        // Mappa ID -> Ore per performance
-        const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
-
-        checkedBoxes.forEach(cb => {
-            const id = parseInt(cb.value);
-            const ore = rowsMap.get(id) || 0;
-            totalHours += ore;
-        });
-
-        // Aggiorna UI Footer
-        if(this.dom.selCount) this.dom.selCount.textContent = count;
-        if(this.dom.selHours) this.dom.selHours.textContent = totalHours.toFixed(1);
-    },
-
-    contabilizzaSelection: function() {
-        const checked = document.querySelectorAll('.row-check:checked');
-        if (checked.length === 0) return alert("Seleziona almeno una riga.");
-        
-        // 1. Raccogli gli ID
-        const ids = Array.from(checked).map(cb => parseInt(cb.value));
-        this.state.pendingIds = ids; // Salva nello stato temporaneo
-
-        // 2. Calcola i totali per il riepilogo
-        let totalHours = 0;
-        const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
-        ids.forEach(id => {
-            totalHours += (rowsMap.get(id) || 0);
-        });
-
-        // 3. Popola e Mostra Modale
-        this.dom.confCount.textContent = ids.length;
-        this.dom.confHours.textContent = totalHours.toFixed(1) + " h";
-        
-        // Usa flex per centrare (come definito nel CSS .modal)
-        this.dom.confirmModal.style.display = 'flex'; 
-    },
-
-    // --- NUOVA: Esegue l'API dopo la conferma ---
-    finalizeContabilizzazione: async function() {
-        const ids = this.state.pendingIds;
-        if (!ids || ids.length === 0) return;
-
-        // Feedback visivo sul bottone conferma
-        const btn = this.dom.btnProceedConfirm;
-        const oldText = btn.textContent;
-        btn.textContent = "Elaborazione...";
-        btn.disabled = true;
-
-        try {
-            await apiFetch('/api/dashboard/contabilizza', {
-                method: 'POST',
-                body: JSON.stringify({ ids })
-            });
-            
-            this.closeConfirmModal();
-            showModal({ title: "Successo", message: `${ids.length} registrazioni contabilizzate.` });
-            this.fetchData(); // Ricarica la tabella
-            
-        } catch(e) {
-            alert("Errore: " + e.message);
-        } finally {
-            btn.textContent = oldText;
-            btn.disabled = false;
-        }
-    },
-
-    closeConfirmModal: function() {
-        this.dom.confirmModal.style.display = 'none';
-        this.state.pendingIds = [];
     },
 
     filterGridLocal: function(term) {
