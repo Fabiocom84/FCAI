@@ -50,20 +50,33 @@
                     </div>
                 </div>
 
-                <!-- FILTRI RAPIDI -->
+                <!-- FILTRI RAPIDI (Aggiornato) -->
                 <div class="sidebar-section grow-section">
-                    <h3>Filtri Rapidi</h3>
-                    
+                    <h3>Filtri Avanzati</h3>
+            
                     <div class="filter-accordion">
-                        <div class="filter-box">
-                            <div class="filter-header">Commesse (<span id="countCommesse">0</span>)</div>
+                
+                        <!-- 1. COMMESSE -->
+                        <div class="filter-box" id="boxCommesse">
+                            <!-- Header generato via JS con controlli -->
                             <div class="filter-list" id="listFilterCommesse"></div>
                         </div>
 
-                        <div class="filter-box" style="margin-top: 10px;">
-                            <div class="filter-header">Dipendenti (<span id="countDipendenti">0</span>)</div>
+                        <!-- 2. MACROCATEGORIE (Nuovo) -->
+                        <div class="filter-box" id="boxMacro">
+                            <div class="filter-list" id="listFilterMacro"></div>
+                        </div>
+
+                        <!-- 3. LAVORAZIONI (Nuovo) -->
+                        <div class="filter-box" id="boxLavorazioni">
+                            <div class="filter-list" id="listFilterLavorazioni"></div>
+                        </div>
+
+                        <!-- 4. DIPENDENTI -->
+                        <div class="filter-box" id="boxDipendenti">
                             <div class="filter-list" id="listFilterDipendenti"></div>
                         </div>
+
                     </div>
                 </div>
 

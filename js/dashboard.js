@@ -7,18 +7,18 @@ const Dashboard = {
     state: {
         rawData: [],
         filteredData: [],
-        // activeStatuses: Set che contiene '0' e/o '1'. 
-        // Default: solo '0' (Da Validare)
         activeStatuses: new Set(['0']), 
         grouping: 'commessa', 
+        
+        // --- NUOVI STATI FILTRI ---
         filters: {
             commesse: new Set(),
-            dipendenti: new Set()
+            dipendenti: new Set(),
+            macro: new Set(),
+            lavorazioni: new Set()
         },
-        charts: {
-            dist: null,
-            time: null
-        }
+        
+        charts: { dist: null, time: null }
     },
 
     dom: {
@@ -26,17 +26,16 @@ const Dashboard = {
         dateEnd: document.getElementById('dateEnd'),
         btnRefresh: document.getElementById('btnRefresh'),
         
-        // Mode Buttons (ora indipendenti)
         btnInbox: document.getElementById('btnModeInbox'),
         btnArchive: document.getElementById('btnModeArchive'),
-        
-        // Select Grouping (Nuovo)
         groupSelect: document.getElementById('groupingSelect'),
         
-        listCommesse: document.getElementById('listFilterCommesse'),
-        listDipendenti: document.getElementById('listFilterDipendenti'),
-        countCommesse: document.getElementById('countCommesse'),
-        countDipendenti: document.getElementById('countDipendenti'),
+        // --- CONTENITORI LISTE FILTRI ---
+        // Nota: Ora puntiamo ai DIV .filter-box per iniettare tutto (header + lista)
+        boxCommesse: document.getElementById('boxCommesse'),
+        boxDipendenti: document.getElementById('boxDipendenti'),
+        boxMacro: document.getElementById('boxMacro'),
+        boxLavorazioni: document.getElementById('boxLavorazioni'),
         
         selectionSummary: document.getElementById('selectionSummary'),
         btnContabilizza: document.getElementById('btnContabilizza'),
@@ -58,7 +57,7 @@ const Dashboard = {
     },
 
     init: function() {
-        console.log("🚀 Dashboard Init (Multi-Mode)");
+        console.log("🚀 Dashboard Init (Advanced Filters)");
         this.initDates();
         this.addListeners();
         this.fetchData();
@@ -70,14 +69,10 @@ const Dashboard = {
     },
 
     addListeners: function() {
-        // 1. Refresh
         if(this.dom.btnRefresh) this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
-        
-        // 2. Toggle Status (Multipla selezione)
         if(this.dom.btnInbox) this.dom.btnInbox.addEventListener('click', () => this.toggleStatus('0', this.dom.btnInbox));
         if(this.dom.btnArchive) this.dom.btnArchive.addEventListener('click', () => this.toggleStatus('1', this.dom.btnArchive));
 
-        // 3. Raggruppamento (Select)
         if(this.dom.groupSelect) {
             this.dom.groupSelect.addEventListener('change', (e) => {
                 this.state.grouping = e.target.value;
@@ -85,31 +80,24 @@ const Dashboard = {
             });
         }
 
-        // 4. Tab Switching
         this.dom.viewTabs.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.dom.viewTabs.forEach(b => b.classList.remove('active'));
                 this.dom.views.forEach(v => v.classList.remove('active'));
-                
                 e.target.classList.add('active');
                 const target = document.getElementById(e.target.dataset.target);
                 if(target) target.classList.add('active');
             });
         });
 
-        // 5. Grid Actions
         if(this.dom.btnExpandAll) this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
         if(this.dom.btnCollapseAll) this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
         if(this.dom.detailSearch) this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
-        
-        // 6. Contabilizza
         if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.contabilizzaSelection());
     },
 
     toggleStatus: function(statusValue, btnElement) {
-        // Logica Toggle
         if (this.state.activeStatuses.has(statusValue)) {
-            // Non permettiamo di spegnere tutto: deve rimanerne almeno uno attivo
             if (this.state.activeStatuses.size > 1) {
                 this.state.activeStatuses.delete(statusValue);
                 btnElement.classList.remove('active');
@@ -118,14 +106,18 @@ const Dashboard = {
             this.state.activeStatuses.add(statusValue);
             btnElement.classList.add('active');
         }
-        
-        // Ricarica i dati
-        this.state.filters.commesse.clear();
-        this.state.filters.dipendenti.clear();
+        // Reset filtri al cambio modalità per evitare stati inconsistenti
+        this.resetAllFilters();
         this.fetchData();
     },
 
-    // --- DATA FETCHING ---
+    resetAllFilters: function() {
+        this.state.filters.commesse.clear();
+        this.state.filters.dipendenti.clear();
+        this.state.filters.macro.clear();
+        this.state.filters.lavorazioni.clear();
+    },
+
     fetchData: async function() {
         const btn = this.dom.btnRefresh;
         const originalIcon = btn.innerHTML; 
@@ -134,33 +126,20 @@ const Dashboard = {
 
         try {
             const params = new URLSearchParams();
-            
-            // Date (opzionali)
             if (this.dom.dateStart.value) params.append('start', this.dom.dateStart.value);
             if (this.dom.dateEnd.value) params.append('end', this.dom.dateEnd.value);
 
-            // Stato (0, 1 o entrambi)
-            // Se nel backend dashboard.py la logica è:
-            // "if stato is not None: query.eq(stato)" -> questo supporta UN solo valore.
-            // PER SUPPORTARE ENTRAMBI SENZA MODIFICARE BACKEND:
-            // Se activeStatuses contiene sia '0' che '1', NON inviamo il parametro 'stato'.
-            // Così il backend non filtra e restituisce tutto.
-            
             if (this.state.activeStatuses.size === 1) {
-                // Invia solo quello attivo (0 o 1)
                 const val = Array.from(this.state.activeStatuses)[0];
                 params.append('stato', val);
-            } 
-            // Se size è 2 (entrambi), non appendiamo nulla -> Backend restituisce tutto.
-
-            console.log("Fetching params:", params.toString());
+            }
 
             const res = await apiFetch(`/api/dashboard/stats?${params.toString()}`);
             const payload = await res.json();
             
             this.state.rawData = payload.rows || [];
-            
             this.state.filteredData = [...this.state.rawData]; 
+            
             this.buildSidebarFilters(); 
             this.applySidebarFilters();
             
@@ -172,50 +151,112 @@ const Dashboard = {
         }
     },
 
-    // --- SIDEBAR FILTERS ---
+    // --- LOGICA FILTRI AVANZATA ---
     buildSidebarFilters: function() {
-        const commesse = new Map();
-        const dipendenti = new Map();
+        const maps = {
+            commesse: new Map(),
+            dipendenti: new Map(),
+            macro: new Map(),
+            lavorazioni: new Map()
+        };
         
         this.state.rawData.forEach(row => {
-            const cName = row.commesse ? row.commesse.impianto : 'N/D';
-            const cId = row.commesse ? row.commesse.id_commessa : 'null';
+            // Commesse
+            const cName = row.commesse ? row.commesse.impianto : 'Nessuna Commessa';
+            const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
+            maps.commesse.set(cId, cName);
+
+            // Dipendenti
             const dName = row.personale ? row.personale.nome_cognome : 'Ex Dipendente';
-            const dId = row.personale ? row.personale.id_personale : 'null';
-            
-            commesse.set(cId, cName);
-            dipendenti.set(dId, dName);
+            const dId = row.personale ? String(row.personale.id_personale) : 'null';
+            maps.dipendenti.set(dId, dName);
+
+            // Macro Categorie (Nome dal backend)
+            const mName = row.nome_macro || 'Nessun Reparto';
+            // Usiamo il nome come ID univoco per il filtro frontend
+            maps.macro.set(mName, mName); 
+
+            // Lavorazioni (Componenti)
+            const lName = row.componenti ? row.componenti.nome_componente : 'Generico';
+            const lId = row.componenti ? String(row.componenti.id_componente) : 'null';
+            maps.lavorazioni.set(lId, lName);
         });
 
-        this.renderFilterList(this.dom.listCommesse, commesse, 'commesse', this.dom.countCommesse);
-        this.renderFilterList(this.dom.listDipendenti, dipendenti, 'dipendenti', this.dom.countDipendenti);
+        // Renderizza i 4 box
+        this.renderSmartFilterBox(this.dom.boxCommesse, 'Commesse', maps.commesse, 'commesse');
+        this.renderSmartFilterBox(this.dom.boxDipendenti, 'Dipendenti', maps.dipendenti, 'dipendenti');
+        this.renderSmartFilterBox(this.dom.boxMacro, 'Macrocategorie', maps.macro, 'macro');
+        this.renderSmartFilterBox(this.dom.boxLavorazioni, 'Lavorazioni', maps.lavorazioni, 'lavorazioni');
     },
 
-    renderFilterList: function(container, map, filterKey, countEl) {
-        if(!container) return;
-        container.innerHTML = '';
-        if(countEl) countEl.textContent = map.size;
-        
-        const sorted = Array.from(map.entries()).sort((a,b) => a[1].localeCompare(b[1]));
+    /**
+     * Crea un box filtro completo con Header, Azioni e Lista
+     */
+    renderSmartFilterBox: function(containerBox, title, mapData, filterKey) {
+        if(!containerBox) return;
+        containerBox.innerHTML = ''; // Pulisci
 
+        // 1. Crea Header con azioni
+        const header = document.createElement('div');
+        header.className = 'filter-header-smart';
+        header.innerHTML = `
+            <div class="fh-title">
+                <span class="toggle-arrow">▼</span> ${title} <small>(${mapData.size})</small>
+            </div>
+            <div class="fh-actions">
+                <button class="action-mini-btn btn-check-all" title="Seleziona Tutti">☑️</button>
+                <button class="action-mini-btn btn-uncheck-all" title="Deseleziona Tutti">⬜</button>
+            </div>
+        `;
+
+        // 2. Crea Lista
+        const listDiv = document.createElement('div');
+        listDiv.className = 'filter-list';
+
+        const sorted = Array.from(mapData.entries()).sort((a,b) => a[1].localeCompare(b[1]));
+        
         sorted.forEach(([id, label]) => {
-            const div = document.createElement('label');
-            div.innerHTML = `<input type="checkbox" value="${id}" checked> ${label}`;
-            
-            div.querySelector('input').addEventListener('change', () => {
-                this.updateFilterSet(filterKey);
+            const row = document.createElement('label');
+            row.innerHTML = `<input type="checkbox" value="${id}" checked> ${label}`;
+            row.querySelector('input').addEventListener('change', () => {
+                this.updateFilterSet(filterKey, listDiv);
                 this.applySidebarFilters();
             });
-            container.appendChild(div);
+            listDiv.appendChild(row);
         });
-        
-        this.updateFilterSet(filterKey);
+
+        // 3. Eventi Header (Toggle)
+        header.querySelector('.fh-title').addEventListener('click', () => {
+            containerBox.classList.toggle('collapsed');
+        });
+
+        // 4. Eventi Azioni Massiva (Stop Propagation per non chiudere il box)
+        header.querySelector('.btn-check-all').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.setAllCheckboxes(listDiv, true);
+            this.updateFilterSet(filterKey, listDiv);
+            this.applySidebarFilters();
+        });
+
+        header.querySelector('.btn-uncheck-all').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.setAllCheckboxes(listDiv, false);
+            this.updateFilterSet(filterKey, listDiv);
+            this.applySidebarFilters();
+        });
+
+        containerBox.appendChild(header);
+        containerBox.appendChild(listDiv);
+
+        // Inizializza il Set interno
+        this.updateFilterSet(filterKey, listDiv);
     },
 
-    updateFilterSet: function(key) {
-        const container = key === 'commesse' ? this.dom.listCommesse : this.dom.listDipendenti;
-        if(!container) return;
-        
+    setAllCheckboxes: function(container, checked) {
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = checked);
+    },
+
+    updateFilterSet: function(key, container) {
         const checkboxes = container.querySelectorAll('input:checked');
         const set = this.state.filters[key];
         set.clear();
@@ -223,18 +264,30 @@ const Dashboard = {
     },
 
     applySidebarFilters: function() {
-        const { commesse, dipendenti } = this.state.filters;
+        const f = this.state.filters;
         
         this.state.filteredData = this.state.rawData.filter(row => {
             const cId = row.commesse ? String(row.commesse.id_commessa) : 'null';
             const dId = row.personale ? String(row.personale.id_personale) : 'null';
-            return commesse.has(cId) && dipendenti.has(dId);
+            const lId = row.componenti ? String(row.componenti.id_componente) : 'null';
+            const mName = row.nome_macro || 'Nessun Reparto'; // La chiave per macro è il nome
+
+            // Logica AND tra categorie (deve soddisfare TUTTE le categorie attive)
+            // Logica OR dentro la categoria (basta che sia in uno dei check selezionati)
+            
+            // Nota: Se un set è vuoto (tutto deselezionato), filtriamo tutto via?
+            // Sì, comportamento standard dei filtri.
+            
+            return f.commesse.has(cId) && 
+                   f.dipendenti.has(dId) &&
+                   f.macro.has(mName) &&
+                   f.lavorazioni.has(lId);
         });
 
         this.renderAll();
     },
 
-    // --- RENDER MAIN ---
+    // --- RENDER MAIN (Invariato ma richiamato dai nuovi filtri) ---
     renderAll: function() {
         this.calculateKPI();
         this.renderCharts();
@@ -261,9 +314,9 @@ const Dashboard = {
 
         if(!this.dom.canvasDist || !this.dom.canvasTimeline) return;
 
-        // 1. Distribution (Grouping corrente)
         const labels = {};
         this.state.filteredData.forEach(r => {
+            // Usa il raggruppamento corrente per il grafico a torta
             let key = this.getGroupKey(r, this.state.grouping).label;
             labels[key] = (labels[key] || 0) + r.ore;
         });
@@ -275,10 +328,9 @@ const Dashboard = {
                 labels: Object.keys(labels),
                 datasets: [{ data: Object.values(labels), backgroundColor: this.getColors(Object.keys(labels).length) }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
 
-        // 2. Timeline (Per giorno)
         const days = {};
         this.state.filteredData.forEach(r => {
             const d = r.data_lavoro.split('T')[0];
@@ -308,7 +360,6 @@ const Dashboard = {
             return;
         }
 
-        // 1. Raggruppa i dati
         const groups = {};
         this.state.filteredData.forEach(row => {
             const { id, label } = this.getGroupKey(row, this.state.grouping);
@@ -317,7 +368,6 @@ const Dashboard = {
             groups[id].total += row.ore;
         });
 
-        // 2. Crea HTML
         Object.values(groups).forEach(g => {
             const groupHtml = document.createElement('div');
             groupHtml.className = 'grid-group';
@@ -330,7 +380,7 @@ const Dashboard = {
                     <span>${g.label}</span>
                 </div>
                 <div class="gh-right">
-                    <span style="margin-right:15px;">Tot: ${g.total.toFixed(1)}h</span>
+                    <span style="margin-right:15px; font-weight:normal; font-size:0.8rem;">Tot: <b>${g.total.toFixed(1)}h</b></span>
                     <input type="checkbox" class="group-check" title="Seleziona Gruppo">
                 </div>
             `;
@@ -338,30 +388,29 @@ const Dashboard = {
             const body = document.createElement('div');
             body.className = 'group-body';
             
-            // Tabella righe
             let rowsHtml = '';
             g.rows.forEach(r => {
                 const date = new Date(r.data_lavoro).toLocaleDateString();
                 const person = r.personale ? r.personale.nome_cognome : '-';
-                const task = r.componenti ? r.componenti.nome_componente : (r.commesse ? r.commesse.impianto : '-');
+                const task = r.componenti ? r.componenti.nome_componente : '-';
+                const macro = r.nome_macro || ''; // Aggiungo info macro nella griglia per chiarezza
                 const note = r.note || '';
                 
                 rowsHtml += `
                     <tr>
                         <td width="30"><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
-                        <td>${date}</td>
-                        <td>${person}</td>
-                        <td>${task}</td>
-                        <td width="60" style="font-weight:bold;">${r.ore}</td>
+                        <td width="90">${date}</td>
+                        <td width="150" title="${person}">${person}</td>
+                        <td title="${macro} > ${task}">${task} <span style="color:#999; font-size:0.7em;">(${macro})</span></td>
+                        <td width="60" style="font-weight:bold; text-align:center;">${r.ore}</td>
                         <td><small>${note}</small></td>
-                        <td width="40"><button class="btn-icon">✏️</button></td>
+                        <td width="40" style="text-align:center;"><button class="btn-icon">✏️</button></td>
                     </tr>
                 `;
             });
             
-            body.innerHTML = `<table><thead><tr><th><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Cosa</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+            body.innerHTML = `<table><thead><tr><th><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Lavorazione</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
             
-            // Eventi Accordion
             header.addEventListener('click', (e) => {
                 if(e.target.type !== 'checkbox') {
                     body.classList.toggle('open');
@@ -369,17 +418,13 @@ const Dashboard = {
                 }
             });
 
-            // Checkbox Gruppo
             const groupCheck = header.querySelector('.group-check');
             groupCheck.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
-                body.querySelectorAll('.row-check').forEach(cb => {
-                    cb.checked = isChecked;
-                });
+                body.querySelectorAll('.row-check').forEach(cb => cb.checked = isChecked);
                 this.updateSelectionSummary();
             });
 
-            // Checkbox Righe
             body.querySelectorAll('.row-check').forEach(cb => {
                 cb.addEventListener('change', () => this.updateSelectionSummary());
             });
@@ -390,7 +435,6 @@ const Dashboard = {
         });
     },
 
-    // --- UTILS ---
     getGroupKey: function(row, mode) {
         if (mode === 'commessa') {
             return { 
@@ -404,14 +448,9 @@ const Dashboard = {
                 label: row.personale ? row.personale.nome_cognome : 'Ignoto'
             };
         }
-        // --- MODIFICA QUI PER MACROCATEGORIA ---
         if (mode === 'macro') {
-            // Ora usiamo il campo 'nome_macro' calcolato dal backend
-            const macroLabel = row.nome_macro || 'Nessun Reparto';
-            return {
-                id: macroLabel, // Usiamo il nome come ID per il raggruppamento
-                label: `🏗️ ${macroLabel}`
-            };
+            const m = row.nome_macro || 'Nessun Reparto';
+            return { id: m, label: `🏗️ ${m}` };
         }
         if (mode === 'lavorazione') {
             return {
@@ -419,7 +458,6 @@ const Dashboard = {
                 label: row.componenti ? row.componenti.nome_componente : 'Nessuna Lavorazione'
             };
         }
-        // Fallback generico
         return { id: 'all', label: 'Tutti' };
     },
 
@@ -443,7 +481,6 @@ const Dashboard = {
         if (checked.length === 0) return alert("Seleziona almeno una riga.");
         
         const ids = Array.from(checked).map(cb => parseInt(cb.value));
-        
         if (!confirm(`Confermi la contabilizzazione di ${ids.length} registrazioni?`)) return;
 
         try {
@@ -451,13 +488,9 @@ const Dashboard = {
                 method: 'POST',
                 body: JSON.stringify({ ids })
             });
-            
-            showModal({ title: "Successo", message: "Righe contabilizzate correttamente." });
-            this.fetchData(); // Ricarica
-            
-        } catch(e) {
-            alert("Errore: " + e.message);
-        }
+            showModal({ title: "Successo", message: "Righe contabilizzate." });
+            this.fetchData(); 
+        } catch(e) { alert("Errore: " + e.message); }
     },
 
     filterGridLocal: function(term) {

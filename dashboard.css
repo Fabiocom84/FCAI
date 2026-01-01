@@ -157,35 +157,94 @@ body {
     flex-direction: column;
     gap: 10px;
 }
+/* FILTRI AVANZATI */
 .filter-box {
     background: white;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    max-height: 250px;
+    margin-bottom: 8px; /* Spazio tra i box */
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    overflow: hidden; /* Per nascondere la lista quando chiusa */
+    flex-shrink: 0;   /* Evita che si schiaccino troppo */
 }
-.filter-header {
+
+/* Header del Filtro con Azioni */
+.filter-header-smart {
     background: #f1f2f6;
-    padding: 6px 10px;
-    font-size: 0.75rem;
-    font-weight: bold;
+    padding: 6px 8px;
     border-bottom: 1px solid #ddd;
-    color: #2c3e50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
 }
-.filter-list { padding: 5px; overflow-y: auto; flex: 1; }
+.filter-header-smart:hover { background: #e2e6ea; }
+
+.fh-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Icona Freccia */
+.toggle-arrow {
+    font-size: 0.65rem;
+    transition: transform 0.2s;
+    display: inline-block;
+    color: #7f8c8d;
+}
+.filter-box.collapsed .toggle-arrow { transform: rotate(-90deg); }
+
+/* Controlli (Seleziona/Deseleziona Tutto) */
+.fh-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.action-mini-btn {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    background: white;
+    border: 1px solid #ccc;
+    line-height: 1;
+    opacity: 0.7;
+}
+.action-mini-btn:hover {
+    opacity: 1;
+    background: #fff;
+    border-color: #999;
+}
+
+/* Stato Chiuso */
+.filter-box.collapsed .filter-list {
+    max-height: 0;
+    padding: 0;
+    border-bottom: none;
+}
+
+/* Item Lista */
 .filter-list label {
-    display: block;
-    padding: 4px 6px;
-    font-size: 0.85rem;
+    display: flex; /* Flex per allineare checkbox e testo */
+    align-items: center;
+    gap: 6px;
+    padding: 3px 5px;
+    font-size: 0.8rem;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border-bottom: 1px solid #f9f9f9;
+    border-bottom: 1px solid #fcfcfc;
 }
 .filter-list label:hover { background: #eaf6ff; }
+.filter-list input[type="checkbox"] { margin: 0; }
 
 /* Footer Sidebar */
 .sidebar-footer {
