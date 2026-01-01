@@ -52,48 +52,6 @@
                 <!-- FILTRI RAPIDI -->
                 <div class="sidebar-section grow-section">
                     <h3>Filtri Rapidi</h3>
-                    
-                    <div class="filter-accordion">
-                        <div class="filter-box">
-                            <div class="filter-list" id="listFilterCommesse"></div>
-                        </div>
-                        <div class="filter-box" id="boxMacro">
-                            <div class="filter-list" id="listFilterMacro"></div>
-                        </div>
-                        <div class="filter-box" id="boxLavorazioni">
-                            <div class="filter-list" id="listFilterLavorazioni"></div>
-                        </div>
-                        <div class="filter-box" id="boxDipendenti">
-                            <div class="filter-list" id="listFilterDipendenti"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CONTENITORI NASCOSTI PER INIT JS (Necessari se il JS cerca gli ID per popolarli) -->
-                <!-- Nota: Ho integrato i div sopra, ma mantengo gli ID corretti per il JS -->
-                <div id="boxCommesse" style="display:none;"></div> 
-                <!-- Il JS popola boxCommesse, boxMacro ecc. Assicuriamoci che nel DOM sopra ci siano gli ID corretti.
-                     CORREZIONE AL VOLO: I div sopra nel 'filter-accordion' devono avere gli ID corretti per il JS. 
-                     Riscrivo la sezione sidebar corretta qui sotto:
-                -->
-            </aside>
-
-            <!-- RE-INSERIMENTO SIDEBAR CORRETTA PER JS -->
-            <script>
-                // Piccolo fix: Rimuovo la sidebar errata sopra e metto quella giusta per il JS
-                document.querySelector('.control-sidebar').innerHTML = `
-                <div class="sidebar-section" id="dateFilterSection">
-                    <h3>Periodo</h3>
-                    <div class="date-filter-container">
-                        <div class="date-inputs-col">
-                            <input type="date" id="dateStart" class="sidebar-input-compact">
-                            <input type="date" id="dateEnd" class="sidebar-input-compact">
-                        </div>
-                        <button id="btnRefresh" class="btn-icon-refresh">🔄</button>
-                    </div>
-                </div>
-                <div class="sidebar-section grow-section">
-                    <h3>Filtri Rapidi</h3>
                     <div class="filter-accordion">
                         <div class="filter-box" id="boxCommesse"></div>
                         <div class="filter-box" id="boxMacro"></div>
@@ -101,11 +59,11 @@
                         <div class="filter-box" id="boxDipendenti"></div>
                     </div>
                 </div>
+
                 <div class="sidebar-footer">
                     <button id="btnContabilizza" class="btn-primary-large">✅ CONTABILIZZA</button>
                 </div>
-                `;
-            </script>
+            </aside>
 
             <!-- MAIN CONTENT -->
             <main class="main-content">
@@ -113,7 +71,7 @@
                 <!-- TOP BAR -->
                 <div class="view-tabs-container">
                     <div class="tabs-left">
-                        <!-- MODIFICA QUI: Scambiata la classe 'active' -->
+                        <!-- VISTA DETTAGLIO ATTIVA DI DEFAULT -->
                         <button class="tab-btn" data-target="view-summary">📊 VISTA SINTESI</button>
                         <button class="tab-btn active" data-target="view-detail">📋 VISTA DETTAGLIO</button>
                     </div>
@@ -129,7 +87,7 @@
                     </div>
                 </div>
 
-                <!-- VISTA SINTESI (Default: Nascosta) -->
+                <!-- VISTA SINTESI (Nascosta) -->
                 <div id="view-summary" class="view-panel">
                     <div class="kpi-row">
                         <div class="kpi-card blue"><h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span></div>
@@ -142,7 +100,7 @@
                     </div>
                 </div>
 
-                <!-- VISTA DETTAGLIO (Default: Attiva) -->
+                <!-- VISTA DETTAGLIO (Attiva) -->
                 <div id="view-detail" class="view-panel active">
                     <div class="detail-toolbar">
                         <input type="text" id="detailSearch" placeholder="🔍 Cerca veloce..." class="search-input">
@@ -169,14 +127,14 @@
         </div>
     </div>
     
-    <!-- MODALE CONFERMA (Clean) -->
-    <div id="confirmModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
+    <!-- MODALE CONFERMA (Classe Custom per evitare conflitti) -->
+    <div id="confirmModal" class="custom-dashboard-modal" style="display: none;">
+        <div class="cdm-content">
+            <div class="cdm-header">
                 <h3>Conferma Operazione</h3>
                 <span class="close-button" id="closeConfirmModal">&times;</span>
             </div>
-            <div class="modal-body">
+            <div class="cdm-body">
                 <p>Stai per contabilizzare e bloccare le seguenti registrazioni:</p>
                 <div class="confirm-summary-box">
                     <div class="summary-row"><span>Righe selezionate:</span><strong id="confCount">0</strong></div>
@@ -184,19 +142,19 @@
                 </div>
                 <p class="warning-text">⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in "Archivio" e non saranno più modificabili da questa vista.</p>
             </div>
-            <div class="modal-footer" style="justify-content: flex-end;">
+            <div class="cdm-footer">
                 <button id="btnCancelConfirm" class="btn-secondary">Annulla</button>
-                <button id="btnProceedConfirm" class="btn-primary-large" style="width: auto;">CONFERMA</button>
+                <button id="btnProceedConfirm" class="btn-confirm-action">CONFERMA</button>
             </div>
         </div>
     </div>
 
-    <!-- MODALE EDIT -->
-    <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
-        <div id="custom-modal" class="custom-modal">
-            <h2 id="custom-modal-title"></h2>
-            <p id="custom-modal-message"></p>
-            <div id="custom-modal-buttons" class="custom-modal-buttons"></div>
+    <!-- MODALE EDIT (Classe Custom) -->
+    <div id="custom-modal-overlay" class="custom-dashboard-modal" style="display: none;">
+        <div id="custom-modal" class="cdm-content">
+            <h2 id="custom-modal-title" class="cdm-header-title">Modifica</h2>
+            <div id="custom-modal-message" class="cdm-body"></div>
+            <div id="custom-modal-buttons" class="cdm-footer"></div>
         </div>
     </div>
 
