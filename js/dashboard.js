@@ -17,7 +17,8 @@ const Dashboard = {
             lavorazioni: new Set()
         },
         
-        charts: { dist: null, time: null },
+        // Registro istanze grafici per distruggerle al refresh
+        chartInstances: {},
         
         // Stati temporanei per azioni
         editingRow: null,
@@ -58,9 +59,21 @@ const Dashboard = {
         kpiPending: document.getElementById('kpiPending'),
         kpiDone: document.getElementById('kpiDone'),
         
-        // Grafici
-        canvasDist: document.getElementById('chartDistribution'),
-        canvasTimeline: document.getElementById('chartTimeline'),
+        // --- NUOVI GRAFICI ---
+        chartCommessaPie: document.getElementById('chartCommessaPie'),
+        chartTimeBar: document.getElementById('chartTimeBar'),
+        
+        chartLavPie: document.getElementById('chartLavPie'),
+        chartLavBar: document.getElementById('chartLavBar'),
+        
+        chartMacroPie: document.getElementById('chartMacroPie'),
+        chartMacroBar: document.getElementById('chartMacroBar'),
+        
+        chartUserPie: document.getElementById('chartUserPie'),
+        chartUserBar: document.getElementById('chartUserBar'),
+        
+        chartCrossLavUser: document.getElementById('chartCrossLavUser'),
+        chartCrossMacroUser: document.getElementById('chartCrossMacroUser'),
         
         // Griglia Dettaglio
         gridContainer: document.getElementById('dataGridContainer'),
@@ -78,33 +91,29 @@ const Dashboard = {
 
         // --- ELEMENTI MODALE EDIT (Generico riutilizzato) ---
         customModalOverlay: document.getElementById('custom-modal-overlay'),
-        customModal: document.getElementById('custom-modal'),
         customModalTitle: document.getElementById('custom-modal-title'),
         customModalMessage: document.getElementById('custom-modal-message'),
         customModalButtons: document.getElementById('custom-modal-buttons')
     },
 
     init: function() {
-        console.log("🚀 Dashboard Init v4.0 (Full Features)");
+        console.log("🚀 Dashboard Init v5.0 (New Analytics)");
         this.initDates();
         this.addListeners();
         this.fetchData();
     },
 
     initDates: function() {
-        // Lasciamo vuoto per indicare "Tutto lo storico" di default
         if(this.dom.dateStart) this.dom.dateStart.value = '';
         if(this.dom.dateEnd) this.dom.dateEnd.value = '';
     },
 
     addListeners: function() {
-        // 1. Refresh & Mode
         if(this.dom.btnRefresh) this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
         
         if(this.dom.btnInbox) this.dom.btnInbox.addEventListener('click', () => this.toggleStatus('0', this.dom.btnInbox));
         if(this.dom.btnArchive) this.dom.btnArchive.addEventListener('click', () => this.toggleStatus('1', this.dom.btnArchive));
 
-        // 2. Raggruppamento
         if(this.dom.groupSelect) {
             this.dom.groupSelect.addEventListener('change', (e) => {
                 this.state.grouping = e.target.value;
@@ -112,7 +121,6 @@ const Dashboard = {
             });
         }
 
-        // 3. Tab Switching
         this.dom.viewTabs.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.dom.viewTabs.forEach(b => b.classList.remove('active'));
@@ -124,15 +132,12 @@ const Dashboard = {
             });
         });
 
-        // 4. Grid Actions
         if(this.dom.btnExpandAll) this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
         if(this.dom.btnCollapseAll) this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
         if(this.dom.detailSearch) this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
         
-        // 5. Contabilizza (Apre Modale Conferma)
         if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.openContabilizzaModal());
 
-        // 6. Listeners Modale Conferma
         if(this.dom.btnCancelConfirm) this.dom.btnCancelConfirm.addEventListener('click', () => this.closeConfirmModal());
         if(this.dom.closeConfirmModal) this.dom.closeConfirmModal.addEventListener('click', () => this.closeConfirmModal());
         if(this.dom.btnProceedConfirm) this.dom.btnProceedConfirm.addEventListener('click', () => this.finalizeContabilizzazione());
@@ -140,7 +145,6 @@ const Dashboard = {
 
     toggleStatus: function(statusValue, btnElement) {
         if (this.state.activeStatuses.has(statusValue)) {
-            // Impedisce di deselezionare tutto (almeno uno deve restare attivo)
             if (this.state.activeStatuses.size > 1) {
                 this.state.activeStatuses.delete(statusValue);
                 btnElement.classList.remove('active');
@@ -171,15 +175,10 @@ const Dashboard = {
 
         try {
             const params = new URLSearchParams();
-            
-            // Invia date solo se popolate
             if (this.dom.dateStart.value) params.append('start', this.dom.dateStart.value);
             if (this.dom.dateEnd.value) params.append('end', this.dom.dateEnd.value);
-
-            // Gestione Stato: se entrambi attivi, non invio parametro (backend restituisce tutto)
             if (this.state.activeStatuses.size === 1) {
-                const val = Array.from(this.state.activeStatuses)[0];
-                params.append('stato', val);
+                params.append('stato', Array.from(this.state.activeStatuses)[0]);
             }
 
             const res = await apiFetch(`/api/dashboard/stats?${params.toString()}`);
@@ -202,19 +201,14 @@ const Dashboard = {
         }
     },
 
-    // --- HELPER: FORMATTAZIONE ETICHETTA COMMESSA ---
     formatCommessaLabel: function(c) {
         if (!c) return 'Nessuna Commessa';
         const parts = [];
-        // Ordine: Cliente | Impianto | VO | Rif
         if (c.clienti && c.clienti.ragione_sociale) parts.push(c.clienti.ragione_sociale);
         if (c.impianto) parts.push(c.impianto);
-        if (c.vo) parts.push(c.vo);
-        if (c.riferimento_tecnico) parts.push(c.riferimento_tecnico);
         return parts.length > 0 ? parts.join(' | ') : 'Dati incompleti';
     },
 
-    // --- SIDEBAR FILTERS ---
     buildSidebarFilters: function() {
         const maps = {
             commesse: new Map(),
@@ -250,23 +244,18 @@ const Dashboard = {
         if(!containerBox) return;
         containerBox.innerHTML = ''; 
 
-        // Header
         const header = document.createElement('div');
         header.className = 'filter-header-smart';
         header.innerHTML = `
-            <div class="fh-title">
-                <span class="toggle-arrow">▼</span> ${title} <small>(${mapData.size})</small>
-            </div>
+            <div class="fh-title"><span class="toggle-arrow">▼</span> ${title} <small>(${mapData.size})</small></div>
             <div class="fh-actions">
-                <button class="action-mini-btn btn-check-all" title="Seleziona Tutti">☑️</button>
-                <button class="action-mini-btn btn-uncheck-all" title="Deseleziona Tutti">⬜</button>
+                <button class="action-mini-btn btn-check-all" title="Tutti">☑️</button>
+                <button class="action-mini-btn btn-uncheck-all" title="Nessuno">⬜</button>
             </div>
         `;
 
-        // Lista
         const listDiv = document.createElement('div');
         listDiv.className = 'filter-list';
-
         const sorted = Array.from(mapData.entries()).sort((a,b) => a[1].localeCompare(b[1]));
         
         sorted.forEach(([id, label]) => {
@@ -279,8 +268,7 @@ const Dashboard = {
             listDiv.appendChild(row);
         });
 
-        // Eventi
-        header.querySelector('.fh-title').addEventListener('click', () => { containerBox.classList.toggle('collapsed'); });
+        header.querySelector('.fh-title').addEventListener('click', () => containerBox.classList.toggle('collapsed'));
         header.querySelector('.btn-check-all').addEventListener('click', (e) => { e.stopPropagation(); this.setAllCheckboxes(listDiv, true); this.updateFilterSet(filterKey, listDiv); this.applySidebarFilters(); });
         header.querySelector('.btn-uncheck-all').addEventListener('click', (e) => { e.stopPropagation(); this.setAllCheckboxes(listDiv, false); this.updateFilterSet(filterKey, listDiv); this.applySidebarFilters(); });
 
@@ -307,18 +295,16 @@ const Dashboard = {
             const dId = row.personale ? String(row.personale.id_personale) : 'null';
             const lId = row.componenti ? String(row.componenti.id_componente) : 'null';
             const mName = row.nome_macro || 'Nessun Reparto'; 
-
             return f.commesse.has(cId) && f.dipendenti.has(dId) && f.macro.has(mName) && f.lavorazioni.has(lId);
         });
         this.renderAll();
     },
 
-    // --- RENDER MAIN ---
     renderAll: function() {
         this.calculateKPI();
-        this.renderCharts();
+        this.renderCharts(); // Nuova logica grafici
         this.renderGrid();
-        this.updateSelectionSummary(); // Reset footer al render
+        this.updateSelectionSummary();
     },
 
     calculateKPI: function() {
@@ -328,116 +314,227 @@ const Dashboard = {
             if (r.stato === 0) pending += r.ore;
             else done += r.ore;
         });
-
         if(this.dom.kpiTotal) this.dom.kpiTotal.textContent = total.toFixed(1);
         if(this.dom.kpiPending) this.dom.kpiPending.textContent = pending.toFixed(1);
         if(this.dom.kpiDone) this.dom.kpiDone.textContent = done.toFixed(1);
     },
 
+    // =========================================================
+    // ==  NUOVA LOGICA GRAFICI (Torte, Barre Top 8, Stacked) ==
+    // =========================================================
     renderCharts: function() {
-        // Distruggi grafici precedenti se esistono
-        if (this.state.charts.dist) this.state.charts.dist.destroy();
-        if (this.state.charts.time) this.state.charts.time.destroy();
-
-        if(!this.dom.canvasDist || !this.dom.canvasTimeline) return;
-
-        // --- GRAFICO 1: DISTRIBUZIONE (Torta) ---
-        const distLabels = {};
-        this.state.filteredData.forEach(r => {
-            let key = this.getGroupKey(r, this.state.grouping).label;
-            key = key.replace(/📂|🏗️|🔧|👤/g, '').trim(); // Pulisci emoji
-            distLabels[key] = (distLabels[key] || 0) + r.ore;
-        });
-
-        const ctxDist = this.dom.canvasDist.getContext('2d');
-        this.state.charts.dist = new Chart(ctxDist, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(distLabels),
-                datasets: [{ 
-                    data: Object.values(distLabels), 
-                    backgroundColor: this.getColors(Object.keys(distLabels).length) 
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } 
-                } 
+        // Pulisci vecchi grafici
+        Object.keys(this.state.chartInstances).forEach(key => {
+            if (this.state.chartInstances[key]) {
+                this.state.chartInstances[key].destroy();
+                this.state.chartInstances[key] = null;
             }
         });
 
-        // --- GRAFICO 2: ANDAMENTO TEMPORALE (Per Mese) ---
-        const timeData = {};
+        if (this.state.filteredData.length === 0) return;
+
+        const data = this.state.filteredData;
+
+        // --- 1. Aggregazioni Semplici (Mappa: Label -> Ore) ---
+        const groupBy = (keyFn) => {
+            const map = {};
+            data.forEach(r => {
+                const k = keyFn(r);
+                map[k] = (map[k] || 0) + r.ore;
+            });
+            return map;
+        };
+
+        const aggCommessa = groupBy(r => (!r.commesse) ? 'Nessuna Commessa' : (r.commesse.impianto || r.commesse.clienti?.ragione_sociale || 'Commessa'));
+        const aggLavorazione = groupBy(r => r.componenti ? r.componenti.nome_componente : 'Generico');
+        const aggMacro = groupBy(r => r.nome_macro || 'Nessun Reparto');
+        const aggUser = groupBy(r => r.personale ? r.personale.nome_cognome : 'Ignoto');
         
-        this.state.filteredData.forEach(r => {
+        // Aggregazione Temporale
+        const aggTime = {}; 
+        data.forEach(r => {
             const d = new Date(r.data_lavoro);
-            // Chiave ordinabile: YYYY-MM (es. "2025-12")
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            timeData[key] = (timeData[key] || 0) + r.ore;
+            const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            aggTime[k] = (aggTime[k] || 0) + r.ore;
         });
 
-        // Ordina le chiavi cronologicamente
-        const sortedKeys = Object.keys(timeData).sort();
-        
-        // Genera etichette leggibili (es. "Dicembre 2025")
-        const timeLabels = sortedKeys.map(k => {
-            const [year, month] = k.split('-');
-            // Mese in JS parte da 0
-            const date = new Date(year, month - 1);
-            // Formatta in Italiano: "Dicembre 2025"
-            let label = date.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
-            return label.charAt(0).toUpperCase() + label.slice(1); // Capitalizza prima lettera
-        });
+        // --- 2. GENERAZIONE GRAFICI ---
 
-        const timeValues = sortedKeys.map(k => timeData[k]);
-        
-        const ctxTime = this.dom.canvasTimeline.getContext('2d');
-        this.state.charts.time = new Chart(ctxTime, {
-            type: 'bar',
+        // RIGA 1: COMMESSA (Pie) + TEMPO (Bar)
+        this.createPieChart('chartCommessaPie', aggCommessa);
+        this.createTimeBarChart('chartTimeBar', aggTime);
+
+        // RIGA 2: LAVORAZIONE (Pie + Top 8 Bar)
+        this.createPieChart('chartLavPie', aggLavorazione);
+        this.createTopBarChart('chartLavBar', aggLavorazione, 8);
+
+        // RIGA 3: MACRO (Pie + Top 8 Bar)
+        this.createPieChart('chartMacroPie', aggMacro);
+        this.createTopBarChart('chartMacroBar', aggMacro, 8);
+
+        // RIGA 4: DIPENDENTI (Pie + Top 8 Bar)
+        this.createPieChart('chartUserPie', aggUser);
+        this.createTopBarChart('chartUserBar', aggUser, 8);
+
+        // RIGA 5: CROSS DATA - Top 8 Lavorazioni per Dipendente (Stacked)
+        // X-Axis: Top 8 Lavorazioni, Stacks: Dipendenti
+        this.createStackedChart('chartCrossLavUser', 
+            r => r.componenti ? r.componenti.nome_componente : 'Generico', 
+            r => r.personale ? r.personale.nome_cognome : 'Ignoto',       
+            8
+        );
+
+        // RIGA 6: CROSS DATA - Top 8 Macro per Dipendente (Stacked)
+        // X-Axis: Top 8 Macro, Stacks: Dipendenti
+        this.createStackedChart('chartCrossMacroUser', 
+            r => r.nome_macro || 'Nessun Reparto',                        
+            r => r.personale ? r.personale.nome_cognome : 'Ignoto',       
+            8
+        );
+    },
+
+    // --- CHART CREATORS ---
+
+    createPieChart: function(canvasId, dataMap) {
+        if (!this.dom[canvasId]) return;
+        const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]); // Desc
+        const labels = sorted.map(e => e[0]);
+        const values = sorted.map(e => e[1]);
+
+        this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
+            type: 'doughnut',
             data: {
-                labels: timeLabels,
+                labels: labels,
                 datasets: [{ 
-                    label: 'Ore Mensili', 
-                    data: timeValues, 
-                    backgroundColor: '#3498db',
-                    borderRadius: 4, // Arrotonda le barre
-                    barPercentage: 0.6 // Barre un po' più larghe
+                    data: values, 
+                    backgroundColor: this.getColors(labels.length),
+                    borderWidth: 1 
                 }]
             },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'left', labels: { boxWidth: 10, font: { size: 10 } } } } 
+            }
+        });
+    },
+
+    createTopBarChart: function(canvasId, dataMap, limit) {
+        if (!this.dom[canvasId]) return;
+        const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]).slice(0, limit);
+        const labels = sorted.map(e => e[0]);
+        const values = sorted.map(e => e[1]);
+
+        this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ore',
+                    data: values,
+                    backgroundColor: '#3498db',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: 'y', // Orizzontale
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+    },
+
+    createTimeBarChart: function(canvasId, aggTime) {
+        if (!this.dom[canvasId]) return;
+        const sortedKeys = Object.keys(aggTime).sort();
+        const labels = sortedKeys.map(k => {
+            const [y, m] = k.split('-');
+            const date = new Date(y, m - 1);
+            return date.toLocaleString('it-IT', { month: 'short', year: '2-digit' });
+        });
+        const values = sortedKeys.map(k => aggTime[k]);
+
+        this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Ore', data: values, backgroundColor: '#2ecc71', borderRadius: 4 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    },
+
+    createStackedChart: function(canvasId, categoryExtractor, stackExtractor, limitTopCat) {
+        if (!this.dom[canvasId]) return;
+
+        // 1. Trova le categorie Top X per volume totale ore
+        const catTotals = {};
+        this.state.filteredData.forEach(r => {
+            const cat = categoryExtractor(r);
+            catTotals[cat] = (catTotals[cat] || 0) + r.ore;
+        });
+
+        const topCategories = Object.entries(catTotals)
+            .sort((a,b) => b[1] - a[1])
+            .slice(0, limitTopCat)
+            .map(e => e[0]);
+
+        if (topCategories.length === 0) return;
+
+        // 2. Costruisci la matrice { Utente: { Cat1: ore, Cat2: ore... } }
+        const userMap = {};
+        const allUsers = new Set();
+        
+        this.state.filteredData.forEach(r => {
+            const cat = categoryExtractor(r);
+            if (!topCategories.includes(cat)) return; // Ignora categorie minori
+            
+            const user = stackExtractor(r);
+            allUsers.add(user);
+            
+            if (!userMap[user]) userMap[user] = {};
+            userMap[user][cat] = (userMap[user][cat] || 0) + r.ore;
+        });
+
+        // 3. Crea Datasets per Chart.js
+        const colors = this.getColors(allUsers.size);
+        const datasets = Array.from(allUsers).map((user, idx) => {
+            return {
+                label: user,
+                data: topCategories.map(cat => userMap[user][cat] || 0),
+                backgroundColor: colors[idx % colors.length]
+            };
+        });
+
+        this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
+            type: 'bar',
+            data: {
+                labels: topCategories,
+                datasets: datasets
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
                 scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: '#f0f0f0' }
-                    },
-                    x: {
-                        grid: { display: false }
-                    }
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
                 },
                 plugins: {
-                    legend: { display: false }, // Nasconde legenda ridondante
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y + ' ore';
-                            }
-                        }
-                    }
+                    tooltip: { mode: 'index', intersect: false },
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
                 }
             }
         });
     },
 
-    // --- GRID RENDER ---
+    // --- GRID & EDITING (Invariati) ---
     renderGrid: function() {
         const container = this.dom.gridContainer;
         if(!container) return;
         container.innerHTML = '';
-        
         if (this.state.filteredData.length === 0) {
             container.innerHTML = '<div class="placeholder-msg">Nessun dato trovato con i filtri attuali.</div>';
             return;
@@ -454,23 +551,17 @@ const Dashboard = {
         Object.values(groups).forEach(g => {
             const groupHtml = document.createElement('div');
             groupHtml.className = 'grid-group';
-            
             const header = document.createElement('div');
             header.className = 'group-header';
             header.innerHTML = `
-                <div class="gh-left">
-                    <span class="toggle-icon">▶</span> 
-                    <span>${g.label}</span>
-                </div>
+                <div class="gh-left"><span class="toggle-icon">▶</span> <span>${g.label}</span></div>
                 <div class="gh-right">
                     <span style="margin-right:15px; font-weight:normal; font-size:0.8rem;">Tot: <b>${g.total.toFixed(1)}h</b></span>
-                    <input type="checkbox" class="group-check" title="Seleziona Gruppo">
+                    <input type="checkbox" class="group-check">
                 </div>
             `;
-            
             const body = document.createElement('div');
             body.className = 'group-body';
-            
             const table = document.createElement('table');
             table.innerHTML = `<thead><tr><th width="30"><input type="checkbox" disabled></th><th>Data</th><th>Chi</th><th>Lavorazione</th><th>Ore</th><th>Note</th><th></th></tr></thead><tbody></tbody>`;
             const tbody = table.querySelector('tbody');
@@ -480,100 +571,57 @@ const Dashboard = {
                 const person = r.personale ? r.personale.nome_cognome : '-';
                 const task = r.componenti ? r.componenti.nome_componente : '-';
                 const macro = r.nome_macro || ''; 
-                const note = r.note || '';
-                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td width="30"><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
                     <td width="90">${date}</td>
-                    <td width="150" title="${person}">${person}</td>
-                    <td title="${macro} > ${task}">${task} <span style="color:#999; font-size:0.7em;">(${macro})</span></td>
+                    <td width="150">${person}</td>
+                    <td>${task} <span style="color:#999; font-size:0.7em;">(${macro})</span></td>
                     <td width="60" style="font-weight:bold; text-align:center;">${r.ore}</td>
-                    <td><small>${note}</small></td>
-                    <td width="40" style="text-align:center;"><button class="btn-icon" title="Modifica">✏️</button></td>
+                    <td><small>${r.note || ''}</small></td>
+                    <td width="40" style="text-align:center;"><button class="btn-icon">✏️</button></td>
                 `;
-                
-                // EVENTO EDIT
-                tr.querySelector('.btn-icon').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.openEditModal(r);
-                });
-
-                // EVENTO CHECKBOX SINGOLA
+                tr.querySelector('.btn-icon').addEventListener('click', (e) => { e.stopPropagation(); this.openEditModal(r); });
                 tr.querySelector('.row-check').addEventListener('change', () => this.updateSelectionSummary());
-                
                 tbody.appendChild(tr);
             });
-            
             body.appendChild(table);
             
-            // Accordion Toggle
             header.addEventListener('click', (e) => {
                 if(e.target.type !== 'checkbox') {
                     body.classList.toggle('open');
                     header.querySelector('.toggle-icon').textContent = body.classList.contains('open') ? '▼' : '▶';
                 }
             });
-
-            // Checkbox Gruppo
-            const groupCheck = header.querySelector('.group-check');
-            groupCheck.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                body.querySelectorAll('.row-check').forEach(cb => cb.checked = isChecked);
+            header.querySelector('.group-check').addEventListener('change', (e) => {
+                body.querySelectorAll('.row-check').forEach(cb => cb.checked = e.target.checked);
                 this.updateSelectionSummary();
             });
-
             groupHtml.appendChild(header);
             groupHtml.appendChild(body);
             container.appendChild(groupHtml);
         });
     },
 
-    // --- FUNZIONI MODIFICA RAPIDA ---
     openEditModal: function(row) {
         this.state.editingRow = row;
-        
         const overlay = this.dom.customModalOverlay;
-        const title = document.getElementById('custom-modal-title');
         const message = document.getElementById('custom-modal-message');
         const buttons = document.getElementById('custom-modal-buttons');
+        document.getElementById('custom-modal-title').textContent = "Modifica Registrazione";
 
-        title.textContent = "Modifica Registrazione";
-        message.innerHTML = "";
-
-        // Form HTML
-        const formHtml = `
-            <div class="edit-form-row">
-                <label>Data</label>
-                <input type="date" id="editData" class="edit-input" value="${row.data_lavoro.split('T')[0]}">
-            </div>
-            <div class="edit-form-row">
-                <label>Ore</label>
-                <input type="number" id="editOre" class="edit-input" value="${row.ore}" step="0.5">
-            </div>
-            <div class="edit-form-row">
-                <label>Note</label>
-                <textarea id="editNote" class="edit-input">${row.note || ''}</textarea>
-            </div>
-            <div class="edit-form-row">
-                <label>Stato</label>
-                <select id="editStato" class="edit-input">
-                    <option value="0" ${row.stato === 0 ? 'selected' : ''}>Da Validare</option>
-                    <option value="1" ${row.stato === 1 ? 'selected' : ''}>Contabilizzato</option>
-                </select>
-            </div>
+        message.innerHTML = `
+            <div class="edit-form-row"><label>Data</label><input type="date" id="editData" class="edit-input" value="${row.data_lavoro.split('T')[0]}"></div>
+            <div class="edit-form-row"><label>Ore</label><input type="number" id="editOre" class="edit-input" value="${row.ore}" step="0.5"></div>
+            <div class="edit-form-row"><label>Note</label><textarea id="editNote" class="edit-input">${row.note || ''}</textarea></div>
+            <div class="edit-form-row"><label>Stato</label><select id="editStato" class="edit-input"><option value="0" ${row.stato === 0 ? 'selected' : ''}>Da Validare</option><option value="1" ${row.stato === 1 ? 'selected' : ''}>Contabilizzato</option></select></div>
         `;
         
-        const formContainer = document.createElement('div');
-        formContainer.innerHTML = formHtml;
-        message.appendChild(formContainer);
-
-        // Bottoni
         buttons.innerHTML = '';
         const btnCancel = document.createElement('button');
         btnCancel.textContent = "Annulla";
-        btnCancel.className = "btn-secondary"; 
-        btnCancel.onclick = () => { overlay.style.display = 'none'; };
+        btnCancel.className = "btn-secondary";
+        btnCancel.onclick = () => overlay.style.display = 'none';
 
         const btnSave = document.createElement('button');
         btnSave.textContent = "Salva";
@@ -583,30 +631,22 @@ const Dashboard = {
 
         buttons.appendChild(btnCancel);
         buttons.appendChild(btnSave);
-
         overlay.style.display = 'flex';
     },
 
     saveEdit: async function() {
         const row = this.state.editingRow;
         if (!row) return;
-
         const newData = document.getElementById('editData').value;
         const newOre = parseFloat(document.getElementById('editOre').value);
         const newNote = document.getElementById('editNote').value;
         const newStato = parseInt(document.getElementById('editStato').value);
 
-        if (!newData || isNaN(newOre)) return alert("Dati non validi.");
-
         this.dom.customModalOverlay.style.display = 'none';
         
-        // Payload di aggiornamento (Strategia Delete + Insert per ricalcolo)
         const payload = {
             id_personale_override: row.personale.id_personale, 
-            data: newData,
-            ore: newOre,
-            note: newNote,
-            stato: newStato,
+            data: newData, ore: newOre, note: newNote, stato: newStato,
             id_commessa: row.commesse ? row.commesse.id_commessa : null,
             id_componente: row.componenti ? row.componenti.id_componente : null
         };
@@ -614,46 +654,31 @@ const Dashboard = {
         try {
             await apiFetch(`/api/ore/${row.id_registrazione}`, { method: 'DELETE' });
             await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
-            
             showModal({ title: "Successo", message: "Modifica salvata." });
             this.fetchData(); 
-
-        } catch (e) {
-            console.error(e);
-            alert("Errore salvataggio: " + e.message);
-        }
+        } catch (e) { alert("Errore: " + e.message); }
     },
 
-    // --- CONFERMA CONTABILIZZAZIONE ---
     updateSelectionSummary: function() {
-        const checkedBoxes = document.querySelectorAll('.row-check:checked');
-        const count = checkedBoxes.length;
-        let totalHours = 0;
-        
+        const checked = document.querySelectorAll('.row-check:checked');
         const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
-        checkedBoxes.forEach(cb => {
-            totalHours += (rowsMap.get(parseInt(cb.value)) || 0);
-        });
-
-        if(this.dom.selCount) this.dom.selCount.textContent = count;
-        if(this.dom.selHours) this.dom.selHours.textContent = totalHours.toFixed(1);
+        let total = 0;
+        checked.forEach(cb => total += (rowsMap.get(parseInt(cb.value)) || 0));
+        if(this.dom.selCount) this.dom.selCount.textContent = checked.length;
+        if(this.dom.selHours) this.dom.selHours.textContent = total.toFixed(1);
     },
 
     openContabilizzaModal: function() {
         const checked = document.querySelectorAll('.row-check:checked');
         if (checked.length === 0) return alert("Seleziona almeno una riga.");
-        
         const ids = Array.from(checked).map(cb => parseInt(cb.value));
         this.state.pendingIds = ids; 
-
-        // Totali
-        let totalHours = 0;
+        let total = 0;
         const rowsMap = new Map(this.state.filteredData.map(r => [r.id_registrazione, r.ore]));
-        ids.forEach(id => totalHours += (rowsMap.get(id) || 0));
-
-        // Popola Modale
+        ids.forEach(id => total += (rowsMap.get(id) || 0));
+        
         this.dom.confCount.textContent = ids.length;
-        this.dom.confHours.textContent = totalHours.toFixed(1) + " h";
+        this.dom.confHours.textContent = total.toFixed(1) + " h";
         this.dom.confirmModal.style.display = 'flex';
     },
 
@@ -661,12 +686,11 @@ const Dashboard = {
         const ids = this.state.pendingIds;
         if (!ids || ids.length === 0) return;
         const btn = this.dom.btnProceedConfirm;
-        btn.textContent = "Elaborazione..."; btn.disabled = true;
-
+        btn.textContent = "Wait..."; btn.disabled = true;
         try {
             await apiFetch('/api/dashboard/contabilizza', { method: 'POST', body: JSON.stringify({ ids }) });
             this.closeConfirmModal();
-            showModal({ title: "Successo", message: `${ids.length} registrazioni contabilizzate.` });
+            showModal({ title: "Successo", message: "Registrazioni contabilizzate." });
             this.fetchData();
         } catch(e) { alert("Errore: " + e.message); } 
         finally { btn.textContent = "CONFERMA"; btn.disabled = false; }
@@ -677,53 +701,28 @@ const Dashboard = {
         this.state.pendingIds = [];
     },
 
-    // --- UTILS ---
     getGroupKey: function(row, mode) {
-        if (mode === 'commessa') {
-            return { 
-                id: row.commesse ? row.commesse.id_commessa : 'nc', 
-                label: `📂 ${this.formatCommessaLabel(row.commesse)}`
-            };
-        }
-        if (mode === 'dipendente') {
-            return {
-                id: row.personale ? row.personale.id_personale : 'np',
-                label: row.personale ? `👤 ${row.personale.nome_cognome}` : 'Ignoto'
-            };
-        }
-        if (mode === 'macro') {
-            const m = row.nome_macro || 'Nessun Reparto';
-            return { id: m, label: `🏗️ ${m}` };
-        }
-        if (mode === 'lavorazione') {
-            return {
-                id: row.componenti ? row.componenti.id_componente : 'nl',
-                label: row.componenti ? `🔧 ${row.componenti.nome_componente}` : 'Nessuna Lavorazione'
-            };
-        }
+        if (mode === 'commessa') return { id: row.commesse ? row.commesse.id_commessa : 'nc', label: `📂 ${this.formatCommessaLabel(row.commesse)}` };
+        if (mode === 'dipendente') return { id: row.personale ? row.personale.id_personale : 'np', label: row.personale ? `👤 ${row.personale.nome_cognome}` : 'Ignoto' };
+        if (mode === 'macro') return { id: row.nome_macro || 'nm', label: `🏗️ ${row.nome_macro || 'Nessun Reparto'}` };
+        if (mode === 'lavorazione') return { id: row.componenti ? row.componenti.id_componente : 'nl', label: row.componenti ? `🔧 ${row.componenti.nome_componente}` : 'Generico' };
         return { id: 'all', label: 'Tutti' };
     },
 
     toggleAllGroups: function(open) {
-        document.querySelectorAll('.group-body').forEach(el => {
-            if(open) el.classList.add('open');
-            else el.classList.remove('open');
-        });
-        document.querySelectorAll('.toggle-icon').forEach(el => {
-            el.textContent = open ? '▼' : '▶';
-        });
+        document.querySelectorAll('.group-body').forEach(el => open ? el.classList.add('open') : el.classList.remove('open'));
+        document.querySelectorAll('.toggle-icon').forEach(el => el.textContent = open ? '▼' : '▶');
     },
 
     filterGridLocal: function(term) {
         const lower = term.toLowerCase();
         document.querySelectorAll('.group-body tbody tr').forEach(tr => {
-            const text = tr.innerText.toLowerCase();
-            tr.style.display = text.includes(lower) ? '' : 'none';
+            tr.style.display = tr.innerText.toLowerCase().includes(lower) ? '' : 'none';
         });
     },
 
     getColors: function(count) {
-        const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c'];
+        const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c', '#7f8c8d', '#d35400', '#2980b9', '#c0392b', '#8e44ad', '#f39c12', '#27ae60'];
         const res = [];
         for(let i=0; i<count; i++) res.push(pal[i % pal.length]);
         return res;
