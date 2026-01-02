@@ -282,6 +282,98 @@ const App = {
                 }
             ]
         },
+        'anagrafica_articoli': {
+            apiEndpoint: '/api/articoli',
+            idColumn: 'id',
+            defaultSortBy: 'codice_articolo',
+            columns: [
+                { key: 'codice_articolo', label: 'Codice Articolo', editable: true, filterOptions: { key: 'codice_articolo' } },
+                { key: 'descrizione', label: 'Descrizione', editable: true, type: 'textarea', filterOptions: { key: 'descrizione' } },
+                { 
+                    key: 'id_fase_default', 
+                    label: 'Fase Default', 
+                    editable: true, 
+                    type: 'foreignKey',
+                    options: { apiEndpoint: '/api/commesse/fasi', valueField: 'id_fase', textField: 'nome_fase' },
+                    formatter: (rowData) => rowData.fasi_produzione?.nome_fase || 'Nessuna',
+                    filterOptions: { key: 'id_fase_default', apiEndpoint: '/api/commesse/fasi', valueField: 'id_fase', textField: 'nome_fase' }
+                }
+            ]
+        },
+
+        'fasi_produzione': {
+            apiEndpoint: '/api/fasi',
+            idColumn: 'id_fase',
+            columns: [
+                { key: 'nome_fase', label: 'Nome Fase', editable: true },
+                { key: 'descrizione', label: 'Descrizione', editable: true, type: 'textarea' }
+            ]
+        },
+
+        'ore_lavorate': {
+            apiEndpoint: '/api/ore',
+            idColumn: 'id_registrazione',
+            defaultSortBy: 'data_lavoro',
+            defaultSortOrder: 'desc',
+            columns: [
+                { 
+                    key: 'data_lavoro', label: 'Data', editable: true, type: 'date',
+                    formatter: (rowData) => new Date(rowData.data_lavoro).toLocaleDateString('it-IT'),
+                    filterOptions: { apiEndpoint: '/api/distinct-dates/ore_lavorate/data_lavoro' }
+                },
+                { 
+                    key: 'id_personale_fk', label: 'Dipendente', editable: true, type: 'foreignKey',
+                    options: { apiEndpoint: '/api/personale?limit=1000', valueField: 'id_personale', textField: 'nome_cognome' },
+                    formatter: (rowData) => rowData.personale?.nome_cognome || 'N/A',
+                    filterOptions: { key: 'id_personale_fk', apiEndpoint: '/api/personale?limit=1000', valueField: 'id_personale', textField: 'nome_cognome' }
+                },
+                { 
+                    key: 'id_commessa_fk', label: 'Commessa', editable: true, type: 'foreignKey',
+                    options: { apiEndpoint: '/api/get-etichette', valueField: 'id', textField: 'label' },
+                    formatter: (rowData) => rowData.commesse?.vo || rowData.commesse?.impianto || 'N/A'
+                },
+                { key: 'ore', label: 'Ore', editable: true, type: 'text' }, // type text per permettere float
+                { key: 'note', label: 'Note', editable: true, type: 'textarea' },
+                { 
+                    key: 'stato', label: 'Stato', editable: true, type: 'boolean', 
+                    // Simuliamo boolean per 0/1: False=Da Validare, True=Contabilizzato
+                    options: null, 
+                    formatter: (r) => r.stato === 1 ? '✅ Contabilizzato' : '⏳ Da Validare'
+                }
+            ]
+        },
+
+        'registro_produzione': {
+            apiEndpoint: '/api/produzione/registro_crud',
+            idColumn: 'id',
+            defaultSortBy: 'data_ricezione',
+            defaultSortOrder: 'desc',
+            columns: [
+                { key: 'numero_op', label: 'OP', editable: true, filterOptions: { key: 'numero_op' } },
+                { 
+                    key: 'id_commessa', label: 'Commessa', editable: true, type: 'foreignKey',
+                    options: { apiEndpoint: '/api/get-etichette', valueField: 'id', textField: 'label' },
+                    formatter: (rowData) => rowData.commesse?.vo || 'N/A'
+                },
+                { 
+                    key: 'id_articolo', label: 'Articolo', editable: true, type: 'foreignKey',
+                    // Qui usiamo un endpoint per lista semplice articoli se esiste, altrimenti lista paginata potrebbe essere pesante
+                    options: { apiEndpoint: '/api/simple/articoli', valueField: 'id', textField: 'codice_articolo' },
+                    formatter: (rowData) => rowData.anagrafica_articoli?.codice_articolo || 'N/A'
+                },
+                { key: 'qta_richiesta', label: 'Q.tà Richiesta', editable: true },
+                { key: 'qta_prodotta', label: 'Q.tà Fatta', editable: true },
+                { key: 'tempo_impiegato', label: 'Tempo (min)', editable: true },
+                { 
+                    key: 'data_ricezione', label: 'Ricezione', editable: true, type: 'date',
+                    formatter: (r) => r.data_ricezione ? new Date(r.data_ricezione).toLocaleDateString('it-IT') : '' 
+                },
+                { 
+                    key: 'data_invio', label: 'Chiuso il', editable: true, type: 'date',
+                    formatter: (r) => r.data_invio ? new Date(r.data_invio).toLocaleDateString('it-IT') : '-'
+                }
+            ]
+        }
     },
 
     /**
