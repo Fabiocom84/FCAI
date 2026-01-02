@@ -579,104 +579,90 @@ const MobileHoursApp = {
         }
     },
 
-    // --- MODIFICA (MAPPING INVERSO) ---
+    // --- START EDIT (CON FIX COMMESSA MANCANTE) ---
     startEdit: async function(work) {
-        console.log("✏️ Avvio modifica per:", work); // Debug
-
+        if (work.stato === 1) {
+            alert("Record contabilizzato. Impossibile modificare.");
+            return;
+        }
         this.state.editingId = work.id_registrazione;
         this.state.editingOriginalHours = work.ore || 0;
-        this.state.editingStato = (work.stato !== undefined && work.stato !== null) ? work.stato : 0;
+        this.state.editingStato = work.stato; 
 
-        // UI Modifica
         this.dom.saveBtn.textContent = "AGGIORNA";
         this.dom.saveBtn.style.backgroundColor = "#e67e22"; 
         this.dom.cancelEditBtn.style.display = 'block';
         document.querySelector('.mobile-insert-form').scrollIntoView({ behavior: 'smooth' });
 
-        // 1. Determina il Tipo (Produzione / Cantiere / Assenza)
         let type = 'produzione';
         const noteUpper = (work.note || '').toUpperCase();
-        
-        if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]')) {
-            type = 'assenza';
-        } else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) {
-            type = 'cantiere';
-        }
+        if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]')) type = 'assenza';
+        else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) type = 'cantiere';
 
-        // 2. Imposta il Radio Button e Aggiorna la UI
         const radio = document.querySelector(`input[value="${type}"]`);
-        if(radio) {
-            radio.checked = true;
-            this.handleTypeChange(type);
-        }
+        if(radio) { radio.checked = true; this.handleTypeChange(type); }
 
-        // 3. Popola Valori Base
         this.dom.hoursInput.value = work.ore;
         this.dom.noteInput.value = work.note || '';
-
-        // 4. Popola Sezioni Specifiche
-        // Viaggio
         if(work.ore_viaggio_andata) this.dom.travelAndata.value = work.ore_viaggio_andata;
         if(work.ore_viaggio_ritorno) this.dom.travelRitorno.value = work.ore_viaggio_ritorno;
-
-        // Straordinari
         if(work.str_mattina_dalle) this.dom.strMattinaStart.value = work.str_mattina_dalle;
         if(work.str_mattina_alle) this.dom.strMattinaEnd.value = work.str_mattina_alle;
         if(work.str_pomeriggio_dalle) this.dom.strPomStart.value = work.str_pomeriggio_dalle;
         if(work.str_pomeriggio_alle) this.dom.strPomEnd.value = work.str_pomeriggio_alle;
 
-        // Assenza
         if(type === 'assenza') {
             if(work.assenza_mattina_dalle) this.dom.absMattinaStart.value = work.assenza_mattina_dalle;
             if(work.assenza_mattina_alle) this.dom.absMattinaEnd.value = work.assenza_mattina_alle;
             if(work.assenza_pomeriggio_dalle) this.dom.absPomStart.value = work.assenza_pomeriggio_dalle;
             if(work.assenza_pomeriggio_alle) this.dom.absPomEnd.value = work.assenza_pomeriggio_alle;
-            
             if(noteUpper.includes('FERIE')) this.dom.absType.value = 'Ferie';
             else if(noteUpper.includes('PERMESSO')) this.dom.absType.value = 'Permesso';
             else if(noteUpper.includes('MALATTIA')) this.dom.absType.value = 'Malattia';
         }
 
-        // 5. GESTIONE CASCATA COMMESSA -> MACRO -> COMPONENTE
-        // Questa è la parte critica che non ti funzionava
+        // --- FIX CARICAMENTO COMMESSA ---
         if (type === 'produzione' && work.id_commessa_fk) {
-            
-            // A. Imposta la Commessa (Choices.js)
-            // Usiamo il valore convertito a intero per sicurezza, poi stringa se serve
-            this.state.choicesInstance.setChoiceByValue(work.id_commessa_fk); 
+            const cId = work.id_commessa_fk;
+            const cVal = String(cId);
 
-            // B. Scarica le opzioni Macro/Componenti per QUESTA commessa
-            // "await" è fondamentale: aspettiamo che i dati arrivino prima di proseguire
-            await this.loadSmartOptions(work.id_commessa_fk);
+            // 1. Tenta di impostare il valore
+            this.state.choicesInstance.setChoiceByValue(cVal);
             
-            // C. Seleziona Macro e Componente
+            // 2. Controlla se è stato impostato davvero
+            const selected = this.state.choicesInstance.getValue(true);
+            
+            // 3. Se non è stato trovato (es. commessa chiusa non in lista), aggiungilo manualmente
+            if (!selected || String(selected) !== cVal) {
+                if (work.commesse) {
+                    let label = work.commesse.impianto || 'Commessa ???';
+                    if(work.commesse.codice_commessa) label += ` (${work.commesse.codice_commessa})`;
+                    // Aggiungiamo l'opzione "fantasma"
+                    this.state.choicesInstance.setChoices(
+                        [{ value: cVal, label: label, selected: true }],
+                        'value',
+                        'label',
+                        false 
+                    );
+                }
+            }
+
+            // 4. Carica Macro e Componenti
+            await this.loadSmartOptions(cId);
+            
             if (work.id_componente_fk) {
-                // Cerchiamo in quale macro si trova questo componente
                 const tree = this.state.currentOptionsTree || [];
                 let foundMacroId = null;
-
-                // Cerca l'ID della macro scansionando l'albero
                 for (const macro of tree) {
-                    if (macro.componenti.some(comp => comp.id == work.id_componente_fk)) {
-                        foundMacroId = macro.id_macro;
-                        break;
-                    }
+                    if (macro.componenti.some(comp => comp.id == work.id_componente_fk)) { foundMacroId = macro.id_macro; break; }
                 }
-
                 if (foundMacroId) {
-                    // 1. Seleziona la Macro
                     this.dom.macroSelect.value = foundMacroId;
-                    
-                    // 2. Riempi la select dei componenti in base alla macro scelta
                     this.renderComponentOptions(foundMacroId);
-                    
-                    // 3. Seleziona finalmente il Componente
                     this.dom.componentSelect.value = work.id_componente_fk;
                 }
             }
         }
-        
-        // Ricalcola la logica degli straordinari
         this.checkOvertimeLogic();
     },
 
