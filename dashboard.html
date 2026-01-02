@@ -87,17 +87,82 @@
                     </div>
                 </div>
 
+                <!-- dashboard.html (Parte VISTA SINTESI aggiornata) -->
+
                 <!-- VISTA SINTESI (Nascosta) -->
                 <div id="view-summary" class="view-panel">
+                    
+                    <!-- KPI CARDS -->
                     <div class="kpi-row">
                         <div class="kpi-card blue"><h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span></div>
                         <div class="kpi-card orange"><h3>Da Contabilizzare</h3><span id="kpiPending">0</span></div>
                         <div class="kpi-card green"><h3>Contabilizzate</h3><span id="kpiDone">0</span></div>
                     </div>
-                    <div class="charts-grid">
-                        <div class="chart-container"><h4>Distribuzione (Ore)</h4><div class="chart-wrapper"><canvas id="chartDistribution"></canvas></div></div>
-                        <div class="chart-container"><h4>Andamento Temporale</h4><div class="chart-wrapper"><canvas id="chartTimeline"></canvas></div></div>
+
+                    <!-- RIGA 1: COMMESSE + TEMPO -->
+                    <div class="analysis-row">
+                        <div class="chart-box">
+                            <h4>Distribuzione per Commessa</h4>
+                            <div class="chart-wrapper"><canvas id="chartCommessaPie"></canvas></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Andamento Temporale (Ore/Mese)</h4>
+                            <div class="chart-wrapper"><canvas id="chartTimeBar"></canvas></div>
+                        </div>
                     </div>
+
+                    <!-- RIGA 2: LAVORAZIONI -->
+                    <div class="analysis-row">
+                        <div class="chart-box">
+                            <h4>Distribuzione per Lavorazione</h4>
+                            <div class="chart-wrapper"><canvas id="chartLavPie"></canvas></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Top 8 Lavorazioni (Ore)</h4>
+                            <div class="chart-wrapper"><canvas id="chartLavBar"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGA 3: MACROCATEGORIE -->
+                    <div class="analysis-row">
+                        <div class="chart-box">
+                            <h4>Distribuzione per Macrocategoria</h4>
+                            <div class="chart-wrapper"><canvas id="chartMacroPie"></canvas></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Top 8 Macrocategorie (Ore)</h4>
+                            <div class="chart-wrapper"><canvas id="chartMacroBar"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGA 4: DIPENDENTI -->
+                    <div class="analysis-row">
+                        <div class="chart-box">
+                            <h4>Distribuzione per Dipendente</h4>
+                            <div class="chart-wrapper"><canvas id="chartUserPie"></canvas></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Top 8 Dipendenti (Ore)</h4>
+                            <div class="chart-wrapper"><canvas id="chartUserBar"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGA 5: CROSS DATA (Lavorazioni x Dipendente) -->
+                    <div class="analysis-row full-width">
+                        <div class="chart-box">
+                            <h4>Top 8 Lavorazioni per Dipendente (Stacked)</h4>
+                            <div class="chart-wrapper large"><canvas id="chartCrossLavUser"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGA 6: CROSS DATA (Macro x Dipendente) -->
+                    <div class="analysis-row full-width">
+                        <div class="chart-box">
+                            <h4>Top 8 Macrocategorie per Dipendente (Stacked)</h4>
+                            <div class="chart-wrapper large"><canvas id="chartCrossMacroUser"></canvas></div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- VISTA DETTAGLIO (Attiva) -->
