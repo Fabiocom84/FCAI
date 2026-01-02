@@ -81,16 +81,16 @@ function setupUI() {
         // ELENCO DI TUTTI I BOTTONI CHE UN UTENTE NORMALE NON DEVE VEDERE
         // (Nota: Ho lasciato visibili solo quelli operativi)
         const buttonsToHide = [
-            'btn-inserisci-dati',        // Inserimento Knowledge Base
-            'openChatModalBtn',          // Chat AI
-            'openDataGridBtn',           // Vista Agile (Gestione)
-            'openInsertProductionOrderBtn', 
-            'openViewProductionOrdersBtn',
-            'openDashboardBtn',          // Dashboard
-            'btn-registro-presenze',     // Registro (meglio nasconderlo ai non admin o sola lettura)
-            'openConfigBtn',             // Configurazione
-            'btn-attivita',              // Task Manager
-            'openTrainingModalBtn'       // Addestramento
+            'btn-inserisci-dati',           // Inserimento Knowledge Base
+            'openChatModalBtn',             // Chat AI
+            'openDataGridBtn',              // Vista Agile (Gestione)
+            'btn-inserimento-ordini',       // <--- AGGIUNTO/CORRETTO (Inserimento Ordini)
+            'openViewProductionOrdersBtn', // Registro Ordini (Se vuoi lasciarlo visibile, commenta questa riga)
+            'btn-dashboard-link',           // <--- AGGIUNTO/CORRETTO (Dashboard Analisi)            
+            'btn-registro-presenze',        // Registro Presenze
+            'openConfigBtn',                // Configurazione
+            'btn-attivita',                 // Task Manager
+            'openTrainingModalBtn'          // Addestramento
         ];
 
         buttonsToHide.forEach(id => {

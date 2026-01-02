@@ -2,6 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 const Dashboard = {
     state: {
@@ -81,6 +82,12 @@ const Dashboard = {
 
     init: function() {
         console.log("🚀 Dashboard Init v7.0 (Real Costs)");
+        // --- AGGIUNTA: Blocco di sicurezza Admin ---
+        if (!IsAdmin) {
+            window.location.replace('index.html');
+            return;
+        }
+        // ------------------------------------------
         this.initDates();
         this.addListeners();
         this.fetchData();

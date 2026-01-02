@@ -2,9 +2,16 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    // 2. BLOCCO DI SICUREZZA
+    // Se non è admin, fermiamo l'esecuzione dello script qui.
+    // Non facciamo redirect perché siamo sulla Home Page.
+    if (!IsAdmin) return;
+    // ---------------------
+
     const insertDataModal = document.getElementById('insertDataModal');
     if (!insertDataModal) return; 
 

@@ -1,5 +1,8 @@
+// js/inserimento-ordini.js
+
 import { apiFetch } from './api-client.js';
 import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 const State = {
     commesseList: [], 
@@ -9,6 +12,12 @@ const State = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- AGGIUNTA: Blocco di sicurezza Admin ---
+    if (!IsAdmin) {
+        window.location.replace('index.html');
+        return;
+    }
+    // ------------------------------------------
     setupDragAndDrop();
     await loadReferenceData();
     

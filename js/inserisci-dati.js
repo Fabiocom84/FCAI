@@ -3,8 +3,16 @@
 import { apiFetch } from './api-client.js';
 import { showSuccessFeedbackModal } from './shared-ui.js';
 import Legend from './legend.js';
+import { IsAdmin } from './core-init.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 2. BLOCCO DI SICUREZZA
+    if (!IsAdmin) {
+        window.location.replace('index.html');
+        return;
+    }
+    // ---------------------
+
     // Inizializza legenda
     new Legend();
 

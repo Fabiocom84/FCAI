@@ -1,6 +1,7 @@
 // js/admin-config.js
 
 import { apiFetch } from './api-client.js';
+import { IsAdmin } from './core-init.js';
 
 const App = {
     data: {
@@ -13,6 +14,12 @@ const App = {
 
     init: async function() {
         console.log("🚀 ADMIN CONFIG INIT");
+        // 2. BLOCCO DI SICUREZZA
+        if (!IsAdmin) {
+            window.location.replace('index.html');
+            return;
+        }
+        // ---------------------
         if (!document.getElementById('macrosTable')) return;
 
         try {

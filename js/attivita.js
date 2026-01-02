@@ -3,6 +3,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 const TaskApp = {
     dom: {},
@@ -26,6 +27,14 @@ const TaskApp = {
     // =================================================================
 
     init: async function() {
+        
+        // 2. BLOCCO DI SICUREZZA
+        if (!IsAdmin) {
+            window.location.replace('index.html');
+            return;
+        }
+        // ---------------------
+
         // --- PROFILO UTENTE ---
         this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
 

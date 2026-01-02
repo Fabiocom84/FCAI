@@ -1,6 +1,10 @@
 // File: js/training.js (Versione Finale)
 
 import { API_BASE_URL } from './config.js';
+// AGGIUNTA IMPORT apiFetch (mancava nel codice originale ma veniva usata)
+import { apiFetch } from './api-client.js';
+// 1. IMPORTA IsAdmin
+import { IsAdmin } from './core-init.js';
 
 // Variabili globali per tracciare lo stato
 let isTrainingRunning = false;
@@ -8,6 +12,10 @@ let currentProcessId = null;
 let pollingIntervalId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 2. BLOCCO DI SICUREZZA
+    // Se non è admin, non attaccare nessun listener e ferma tutto.
+    if (!IsAdmin) return;
+    // ---------------------
     const trainingButton = document.getElementById('openTrainingModalBtn');
     if (trainingButton) {
         trainingButton.addEventListener('click', handleTrainingButtonClick);

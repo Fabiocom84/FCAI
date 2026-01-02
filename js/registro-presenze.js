@@ -1,4 +1,7 @@
+//registro-presenze.js
+
 import { apiFetch } from './api-client.js';
+import { IsAdmin } from './core-init.js';
 
 // --- ADAPTER ---
 const apiClient = {
@@ -25,6 +28,13 @@ const apiClient = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // 2. BLOCCO DI SICUREZZA
+    if (!IsAdmin) {
+        window.location.replace('index.html');
+        return;
+    }
+    // ---------------------
+
     // --- VARIABILI GLOBALI ---
     let typesById = {};
     let shortcutMap = {};

@@ -2,6 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
+import { IsAdmin } from './core-init.js';
 
 const App = {
 
@@ -293,6 +294,13 @@ const App = {
             toolbarArea: document.getElementById('toolbarArea'),
             viewSelector: document.getElementById('tableViewSelector')
         };
+
+        // 2. BLOCCO DI SICUREZZA
+        if (!IsAdmin) {
+            window.location.replace('index.html');
+            return;
+        }
+        // ---------------------
 
         // --- INIZIO MODIFICA: Leggi i parametri dall'URL ---
         const urlParams = new URLSearchParams(window.location.search);
