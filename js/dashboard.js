@@ -7,7 +7,7 @@ const Dashboard = {
     state: {
         rawData: [],
         filteredData: [],
-        activeStatuses: new Set(['0']), // '0'=Da Validare, '1'=Archivio
+        activeStatuses: new Set(['0']),
         grouping: 'commessa', 
         
         filters: {
@@ -17,87 +17,70 @@ const Dashboard = {
             lavorazioni: new Set()
         },
         
-        // Registro istanze grafici per distruggerle al refresh
         chartInstances: {},
-        
-        // Stati temporanei per azioni
         editingRow: null,
         pendingIds: []
     },
 
+    // FALLBACK: Usato solo se il DB non restituisce il costo (es. ruolo mancante)
+    CONSTANTS: {
+        COSTO_DEFAULT: 45 
+    },
+
     dom: {
-        // Date e Refresh
+        // ... (elementi DOM identici a prima) ...
         dateStart: document.getElementById('dateStart'),
         dateEnd: document.getElementById('dateEnd'),
         btnRefresh: document.getElementById('btnRefresh'),
-        
-        // Modalità e Raggruppamento
         btnInbox: document.getElementById('btnModeInbox'),
         btnArchive: document.getElementById('btnModeArchive'),
         groupSelect: document.getElementById('groupingSelect'),
-        
-        // Container Filtri Sidebar
         boxCommesse: document.getElementById('boxCommesse'),
         boxDipendenti: document.getElementById('boxDipendenti'),
         boxMacro: document.getElementById('boxMacro'),
         boxLavorazioni: document.getElementById('boxLavorazioni'),
-        
-        // Azioni Principali
         btnContabilizza: document.getElementById('btnContabilizza'),
-        
-        // Footer Status Bar
         selCount: document.getElementById('selCount'),
         selHours: document.getElementById('selHours'),
         statusMsg: document.getElementById('statusMsg'),
-
-        // Navigazione Viste
         viewTabs: document.querySelectorAll('.tab-btn'),
         views: document.querySelectorAll('.view-panel'),
-        
-        // KPI
         kpiTotal: document.getElementById('kpiTotalHours'),
         kpiPending: document.getElementById('kpiPending'),
         kpiDone: document.getElementById('kpiDone'),
-        
-        // --- NUOVI GRAFICI ---
-        chartCommessaPie: document.getElementById('chartCommessaPie'),
-        chartTimeBar: document.getElementById('chartTimeBar'),
-        
-        chartLavPie: document.getElementById('chartLavPie'),
-        chartLavBar: document.getElementById('chartLavBar'),
-        
-        chartMacroPie: document.getElementById('chartMacroPie'),
-        chartMacroBar: document.getElementById('chartMacroBar'),
-        
-        chartUserPie: document.getElementById('chartUserPie'),
-        chartUserBar: document.getElementById('chartUserBar'),
-        
-        chartCrossLavUser: document.getElementById('chartCrossLavUser'),
-        chartCrossMacroUser: document.getElementById('chartCrossMacroUser'),
-        
-        // Griglia Dettaglio
         gridContainer: document.getElementById('dataGridContainer'),
         detailSearch: document.getElementById('detailSearch'),
         btnExpandAll: document.getElementById('btnExpandAll'),
         btnCollapseAll: document.getElementById('btnCollapseAll'),
-
-        // --- ELEMENTI MODALE CONFERMA (Custom) ---
         confirmModal: document.getElementById('confirmModal'),
         confCount: document.getElementById('confCount'),
         confHours: document.getElementById('confHours'),
         btnCancelConfirm: document.getElementById('btnCancelConfirm'),
         btnProceedConfirm: document.getElementById('btnProceedConfirm'),
         closeConfirmModal: document.getElementById('closeConfirmModal'),
-
-        // --- ELEMENTI MODALE EDIT (Generico riutilizzato) ---
         customModalOverlay: document.getElementById('custom-modal-overlay'),
         customModalTitle: document.getElementById('custom-modal-title'),
         customModalMessage: document.getElementById('custom-modal-message'),
-        customModalButtons: document.getElementById('custom-modal-buttons')
+        customModalButtons: document.getElementById('custom-modal-buttons'),
+
+        // GRAFICI
+        chartCommessaPie: document.getElementById('chartCommessaPie'),
+        chartTimeBar: document.getElementById('chartTimeBar'),
+        chartLavPie: document.getElementById('chartLavPie'),
+        chartLavBar: document.getElementById('chartLavBar'),
+        chartMacroPie: document.getElementById('chartMacroPie'),
+        chartMacroBar: document.getElementById('chartMacroBar'),
+        chartUserPie: document.getElementById('chartUserPie'),
+        chartUserBar: document.getElementById('chartUserBar'),
+        chartCrossLavUser: document.getElementById('chartCrossLavUser'),
+        chartCrossMacroUser: document.getElementById('chartCrossMacroUser'),
+        chartCostCommessa: document.getElementById('chartCostCommessa'),
+        chartAbsenceUser: document.getElementById('chartAbsenceUser'),
+        chartAbsenceTrend: document.getElementById('chartAbsenceTrend')
     },
 
     init: function() {
-        console.log("🚀 Dashboard Init v5.0 (New Analytics)");
+        console.log("🚀 Dashboard Init v7.0 (Real Costs)");
         this.initDates();
         this.addListeners();
         this.fetchData();
@@ -110,34 +93,27 @@ const Dashboard = {
 
     addListeners: function() {
         if(this.dom.btnRefresh) this.dom.btnRefresh.addEventListener('click', () => this.fetchData());
-        
         if(this.dom.btnInbox) this.dom.btnInbox.addEventListener('click', () => this.toggleStatus('0', this.dom.btnInbox));
         if(this.dom.btnArchive) this.dom.btnArchive.addEventListener('click', () => this.toggleStatus('1', this.dom.btnArchive));
-
         if(this.dom.groupSelect) {
             this.dom.groupSelect.addEventListener('change', (e) => {
                 this.state.grouping = e.target.value;
                 this.renderAll();
             });
         }
-
         this.dom.viewTabs.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.dom.viewTabs.forEach(b => b.classList.remove('active'));
                 this.dom.views.forEach(v => v.classList.remove('active'));
-                
                 e.target.classList.add('active');
                 const target = document.getElementById(e.target.dataset.target);
                 if(target) target.classList.add('active');
             });
         });
-
         if(this.dom.btnExpandAll) this.dom.btnExpandAll.addEventListener('click', () => this.toggleAllGroups(true));
         if(this.dom.btnCollapseAll) this.dom.btnCollapseAll.addEventListener('click', () => this.toggleAllGroups(false));
         if(this.dom.detailSearch) this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
-        
         if(this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.openContabilizzaModal());
-
         if(this.dom.btnCancelConfirm) this.dom.btnCancelConfirm.addEventListener('click', () => this.closeConfirmModal());
         if(this.dom.closeConfirmModal) this.dom.closeConfirmModal.addEventListener('click', () => this.closeConfirmModal());
         if(this.dom.btnProceedConfirm) this.dom.btnProceedConfirm.addEventListener('click', () => this.finalizeContabilizzazione());
@@ -164,7 +140,6 @@ const Dashboard = {
         this.state.filters.lavorazioni.clear();
     },
 
-    // --- DATA FETCHING ---
     fetchData: async function() {
         const btn = this.dom.btnRefresh;
         const originalIcon = btn.innerHTML; 
@@ -302,7 +277,7 @@ const Dashboard = {
 
     renderAll: function() {
         this.calculateKPI();
-        this.renderCharts(); // Nuova logica grafici
+        this.renderCharts();
         this.renderGrid();
         this.updateSelectionSummary();
     },
@@ -320,10 +295,10 @@ const Dashboard = {
     },
 
     // =========================================================
-    // ==  NUOVA LOGICA GRAFICI (Torte, Barre Top 8, Stacked) ==
+    // ==  RENDER CHART LOGIC AGGIORNATA ==
     // =========================================================
     renderCharts: function() {
-        // Pulisci vecchi grafici
+        // Pulizia
         Object.keys(this.state.chartInstances).forEach(key => {
             if (this.state.chartInstances[key]) {
                 this.state.chartInstances[key].destroy();
@@ -334,13 +309,23 @@ const Dashboard = {
         if (this.state.filteredData.length === 0) return;
 
         const data = this.state.filteredData;
+        const COSTO_FALLBACK = this.CONSTANTS.COSTO_DEFAULT;
 
-        // --- 1. Aggregazioni Semplici (Mappa: Label -> Ore) ---
-        const groupBy = (keyFn) => {
+        // --- HELPER DI IDENTIFICAZIONE ASSENZE ---
+        const isAbsence = (r) => {
+            const txt = (r.componenti?.nome_componente || '') + ' ' + (r.nome_macro || '') + ' ' + (r.note || '');
+            const lower = txt.toLowerCase();
+            return lower.includes('ferie') || lower.includes('permess') || lower.includes('malattia') || lower.includes('104') || lower.includes('assenza');
+        };
+
+        // --- 1. AGGREGAZIONI STANDARD ---
+        const groupBy = (keyFn, filterFn = () => true) => {
             const map = {};
             data.forEach(r => {
-                const k = keyFn(r);
-                map[k] = (map[k] || 0) + r.ore;
+                if(filterFn(r)) {
+                    const k = keyFn(r);
+                    map[k] = (map[k] || 0) + r.ore;
+                }
             });
             return map;
         };
@@ -358,67 +343,86 @@ const Dashboard = {
             aggTime[k] = (aggTime[k] || 0) + r.ore;
         });
 
-        // --- 2. GENERAZIONE GRAFICI ---
+        // --- 2. AGGREGAZIONE COSTI (DINAMICA DA DB) ---
+        // Recupera costo_orario da 'ruoli' tramite 'personale'
+        const aggCosti = {};
+        data.forEach(r => {
+            const nome = (!r.commesse) ? 'Nessuna Commessa' : (r.commesse.impianto || r.commesse.clienti?.ragione_sociale || 'Commessa');
+            
+            // Logica Recupero Costo
+            let costoOrario = COSTO_FALLBACK;
+            if (r.personale && r.personale.ruoli && r.personale.ruoli.costo_orario) {
+                // Il dato da DB potrebbe arrivare come stringa numerica
+                costoOrario = parseFloat(r.personale.ruoli.costo_orario);
+            }
 
-        // RIGA 1: COMMESSA (Pie) + TEMPO (Bar)
+            const costo = r.ore * costoOrario;
+            aggCosti[nome] = (aggCosti[nome] || 0) + costo;
+        });
+
+        // --- 3. AGGREGAZIONE ASSENZE (HR) ---
+        const absData = data.filter(r => isAbsence(r));
+        const aggAbsUser = {};
+        absData.forEach(r => {
+            const u = r.personale ? r.personale.nome_cognome : 'Ignoto';
+            aggAbsUser[u] = (aggAbsUser[u] || 0) + r.ore;
+        });
+
+        const aggAbsTrend = {};
+        absData.forEach(r => {
+            const d = new Date(r.data_lavoro);
+            const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            aggAbsTrend[k] = (aggAbsTrend[k] || 0) + r.ore;
+        });
+
+        // --- GENERAZIONE GRAFICI ---
+
+        // RIGA 1-4: STANDARD
         this.createPieChart('chartCommessaPie', aggCommessa);
         this.createTimeBarChart('chartTimeBar', aggTime);
-
-        // RIGA 2: LAVORAZIONE (Pie + Top 8 Bar)
         this.createPieChart('chartLavPie', aggLavorazione);
         this.createTopBarChart('chartLavBar', aggLavorazione, 8);
-
-        // RIGA 3: MACRO (Pie + Top 8 Bar)
         this.createPieChart('chartMacroPie', aggMacro);
         this.createTopBarChart('chartMacroBar', aggMacro, 8);
-
-        // RIGA 4: DIPENDENTI (Pie + Top 8 Bar)
         this.createPieChart('chartUserPie', aggUser);
         this.createTopBarChart('chartUserBar', aggUser, 8);
 
-        // RIGA 5: CROSS DATA - Top 8 Lavorazioni per Dipendente (Stacked)
-        // X-Axis: Top 8 Lavorazioni, Stacks: Dipendenti
+        // RIGA 5-6: CROSS DATA
         this.createStackedChart('chartCrossLavUser', 
             r => r.componenti ? r.componenti.nome_componente : 'Generico', 
-            r => r.personale ? r.personale.nome_cognome : 'Ignoto',       
-            8
+            r => r.personale ? r.personale.nome_cognome : 'Ignoto', 8
         );
-
-        // RIGA 6: CROSS DATA - Top 8 Macro per Dipendente (Stacked)
-        // X-Axis: Top 8 Macro, Stacks: Dipendenti
         this.createStackedChart('chartCrossMacroUser', 
             r => r.nome_macro || 'Nessun Reparto',                        
-            r => r.personale ? r.personale.nome_cognome : 'Ignoto',       
-            8
+            r => r.personale ? r.personale.nome_cognome : 'Ignoto', 8
         );
+
+        // RIGA 7: COSTI (NUOVO)
+        this.createCostBarChart('chartCostCommessa', aggCosti, 10);
+
+        // RIGA 8: HR ASSENZE
+        this.createTopBarChart('chartAbsenceUser', aggAbsUser, 10, '#e74c3c');
+        this.createTimeBarChart('chartAbsenceTrend', aggAbsTrend, '#e74c3c');
     },
 
-    // --- CHART CREATORS ---
+    // --- CHART CREATORS HELPER ---
 
     createPieChart: function(canvasId, dataMap) {
         if (!this.dom[canvasId]) return;
-        const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]); // Desc
+        const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]);
         const labels = sorted.map(e => e[0]);
         const values = sorted.map(e => e[1]);
-
         this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
             type: 'doughnut',
             data: {
                 labels: labels,
-                datasets: [{ 
-                    data: values, 
-                    backgroundColor: this.getColors(labels.length),
-                    borderWidth: 1 
-                }]
+                datasets: [{ data: values, backgroundColor: this.getColors(labels.length), borderWidth: 1 }]
             },
-            options: { 
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'left', labels: { boxWidth: 10, font: { size: 10 } } } } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'left', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
     },
 
-    createTopBarChart: function(canvasId, dataMap, limit) {
+    createTopBarChart: function(canvasId, dataMap, limit, color = '#3498db') {
         if (!this.dom[canvasId]) return;
         const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]).slice(0, limit);
         const labels = sorted.map(e => e[0]);
@@ -428,23 +432,39 @@ const Dashboard = {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Ore',
-                    data: values,
-                    backgroundColor: '#3498db',
-                    borderRadius: 4
-                }]
+                datasets: [{ label: 'Ore', data: values, backgroundColor: color, borderRadius: 4 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                indexAxis: 'y', // Orizzontale
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true } }
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } }
             }
         });
     },
 
-    createTimeBarChart: function(canvasId, aggTime) {
+    createCostBarChart: function(canvasId, dataMap, limit) {
+        if (!this.dom[canvasId]) return;
+        const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]).slice(0, limit);
+        const labels = sorted.map(e => e[0]);
+        const values = sorted.map(e => e[1]); 
+
+        this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Costo Reale (€)', data: values, backgroundColor: '#f39c12', borderRadius: 4 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (ctx) => `€ ${ctx.raw.toLocaleString()}` } }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    },
+
+    createTimeBarChart: function(canvasId, aggTime, color = '#2ecc71') {
         if (!this.dom[canvasId]) return;
         const sortedKeys = Object.keys(aggTime).sort();
         const labels = sortedKeys.map(k => {
@@ -456,51 +476,32 @@ const Dashboard = {
 
         this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Ore', data: values, backgroundColor: '#2ecc71', borderRadius: 4 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
+            data: { labels: labels, datasets: [{ label: 'Ore', data: values, backgroundColor: color, borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
     },
 
     createStackedChart: function(canvasId, categoryExtractor, stackExtractor, limitTopCat) {
         if (!this.dom[canvasId]) return;
-
-        // 1. Trova le categorie Top X per volume totale ore
         const catTotals = {};
         this.state.filteredData.forEach(r => {
             const cat = categoryExtractor(r);
             catTotals[cat] = (catTotals[cat] || 0) + r.ore;
         });
-
-        const topCategories = Object.entries(catTotals)
-            .sort((a,b) => b[1] - a[1])
-            .slice(0, limitTopCat)
-            .map(e => e[0]);
-
+        const topCategories = Object.entries(catTotals).sort((a,b) => b[1] - a[1]).slice(0, limitTopCat).map(e => e[0]);
         if (topCategories.length === 0) return;
 
-        // 2. Costruisci la matrice { Utente: { Cat1: ore, Cat2: ore... } }
         const userMap = {};
         const allUsers = new Set();
-        
         this.state.filteredData.forEach(r => {
             const cat = categoryExtractor(r);
-            if (!topCategories.includes(cat)) return; // Ignora categorie minori
-            
+            if (!topCategories.includes(cat)) return;
             const user = stackExtractor(r);
             allUsers.add(user);
-            
             if (!userMap[user]) userMap[user] = {};
             userMap[user][cat] = (userMap[user][cat] || 0) + r.ore;
         });
 
-        // 3. Crea Datasets per Chart.js
         const colors = this.getColors(allUsers.size);
         const datasets = Array.from(allUsers).map((user, idx) => {
             return {
@@ -512,25 +513,16 @@ const Dashboard = {
 
         this.state.chartInstances[canvasId] = new Chart(this.dom[canvasId], {
             type: 'bar',
-            data: {
-                labels: topCategories,
-                datasets: datasets
-            },
+            data: { labels: topCategories, datasets: datasets },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
-                },
-                plugins: {
-                    tooltip: { mode: 'index', intersect: false },
-                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
-                }
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                plugins: { tooltip: { mode: 'index', intersect: false }, legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
             }
         });
     },
 
-    // --- GRID & EDITING (Invariati) ---
+    // --- GRID & EDITING ---
     renderGrid: function() {
         const container = this.dom.gridContainer;
         if(!container) return;
@@ -586,7 +578,6 @@ const Dashboard = {
                 tbody.appendChild(tr);
             });
             body.appendChild(table);
-            
             header.addEventListener('click', (e) => {
                 if(e.target.type !== 'checkbox') {
                     body.classList.toggle('open');
