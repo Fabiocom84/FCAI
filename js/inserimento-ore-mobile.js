@@ -362,27 +362,21 @@ const MobileHoursApp = {
         }
     },
 
-    // --- CARDS LIST & TOTALE ---
+    // --- CARDS LIST & TOTALE (MODIFICATA PER IL LUCCHETTO) ---
     loadExistingWorks: async function(dateStr) {
         this.dom.existingList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Caricamento...</div>';
         try {
-            // Aggiungiamo userId se admin
             let url = `/api/ore/day/${dateStr}`;
-            if (this.state.adminMode) {
-                url += `?userId=${this.state.targetUserId}`;
-            }
+            if (this.state.adminMode) url += `?userId=${this.state.targetUserId}`;
 
             const res = await apiFetch(url);
             const works = await res.json();
 
             this.dom.existingList.innerHTML = '';
 
-            // Calcolo Totale
             let total = 0;
             works.forEach(w => {
-                total += (w.ore || 0);
-                // Aggiungi anche i viaggi al totale visualizzato (opzionale)
-                total += (w.ore_viaggio_andata || 0) + (w.ore_viaggio_ritorno || 0);
+                total += (w.ore || 0) + (w.ore_viaggio_andata || 0) + (w.ore_viaggio_ritorno || 0);
             });
             this.state.currentDayTotal = total;
             this.updateTotalBadge(total);
@@ -393,10 +387,13 @@ const MobileHoursApp = {
             }
 
             works.forEach(w => {
+                // --- CHECK STATO ---
+                const isLocked = (w.stato === 1);
+                // -------------------
+
                 let cardClass = 'card-prod'; 
                 let title = 'N/D';
                 
-                // Determina Titolo
                 if (w.id_commessa_fk && this.state.commesseMap[w.id_commessa_fk]) {
                     title = this.state.commesseMap[w.id_commessa_fk];
                 } else if (w.commesse) {
@@ -405,33 +402,38 @@ const MobileHoursApp = {
 
                 let sub = w.componenti?.nome_componente || 'Attività generica';
                 
-                // Euristica Tipo
                 if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso')) {
-                    cardClass = 'card-abs'; 
-                    title = 'Assenza';
+                    cardClass = 'card-abs'; title = 'Assenza';
                 } else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere') || w.ore_viaggio_andata > 0) {
                     cardClass = 'card-site';
                 }
 
-                // Info Aggiuntive (Viaggio / Straordinari)
+                // Opacità se bloccato
+                if (isLocked) cardClass += ' card-locked'; 
+
                 let extras = [];
-                // Viaggio
                 if (w.ore_viaggio_andata > 0) extras.push(`And: ${w.ore_viaggio_andata}h`);
                 if (w.ore_viaggio_ritorno > 0) extras.push(`Rit: ${w.ore_viaggio_ritorno}h`);
-                
-                // Straordinari
-                let strInfo = "";
-                if (w.str_mattina_dalle) strInfo += `M(${w.str_mattina_dalle}-${w.str_mattina_alle}) `;
-                if (w.str_pomeriggio_dalle) strInfo += `P(${w.str_pomeriggio_dalle}-${w.str_pomeriggio_alle})`;
-                if (strInfo) extras.push(`⚡ ${strInfo}`);
-
-                // Assenza
-                let absInfo = "";
-                if (w.assenza_mattina_dalle) absInfo += `M(${w.assenza_mattina_dalle}-${w.assenza_mattina_alle}) `;
-                if (w.assenza_pomeriggio_dalle) absInfo += `P(${w.assenza_pomeriggio_dalle}-${w.assenza_pomeriggio_alle})`;
-                if (absInfo) extras.push(`🕒 ${absInfo}`);
+                if (w.str_mattina_dalle) extras.push(`⚡ M(${w.str_mattina_dalle}-${w.str_mattina_alle})`);
+                if (w.str_pomeriggio_dalle) extras.push(`⚡ P(${w.str_pomeriggio_dalle}-${w.str_pomeriggio_alle})`);
+                if (w.assenza_mattina_dalle) extras.push(`🕒 M(${w.assenza_mattina_dalle}-${w.assenza_mattina_alle})`);
+                if (w.assenza_pomeriggio_dalle) extras.push(`🕒 P(${w.assenza_pomeriggio_dalle}-${w.assenza_pomeriggio_alle})`);
 
                 const extraHtml = extras.length > 0 ? `<div style="font-size:0.75rem; color:#555; margin-top:4px; background:#f0f0f0; padding:2px 5px; border-radius:4px; display:inline-block;">${extras.join(' | ')}</div>` : '';
+
+                // --- AZIONI ---
+                let actionsHtml = '';
+                if (isLocked) {
+                    // SE BLOCCATO: Mostra lucchetto
+                    actionsHtml = `<div style="color:#aaa; font-size:1.2rem;" title="Contabilizzato">🔒</div>`;
+                } else {
+                    // SE LIBERO: Mostra pulsanti
+                    actionsHtml = `
+                        <div class="card-actions">
+                            <button class="action-icon btn-edit">✏️</button>
+                            <button class="action-icon btn-delete" style="color:#e53e3e;">🗑️</button>
+                        </div>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = `activity-card ${cardClass}`;
@@ -444,15 +446,16 @@ const MobileHoursApp = {
                     </div>
                     <div class="card-right">
                         <div class="card-hours">${w.ore}h</div>
-                        <div class="card-actions">
-                            <button class="action-icon btn-edit">✏️</button>
-                            <button class="action-icon btn-delete" style="color:#e53e3e;">🗑️</button>
-                        </div>
+                        ${actionsHtml}
                     </div>
                 `;
 
-                card.querySelector('.btn-edit').addEventListener('click', () => this.startEdit(w));
-                card.querySelector('.btn-delete').addEventListener('click', () => this.deleteWork(w.id_registrazione));
+                // Attacca listener SOLO se non è bloccato
+                if (!isLocked) {
+                    card.querySelector('.btn-edit').addEventListener('click', () => this.startEdit(w));
+                    card.querySelector('.btn-delete').addEventListener('click', () => this.deleteWork(w.id_registrazione));
+                }
+
                 this.dom.existingList.appendChild(card);
             });
 
