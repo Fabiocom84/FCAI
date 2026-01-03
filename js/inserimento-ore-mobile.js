@@ -317,7 +317,7 @@ const MobileHoursApp = {
         else if (type === 'assenza') {
             this.dom.groupCommessa.style.display = 'none';
             this.dom.absFields.style.display = 'block';
-            if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore (opzionale)";
+            if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Assenza";
         }
         
         this.checkOvertimeLogic();
