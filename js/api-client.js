@@ -1,46 +1,57 @@
+// js/api-client.js
+
 import { API_BASE_URL } from './config.js';
 
-export async function publicApiFetch(url, options = {}) {
-    const headers = { ...options.headers };
-
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    const fullUrl = `${API_BASE_URL}${url}`;
-    const response = await fetch(fullUrl, { ...options, headers });
-    return response;
-}
-
-export async function apiFetch(url, options = {}) {
-    const headers = { ...options.headers };
-
-    // CORREZIONE: Usiamo un'unica chiave coerente 'session_token'
+export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('session_token');
     
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-    } else {
-        console.error("Auth: Token mancante. Reindirizzo al login.");
-        localStorage.clear(); // Pulisce tutto per sicurezza
-        window.location.replace('login.html');
-        throw new Error("Token mancante.");
     }
 
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
+    const config = {
+        ...options,
+        headers
+    };
 
-    const fullUrl = `${API_BASE_URL}${url}`;
-    const response = await fetch(fullUrl, { ...options, headers });
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-    // Gestione scadenza token
-    if (response.status === 401) {
-        console.error("Auth: Token scaduto o non valido (401).");
-        localStorage.removeItem('session_token'); // CORRETTO: rimuove la chiave giusta
-        localStorage.removeItem('user_profile');
-        window.location.replace('login.html');
+    try {
+        const response = await fetch(url, config);
+
+        // --- GESTIONE DISCONNESSIONE FORZATA ---
+        // Se riceviamo 403 (Forbidden), significa che il backend ha rilevato 
+        // che l'account è disabilitato (o il token è scaduto/invalido).
+        if (response.status === 401 || response.status === 403) {
+            console.warn("Sessione non valida o accesso revocato. Eseguo Logout.");
+            
+            localStorage.clear();
+            window.location.replace('login.html');
+            
+            // Blocca l'esecuzione lanciando un errore silenzioso
+            throw new Error("Accesso revocato");
+        }
+
+        return response;
+    } catch (error) {
+        if (error.message === "Accesso revocato") {
+            return new Promise(() => {}); // Promise pendente per bloccare la catena
+        }
+        throw error;
     }
-    
-    return response;
+}
+
+export async function publicApiFetch(endpoint, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    const config = { ...options, headers };
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    return fetch(url, config);
 }
