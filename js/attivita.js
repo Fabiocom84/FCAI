@@ -1,5 +1,5 @@
 // js/attivita.js
-// Versione 5.0 - No Modals, Full Inspector Editing
+// Versione 5.1 - Fix Syntax Error e Logic Order
 
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
@@ -24,6 +24,10 @@ const TaskApp = {
     },
 
     dom: {},
+
+    // =================================================================
+    // == 1. INIT & LOAD                                              ==
+    // =================================================================
 
     init: async function() {
         if (!IsAdmin) { window.location.replace('index.html'); return; }
@@ -72,7 +76,10 @@ const TaskApp = {
         return await res.json();
     },
 
-    // --- RENDER BOARD ---
+    // =================================================================
+    // == 2. RENDER BOARD                                             ==
+    // =================================================================
+
     renderKanbanBoard: function() {
         this.dom.taskView.innerHTML = '';
         this.state.columnsConfig.forEach(col => {
@@ -123,7 +130,26 @@ const TaskApp = {
         return el;
     },
 
-    // --- INSPECTOR: VIEW MODE ---
+    setupDragDrop: function(container) {
+        container.addEventListener('dragover', e => { e.preventDefault(); container.classList.add('drag-over'); });
+        container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
+        container.addEventListener('drop', async e => {
+            e.preventDefault(); container.classList.remove('drag-over');
+            const taskId = e.dataTransfer.getData('text/plain');
+            const targetColumn = container.closest('.task-column');
+            if(!targetColumn) return;
+            const newStatus = targetColumn.dataset.status;
+            try { 
+                await apiFetch(`/api/tasks/${taskId}`, {method:'PUT', body:JSON.stringify({stato:newStatus})}); 
+                this.refreshBoard(); 
+            } catch(e){}
+        });
+    },
+
+    // =================================================================
+    // == 3. INSPECTOR: VIEW MODE                                     ==
+    // =================================================================
+
     renderInspectorView: async function(taskId) {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
         this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
@@ -176,7 +202,10 @@ const TaskApp = {
         } catch(e) { this.dom.inspectorBody.innerHTML = `<p>Errore: ${e.message}</p>`; }
     },
 
-    // --- INSPECTOR: EDIT / CREATE MODE (FORM) ---
+    // =================================================================
+    // == 4. INSPECTOR: EDIT / CREATE MODE (FORM)                     ==
+    // =================================================================
+
     renderInspectorForm: function(task = null) {
         this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
         
@@ -246,7 +275,7 @@ const TaskApp = {
         // Event Listeners Form
         document.getElementById('btnCancel').addEventListener('click', () => {
             if(isEdit) this.renderInspectorView(values.id);
-            else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><p>Creazione annullata</p></div>';
+            else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task o creane uno nuovo.</p></div>';
         });
         document.getElementById('btnSave').addEventListener('click', () => this.saveTask());
         document.getElementById('inpCat').addEventListener('change', () => this.toggleSubField());
@@ -302,7 +331,6 @@ const TaskApp = {
         const id = document.getElementById('inpId').value;
         const isComm = document.getElementById('wrapComm').style.display !== 'none';
         
-        // Retrieve choices values
         const commVal = this.state.choicesInstances[0].getValue(true);
         const subVal = this.state.choicesInstances[1].getValue(true);
 
@@ -330,7 +358,10 @@ const TaskApp = {
         } catch(e) { alert(e.message); }
     },
 
-    // --- UTILS & EVENT LISTENERS ---
+    // =================================================================
+    // == 5. UTILS & EVENT LISTENERS                                  ==
+    // =================================================================
+
     addEventListeners: function() {
         this.dom.btnNew.addEventListener('click', () => this.renderInspectorForm(null));
         this.dom.btnEdit.addEventListener('click', () => { if(this.state.currentTask) this.renderInspectorForm(this.state.currentTask); });
@@ -341,18 +372,12 @@ const TaskApp = {
             this.dom.adminFilterContainer.style.display = 'flex';
             this.dom.adminUserFilter.addEventListener('change', () => this.refreshBoard());
         }
-
-        // Drag Drop (Base)
-        this.setupDragDrop = (container) => {
-            container.addEventListener('dragover', e => { e.preventDefault(); container.classList.add('drag-over'); });
-            container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
-            container.addEventListener('drop', async e => {
-                e.preventDefault(); container.classList.remove('drag-over');
-                const taskId = e.dataTransfer.getData('text/plain');
-                const newStatus = container.closest('.task-column').dataset.status;
-                try { await apiFetch(`/api/tasks/${taskId}`, {method:'PUT', body:JSON.stringify({stato:newStatus})}); this.refreshBoard(); } catch(e){}
-            });
-        };
+        
+        // Modale Archivio close
+        document.querySelectorAll('.close-button').forEach(b => b.addEventListener('click', () => {
+            document.getElementById('archiveModal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }));
     },
 
     refreshBoard: async function() {
@@ -369,12 +394,11 @@ const TaskApp = {
         });
     },
 
-    // Funzioni Commenti, Delete, Render History (simili a prima ma adattate al DOM)
     postComment: async function() {
         const txt = document.getElementById('inpComment').value;
         if(!txt) return;
         await apiFetch(`/api/tasks/${this.state.currentTask.id_task}/commenti`, {method:'POST', body:JSON.stringify({testo_commento:txt})});
-        this.renderInspectorView(this.state.currentTask.id_task); // Reload view
+        this.renderInspectorView(this.state.currentTask.id_task); 
     },
     
     updateStatus: async function(status) {
@@ -384,8 +408,8 @@ const TaskApp = {
     },
 
     deleteTask: async function() {
-        if(!confirm("Eliminare?")) return;
-        // Mock delete (o aggiungi API DELETE)
+        if(!confirm("Eliminare definitivamente questo task?")) return;
+        // Se non hai la rotta DELETE backend, rimuovi questa riga o aggiungila.
         // await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {method:'DELETE'});
         this.dom.inspectorBody.innerHTML = '<div class="empty-state"><p>Task eliminato</p></div>';
         this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
@@ -394,3 +418,29 @@ const TaskApp = {
 
     renderHistory: function(history=[], comments=[]) {
         const combined = [...history.map(h=>({...h, type:'h', d:h.data_azione})), ...comments.map(c=>({...c, type:'c', d:c.data_creazione}))].sort((a,b)=>new Date(b.d)-new Date(a.d));
+        const html = combined.map(x => {
+            const date = new Date(x.d).toLocaleDateString() + ' ' + new Date(x.d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            const user = x.type==='h' ? x.utente?.nome_cognome : x.autore?.nome_cognome;
+            return x.type==='c' 
+                ? `<div class="history-item comment"><strong>${user}</strong> <small>${date}</small><br>${x.testo_commento}</div>`
+                : `<div class="history-item"><small>${date} - ${user}</small><br><em>${x.azione}</em> ${x.dettagli||''}</div>`;
+        }).join('');
+        document.getElementById('inspectorHistory').innerHTML = html;
+    },
+    
+    openArchive: async function() {
+        const container = document.getElementById('archiveTasksContainer');
+        document.getElementById('archiveModal').style.display = 'block';
+        document.getElementById('modalOverlay').style.display = 'block';
+        container.innerHTML = 'Caricamento...';
+        try {
+            const res = await apiFetch(`/api/tasks/completed?page=1`);
+            const tasks = await res.json();
+            container.innerHTML = tasks.length 
+                ? tasks.map(t => `<div class="archive-task-item"><span>${t.titolo}</span><span>${new Date(t.data_ultima_modifica).toLocaleDateString()}</span></div>`).join('')
+                : 'Nessun task.';
+        } catch(e) { container.innerHTML = 'Errore caricamento.'; }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => TaskApp.init());
