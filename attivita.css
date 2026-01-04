@@ -1,20 +1,30 @@
-/* =================================================== */
-/* == Stili Attività - Layout 5 Col (No Modals)     == */
-/* =================================================== */
+/* ========================================================== */
+/* == GESTIONE ATTIVITÀ - STILE PROPRIETARIO (Ver. 6.0)    == */
+/* ========================================================== */
+
+/* --- 1. SETUP & LAYOUT BASE --- */
+* {
+    box-sizing: border-box;
+}
 
 body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    height: 100vh;
+    height: 100vh; /* Altezza viewport fissa */
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Nessuno scroll sulla pagina principale */
 }
 
-.page-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
+.page-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
 
-/* --- 1. HEADER --- */
+/* --- 2. HEADER COMPATTO --- */
 .page-header {
     background-color: #34495e;
     color: white;
@@ -24,48 +34,86 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Non si riduce */
+    z-index: 10;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .page-header h1 {
-    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
-    position: absolute; left: 50%; transform: translateX(-50%);
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    letter-spacing: 1px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Centrato assoluto */
+    white-space: nowrap;
 }
 
-.header-button { color: white; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; gap: 5px; opacity: 0.9; }
+.header-button {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
 .header-button:hover { opacity: 1; }
 
-/* Filtro Header a Destra */
+/* Filtro Utente (Dropdown nell'Header) */
 .header-filter-wrapper {
-    display: flex; align-items: center;
+    display: flex;
+    align-items: center;
     background: rgba(255,255,255,0.1);
-    padding: 2px 8px; border-radius: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
     border: 1px solid rgba(255,255,255,0.2);
 }
-.header-select {
-    background: #34495e; /* Sfondo scuro per match header */
-    border: none; color: white;
-    font-size: 0.9em; outline: none; cursor: pointer;
-    padding: 2px 5px;
+
+.header-filter-wrapper label {
+    font-size: 0.85em;
+    margin-right: 5px;
+    color: #ddd;
 }
 
-/* --- 2. LAYOUT --- */
+.header-select {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 0.9em;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+.header-select option {
+    background-color: #34495e;
+    color: white;
+}
+
+/* --- 3. LAYOUT A 5 COLONNE (Wrapper) --- */
 .task-view-wrapper {
     display: flex;
-    flex: 1;
+    flex: 1; /* Occupa tutto lo spazio verticale rimanente */
     overflow: hidden;
     padding: 10px;
     gap: 10px;
     background-color: #eef2f5;
 }
 
-/* --- 3. KANBAN BOARD (Flex ridotto) --- */
+/* --- 4. GRIGLIA KANBAN (Colonne 1-4) --- */
 .task-view-grid {
     display: flex;
-    gap: 8px; /* Spazio ridotto */
-    flex: 2; /* Occupa MENO spazio di prima (era 3) */
+    gap: 8px;
+    flex: 2; /* Occupa circa il 60% dello spazio */
     height: 100%;
-    overflow-x: auto;
+    overflow-x: auto; /* Scroll orizzontale se necessario */
 }
 
 .task-column {
@@ -74,94 +122,389 @@ body {
     padding: 6px;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 180px; /* Più strette */
+    flex: 1; /* Larghezza equa tra le 4 colonne */
+    min-width: 200px; /* Larghezza minima per leggibilità */
     height: 100%;
 }
 
 .task-column-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 6px; border-bottom: 2px solid #ddd; margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px 8px 4px;
+    border-bottom: 2px solid #dcdcdc;
+    margin-bottom: 6px;
+    flex-shrink: 0;
 }
-.task-column-header h2 { font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.column-count { background: #cbd2d9; padding: 1px 5px; border-radius: 6px; font-size: 0.7em; font-weight: bold; }
 
-.tasks-container { flex: 1; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 6px; }
+.task-column-header h2 {
+    font-size: 0.85em;
+    margin: 0;
+    color: #444;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-/* Cards Compatte */
+.column-count {
+    background-color: #d1d5db;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #555;
+}
+
+.tasks-container {
+    flex: 1;
+    overflow-y: auto; /* Scroll verticale interno alla colonna */
+    padding-right: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 50px; /* Area di drop sempre presente */
+}
+
+/* --- 5. CARDS (Post-it) --- */
 .task-card {
-    background: white; border-radius: 4px; padding: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
-    border-left: 3px solid transparent; transition: all 0.1s;
+    background-color: white;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    cursor: pointer;
+    border-left: 4px solid transparent; /* Indicatore priorità */
+    transition: transform 0.1s, box-shadow 0.1s;
+    user-select: none;
 }
-.task-card:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+.task-card:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
 .task-card.priority-alta { border-left-color: #dc3545; }
 .task-card.priority-media { border-left-color: #ffc107; }
 .task-card.priority-bassa { border-left-color: #28a745; }
-.task-card h4 { margin: 2px 0; font-size: 0.9em; color: #2c3e50; font-weight: 500; line-height: 1.2; }
 
-/* --- 4. COLONNA 5: ISPETTORE (Flex Aumentato) --- */
+.task-card h4 {
+    margin: 4px 0;
+    font-size: 0.95em;
+    color: #2c3e50;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+/* Etichette dentro la card */
+.cat-tag, .commessa-tag {
+    font-size: 0.7em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+.cat-tag { background-color: #f1f3f5; color: #555; }
+.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
+
+.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
+.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
+
+
+/* --- 6. ISPETTORE (Colonna 5) --- */
 .task-inspector-fixed {
-    flex: 1.3; /* MOLTO PIÙ LARGO */
-    min-width: 450px; /* Larghezza minima garantita per il form */
-    background: white;
+    flex: 1.3; /* Occupa il 40% circa dello spazio */
+    min-width: 450px; /* Larghezza generosa per form e dettagli */
+    background-color: white;
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     height: 100%;
     border: 1px solid #ddd;
+    overflow: hidden;
 }
 
+/* Toolbar in alto (Colonna 5) */
 .inspector-header-toolbar {
-    padding: 8px 15px; background: #f8f9fa; border-bottom: 1px solid #eee;
-    display: flex; align-items: center; gap: 10px; height: 50px; flex-shrink: 0;
+    padding: 0 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 50px;
+    flex-shrink: 0;
 }
 
+.divider-vertical {
+    width: 1px;
+    height: 24px;
+    background-color: #ddd;
+    margin: 0 5px;
+}
+
+/* Bottoni Toolbar */
 .toolbar-btn {
-    border: 1px solid #ced4da; background: white; padding: 6px 14px;
-    border-radius: 4px; cursor: pointer; font-size: 0.95em; color: #555;
-    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    border: 1px solid #ced4da;
+    background-color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: #555;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 36px; /* Quadrati se solo icona */
 }
-.toolbar-btn:hover:not(:disabled) { background: #e9ecef; }
+
+.toolbar-btn:hover:not(:disabled) { background-color: #e9ecef; }
 .toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-new { background-color: #28a745; color: white; border-color: #218838; }
-.btn-new:hover { background-color: #218838; }
-.btn-danger:hover:not(:disabled) { background-color: #dc3545; color: white; border-color: #dc3545; }
 
-.inspector-body { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
+/* Colori specifici pulsanti */
+.btn-new { background-color: #28a745; color: white; border-color: #218838; font-weight: 500; padding-left: 15px; padding-right: 15px; }
+.btn-new:hover { background-color: #218838; color: white; }
 
-/* Stili per il FORM dentro l'ispettore */
-.inspector-form { display: flex; flex-direction: column; gap: 15px; }
-.form-row { display: flex; gap: 15px; }
-.form-col { flex: 1; }
-.form-label { display: block; margin-bottom: 5px; font-size: 0.85em; font-weight: bold; color: #555; }
+.btn-complete { color: #28a745; border-color: #28a745; }
+.btn-complete:hover:not(:disabled) { background-color: #28a745; color: white; }
+
+.btn-transfer { color: #17a2b8; border-color: #17a2b8; }
+.btn-transfer:hover:not(:disabled) { background-color: #17a2b8; color: white; }
+
+.btn-danger { color: #dc3545; border-color: #dc3545; }
+.btn-danger:hover:not(:disabled) { background-color: #dc3545; color: white; }
+
+.btn-bell { 
+    margin-left: auto; /* Spinge a destra */
+    background-color: #fff3cd; color: #856404; border-color: #ffeeba; 
+}
+.btn-bell:hover { background-color: #ffeeba; }
+
+/* Corpo Ispettore */
+.inspector-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    position: relative;
+    background-color: #fff;
+}
+
+/* Stati Vuoti */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #ccc;
+    text-align: center;
+}
+.empty-state i { margin-bottom: 15px; color: #e0e0e0; }
+
+/* --- 7. CONTENUTO DETTAGLIO & FORM --- */
+
+/* Titolo Task */
+.detail-title {
+    font-size: 1.4em;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+/* Griglia Informazioni */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.detail-item strong {
+    display: block;
+    font-size: 0.75em;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+.detail-item span {
+    font-size: 1em;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Descrizione */
+.description-block {
+    background-color: #fffde7; /* Giallino nota */
+    padding: 15px;
+    border: 1px solid #fff9c4;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* Stili Form (Editing) */
+.inspector-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #555;
+}
+
 .inp-text, .inp-select, .inp-date, .inp-area {
-    width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;
-    font-family: inherit; font-size: 0.95em; box-sizing: border-box;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.95em;
+    box-sizing: border-box;
+    margin-bottom: 15px;
 }
 .inp-area { resize: vertical; min-height: 80px; }
 
-/* Pulsanti Form (Salva/Annulla) */
-.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+.form-row { display: flex; gap: 15px; }
+.form-col { flex: 1; }
 
-/* Visualizzazione Dettaglio */
-.detail-title { font-size: 1.4em; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 6px; }
-.detail-item strong { display: block; font-size: 0.8em; color: #888; text-transform: uppercase; }
-.detail-item span { font-size: 1em; color: #333; font-weight: 500; }
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
 
-.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ccc; text-align: center; }
-.empty-state i { margin-bottom: 15px; color: #ddd; }
+/* Pulsanti Standard */
+.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
+.button--primary { background: #007bff; color: white; }
+.button--success { background: #28a745; color: white; }
+.button--warning { background: #ffc107; color: #212529; }
 
-/* Chat */
-.history-section { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-.history-list { max-height: 300px; overflow-y: auto; margin-bottom: 10px; }
-.history-item { font-size: 0.9em; padding: 10px; border-bottom: 1px solid #f5f5f5; }
-.history-item.comment { background: #f0f7ff; border-radius: 4px; border-bottom: none; margin-bottom: 5px; }
-.comment-box { display: flex; gap: 8px; margin-top: 10px; }
+/* --- 8. STORIA & CHAT --- */
+.history-section {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+.history-section h4 { margin: 0 0 10px 0; color: #555; font-size: 1em; }
 
-/* Utils */
-.divider-vertical { width: 1px; height: 24px; background: #ddd; margin: 0 5px; }
-.button--primary { background: #007bff; color: white; border: none; padding: 0 15px; border-radius: 4px; cursor: pointer; }
-.button--success { background: #28a745; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+.history-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    font-size: 0.85em;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    line-height: 1.4;
+}
+
+/* Commenti Utente (Azzurro) */
+.history-item.comment {
+    background-color: #f0f7ff;
+    border-left: 3px solid #007bff;
+    border-color: #d6e9ff;
+}
+
+/* Azioni di Sistema (Giallo/Arancio) */
+.history-item.action {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+    border-color: #ffeeba;
+    color: #856404;
+}
+
+.history-item strong { font-weight: 600; }
+.history-item small { opacity: 0.7; margin-left: 5px; font-size: 0.9em; }
+
+/* Input Commento */
+.comment-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+}
+.comment-box textarea {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.9em;
+}
+
+/* --- 9. MODALI (Archivio, Transfer) --- */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 400px; /* Piccolo per transfer */
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+}
+.modal-header {
+    padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0;
+    display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;
+}
+.modal-header h2 { margin: 0; font-size: 1.1em; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
+.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
+
+/* Loader */
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; }
+.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Archivio List */
+.archive-task-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+.archive-task-item:hover { background-color: #f9f9f9; }
+
+/* Responsive Mobile */
+@media (max-width: 1024px) {
+    .task-inspector-fixed { min-width: 350px; }
+}
+
+@media (max-width: 768px) {
+    .task-view-wrapper { flex-direction: column; overflow-y: auto; }
+    .task-view-grid { min-height: 300px; flex: none; overflow-x: auto; }
+    .task-inspector-fixed { min-width: 100%; flex: 1; border-left: none; border-top: 1px solid #ddd; }
+}

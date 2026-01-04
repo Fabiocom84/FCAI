@@ -1,5 +1,5 @@
 // js/attivita.js
-// Versione 5.1 - Fix Syntax Error e Logic Order
+// Versione 6.1 - Final Logic (5 Columns, Toolbar, No Modals)
 
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
@@ -12,7 +12,7 @@ const TaskApp = {
         currentUserProfile: null,
         currentTask: null,
         
-        // Choices instances (gestite dinamicamente nel form)
+        // Per gestire le istanze di Choices.js nel form ed evitarne la duplicazione
         choicesInstances: [], 
 
         columnsConfig: [
@@ -33,18 +33,25 @@ const TaskApp = {
         if (!IsAdmin) { window.location.replace('index.html'); return; }
         this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
 
-        // Cache DOM
+        // Cache DOM Elements
         this.dom.taskView = document.getElementById('taskView');
         this.dom.inspectorBody = document.getElementById('inspectorBody');
         
-        // Buttons Toolbar
+        // Toolbar Buttons
         this.dom.btnNew = document.getElementById('addTaskBtn');
         this.dom.btnEdit = document.getElementById('inspectorEditBtn');
         this.dom.btnDelete = document.getElementById('inspectorDeleteBtn');
+        this.dom.btnComplete = document.getElementById('inspectorCompleteBtn');
+        this.dom.btnTransfer = document.getElementById('inspectorTransferBtn');
+        this.dom.btnBell = document.getElementById('inspectorBellBtn');
         
-        // Filter
+        // Header Filter
         this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
         this.dom.adminUserFilter = document.getElementById('adminUserFilter');
+
+        // Modals
+        this.dom.modalOverlay = document.getElementById('modalOverlay');
+        this.dom.transferModal = document.getElementById('transferModal');
 
         await this.loadInitialData();
         this.addEventListeners();
@@ -88,11 +95,15 @@ const TaskApp = {
             columnEl.dataset.status = col.status;
             
             const tasksInCol = this.state.boardData[col.key] || [];
-            const extraBtn = col.key === 'done' ? `<span id="openArchiveBtn" style="cursor:pointer; font-size:1.2em; margin-left:5px;">📂</span>` : '';
+            // Icona cartella per archivio nell'ultima colonna
+            const extraBtn = col.key === 'done' ? `<i id="openArchiveBtn" class="fas fa-folder-open" style="cursor:pointer; margin-left:8px; opacity:0.7;" title="Archivio"></i>` : '';
 
             columnEl.innerHTML = `
                 <div class="task-column-header">
-                    <h2>${col.label} ${extraBtn}</h2>
+                    <h2>
+                        <span class="dot-indicator" style="background-color: var(--${col.colorClass}-color, #ccc)"></span>
+                        ${col.label} ${extraBtn}
+                    </h2>
                     <span class="column-count">${tasksInCol.length}</span>
                 </div>
                 <div class="tasks-container" data-status-key="${col.key}"></div>
@@ -100,6 +111,7 @@ const TaskApp = {
 
             const container = columnEl.querySelector('.tasks-container');
             tasksInCol.forEach(task => container.appendChild(this.createTaskCard(task)));
+            
             this.setupDragDrop(container);
             this.dom.taskView.appendChild(columnEl);
         });
@@ -124,11 +136,14 @@ const TaskApp = {
                 <span style="font-size:0.7em; color:#888;">${task.assegnatario?.nome_cognome.split(' ')[0] || ''}</span>
             </div>
             <h4>${task.titolo}</h4>
+            ${task.data_obiettivo ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'red' : '#999'}; margin-top:4px;"><i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}</div>` : ''}
         `;
         el.addEventListener('click', () => this.renderInspectorView(task.id_task));
         el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', task.id_task); });
         return el;
     },
+
+    isLate: function(dateStr) { return new Date(dateStr) < new Date().setHours(0,0,0,0); },
 
     setupDragDrop: function(container) {
         container.addEventListener('dragover', e => { e.preventDefault(); container.classList.add('drag-over'); });
@@ -147,18 +162,26 @@ const TaskApp = {
     },
 
     // =================================================================
-    // == 3. INSPECTOR: VIEW MODE                                     ==
+    // == 3. INSPECTOR: VIEW MODE (VISUALIZZAZIONE)                   ==
     // =================================================================
 
     renderInspectorView: async function(taskId) {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
-        this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
+        this.toggleToolbar(false);
 
         try {
             const res = await apiFetch(`/api/tasks/${taskId}`);
             const task = await res.json();
             this.state.currentTask = task;
-            this.dom.btnEdit.disabled = false; this.dom.btnDelete.disabled = false;
+            
+            // Riabilita toolbar
+            this.toggleToolbar(true);
+            
+            // Gestione bottone "Completa"
+            const isDone = task.stato === 'Completato';
+            this.dom.btnComplete.innerHTML = isDone ? '<i class="fas fa-undo"></i>' : '<i class="fas fa-check"></i>';
+            this.dom.btnComplete.title = isDone ? "Riapri Task" : "Segna Completato";
+            this.dom.btnComplete.className = isDone ? "toolbar-btn" : "toolbar-btn btn-complete"; // Rimuove verde se è un undo
 
             const html = `
                 <h2 class="detail-title">${task.titolo}</h2>
@@ -167,7 +190,7 @@ const TaskApp = {
                     <div class="detail-item"><strong>Priorità</strong> <span>${task.priorita}</span></div>
                     <div class="detail-item"><strong>Categoria</strong> <span>${task.categoria?.nome_categoria}</span></div>
                     <div class="detail-item"><strong>Assegnato</strong> <span>${task.assegnatario?.nome_cognome}</span></div>
-                    ${task.commessa ? `<div class="detail-item" style="grid-column: span 2;"><strong>Commessa</strong> <span>${task.commessa.impianto}</span></div>` : ''}
+                    ${task.commessa ? `<div class="detail-item" style="grid-column: span 2;"><strong>Commessa</strong> <span>${task.commessa.impianto} (${task.commessa.codice_commessa})</span></div>` : ''}
                     ${task.sottocategoria ? `<div class="detail-item"><strong>Tag</strong> <span>${task.sottocategoria}</span></div>` : ''}
                     <div class="detail-item"><strong>Scadenza</strong> <span>${task.data_obiettivo ? new Date(task.data_obiettivo).toLocaleDateString() : '-'}</span></div>
                 </div>
@@ -176,43 +199,41 @@ const TaskApp = {
                     ${task.descrizione || '<em>Nessuna descrizione.</em>'}
                 </div>
 
-                ${task.stato !== 'Completato' ? 
-                    `<button id="btnComplete" class="button--success">✅ Segna come Completato</button>` : 
-                    `<button id="btnReopen" class="button--primary" style="width:100%">↩️ Riapri Task</button>`
-                }
-
                 <div class="history-section">
                     <h4>Attività & Commenti</h4>
                     <div id="inspectorHistory" class="history-list"></div>
                     <div class="comment-box">
-                        <textarea id="inpComment" placeholder="Scrivi commento..." rows="1"></textarea>
-                        <button id="btnSendComment" class="button--primary">Invia</button>
+                        <textarea id="inpComment" placeholder="Scrivi un commento..." rows="1"></textarea>
+                        <button id="btnSendComment" class="button button--primary"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
             `;
             this.dom.inspectorBody.innerHTML = html;
             
-            // Eventi View
             document.getElementById('btnSendComment').addEventListener('click', () => this.postComment());
-            if(document.getElementById('btnComplete')) document.getElementById('btnComplete').addEventListener('click', () => this.updateStatus('Completato'));
-            if(document.getElementById('btnReopen')) document.getElementById('btnReopen').addEventListener('click', () => this.updateStatus('Da Fare'));
-
             this.renderHistory(task.task_storia, task.task_commenti);
 
-        } catch(e) { this.dom.inspectorBody.innerHTML = `<p>Errore: ${e.message}</p>`; }
+        } catch(e) { this.dom.inspectorBody.innerHTML = `<p style="color:red; text-align:center;">Errore caricamento: ${e.message}</p>`; }
+    },
+
+    toggleToolbar: function(enable) {
+        this.dom.btnEdit.disabled = !enable;
+        this.dom.btnDelete.disabled = !enable;
+        this.dom.btnComplete.disabled = !enable;
+        this.dom.btnTransfer.disabled = !enable;
     },
 
     // =================================================================
-    // == 4. INSPECTOR: EDIT / CREATE MODE (FORM)                     ==
+    // == 4. INSPECTOR: EDIT / CREATE FORM                            ==
     // =================================================================
 
     renderInspectorForm: function(task = null) {
-        this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
+        this.toggleToolbar(false); // Disabilita toolbar mentre editi
         
         const isEdit = !!task;
-        const title = isEdit ? "Modifica Task" : "Nuovo Task";
+        const title = isEdit ? "Modifica Dati" : "Nuovo Task";
         
-        // Defaults
+        // Valori iniziali
         const values = {
             id: task ? task.id_task : '',
             titolo: task ? task.titolo : '',
@@ -230,16 +251,16 @@ const TaskApp = {
             <form id="inspectorForm" class="inspector-form" onsubmit="return false;">
                 <input type="hidden" id="inpId" value="${values.id}">
                 
-                <label class="form-label">Titolo</label>
+                <label>Titolo</label>
                 <input type="text" id="inpTitle" class="inp-text" value="${values.titolo}" required>
                 
                 <div class="form-row">
                     <div class="form-col">
-                        <label class="form-label">Categoria</label>
+                        <label>Categoria</label>
                         <select id="inpCat" class="inp-select" required></select>
                     </div>
                     <div class="form-col">
-                        <label class="form-label">Priorità</label>
+                        <label>Priorità</label>
                         <select id="inpPrio" class="inp-select">
                             <option value="Bassa" ${values.prio=='Bassa'?'selected':''}>🟢 Bassa</option>
                             <option value="Media" ${values.prio=='Media'?'selected':''}>🟡 Media</option>
@@ -248,34 +269,35 @@ const TaskApp = {
                     </div>
                 </div>
 
-                <!-- Dynamic Fields -->
-                <div id="wrapSub" class="form-group"><label class="form-label">Dettaglio</label><select id="inpSub"></select></div>
-                <div id="wrapComm" class="form-group" style="display:none"><label class="form-label">Commessa</label><select id="inpComm"></select></div>
+                <div id="wrapSub" class="form-group"><label>Dettaglio / Tag</label><select id="inpSub"></select></div>
+                <div id="wrapComm" class="form-group" style="display:none"><label>Commessa</label><select id="inpComm"></select></div>
 
-                <label class="form-label">Assegnato a</label>
+                <label>Assegnato a</label>
                 <select id="inpAss" class="inp-select"></select>
 
-                <label class="form-label">Scadenza</label>
+                <label>Scadenza</label>
                 <input type="date" id="inpDate" class="inp-date" value="${values.date}">
 
-                <label class="form-label">Descrizione</label>
+                <label>Descrizione</label>
                 <textarea id="inpDesc" class="inp-area">${values.desc || ''}</textarea>
 
                 <div class="form-actions">
-                    <button id="btnCancel" class="button--warning">Annulla</button>
-                    <button id="btnSave" class="button--success">Salva</button>
+                    <button id="btnCancel" class="button button--warning">Annulla</button>
+                    <button id="btnSave" class="button button--success">Salva</button>
                 </div>
             </form>
         `;
         this.dom.inspectorBody.innerHTML = html;
 
-        // Populate Dropdowns
         this.populateFormDropdowns(values);
 
         // Event Listeners Form
         document.getElementById('btnCancel').addEventListener('click', () => {
             if(isEdit) this.renderInspectorView(values.id);
-            else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task o creane uno nuovo.</p></div>';
+            else {
+                this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task o creane uno nuovo.</p></div>';
+                this.toggleToolbar(false);
+            }
         });
         document.getElementById('btnSave').addEventListener('click', () => this.saveTask());
         document.getElementById('inpCat').addEventListener('change', () => this.toggleSubField());
@@ -296,18 +318,15 @@ const TaskApp = {
         });
 
         // Choices per Commessa e Etichette
-        this.state.choicesInstances.forEach(c => c.destroy()); // Cleanup old
+        this.state.choicesInstances.forEach(c => c.destroy());
         this.state.choicesInstances = [];
 
-        const commEl = document.getElementById('inpComm');
-        const subEl = document.getElementById('inpSub');
-
-        const commChoice = new Choices(commEl, {
+        const commChoice = new Choices('#inpComm', {
             choices: this.state.initData.commesse.map(c => ({value: c.id_commessa, label: `${c.impianto} (${c.codice_commessa})`, selected: vals.comm == c.id_commessa })),
             searchEnabled: true, itemSelectText: ''
         });
         
-        const subChoice = new Choices(subEl, {
+        const subChoice = new Choices('#inpSub', {
             choices: this.state.initData.etichette.map(e => ({value: e.label, label: e.label, selected: vals.sub == e.label })),
             searchEnabled: true, itemSelectText: ''
         });
@@ -326,7 +345,6 @@ const TaskApp = {
         document.getElementById('wrapComm').style.display = isComm ? 'block' : 'none';
     },
 
-    // --- SAVE LOGIC ---
     saveTask: async function() {
         const id = document.getElementById('inpId').value;
         const isComm = document.getElementById('wrapComm').style.display !== 'none';
@@ -354,19 +372,30 @@ const TaskApp = {
             const saved = await res.json();
             
             await this.refreshBoard();
-            this.renderInspectorView(saved.id_task); // Torna alla view
+            this.renderInspectorView(saved.id_task); 
         } catch(e) { alert(e.message); }
     },
 
     // =================================================================
-    // == 5. UTILS & EVENT LISTENERS                                  ==
+    // == 5. AZIONI (TOOLBAR, MODALS)                                 ==
     // =================================================================
 
     addEventListeners: function() {
+        // Toolbar
         this.dom.btnNew.addEventListener('click', () => this.renderInspectorForm(null));
         this.dom.btnEdit.addEventListener('click', () => { if(this.state.currentTask) this.renderInspectorForm(this.state.currentTask); });
         this.dom.btnDelete.addEventListener('click', () => this.deleteTask());
-        
+        this.dom.btnComplete.addEventListener('click', () => this.toggleCompleteStatus());
+        this.dom.btnTransfer.addEventListener('click', () => this.openTransferModal());
+        this.dom.btnBell.addEventListener('click', () => this.showNotifications()); 
+
+        // Modale Trasferimento
+        document.getElementById('confirmTransferBtn').addEventListener('click', () => this.executeTransfer());
+        document.getElementById('closeTransferBtn').addEventListener('click', () => {
+            this.dom.transferModal.style.display = 'none';
+            this.dom.modalOverlay.style.display = 'none';
+        });
+
         // Filtro Header
         if (this.state.currentUserProfile.is_admin) {
             this.dom.adminFilterContainer.style.display = 'flex';
@@ -374,12 +403,58 @@ const TaskApp = {
         }
         
         // Modale Archivio close
-        document.querySelectorAll('.close-button').forEach(b => b.addEventListener('click', () => {
-            document.getElementById('archiveModal').style.display = 'none';
-            document.getElementById('modalOverlay').style.display = 'none';
+        document.querySelectorAll('.close-button').forEach(b => b.addEventListener('click', (e) => {
+            if(e.target.dataset.closeArchive !== undefined) {
+                document.getElementById('archiveModal').style.display = 'none';
+                document.getElementById('modalOverlay').style.display = 'none';
+            }
         }));
     },
 
+    // --- AZIONI SPECIFICHE ---
+
+    toggleCompleteStatus: function() {
+        if(!this.state.currentTask) return;
+        const newStatus = this.state.currentTask.stato === 'Completato' ? 'Da Fare' : 'Completato';
+        this.updateStatus(newStatus);
+    },
+
+    openTransferModal: function() {
+        if(!this.state.currentTask) return;
+        const sel = document.getElementById('transferUserSelect');
+        sel.innerHTML = '';
+        const currentAssignee = this.state.currentTask.id_assegnatario_fk;
+        this.state.personale.filter(p => p.puo_accedere && p.id_personale != currentAssignee).forEach(p => {
+            sel.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
+        });
+        this.dom.transferModal.style.display = 'block';
+        this.dom.modalOverlay.style.display = 'block';
+    },
+
+    executeTransfer: async function() {
+        const newAssignee = document.getElementById('transferUserSelect').value;
+        if(!newAssignee) return;
+        try {
+            await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {
+                method: 'PUT', body: JSON.stringify({ id_assegnatario_fk: newAssignee })
+            });
+            this.dom.transferModal.style.display = 'none';
+            this.dom.modalOverlay.style.display = 'none';
+            this.refreshBoard();
+            this.renderInspectorView(this.state.currentTask.id_task);
+        } catch(e) { console.error(e); alert('Errore trasferimento'); }
+    },
+
+    showNotifications: async function() {
+        try {
+            const res = await apiFetch(`/api/tasks/notifiche`);
+            const notes = await res.json();
+            const msg = notes.length ? notes.map(n => `• ${n.messaggio}`).join('\n') : "Nessuna notifica recente.";
+            alert("Notifiche:\n" + msg); 
+        } catch(e) { console.error(e); }
+    },
+
+    // --- UTILS COMUNI ---
     refreshBoard: async function() {
         this.state.boardData = await this.fetchBoardData();
         this.renderKanbanBoard();
@@ -409,10 +484,9 @@ const TaskApp = {
 
     deleteTask: async function() {
         if(!confirm("Eliminare definitivamente questo task?")) return;
-        // Se non hai la rotta DELETE backend, rimuovi questa riga o aggiungila.
         // await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {method:'DELETE'});
         this.dom.inspectorBody.innerHTML = '<div class="empty-state"><p>Task eliminato</p></div>';
-        this.dom.btnEdit.disabled = true; this.dom.btnDelete.disabled = true;
+        this.toggleToolbar(false);
         this.refreshBoard();
     },
 
@@ -421,9 +495,14 @@ const TaskApp = {
         const html = combined.map(x => {
             const date = new Date(x.d).toLocaleDateString() + ' ' + new Date(x.d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
             const user = x.type==='h' ? x.utente?.nome_cognome : x.autore?.nome_cognome;
+            
+            // Rileva azioni per cambio colore
+            const isAction = x.type === 'h' && (x.azione === 'CAMBIO STATO' || x.azione === 'RIASSEGNATO' || x.azione === 'CREATO');
+            const itemClass = isAction ? 'history-item action' : (x.type === 'c' ? 'history-item comment' : 'history-item');
+
             return x.type==='c' 
-                ? `<div class="history-item comment"><strong>${user}</strong> <small>${date}</small><br>${x.testo_commento}</div>`
-                : `<div class="history-item"><small>${date} - ${user}</small><br><em>${x.azione}</em> ${x.dettagli||''}</div>`;
+                ? `<div class="${itemClass}"><strong>${user}</strong> <small>${date}</small><br>${x.testo_commento}</div>`
+                : `<div class="${itemClass}"><small>${date} - ${user}</small><br><strong>${x.azione}</strong>: ${x.dettagli||''}</div>`;
         }).join('');
         document.getElementById('inspectorHistory').innerHTML = html;
     },
