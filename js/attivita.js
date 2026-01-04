@@ -1,801 +1,559 @@
 // js/attivita.js
-// Versione 2.0 - Architettura a due modali (Creazione / Dettaglio)
+// Versione 3.0 - Kanban Board Completa (4 Colonne + Ispettore)
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
 const TaskApp = {
-    dom: {},
     state: {
-        tasks: { da_fare_organizzato: {}, completati_recenti: [] },
-        personale: [],
+        boardData: { todo: [], doing: [], review: [], done: [] }, // Struttura Backend
         initData: { categorie: [], commesse: [], etichette: [] },
+        personale: [],
         currentUserProfile: null,
-        currentTask: null, // Task attualmente visualizzato nel modale DETTAGLIO
-        archivePage: 1,
-        archiveTasks: [],
-        isLoadingArchive: false,
-        canLoadMore: true,
-        // Istanze Choices per il MODALE FORM
+        currentTask: null, // Task aperto nel dettaglio
+        
+        // Configurazione Colonne Kanban
+        columnsConfig: [
+            { key: 'todo',   label: 'Da Fare',       status: 'Da Fare',      colorClass: 'todo' },
+            { key: 'doing',  label: 'In Corso',      status: 'In Corso',     colorClass: 'doing' },
+            { key: 'review', label: 'In Revisione',  status: 'In Revisione', colorClass: 'review' },
+            { key: 'done',   label: 'Completato',    status: 'Completato',   colorClass: 'done' }
+        ],
+
+        // Choices Instances
         formCommessaChoices: null,
         formSubcategoryChoices: null,
+        
+        // Archivio
+        archivePage: 1,
+        canLoadMoreArchive: true
     },
 
+    dom: {},
+
     // =================================================================
-    // == 1. INIZIALIZZAZIONE E CARICAMENTO DATI                     ==
+    // == 1. INIT & LOAD                                              ==
     // =================================================================
 
     init: async function() {
-        
-        // 2. BLOCCO DI SICUREZZA
-        if (!IsAdmin) {
-            window.location.replace('index.html');
-            return;
-        }
-        // ---------------------
+        if (!IsAdmin) { window.location.replace('index.html'); return; }
 
-        // --- PROFILO UTENTE ---
         this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
 
-        // --- DOM PRINCIPALE ---
+        // Cache DOM Elements
+        this.dom.taskView = document.getElementById('taskView');
         this.dom.addTaskBtn = document.getElementById('addTaskBtn');
         this.dom.modalOverlay = document.getElementById('modalOverlay');
+        
+        // Filters
         this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
         this.dom.adminUserFilter = document.getElementById('adminUserFilter');
-        this.dom.daFareContent = document.getElementById('daFareContent');
-        this.dom.completatiContainer = document.querySelector('#completatiContainer .tasks-container');
 
-        // --- DOM MODALE 1: CREAZIONE / MODIFICA FORM (#taskModal) ---
+        // Modale Form
         this.dom.formModal = document.getElementById('taskModal');
-        this.dom.formCloseBtn = this.dom.formModal.querySelector('[data-close-create]');
-        this.dom.formModalTitle = this.dom.formModal.querySelector('#modalTitle');
         this.dom.taskForm = document.getElementById('taskForm');
         this.dom.taskId = document.getElementById('taskId');
-        this.dom.taskTitle = document.getElementById('taskTitle');
-        this.dom.taskDescription = document.getElementById('taskDescription');
-        this.dom.taskAssignee = document.getElementById('taskAssignee');
-        this.dom.taskDueDate = document.getElementById('taskDueDate');
-        this.dom.taskCategory = document.getElementById('taskCategory');
-        this.dom.taskPriority = document.getElementById('taskPriority');
-        this.dom.taskSubcategory = document.getElementById('taskSubcategory');
-        this.dom.taskCommessa = document.getElementById('taskCommessa');
-        this.dom.commessaSubcategoryContainer = document.getElementById('commessaSubcategoryContainer');
-        this.dom.textSubcategoryContainer = document.getElementById('textSubcategoryContainer');
+        // ...altri input form mappati dinamicamente al bisogno...
         this.dom.saveTaskBtn = document.getElementById('saveTaskBtn');
-        
-        // --- DOM MODALE 2: DETTAGLIO (#taskDetailModal) ---
+        this.dom.taskCategory = document.getElementById('taskCategory');
+
+        // Modale Dettaglio
         this.dom.detailModal = document.getElementById('taskDetailModal');
-        this.dom.detailCloseBtn = this.dom.detailModal.querySelector('[data-close-detail]');
-        this.dom.detailModalTitle = document.getElementById('detailModalTitle');
-        this.dom.detailReadOnlyContainer = document.getElementById('taskDetailReadOnlyContainer');
-        this.dom.detailCommentInput = document.getElementById('detailTaskCommentInput');
-        this.dom.detailHistoryContainer = document.getElementById('detailTaskHistoryContainer');
-        this.dom.detailAddCommentBtn = document.getElementById('detailAddCommentBtn');
-        this.dom.detailCompleteTaskBtn = document.getElementById('detailCompleteTaskBtn');
-        this.dom.detailReopenTaskBtn = document.getElementById('detailReopenTaskBtn');
-        this.dom.detailOpenEditBtn = document.getElementById('detailOpenEditBtn');
-
-        // --- DOM ARCHIVIO ---
-        this.dom.openArchiveBtn = document.getElementById('openArchiveBtn');
-        this.dom.archiveModal = document.getElementById('archiveModal');
-        this.dom.closeArchiveBtn = this.dom.archiveModal.querySelector('[data-close-archive]');
-        this.dom.archiveTasksContainer = document.getElementById('archiveTasksContainer');
-        this.dom.loadMoreBtn = document.getElementById('loadMoreBtn');
-        this.dom.archiveLoader = document.getElementById('archiveLoader');
-
-        // --- AVVIO ---
+        this.dom.detailReadOnly = document.getElementById('taskDetailReadOnlyContainer');
+        this.dom.detailHistory = document.getElementById('detailTaskHistoryContainer');
+        
+        // Avvio
         await this.loadInitialData();
         this.addEventListeners();
     },
 
     loadInitialData: async function() {
         try {
-            // Carica tutti i dati in parallelo
-            const [tasksRes, personaleRes, initDataRes, etichetteRes] = await Promise.all([
-                this.loadTasks(), // Carica i task (già gestisce l'admin filter)
+            const [boardRes, personaleRes, initDataRes, etichetteRes] = await Promise.all([
+                this.fetchBoardData(),
                 apiFetch('/api/personale/'),
                 apiFetch('/api/tasks/init-data'),
                 apiFetch('/api/get-etichette')
             ]);
-            
-            // Popola lo stato
-            this.state.tasks = tasksRes;
-            const personaleData = await personaleRes.json();
+
+            this.state.boardData = boardRes;
+            this.state.personale = (await personaleRes.json()).data;
             this.state.initData = await initDataRes.json();
-            this.state.personale = personaleData.data;
             this.state.initData.etichette = await etichetteRes.json();
 
-            // Inizializza UI
             this.setupAdminFilter();
-            this.populateStaticDropdowns(); // Popola i dropdown che non cambiano
-            this.renderBoard();
+            this.populateDropdowns();
+            this.renderKanbanBoard(); // <-- Genera le colonne e le card
 
         } catch (error) {
-            console.error("Errore nel caricamento dei dati iniziali:", error);
-            this.dom.daFareContent.innerHTML = `<p class="error-text">Impossibile caricare i dati.</p>`;
-        }
-    },
-    
-    loadTasks: async function() {
-        try {
-            const params = new URLSearchParams();
-            const selectedUserId = this.dom.adminUserFilter.value;
-            // Aggiunge il filtro solo se l'admin ha selezionato un utente specifico
-            if (this.state.currentUserProfile?.is_admin && selectedUserId) {
-                params.append('id_utente_filtro', selectedUserId);
-            }
-            const res = await apiFetch(`/api/tasks/?${params.toString()}`);
-            if (!res.ok) throw new Error('Errore di rete nel caricamento task');
-            return await res.json();
-        } catch (error) {
-             console.error("Errore nel caricamento dei task:", error);
-             this.dom.daFareContent.innerHTML = `<p class="error-text">Impossibile caricare i task.</p>`;
-             return { da_fare_organizzato: {}, completati_recenti: [] }; // Ritorna stato vuoto
+            console.error("Init Error:", error);
+            this.dom.taskView.innerHTML = `<p class="error-text">Errore caricamento dati: ${error.message}</p>`;
         }
     },
 
+    fetchBoardData: async function() {
+        const params = new URLSearchParams();
+        const filterUser = this.dom.adminUserFilter?.value;
+        if (filterUser) params.append('id_utente_filtro', filterUser);
+        
+        const res = await apiFetch(`/api/tasks/?${params.toString()}`);
+        if (!res.ok) throw new Error('Errore API Tasks');
+        return await res.json();
+    },
+
     // =================================================================
-    // == 2. GESTIONE EVENTI (EVENT LISTENERS)                       ==
+    // == 2. RENDER KANBAN (Core Logic)                               ==
     // =================================================================
 
-    addEventListeners: function() {
-        // Overlay (chiude entrambi i modali)
-        this.dom.modalOverlay.addEventListener('click', (e) => {
-            if (e.target === this.dom.modalOverlay) {
-                this.closeFormModal();
-                this.closeDetailModal();
-            }
+    renderKanbanBoard: function() {
+        this.dom.taskView.innerHTML = ''; // Pulisce tutto
+
+        // Genera le 4 colonne dinamicamente
+        this.state.columnsConfig.forEach(col => {
+            const columnEl = document.createElement('div');
+            columnEl.className = 'task-column';
+            columnEl.dataset.status = col.status; // Fondamentale per il Drop
+            
+            // Header Colonna
+            const tasksInCol = this.state.boardData[col.key] || [];
+            const count = tasksInCol.length;
+            
+            // Extra: Bottone archivio solo nell'ultima colonna
+            const extraBtn = col.key === 'done' 
+                ? `<button id="openArchiveBtn" class="small-action-btn">Archivio</button>` 
+                : '';
+
+            columnEl.innerHTML = `
+                <div class="task-column-header">
+                    <h2>
+                        <span class="dot-indicator" style="background-color: var(--${col.colorClass}-color, #ccc)"></span> 
+                        ${col.label}
+                    </h2>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="column-count">${count}</span>
+                        ${extraBtn}
+                    </div>
+                </div>
+                <div class="tasks-container" data-status-key="${col.key}"></div>
+            `;
+
+            // Card Container
+            const container = columnEl.querySelector('.tasks-container');
+            
+            // Popola Cards
+            tasksInCol.forEach(task => {
+                container.appendChild(this.createTaskCard(task));
+            });
+
+            // Eventi Drag & Drop sulla colonna
+            this.setupDragDrop(container);
+
+            this.dom.taskView.appendChild(columnEl);
         });
 
-        // Azioni Principali
-        this.dom.addTaskBtn.addEventListener('click', () => this.openFormModal()); // Apre Modale 1 (Creazione)
-        this.dom.adminUserFilter.addEventListener('change', () => this.refreshBoard());
-
-        // Modale 1 (Creazione/Modifica Form)
-        this.dom.formCloseBtn.addEventListener('click', () => this.closeFormModal());
-        this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
-        this.dom.taskCategory.addEventListener('change', () => this.toggleSubcategoryField());
-
-        // Modale 2 (Dettaglio)
-        this.dom.detailCloseBtn.addEventListener('click', () => this.closeDetailModal());
-        this.dom.detailOpenEditBtn.addEventListener('click', () => this.switchToEditMode());
-        this.dom.detailAddCommentBtn.addEventListener('click', () => this.addComment());
-        this.dom.detailCompleteTaskBtn.addEventListener('click', () => this.completeTask());
-        this.dom.detailReopenTaskBtn.addEventListener('click', () => this.updateTaskStatus('Da Fare'));
-
-        // Archivio
-        this.dom.openArchiveBtn.addEventListener('click', () => this.openArchiveModal());
-        this.dom.closeArchiveBtn.addEventListener('click', () => this.closeArchiveModal());
-        this.dom.loadMoreBtn.addEventListener('click', () => this.loadCompletedTasks());
+        // Ri-attacca listener archivio se esiste
+        const archiveBtn = document.getElementById('openArchiveBtn');
+        if (archiveBtn) archiveBtn.addEventListener('click', () => this.openArchive());
     },
 
-    // =================================================================
-    // == 3. RENDER BACHECA E CARD "POST-IT"                         ==
-    // =================================================================
-
-    refreshBoard: async function() {
-        this.state.tasks = await this.loadTasks();
-        this.renderBoard();
-    },
-
-    renderBoard: function() {
-        this.dom.daFareContent.innerHTML = '';
-        this.dom.completatiContainer.innerHTML = '';
-
-        // Render "Da Fare" (organizzato per categorie)
-        const organizedTasks = this.state.tasks.da_fare_organizzato || {};
-        if (Object.keys(organizedTasks).length === 0) {
-            this.dom.daFareContent.innerHTML = '<p class="empty-column-text">Nessun task da fare.</p>';
-        } else {
-            for (const category in organizedTasks) {
-                const group = document.createElement('div');
-                group.className = 'subcategory-group';
-                
-                const header = document.createElement('h3');
-                header.className = 'subcategory-header';
-                header.textContent = category;
-                group.appendChild(header);
-                
-                const tasksContainer = document.createElement('div');
-                tasksContainer.className = 'tasks-container';
-                tasksContainer.dataset.statusContainer = 'Da Fare'; // Per D&D
-                
-                organizedTasks[category].forEach(task => {
-                    tasksContainer.appendChild(this.createTaskCard(task));
-                });
-                
-                group.appendChild(tasksContainer);
-                this.dom.daFareContent.appendChild(group);
-            }
-        }
-
-        // Render "Completati Recenti"
-        const recentTasks = this.state.tasks.completati_recenti || [];
-        if (recentTasks.length === 0) {
-             this.dom.completatiContainer.innerHTML = '<p class="empty-column-text">Nessun task completato di recente.</p>';
-        } else {
-            recentTasks.forEach(task => {
-                this.dom.completatiContainer.appendChild(this.createTaskCard(task));
-            });
-        }
-        
-        // Ri-attacca i listener per il Drag & Drop
-        this.addDragDropListeners();
-    },
-
-    /**
-     * Crea la card "Post-it"
-     */
     createTaskCard: function(task) {
-        const card = document.createElement('div');
-        card.className = 'task-card';
-        card.dataset.taskId = task.id_task;
-        
-        // Applica classe per colore priorità
-        if (task.priorita) {
-            card.classList.add(`priority-${task.priorita.toLowerCase()}`);
-        } else {
-            card.classList.add('priority-media'); // Default
+        const el = document.createElement('div');
+        el.className = `task-card priority-${(task.priorita || 'Media').toLowerCase()}`;
+        el.draggable = true;
+        el.dataset.taskId = task.id_task;
+
+        // Header: Categoria o Commessa
+        let headerText = task.categoria?.nome_categoria || 'Generale';
+        let headerClass = 'cat-tag';
+        if (task.commessa) {
+            headerText = `${task.commessa.codice_commessa}`;
+            headerClass = 'commessa-tag';
         }
 
-        // Draggable solo se "Da Fare"
-        if (task.stato === 'Da Fare') {
-            card.draggable = true;
-            card.addEventListener('dragstart', (e) => this.handleDragStart(e));
-            card.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
-        }
+        el.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.75em; color:#888;">
+                <span class="${headerClass}"><strong>${headerText}</strong></span>
+                <span>${task.assegnatario?.nome_cognome || ''}</span>
+            </div>
+            <h4>${task.titolo}</h4>
+            ${task.data_obiettivo ? `<div style="margin-top:5px; font-size:0.8em; color:${this.isLate(task.data_obiettivo) ? 'red' : '#666'}">📅 ${new Date(task.data_obiettivo).toLocaleDateString()}</div>` : ''}
+        `;
 
-        // Contenuto (solo titolo)
-        card.innerHTML = `<h4>${task.titolo}</h4>`;
+        el.addEventListener('click', () => this.openDetailModal(task.id_task));
         
-        // Evento Click: Apre il MODALE 2 (Dettaglio)
-        card.addEventListener('click', () => this.openDetailModal(task.id_task));
-        
-        return card;
+        // Drag Events
+        el.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', task.id_task);
+            setTimeout(() => el.classList.add('dragging'), 0);
+        });
+        el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+        return el;
+    },
+
+    isLate: function(dateStr) {
+        return new Date(dateStr) < new Date().setHours(0,0,0,0);
     },
 
     // =================================================================
-    // == 4. LOGICA MODALI (CREAZIONE E DETTAGLIO)                   ==
+    // == 3. DRAG & DROP LOGIC                                        ==
     // =================================================================
 
-    /**
-     * Apre il MODALE 1 (Form) per Creare un nuovo task
-     */
+    setupDragDrop: function(container) {
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Permette il drop
+            container.classList.add('drag-over');
+        });
+
+        container.addEventListener('dragleave', () => {
+            container.classList.remove('drag-over');
+        });
+
+        container.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            container.classList.remove('drag-over');
+            
+            const taskId = e.dataTransfer.getData('text/plain');
+            const targetColumn = container.closest('.task-column');
+            const newStatus = targetColumn.dataset.status;
+
+            if (!newStatus || !taskId) return;
+
+            // Update UI Ottimistico
+            const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+            if(card) container.appendChild(card);
+
+            // API Call
+            try {
+                await apiFetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ stato: newStatus })
+                });
+                // Ricarica background per riordinare correttamente
+                this.refreshBoard(); 
+            } catch (error) {
+                console.error("Drop Error:", error);
+                this.refreshBoard(); // Revert
+                showModal({ title: 'Errore', message: 'Spostamento fallito.' });
+            }
+        });
+    },
+
+    // =================================================================
+    // == 4. MODALS & FORMS                                           ==
+    // =================================================================
+
     openFormModal: function(taskId = null) {
         this.dom.taskForm.reset();
         this.dom.taskId.value = '';
-        this.state.currentTask = null;
+        const modalTitle = document.getElementById('modalTitle');
+        
+        // Reset Choices
+        this.initChoices();
 
-        // Inizializza i dropdown dinamici
-        this.initializeCommessaChoices();
-        this.initializeSubcategoryChoices();
-        
-        // Imposta i valori di default per la CREAZIONE
-        if (!taskId) {
-            this.dom.formModalTitle.textContent = 'Nuovo Task';
-            this.dom.saveTaskBtn.textContent = 'Crea Task';
-            // Pre-seleziona l'utente corrente come assegnatario
-            this.dom.taskAssignee.value = this.state.currentUserProfile.id_personale;
-            this.dom.taskPriority.value = 'Media';
-            this.toggleSubcategoryField(); // Controlla categoria (es. per 'Commessa')
-        } 
-        // Se stiamo MODIFICANDO (chiamato da switchToEditMode)
-        else {
-            this.dom.formModalTitle.textContent = 'Modifica Dati Task';
-            this.dom.saveTaskBtn.textContent = 'Salva Modifiche';
+        if (taskId) {
+            modalTitle.textContent = "Modifica Task";
             this.dom.taskId.value = taskId;
-            // Carica i dati del task nel form
-            this.populateForm(taskId);
+            this.loadTaskIntoForm(taskId);
+        } else {
+            modalTitle.textContent = "Nuovo Task";
+            // Defaults
+            document.getElementById('taskPriority').value = 'Media';
+            document.getElementById('taskAssignee').value = this.state.currentUserProfile.id_personale;
+            this.dom.taskCategory.value = '';
+            this.toggleSubcategoryField();
         }
-        
-        // Apri il modale
+
         this.dom.formModal.style.display = 'block';
         this.dom.modalOverlay.style.display = 'block';
     },
 
-    /**
-     * Popola il MODALE 1 (Form) quando si è in modalità Modifica
-     */
-    populateForm: async function(taskId) {
+    loadTaskIntoForm: async function(taskId) {
         try {
             const res = await apiFetch(`/api/tasks/${taskId}`);
-            if (!res.ok) throw new Error('Task non trovato');
             const task = await res.json();
             
-            this.dom.taskTitle.value = task.titolo;
+            document.getElementById('taskTitle').value = task.titolo;
+            document.getElementById('taskDescription').value = task.descrizione || '';
+            document.getElementById('taskPriority').value = task.priorita;
+            document.getElementById('taskAssignee').value = task.id_assegnatario_fk;
+            document.getElementById('taskDueDate').value = task.data_obiettivo ? task.data_obiettivo.split('T')[0] : '';
             this.dom.taskCategory.value = task.id_categoria_fk;
-            
-            this.toggleSubcategoryField(); // Attiva il campo giusto (Commessa o Testo)
-            
-            if (task.id_commessa_fk) {
-                this.formCommessaChoices.setChoiceByValue(String(task.id_commessa_fk));
-            } else if (task.sottocategoria) {
-                // Imposta il valore per il choices di testo
-                this.formSubcategoryChoices.setChoiceByValue(task.sottocategoria);
-            }
-            
-            this.dom.taskDescription.value = task.descrizione || '';
-            this.dom.taskAssignee.value = task.id_assegnatario_fk || '';
-            this.dom.taskDueDate.value = task.data_obiettivo ? task.data_obiettivo.split('T')[0] : '';
-            this.dom.taskPriority.value = task.priorita || 'Media';
 
-        } catch (error) {
-            console.error("Errore nel caricamento dati per modifica:", error);
-            this.closeFormModal();
-            showModal({ title: 'Errore', message: 'Impossibile caricare i dati del task per la modifica.' });
-        }
-    },
-    
-    closeFormModal: function() {
-        this.dom.formModal.style.display = 'none';
-        // Chiudi l'overlay solo se anche l'altro modale è chiuso
-        if (this.dom.detailModal.style.display !== 'block') {
-            this.dom.modalOverlay.style.display = 'none';
-        }
-        // Distrugge le istanze Choices per evitare memory leak
-        if (this.formCommessaChoices) {
-            this.formCommessaChoices.destroy();
-            this.formCommessaChoices = null;
-        }
-        if (this.formSubcategoryChoices) {
-            this.formSubcategoryChoices.destroy();
-            this.formSubcategoryChoices = null;
-        }
-    },
+            this.toggleSubcategoryField();
 
-    /**
-     * Apre il MODALE 2 (Dettaglio)
-     */
-    openDetailModal: async function(taskId) {
-        try {
-            const res = await apiFetch(`/api/tasks/${taskId}`);
-            if (!res.ok) throw new Error('Task non trovato');
-            
-            const task = await res.json();
-            this.state.currentTask = task; // Salva task corrente per le azioni
-            
-            // Popola titolo
-            this.dom.detailModalTitle.textContent = task.titolo;
-            
-            // Popola blocco "Read-Only"
-            this.dom.detailReadOnlyContainer.innerHTML = `
-                <p><strong>Categoria:</strong> ${task.categoria?.nome_categoria || 'N/D'}</p>
-                ${task.commessa ? `<p><strong>Commessa:</strong> ${task.commessa.impianto} (${task.commessa.codice_commessa})</p>` : ''}
-                ${task.sottocategoria ? `<p><strong>Dettaglio:</strong> ${task.sottocategoria}</p>` : ''}
-                <p><strong>Assegnato a:</strong> ${task.assegnatario?.nome_cognome || 'Non Assegnato'}</p>
-                <p><strong>Scadenza:</strong> ${task.data_obiettivo ? new Date(task.data_obiettivo).toLocaleDateString('it-IT') : 'Nessuna'}</p>
-                <div class="description-block">
-                    <strong>Descrizione:</strong>
-                    <p>${task.descrizione || 'Nessuna descrizione.'}</p>
-                </div>
-            `;
-            
-            // Pulisci e popola storico e commenti
-            this.dom.detailCommentInput.value = '';
-            this.renderHistoryAndComments(task.task_storia || [], task.task_commenti || []);
-            
-            // Gestisci visibilità bottoni azione
-            this.dom.detailCompleteTaskBtn.style.display = task.stato === 'Da Fare' ? 'inline-block' : 'none';
-            this.dom.detailReopenTaskBtn.style.display = task.stato === 'Completato' ? 'inline-block' : 'none';
-            
-            // Apri il modale
-            this.dom.detailModal.style.display = 'block';
-            this.dom.modalOverlay.style.display = 'block';
-            
-        } catch (error) {
-            console.error("Errore nel caricare i dettagli del task:", error);
-            showModal({ title: 'Errore', message: 'Impossibile caricare i dettagli del task.' });
+            if (task.id_commessa_fk) this.formCommessaChoices.setChoiceByValue(String(task.id_commessa_fk));
+            if (task.sottocategoria) this.formSubcategoryChoices.setChoiceByValue(task.sottocategoria);
+
+        } catch (e) {
+            console.error(e);
+            this.closeModals();
         }
     },
-    
-    closeDetailModal: function() {
-        this.dom.detailModal.style.display = 'none';
-        if (this.dom.formModal.style.display !== 'block') {
-            this.dom.modalOverlay.style.display = 'none';
-        }
-        this.state.currentTask = null; // Rimuovi il task corrente
-    },
-
-    /**
-     * Passa dal Modale 2 (Dettaglio) al Modale 1 (Form Modifica)
-     */
-    switchToEditMode: function() {
-        const taskId = this.state.currentTask?.id_task;
-        if (!taskId) return;
-        
-        this.closeDetailModal();
-        this.openFormModal(taskId); // Apri il form in modalità modifica
-    },
-
-    // =================================================================
-    // == 5. LOGICA AZIONI (Salva, Commenta, Completa)               ==
-    // =================================================================
 
     handleSaveTask: async function() {
-        const taskId = this.dom.taskId.value; // Legge dall'hidden input del form
-        const selectedCategory = this.state.initData.categorie.find(c => c.id_categoria == this.dom.taskCategory.value);
-        const isCommessa = selectedCategory && selectedCategory.nome_categoria.toLowerCase() === 'commessa';
-
-        // Prende i valori dai choices corretti
-        const commessaId = isCommessa ? this.formCommessaChoices.getValue(true) : null;
-        const sottocategoriaValue = !isCommessa ? this.formSubcategoryChoices.getValue(true) : null;
-
-        const payload = {
-            titolo: this.dom.taskTitle.value,
-            descrizione: this.dom.taskDescription.value,
-            id_assegnatario_fk: this.dom.taskAssignee.value || null,
-            data_obiettivo: this.dom.taskDueDate.value || null,
-            id_categoria_fk: this.dom.taskCategory.value,
-            priorita: this.dom.taskPriority.value,
-            id_commessa_fk: commessaId,
-            sottocategoria: sottocategoriaValue,
-        };
+        const taskId = this.dom.taskId.value;
+        const isCommessa = this.getSelectedCategoryType() === 'commessa';
         
-        // Validazione base
+        const payload = {
+            titolo: document.getElementById('taskTitle').value,
+            descrizione: document.getElementById('taskDescription').value,
+            priorita: document.getElementById('taskPriority').value,
+            id_categoria_fk: this.dom.taskCategory.value,
+            id_assegnatario_fk: document.getElementById('taskAssignee').value,
+            data_obiettivo: document.getElementById('taskDueDate').value || null,
+            id_commessa_fk: isCommessa ? this.formCommessaChoices.getValue(true) : null,
+            sottocategoria: !isCommessa ? this.formSubcategoryChoices.getValue(true) : null
+        };
+
         if (!payload.titolo || !payload.id_categoria_fk) {
-            showModal({ title: 'Attenzione', message: 'Titolo e Categoria sono obbligatori.' });
-            return;
+            return showModal({ title: 'Mancano Dati', message: 'Titolo e Categoria obbligatori.' });
         }
 
         try {
             this.dom.saveTaskBtn.disabled = true;
-            this.dom.saveTaskBtn.textContent = 'Salvataggio...';
-
-            if (taskId) {
-                // Modalità Modifica (PUT)
-                await apiFetch(`/api/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(payload) });
-            } else {
-                // Modalità Creazione (POST)
-                await apiFetch('/api/tasks/', { method: 'POST', body: JSON.stringify(payload) });
-            }
+            const method = taskId ? 'PUT' : 'POST';
+            const url = taskId ? `/api/tasks/${taskId}` : '/api/tasks/';
             
-            this.closeFormModal();
-            await this.refreshBoard(); // Ricarica e renderizza la bacheca
-
-        } catch (error) {
-            console.error("Errore nel salvataggio del task:", error);
-            showModal({ title: 'Errore', message: `Salvataggio fallito: ${error.message}` });
+            await apiFetch(url, { method, body: JSON.stringify(payload) });
+            
+            this.closeModals();
+            this.refreshBoard();
+            
+        } catch (e) {
+            showModal({ title: 'Errore Salvataggio', message: e.message });
         } finally {
             this.dom.saveTaskBtn.disabled = false;
-            // Il testo del bottone verrà reimpostato alla prossima apertura del modale
         }
     },
-    
-    /**
-     * Aggiunge un commento (chiamato solo dal Modale 2 Dettaglio)
-     */
-    addComment: async function() {
-        const commentText = this.dom.detailCommentInput.value.trim();
-        if (!commentText) {
-            showModal({ title: 'Attenzione', message: 'Per favore, scrivi un commento.' });
-            return;
-        }
 
-        const taskId = this.state.currentTask?.id_task;
-        if (!taskId) return;
-
+    openDetailModal: async function(taskId) {
         try {
-            this.dom.detailAddCommentBtn.disabled = true;
-            const response = await apiFetch(`/api/tasks/${taskId}/commenti`, {
-                method: 'POST',
-                body: JSON.stringify({ testo_commento: commentText })
-            });
+            const res = await apiFetch(`/api/tasks/${taskId}`);
+            if(!res.ok) throw new Error("Task not found");
+            const task = await res.json();
+            this.state.currentTask = task;
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Errore aggiunta commento.');
-            }
-
-            const newComment = await response.json(); 
-            this.dom.detailCommentInput.value = ''; // Resetta l'input
-
-            // Aggiorna lo stato locale e renderizza solo lo storico (più veloce)
-            this.state.currentTask.task_commenti.push(newComment);
-            this.renderHistoryAndComments(
-                this.state.currentTask.task_storia,
-                this.state.currentTask.task_commenti
-            );
-
-        } catch (error) {
-            console.error('Errore nell\'aggiunta del commento:', error);
-            showModal({ title: 'Errore', message: `Impossibile aggiungere il commento: ${error.message}` });
-        } finally {
-            this.dom.detailAddCommentBtn.disabled = false;
-        }
-    },
-
-    /**
-     * Completa un task (chiamato solo dal Modale 2 Dettaglio)
-     */
-    completeTask: async function() {
-        const taskId = this.state.currentTask?.id_task;
-        if (!taskId) return;
-
-        const confirmed = await showModal({
-            title: 'Conferma Completamento',
-            message: 'Sei sicuro di voler completare questo task?',
-            confirmText: 'Completa',
-            cancelText: 'Annulla'
-        });
-
-        if (confirmed) {
-            this.updateTaskStatus('Completato');
-        }
-    },
-    
-    /**
-     * Helper per cambiare lo stato (Completato o Da Fare)
-     */
-    updateTaskStatus: async function(newStatus) {
-        const taskId = this.state.currentTask?.id_task;
-        if (!taskId) return;
-        try {
-            await apiFetch(`/api/tasks/${taskId}`, {
-                method: 'PUT',
-                body: JSON.stringify({ stato: newStatus })
-            });
-            this.closeDetailModal(); // Chiude il modale dettaglio
-            await this.refreshBoard(); // Ricarica la bacheca
-        } catch(error) {
-            console.error(`Errore nell'aggiornare lo stato a ${newStatus}:`, error);
-            showModal({ title: 'Errore', message: 'Impossibile aggiornare lo stato del task.' });
-        }
-    },
-
-    /**
-     * Renderizza la lista combinata di storico e commenti
-     * (Usato solo dal Modale 2 Dettaglio)
-     */
-    renderHistoryAndComments: function(history, comments) {
-        const container = this.dom.detailHistoryContainer;
-        container.innerHTML = ''; // Pulisce il contenitore
-
-        const combinedList = [];
-        (history || []).forEach(item => {
-            combinedList.push({
-                type: 'history',
-                date: new Date(item.data_ora_azione),
-                user: item.utente ? item.utente.nome_cognome : 'Sistema',
-                action: item.azione,
-                details: item.dettagli
-            });
-        });
-
-        (comments || []).forEach(item => {
-            combinedList.push({
-                type: 'comment',
-                date: new Date(item.data_creazione),
-                user: item.autore ? item.autore.nome_cognome : 'Utente',
-                action: 'COMMENTO',
-                details: item.testo_commento
-            });
-        });
-
-        // Ordina l'array combinato (dal più recente)
-        combinedList.sort((a, b) => b.date - a.date);
-
-        if (combinedList.length === 0) {
-            container.innerHTML = '<p class="empty-column-text">Nessun evento registrato.</p>';
-            return;
-        }
-
-        combinedList.forEach(item => {
-            if (isNaN(item.date.getTime())) {
-                console.warn("Data non valida rilevata:", item);
-                return; // Salta item con date non valide
-            }
-            const historyItem = document.createElement('div');
-            historyItem.classList.add('history-item');
-            const timestamp = item.date.toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
-            const detailsClass = item.type === 'comment' ? 'history-comment-details' : 'history-details';
+            document.getElementById('detailModalTitle').textContent = task.titolo;
             
-            historyItem.innerHTML = `
-                <p style="margin: 0; font-size: 0.8em; color: #555;">
-                    <strong style="color: #000;">${timestamp}</strong> - ${item.user}
-                </p>
-                <p style="margin: 4px 0 10px; font-size: 0.95em;">
-                    <strong>${item.action}:</strong> <span class="${detailsClass}">${item.details || ''}</span>
-                </p>
+            // Render Info
+            this.dom.detailReadOnly.innerHTML = `
+                <p><strong>Stato:</strong> ${task.stato}</p>
+                <p><strong>Categoria:</strong> ${task.categoria?.nome_categoria}</p>
+                ${task.commessa ? `<p><strong>Commessa:</strong> ${task.commessa.impianto} (${task.commessa.codice_commessa})</p>` : ''}
+                ${task.sottocategoria ? `<p><strong>Tag:</strong> ${task.sottocategoria}</p>` : ''}
+                <p><strong>Assegnato:</strong> ${task.assegnatario?.nome_cognome}</p>
+                <p><strong>Scadenza:</strong> ${task.data_obiettivo ? new Date(task.data_obiettivo).toLocaleDateString() : '-'}</p>
+                <div class="description-block">${task.descrizione || 'Nessuna descrizione.'}</div>
             `;
-            container.appendChild(historyItem);
-        });
+
+            // Bottoni Stato
+            const completeBtn = document.getElementById('detailCompleteTaskBtn');
+            const reopenBtn = document.getElementById('detailReopenTaskBtn');
+            if (task.stato === 'Completato') {
+                completeBtn.style.display = 'none';
+                reopenBtn.style.display = 'block';
+            } else {
+                completeBtn.style.display = 'block';
+                reopenBtn.style.display = 'none';
+            }
+
+            // Render History & Comments
+            this.renderHistory(task.task_storia, task.task_commenti);
+
+            this.dom.detailModal.style.display = 'block';
+            this.dom.modalOverlay.style.display = 'block';
+
+        } catch (e) {
+            console.error(e);
+        }
     },
 
     // =================================================================
-    // == 6. HELPERS (Dropdown, Filtri, D&D)                         ==
+    // == 5. HELPERS & UTILS                                          ==
     // =================================================================
 
-    // Inizializza i dropdown statici del form (Categoria, Assegnatario)
-    populateStaticDropdowns: function() {
-        const catSelect = this.dom.taskCategory;
-        catSelect.innerHTML = '<option value="" disabled selected>Seleziona Categoria...</option>';
+    refreshBoard: async function() {
+        this.state.boardData = await this.fetchBoardData();
+        this.renderKanbanBoard();
+    },
+
+    addEventListeners: function() {
+        this.dom.addTaskBtn.addEventListener('click', () => this.openFormModal());
+        this.dom.modalOverlay.addEventListener('click', () => this.closeModals());
+        
+        // Bottoni chiusura modali
+        document.querySelectorAll('.close-button').forEach(b => 
+            b.addEventListener('click', () => this.closeModals())
+        );
+
+        this.dom.saveTaskBtn.addEventListener('click', () => this.handleSaveTask());
+        this.dom.taskCategory.addEventListener('change', () => this.toggleSubcategoryField());
+        this.dom.adminUserFilter?.addEventListener('change', () => this.refreshBoard());
+
+        // Dettaglio Azioni
+        document.getElementById('detailOpenEditBtn').addEventListener('click', () => {
+            this.closeModals();
+            this.openFormModal(this.state.currentTask.id_task);
+        });
+
+        document.getElementById('detailAddCommentBtn').addEventListener('click', () => this.handleAddComment());
+        
+        document.getElementById('detailCompleteTaskBtn').addEventListener('click', () => this.updateStatus('Completato'));
+        document.getElementById('detailReopenTaskBtn').addEventListener('click', () => this.updateStatus('Da Fare'));
+    },
+
+    handleAddComment: async function() {
+        const input = document.getElementById('detailTaskCommentInput');
+        const text = input.value.trim();
+        if(!text) return;
+
+        try {
+            const res = await apiFetch(`/api/tasks/${this.state.currentTask.id_task}/commenti`, {
+                method: 'POST', body: JSON.stringify({ testo_commento: text })
+            });
+            const newComment = await res.json();
+            
+            // Append locale veloce
+            this.state.currentTask.task_commenti.unshift(newComment);
+            this.renderHistory(this.state.currentTask.task_storia, this.state.currentTask.task_commenti);
+            input.value = '';
+        } catch(e) { console.error(e); }
+    },
+
+    updateStatus: async function(status) {
+        try {
+            await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {
+                method: 'PUT', body: JSON.stringify({ stato: status })
+            });
+            this.closeModals();
+            this.refreshBoard();
+        } catch(e) { console.error(e); }
+    },
+
+    renderHistory: function(history = [], comments = []) {
+        // Unisce e ordina
+        const combined = [
+            ...history.map(h => ({ ...h, type: 'history', date: new Date(h.data_ora_azione) })),
+            ...comments.map(c => ({ ...c, type: 'comment', date: new Date(c.data_creazione) }))
+        ].sort((a,b) => b.date - a.date);
+
+        this.dom.detailHistory.innerHTML = combined.map(item => {
+            const dateStr = item.date.toLocaleString('it-IT', { dateStyle:'short', timeStyle:'short' });
+            const user = item.type === 'history' ? item.utente?.nome_cognome : item.autore?.nome_cognome;
+            
+            if (item.type === 'comment') {
+                return `
+                    <div class="history-item" style="background:#fff; padding:8px; border-radius:4px; border:1px solid #eee;">
+                        <div style="font-size:0.8em; color:#888;">${dateStr} - <strong>${user}</strong></div>
+                        <div style="margin-top:4px;">${item.testo_commento}</div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="history-item">
+                        <div style="font-size:0.8em; color:#888;">${dateStr} - ${user}</div>
+                        <div><em>${item.azione}</em>: ${item.dettagli || ''}</div>
+                    </div>
+                `;
+            }
+        }).join('');
+    },
+
+    closeModals: function() {
+        this.dom.formModal.style.display = 'none';
+        this.dom.detailModal.style.display = 'none';
+        document.getElementById('archiveModal').style.display = 'none';
+        this.dom.modalOverlay.style.display = 'none';
+    },
+
+    // --- Dynamic Form Helpers ---
+    initChoices: function() {
+        if (this.state.formCommessaChoices) this.state.formCommessaChoices.destroy();
+        if (this.state.formSubcategoryChoices) this.state.formSubcategoryChoices.destroy();
+
+        // Commessa Select
+        this.state.formCommessaChoices = new Choices('#taskCommessa', {
+            searchEnabled: true, itemSelectText: '', placeholderValue: 'Cerca Commessa...',
+            choices: this.state.initData.commesse.map(c => ({ value: c.id_commessa, label: `${c.impianto} (${c.codice_commessa})` }))
+        });
+
+        // Etichette Select
+        this.state.formSubcategoryChoices = new Choices('#taskSubcategory', {
+            searchEnabled: true, itemSelectText: '', placeholderValue: 'Scegli o scrivi...',
+            choices: this.state.initData.etichette.map(e => ({ value: e.label, label: e.label }))
+        });
+    },
+
+    populateDropdowns: function() {
+        // Categorie
+        const catSel = this.dom.taskCategory;
+        catSel.innerHTML = '<option value="" disabled selected>Seleziona...</option>';
         this.state.initData.categorie.forEach(c => {
-            catSelect.innerHTML += `<option value="${c.id_categoria}">${c.nome_categoria}</option>`;
+            catSel.innerHTML += `<option value="${c.id_categoria}">${c.nome_categoria}</option>`;
         });
-        
-        const assigneeSelect = this.dom.taskAssignee;
-        assigneeSelect.innerHTML = '<option value="">Non Assegnato</option>';
-        const filteredPersonale = this.state.personale.filter(p => p.puo_accedere);
-        filteredPersonale.forEach(p => {
-            assigneeSelect.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
-        });
-    },
 
-    // Inizializza il dropdown (Choices.js) per le Commesse
-    initializeCommessaChoices: function() {
-        if (this.formCommessaChoices) this.formCommessaChoices.destroy();
-        
-        this.formCommessaChoices = new Choices(this.dom.taskCommessa, {
-            searchEnabled: true, removeItemButton: true, itemSelectText: 'Seleziona',
-            searchPlaceholderValue: 'Digita per cercare...', placeholder: true,
-            placeholderValue: 'Seleziona una commessa...',
+        // Assegnatari
+        const assSel = document.getElementById('taskAssignee');
+        assSel.innerHTML = '';
+        this.state.personale.filter(p => p.puo_accedere).forEach(p => {
+            assSel.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
         });
-        const commesseOptions = this.state.initData.commesse.map(c => ({
-            value: c.id_commessa,
-            label: `${c.impianto} (${c.codice_commessa || 'N/D'})`
-        }));
-        this.formCommessaChoices.setChoices(commesseOptions, 'value', 'label', false);
-    },
-
-    // Inizializza il dropdown (Choices.js) per la Sottocategoria (Etichette)
-    initializeSubcategoryChoices: function() {
-        if (this.formSubcategoryChoices) this.formSubcategoryChoices.destroy();
         
-        this.formSubcategoryChoices = new Choices(this.dom.taskSubcategory, {
-            searchEnabled: true, removeItemButton: true, itemSelectText: 'Seleziona',
-            searchPlaceholderValue: 'Digita per cercare...', placeholder: true,
-            placeholderValue: 'Seleziona o digita dettaglio...', allowHTML: false,
-        });
-        const etichetteOptions = this.state.initData.etichette.map(e => ({
-            value: e.label,
-            label: e.label
-        }));
-        this.formSubcategoryChoices.setChoices(etichetteOptions, 'value', 'label', false);
+        // Admin Filter
+        if (this.state.currentUserProfile.is_admin) {
+            const filterSel = this.dom.adminUserFilter;
+            filterSel.innerHTML = '<option value="">Tutti</option>';
+            this.state.personale.filter(p => p.puo_accedere).forEach(p => {
+                 filterSel.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
+            });
+        }
     },
 
     toggleSubcategoryField: function() {
-        const selectedCategoryId = this.dom.taskCategory.value;
-        const selectedCategory = this.state.initData.categorie.find(c => c.id_categoria == selectedCategoryId);
-        
-        if (selectedCategory && selectedCategory.nome_categoria.toLowerCase() === 'commessa') {
-            this.dom.commessaSubcategoryContainer.style.display = 'block';
-            this.dom.textSubcategoryContainer.style.display = 'none';
+        const type = this.getSelectedCategoryType();
+        const textCont = document.getElementById('textSubcategoryContainer');
+        const commCont = document.getElementById('commessaSubcategoryContainer');
+
+        if (type === 'commessa') {
+            textCont.style.display = 'none';
+            commCont.style.display = 'block';
         } else {
-            this.dom.commessaSubcategoryContainer.style.display = 'none';
-            this.dom.textSubcategoryContainer.style.display = 'block';
+            textCont.style.display = 'block';
+            commCont.style.display = 'none';
         }
     },
 
-    setupAdminFilter: function() {
-        if (this.state.currentUserProfile?.is_admin) {
-            this.dom.adminFilterContainer.style.display = 'flex';
-            const select = this.dom.adminUserFilter;
-            select.innerHTML = '<option value="">Mostra Tutti</option>';
-            const usersWithAccess = this.state.personale.filter(p => p.puo_accedere);
-            usersWithAccess.forEach(p => {
-                const isCurrentUser = p.id_personale === this.state.currentUserProfile.id_personale;
-                select.innerHTML += `<option value="${p.id_personale}" ${isCurrentUser ? 'selected' : ''}>
-                    ${p.nome_cognome} ${isCurrentUser ? '(Tu)' : ''}
-                </option>`;
-            });
-            // Aggiungi un'opzione "solo i miei" se non è già selezionato
-            if (!usersWithAccess.find(p => p.id_personale === this.state.currentUserProfile.id_personale)) {
-                 select.innerHTML += `<option value="${this.state.currentUserProfile.id_personale}" selected>Solo i miei</option>`;
-            }
-        }
+    getSelectedCategoryType: function() {
+        const val = this.dom.taskCategory.value;
+        const cat = this.state.initData.categorie.find(c => c.id_categoria == val);
+        return cat ? cat.nome_categoria.toLowerCase() : '';
     },
 
-    // --- LOGICA DRAG & DROP ---
-    addDragDropListeners: function() {
-        const containers = document.querySelectorAll('.tasks-container');
-        containers.forEach(container => {
-            container.addEventListener('dragover', this.handleDragOver);
-            container.addEventListener('drop', (e) => this.handleDrop(e));
-        });
-    },
-
-    handleDragStart: function(e) {
-        e.dataTransfer.setData('text/plain', e.target.dataset.taskId);
-        setTimeout(() => { e.target.classList.add('dragging'); }, 0);
-    },
-    
-    handleDragOver: function(e) {
-        e.preventDefault(); // Necessario per permettere il drop
-    },
-    
-    handleDrop: async function(e) {
-        e.preventDefault();
-        const taskId = e.dataTransfer.getData('text/plain');
-        const draggedElement = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-        if (!draggedElement) return;
-        
-        draggedElement.classList.remove('dragging');
-
-        const dropContainer = e.target.closest('.tasks-container');
-        if (dropContainer) {
-            const newStatus = dropContainer.dataset.statusContainer;
-            if (newStatus && newStatus !== 'Da Fare') { // Permetti solo drop in "Completati"
-                try {
-                    await apiFetch(`/api/tasks/${taskId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify({ stato: newStatus })
-                    });
-                    await this.refreshBoard();
-                } catch (error) {
-                    console.error("Errore durante l'aggiornamento dello stato:", error);
-                    this.renderBoard(); // Ripristina la bacheca in caso di errore
-                }
-            }
-        }
-    },
-    
-    // --- FUNZIONI ARCHIVIO (Invariate) ---
-    openArchiveModal: async function() {
-        this.dom.archiveModal.style.display = 'block';
+    // --- Archivio ---
+    openArchive: async function() {
+        document.getElementById('archiveModal').style.display = 'block';
         this.dom.modalOverlay.style.display = 'block';
-        this.state.archivePage = 1;
-        this.state.archiveTasks = [];
-        this.state.canLoadMore = true;
-        this.dom.archiveTasksContainer.innerHTML = '';
-        this.dom.loadMoreBtn.style.display = 'inline-block';
-        await this.loadCompletedTasks();
-    },
-
-    closeArchiveModal: function() {
-        this.dom.archiveModal.style.display = 'none';
-        if (this.dom.formModal.style.display !== 'block' && this.dom.detailModal.style.display !== 'block') {
-            this.dom.modalOverlay.style.display = 'none';
-        }
-    },
-
-    loadCompletedTasks: async function() {
-        if (this.state.isLoadingArchive || !this.state.canLoadMore) return;
-        this.state.isLoadingArchive = true;
-        this.dom.archiveLoader.style.display = 'block';
-        this.dom.loadMoreBtn.style.display = 'none';
-
+        const container = document.getElementById('archiveTasksContainer');
+        container.innerHTML = 'Caricamento...';
+        
         try {
-            const res = await apiFetch(`/api/tasks/completed?page=${this.state.archivePage}`);
-            const completedTasks = await res.json();
-            if (completedTasks.length < 15) { // 15 è il limite impostato nel backend
-                this.state.canLoadMore = false;
-            }
-            this.state.archiveTasks.push(...completedTasks);
-            this.renderArchive(completedTasks); // Passa solo i nuovi task
-            this.state.archivePage++;
-        } catch (error) {
-            console.error("Errore nel caricamento dei task completati:", error);
-        } finally {
-            this.state.isLoadingArchive = false;
-            this.dom.archiveLoader.style.display = 'none';
-            if (this.state.canLoadMore) {
-                this.dom.loadMoreBtn.style.display = 'inline-block';
-            } else {
-                this.dom.loadMoreBtn.style.display = 'none';
-            }
-        }
-    },
-
-    renderArchive: function(newTasks) {
-        // Appende solo i nuovi task invece di ricreare tutto
-        const fragment = document.createDocumentFragment();
-        newTasks.forEach(task => {
-            const item = document.createElement('div');
-            item.className = 'archive-task-item';
-            const completionDate = new Date(task.data_ultima_modifica).toLocaleDateString('it-IT');
-            item.innerHTML = `
-                <span class="title">${task.titolo}</span>
-                <span class="assignee">${task.assegnatario?.nome_cognome || 'N/D'}</span>
-                <span class="date">Completato il: ${completionDate}</span>
-            `;
-            fragment.appendChild(item);
-        });
-        this.dom.archiveTasksContainer.appendChild(fragment);
-    },
+            const res = await apiFetch(`/api/tasks/completed?page=1`);
+            const tasks = await res.json();
+            container.innerHTML = tasks.length ? '' : 'Nessun task in archivio.';
+            
+            tasks.forEach(t => {
+                container.innerHTML += `
+                    <div class="archive-task-item">
+                        <span>${t.titolo}</span>
+                        <span>${t.assegnatario?.nome_cognome}</span>
+                        <span>${new Date(t.data_ultima_modifica).toLocaleDateString()}</span>
+                    </div>
+                `;
+            });
+        } catch(e) { container.innerHTML = 'Errore caricamento.'; }
+    }
 };
 
-// Avvio dell'applicazione
-document.addEventListener('DOMContentLoaded', () => {
-    TaskApp.init();
-});
+document.addEventListener('DOMContentLoaded', () => TaskApp.init());
