@@ -1,425 +1,400 @@
-/* ============================================= */
-/* == Stili per la Pagina Gestione Attività   == */
-/* == v2.0 - Architettura Kanban "Post-it"    == */
-/* ============================================= */
+/* =================================================== */
+/* == Stili per Pagina Attività (Task Manager)      == */
+/* == Look & Feel allineato a Registro Presenze     == */
+/* =================================================== */
 
-/* --- 1. IMPOSTAZIONI LAYOUT PRINCIPALE --- */
-html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; /* Impedisce lo scroll del body, lo gestiamo nelle colonne */
-}
-
+/* --- 1. SETUP GENERALE --- */
 body {
+    background-color: #f4f7f9;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    height: 100vh; /* Altezza fissa viewport */
     display: flex;
     flex-direction: column;
-    background-color: #f4f7f9; /* Sfondo pagina da commesse.css */
+    overflow: hidden; /* Evita scroll pagina intera, scrollano i pannelli */
 }
 
-/* Contenitore principale, occupa tutto lo spazio */
 .page-wrapper {
+    width: 98%;
+    max-width: 1800px;
+    margin: 0 auto;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Occupa tutto lo spazio verticale */
-    min-height: 0; /* Necessario per far funzionare flex-grow */
-    width: 95%;
-    max-width: 1800px;
-    margin: 20px auto;
-    gap: 20px;
 }
 
-/* --- 2. HEADER E CONTROLLI --- */
-/* (Stili per .page-header e #addTaskBtn ereditati da style-v2.css) */
-.controls-container {
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
+/* --- 2. HEADER (Stile Scuro) --- */
+.page-header {
+    background-color: #34495e;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    flex-shrink: 0; /* Non si schiaccia */
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.header-button {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
     display: flex;
     align-items: center;
-    gap: 15px;
-    flex-shrink: 0; /* Non si restringe */
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
 }
 
-/* --- 3. GRIGLIA E COLONNE KANBAN --- */
+.header-button:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+.btn-add {
+    background-color: #28a745; /* Verde per azioni positive */
+    border-color: #218838;
+}
+.btn-add:hover {
+    background-color: #218838;
+}
+
+/* --- 3. CONTROLS BAR (Bianca) --- */
+.controls-container {
+    background-color: white;
+    margin: 15px 0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Select stilizzata semplice */
+.styled-select-wrapper select {
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    color: #495057;
+    font-size: 0.95em;
+    min-width: 200px;
+}
+
+/* --- 4. BOARD KANBAN --- */
 .task-view-grid {
     display: flex;
-    flex-grow: 1; /* Occupa tutto lo spazio rimanente */
-    gap: 25px;
-    min-height: 0; /* Necessario per lo scroll interno */
+    gap: 20px;
+    flex-grow: 1; /* Occupa tutto lo spazio verticale rimanente */
+    min-height: 0; /* Fix per flexbox scroll */
+    padding-bottom: 20px;
 }
 
 .task-column {
-    background-color: #ebecf0; /* Grigio chiaro Trello-style */
+    background-color: #ebecf0; /* Grigio Trello */
     border-radius: 8px;
-    padding: 15px;
+    padding: 10px 15px;
     display: flex;
     flex-direction: column;
-    flex-basis: 0; /* Base uguale per tutte */
+    min-width: 320px;
 }
 
-/* Le colonne crescono in modo diverso */
-#daFareContainer { flex-grow: 2; }
-#completatiContainer { flex-grow: 1; }
+/* Larghezze Colonne */
+#daFareContainer { flex: 2; } /* Più larga */
+#completatiContainer { flex: 1; }
 
 .task-column-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 15px;
     padding-bottom: 10px;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #dcdfe4;
-    flex-shrink: 0;
+    border-bottom: 2px solid #dcdcdc;
 }
 
-.task-column h2 {
+.task-column-header h2 {
     font-size: 1.1em;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Stile bottone archivio (ereditato, ma forziamo la dimensione) */
-.task-column-header .button {
-    min-height: unset;
-    width: auto;
-    flex-basis: auto;
-    padding: 6px 12px;
-    font-size: 0.8em;
-}
-
-/* Contenitore task con scroll verticale */
-#daFareContent,
-#completatiContainer .tasks-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    min-height: 0;
-    padding-right: 5px; /* Spazio per la scrollbar */
-}
-
-/* --- 4. STILI "POST-IT" (TASK CARD) --- */
-
-/* Gruppi per categoria (es. Commessa, OP) */
-.subcategory-group { 
-    margin-bottom: 20px; 
-}
-.subcategory-header {
-    font-size: 1em;
-    font-weight: 700;
-    color: #172b4d;
-    margin-bottom: 10px;
-    padding-left: 5px;
-}
-
-/* Contenitore dei post-it (NUOVA LOGICA) */
-.tasks-container {
-    display: flex;
-    flex-wrap: wrap; /* Permette alle card di andare a capo */
-    gap: 12px;       /* Spazio tra le card */
-    min-height: 50px;
-}
-
-/* Il "Post-it" (NUOVA LOGICA) */
-.task-card {
-    width: 280px; /* Larghezza fissa come richiesto */
-    background-color: #ffffff;
-    border-radius: 5px;
-    padding: 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    cursor: pointer; /* Click per aprire Dettaglio */
-    transition: background-color 0.2s, box-shadow 0.2s;
-    /* Rimosso border-left */
-}
-.task-card:hover { 
-    background-color: #f7f7f7;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-/* Feedback per il Drag & Drop */
-.task-card.dragging { 
-    opacity: 0.5; 
-    transform: rotate(3deg); 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-/* Contenuto card (solo titolo) */
-.task-card h4 { 
-    margin: 0; 
-    font-size: 14px; 
-    font-weight: 500;
-    color: #172b4d; /* Colore testo default */
-}
-.task-card .assignee {
-    display: none; /* Nascosto come richiesto */
-}
-
-/* Colori Priorità (NUOVA LOGICA) */
-.task-card.priority-alta { 
-    background-color: #dc3545; /* Rosso */
-    color: white;
-}
-.task-card.priority-media { 
-    background-color: #ffc107; /* Giallo */
-    color: #212529; /* Testo scuro per leggibilità */
-}
-.task-card.priority-bassa { 
-    background-color: #28a745; /* Verde */
-    color: white;
-}
-
-/* Override colore titolo per card colorate */
-.task-card.priority-alta h4,
-.task-card.priority-bassa h4 {
-    color: white;
-}
-.task-card.priority-media h4 {
-    color: #212529;
-}
-
-
-/* --- 5. STILI MODALI (GENERICI E RIUTILIZZABILI) --- */
-/* (Stili base .modal, .modal-content ereditati da style-v2.css) */
-
-/* Forza una larghezza massima per i modali task */
-.modal-content.large { 
-    max-width: 800px; 
-}
-
-/* Stile per le sezioni interne (usato da entrambi i modali) */
-#taskForm .form-section,
-#taskDetailModal .form-section {
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0; /* Padding gestito da header e content */
-    overflow: hidden; /* Per i bordi arrotondati */
-}
-
-#taskForm .form-section-header,
-#taskDetailModal .form-section-header {
+    color: #333;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
 }
 
-#taskForm .form-section-header.collapsible {
+.dot-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dot-indicator.todo { background-color: #007bff; }
+.dot-indicator.done { background-color: #28a745; }
+
+.small-action-btn {
+    background: none;
+    border: 1px solid #aaa;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.8em;
     cursor: pointer;
-    transition: background-color 0.2s;
-}
-#taskForm .form-section-header.collapsible:hover {
-    background-color: #e9ecef;
-}
-
-#taskForm .form-section-header img,
-#taskDetailModal .form-section-header img {
-    width: 20px;
-    height: 20px;
-    opacity: 0.7;
-}
-#taskForm .form-section-header h3,
-#taskDetailModal .form-section-header h3 {
-    margin: 0;
-    font-size: 1.1em;
-    flex-grow: 1;
-}
-
-/* Icona Accordion */
-.accordion-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s ease;
-}
-/* Freccia ruotata (da gestire via JS) */
-.form-section-header.is-open .accordion-icon {
-    transform: rotate(180deg);
-}
-
-/* Contenuto delle sezioni */
-#taskForm .form-section-content,
-#taskDetailModal .form-section-content {
-    padding: 20px;
-}
-
-/* Griglia per form (usata in Modale Creazione) */
-.form-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 20px; 
-    margin-top: 15px; 
-}
-
-/* Fix altezza per select (standard e Choices.js) */
-#taskForm select {
-    min-height: 45px;
-    padding: 8px 12px;
-}
-#taskForm .choices__inner {
-    min-height: 45px;
-}
-
-/* Stile Lista Storico (usata in Modale Dettaglio) */
-.history-list {
-    background-color: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    padding: 10px 15px;
-    max-height: 250px;
-    overflow-y: auto;
-}
-.history-item {
-    padding: 8px 0;
-    border-bottom: 1px dashed #dcdfe4;
-    font-size: 0.9em;
     color: #555;
 }
-.history-item:last-child {
-    border-bottom: none;
-}
-.history-comment-details {
-    font-style: italic;
-    color: #000;
-}
+.small-action-btn:hover { background-color: #fff; }
 
-/* --- 6. STILI MODALE DETTAGLIO (SPECIFICI) --- */
-#taskDetailReadOnlyContainer {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px 20px;
-    font-size: 0.95em;
-    line-height: 1.6;
-}
-#taskDetailReadOnlyContainer p {
-    margin: 0 0 10px 0;
-}
-#taskDetailReadOnlyContainer p:last-child {
-    margin-bottom: 0;
-}
-#taskDetailReadOnlyContainer p strong {
-    color: #333;
-    margin-right: 5px;
-    display: inline-block;
-    min-width: 100px; /* Allineamento etichette */
-}
-#taskDetailReadOnlyContainer .description-block {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #ddd;
-    white-space: pre-wrap; /* Mantiene le interruzioni di riga */
-    color: #172b4d;
-}
-
-/* Spacer per footer modale dettaglio */
-.modal-footer .spacer {
+.tasks-container {
     flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* --- 7. STILI MODALE ARCHIVIO (Invariato) --- */
-#archiveModal .modal-body {
-    max-height: 60vh;
-    overflow-y: auto;
+/* Gruppi Sottocategorie */
+.subcategory-group {
+    margin-bottom: 15px;
 }
+.subcategory-header {
+    font-size: 0.9em;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin: 0 0 8px 5px;
+    font-weight: 700;
+}
+
+/* --- 5. CARD (Post-it) --- */
+.task-card {
+    background-color: white;
+    border-radius: 6px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    cursor: pointer;
+    border-left: 4px solid transparent; /* Indicatore Priorità */
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.task-card h4 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 500;
+    color: #2c3e50;
+    line-height: 1.4;
+}
+
+/* Colori Priorità (Bordo sinistro) */
+.task-card.priority-alta { border-left-color: #dc3545; }
+.task-card.priority-media { border-left-color: #ffc107; }
+.task-card.priority-bassa { border-left-color: #28a745; }
+
+/* Dragging state */
+.task-card.dragging {
+    opacity: 0.5;
+    background-color: #f8f9fa;
+    border: 1px dashed #999;
+}
+
+/* --- 6. MODALI (Stile Commesse) --- */
+.modal-content.large {
+    max-width: 800px;
+    width: 90%;
+}
+
+.form-section {
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.form-section-header {
+    background-color: #f8f9fa;
+    padding: 8px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+.form-section-header h3 {
+    margin: 0;
+    font-size: 1em;
+    color: #495057;
+    text-transform: uppercase;
+}
+
+.form-section-content {
+    padding: 15px;
+    background-color: white;
+}
+
+/* Input Styles */
+.full-width-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1em;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 500;
+}
+
+.form-group select,
+.form-group input[type="date"],
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+/* --- 7. MODALE DETTAGLIO (Split View) --- */
+.modal-content.detail-view {
+    height: 80vh; /* Altezza fissa */
+    display: flex;
+    flex-direction: column;
+}
+
+.split-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden; /* Gestisce scroll interni */
+    gap: 0;
+    padding: 0 !important; /* Reset padding body */
+}
+
+.detail-left {
+    flex: 1;
+    padding: 20px;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+.detail-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+/* Box Sola Lettura */
+.read-only-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.read-only-box p {
+    margin: 8px 0;
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.5;
+}
+.read-only-box strong { color: #555; display: inline-block; width: 100px; }
+.description-block {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+    white-space: pre-wrap;
+}
+
+/* Chat Section */
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.chat-section h3 {
+    padding: 15px;
+    margin: 0;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 1em;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.history-item {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.history-item:last-child { border-bottom: none; }
+
+.comment-input-area {
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.comment-input-area textarea {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    resize: none;
+}
+
+/* --- 8. ARCHIVIO --- */
 .archive-task-item {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
-    gap: 15px;
-    align-items: center;
     padding: 10px;
     border-bottom: 1px solid #eee;
-}
-.archive-task-item .title { font-weight: 500; }
-.archive-task-item .assignee,
-.archive-task-item .date {
     font-size: 0.9em;
-    color: #666;
-    text-align: right;
 }
-#archiveLoader {
-    width: 30px;
-    height: 30px;
-    border-width: 3px;
-    margin: 0 auto;
-}
+.archive-task-item:hover { background-color: #f9f9f9; }
 
-/* --- 8. CLASSI BOTTONI (Colori) --- */
-/* (Ereditati da style-v2.css, ma li ridefiniamo per sicurezza) */
-.button--primary { background-color: #28a745; border-color: #218838; color: white; }
-.button--primary:hover { background-color: #218838; }
+/* --- 9. UTILITIES --- */
+.full-width { width: 100%; margin-bottom: 10px; }
+.button--success { background-color: #28a745; color: white; border: none; }
+.button--warning { background-color: #ffc107; color: #212529; border: none; }
+.button--primary { background-color: #007bff; color: white; border: none; }
+.icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
 
-.button--secondary { background-color: #007bff; border-color: #0069d9; color: white; }
-.button--secondary:hover { background-color: #0069d9; }
-
-.button--warning { background-color: #ffc107; border-color: #e0a800; color: #212529; }
-.button--warning:hover { background-color: #e0a800; }
-
-/* --- 9. MEDIA QUERIES (Responsive Mobile) --- */
+/* Responsive */
 @media (max-width: 768px) {
-    body {
-        overflow: auto; /* Permetti lo scroll verticale su mobile */
-    }
-    
-    .page-wrapper {
-        width: 100%;
-        margin: 0;
-        gap: 10px;
-        padding: 10px;
-        box-sizing: border-box;
-        height: auto; /* Altezza automatica */
-    }
-
-    .page-header {
-        border-radius: 0;
-        padding: 10px 15px;
-    }
-    .page-header h1 {
-        font-size: 1.1em;
-    }
-    .page-header .button {
-        padding: 6px 10px;
-        font-size: 0.8em;
-    }
-
-    /* Stack delle colonne Kanban */
-    .task-view-grid {
-        flex-direction: column;
-        gap: 15px;
-        min-height: auto; /* Rimuovi altezza minima */
-    }
-
-    .task-column {
-        min-height: 250px; /* Altezza minima per colonna */
-    }
-
-    /* Le card "Post-it" diventano full-width */
-    .task-card {
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Modali Full-Screen */
-    .modal-content.large {
-        width: 95vw;
-        max-width: 95vw;
-    }
-    
-    /* Griglia form a colonna singola */
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    /* Bottoni footer modale a colonna */
-    .modal-footer {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .modal-footer .button {
-        width: 100%;
-    }
-    .modal-footer .spacer {
-        display: none; /* Nascondi lo spacer */
-    }
+    .task-view-grid { flex-direction: column; overflow-y: auto; }
+    .task-column { min-width: auto; height: 400px; }
+    .split-body { flex-direction: column; }
+    .detail-left, .detail-right { flex: none; height: auto; border-right: none; border-bottom: 1px solid #ddd; }
 }
