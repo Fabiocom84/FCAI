@@ -1,30 +1,22 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - STILE PROPRIETARIO (Ver. 6.0)    == */
+/* == GESTIONE ATTIVITÀ - STILE PROPRIETARIO (Ver. 7.0)    == */
 /* ========================================================== */
 
-/* --- 1. SETUP & LAYOUT BASE --- */
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    height: 100vh; /* Altezza viewport fissa */
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Nessuno scroll sulla pagina principale */
+    overflow: hidden;
 }
 
-.page-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+.page-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
-/* --- 2. HEADER COMPATTO --- */
+/* --- 1. HEADER COMPATTO --- */
 .page-header {
     background-color: #34495e;
     color: white;
@@ -34,477 +26,219 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* Non si riduce */
+    flex-shrink: 0;
     z-index: 10;
 }
 
-.header-left, .header-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
 
 .page-header h1 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 500;
-    letter-spacing: 1px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%); /* Centrato assoluto */
-    white-space: nowrap;
+    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
+    position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
 }
 
 .header-button {
-    color: white;
-    text-decoration: none;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.9;
-    transition: opacity 0.2s;
+    color: white; text-decoration: none; font-size: 0.9em;
+    display: flex; align-items: center; gap: 6px; opacity: 0.9;
 }
 .header-button:hover { opacity: 1; }
 
-/* Filtro Utente (Dropdown nell'Header) */
+/* Filtro Utente (Stile Classico) */
 .header-filter-wrapper {
-    display: flex;
-    align-items: center;
-    background: rgba(255,255,255,0.1);
-    padding: 3px 8px;
+    display: flex; align-items: center;
+    background: white; /* Sfondo bianco classico */
+    padding: 2px 5px;
     border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid #ccc;
 }
 
 .header-filter-wrapper label {
-    font-size: 0.85em;
-    margin-right: 5px;
-    color: #ddd;
+    font-size: 0.85em; margin-right: 5px; color: #333; font-weight: 500;
 }
 
 .header-select {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 0.9em;
-    outline: none;
-    cursor: pointer;
-    font-family: inherit;
+    background: transparent; border: none; color: #333;
+    font-size: 0.9em; outline: none; cursor: pointer;
+    font-family: inherit; padding: 2px;
 }
-.header-select option {
-    background-color: #34495e;
-    color: white;
-}
+.header-select option { background-color: white; color: #333; }
 
-/* --- 3. LAYOUT A 5 COLONNE (Wrapper) --- */
+/* --- 2. LAYOUT A 5 COLONNE --- */
 .task-view-wrapper {
-    display: flex;
-    flex: 1; /* Occupa tutto lo spazio verticale rimanente */
-    overflow: hidden;
-    padding: 10px;
-    gap: 10px;
-    background-color: #eef2f5;
+    display: flex; flex: 1; overflow: hidden; padding: 10px; gap: 10px; background-color: #eef2f5;
 }
 
-/* --- 4. GRIGLIA KANBAN (Colonne 1-4) --- */
+/* KANBAN BOARD (1-4) */
 .task-view-grid {
-    display: flex;
-    gap: 8px;
-    flex: 2; /* Occupa circa il 60% dello spazio */
-    height: 100%;
-    overflow-x: auto; /* Scroll orizzontale se necessario */
+    display: flex; gap: 8px; flex: 2; height: 100%; overflow-x: auto;
 }
 
 .task-column {
-    background-color: #ebecf0;
-    border-radius: 6px;
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    flex: 1; /* Larghezza equa tra le 4 colonne */
-    min-width: 200px; /* Larghezza minima per leggibilità */
-    height: 100%;
+    background-color: #ebecf0; border-radius: 6px; padding: 6px;
+    display: flex; flex-direction: column; flex: 1; min-width: 200px; height: 100%;
 }
 
 .task-column-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 4px 8px 4px;
-    border-bottom: 2px solid #dcdcdc;
-    margin-bottom: 6px;
-    flex-shrink: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px 8px 4px; border-bottom: 2px solid #dcdcdc; margin-bottom: 6px; flex-shrink: 0;
 }
+.task-column-header h2 { font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.75em; font-weight: bold; color: #555; }
 
-.task-column-header h2 {
-    font-size: 0.85em;
-    margin: 0;
-    color: #444;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+.tasks-container { flex: 1; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 8px; min-height: 50px; }
 
-.column-count {
-    background-color: #d1d5db;
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #555;
-}
-
-.tasks-container {
-    flex: 1;
-    overflow-y: auto; /* Scroll verticale interno alla colonna */
-    padding-right: 2px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 50px; /* Area di drop sempre presente */
-}
-
-/* --- 5. CARDS (Post-it) --- */
+/* CARDS */
 .task-card {
-    background-color: white;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    cursor: pointer;
-    border-left: 4px solid transparent; /* Indicatore priorità */
-    transition: transform 0.1s, box-shadow 0.1s;
-    user-select: none;
+    background-color: white; border-radius: 4px; padding: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
+    border-left: 4px solid transparent; transition: transform 0.1s; user-select: none;
 }
-
-.task-card:hover {
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-    transform: translateY(-1px);
-}
-
+.task-card:hover { box-shadow: 0 3px 6px rgba(0,0,0,0.15); transform: translateY(-1px); }
 .task-card.priority-alta { border-left-color: #dc3545; }
 .task-card.priority-media { border-left-color: #ffc107; }
 .task-card.priority-bassa { border-left-color: #28a745; }
+.task-card h4 { margin: 4px 0; font-size: 0.95em; color: #2c3e50; font-weight: 500; line-height: 1.3; }
 
-.task-card h4 {
-    margin: 4px 0;
-    font-size: 0.95em;
-    color: #2c3e50;
-    font-weight: 500;
-    line-height: 1.3;
-}
-
-/* Etichette dentro la card */
 .cat-tag, .commessa-tag {
-    font-size: 0.7em;
-    padding: 2px 5px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: inline-block;
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
+    font-size: 0.7em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
+    font-weight: 600; display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
 }
 .cat-tag { background-color: #f1f3f5; color: #555; }
 .commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
-
 .task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
 .drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
 
-
-/* --- 6. ISPETTORE (Colonna 5) --- */
+/* --- 3. ISPETTORE (Colonna 5) --- */
 .task-inspector-fixed {
-    flex: 1.3; /* Occupa il 40% circa dello spazio */
-    min-width: 450px; /* Larghezza generosa per form e dettagli */
-    background-color: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 1px solid #ddd;
-    overflow: hidden;
+    flex: 1.5; /* Più largo per accogliere 5 bottoni */
+    min-width: 500px; 
+    background-color: white; border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+    height: 100%; border: 1px solid #ddd; overflow: hidden;
 }
 
-/* Toolbar in alto (Colonna 5) */
+/* TOOLBAR UNIFORMATA */
 .inspector-header-toolbar {
-    padding: 0 10px;
+    padding: 10px;
     background-color: #f8f9fa;
     border-bottom: 1px solid #eee;
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 50px;
+    gap: 8px; /* Spazio tra i bottoni */
+    height: 55px;
     flex-shrink: 0;
 }
 
-.divider-vertical {
-    width: 1px;
-    height: 24px;
-    background-color: #ddd;
-    margin: 0 5px;
-}
-
-/* Bottoni Toolbar */
+/* Stile Base Pulsante Toolbar */
 .toolbar-btn {
-    border: 1px solid #ced4da;
-    background-color: white;
-    padding: 6px 12px;
+    flex: 1; /* Tutti larghezza uguale */
+    height: 34px;
     border-radius: 4px;
+    border: none;
     cursor: pointer;
-    font-size: 0.95em;
-    color: #555;
-    transition: all 0.2s;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-width: 36px; /* Quadrati se solo icona */
+    gap: 5px;
+    transition: filter 0.2s;
+    white-space: nowrap;
 }
+.toolbar-btn:hover:not(:disabled) { filter: brightness(90%); }
+.toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #ccc !important; color: #666 !important; }
 
-.toolbar-btn:hover:not(:disabled) { background-color: #e9ecef; }
-.toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* Colori specifici pulsanti */
-.btn-new { background-color: #28a745; color: white; border-color: #218838; font-weight: 500; padding-left: 15px; padding-right: 15px; }
-.btn-new:hover { background-color: #218838; color: white; }
-
-.btn-complete { color: #28a745; border-color: #28a745; }
-.btn-complete:hover:not(:disabled) { background-color: #28a745; color: white; }
-
-.btn-transfer { color: #17a2b8; border-color: #17a2b8; }
-.btn-transfer:hover:not(:disabled) { background-color: #17a2b8; color: white; }
-
-.btn-danger { color: #dc3545; border-color: #dc3545; }
-.btn-danger:hover:not(:disabled) { background-color: #dc3545; color: white; }
-
+/* Colori specifici */
+.btn-new { background-color: #28a745; }
+.btn-complete { background-color: #17a2b8; } /* Ciano per azione principale */
+.btn-transfer { background-color: #6c757d; } /* Grigio per secondaria */
+.btn-edit { background-color: #ffc107; color: #333; }
+.btn-delete { background-color: #dc3545; }
 .btn-bell { 
-    margin-left: auto; /* Spinge a destra */
-    background-color: #fff3cd; color: #856404; border-color: #ffeeba; 
+    background-color: transparent; 
+    color: #555; 
+    border: 1px solid #ddd;
+    flex: 0 0 34px; /* Unico bottone piccolo quadrato */
 }
-.btn-bell:hover { background-color: #ffeeba; }
+.btn-bell:hover { background-color: #eee; }
 
-/* Corpo Ispettore */
-.inspector-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    position: relative;
-    background-color: #fff;
-}
+/* Corpo */
+.inspector-body { flex: 1; overflow-y: auto; padding: 20px; position: relative; background-color: #fff; }
 
-/* Stati Vuoti */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #ccc;
-    text-align: center;
-}
-.empty-state i { margin-bottom: 15px; color: #e0e0e0; }
-
-/* --- 7. CONTENUTO DETTAGLIO & FORM --- */
-
-/* Titolo Task */
-.detail-title {
-    font-size: 1.4em;
-    margin: 0 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    color: #333;
+/* BOX DETTAGLI COMPATTO */
+.read-only-box {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
-/* Griglia Informazioni */
+/* Griglia Info */
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #eee;
-}
-
-.detail-item strong {
-    display: block;
-    font-size: 0.75em;
-    color: #888;
-    text-transform: uppercase;
-    margin-bottom: 3px;
-}
-.detail-item span {
-    font-size: 1em;
-    color: #333;
-    font-weight: 500;
-}
-
-/* Descrizione */
-.description-block {
-    background-color: #fffde7; /* Giallino nota */
-    padding: 15px;
-    border: 1px solid #fff9c4;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    font-size: 0.95em;
-    color: #333;
-    line-height: 1.5;
-    white-space: pre-wrap;
-}
-
-/* Stili Form (Editing) */
-.inspector-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.85em;
-    font-weight: bold;
-    color: #555;
-}
-
-.inp-text, .inp-select, .inp-date, .inp-area {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 0.95em;
-    box-sizing: border-box;
+    gap: 12px;
     margin-bottom: 15px;
-}
-.inp-area { resize: vertical; min-height: 80px; }
-
-.form-row { display: flex; gap: 15px; }
-.form-col { flex: 1; }
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-}
-
-/* Pulsanti Standard */
-.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
-.button--primary { background: #007bff; color: white; }
-.button--success { background: #28a745; color: white; }
-.button--warning { background: #ffc107; color: #212529; }
-
-/* --- 8. STORIA & CHAT --- */
-.history-section {
-    margin-top: 20px;
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-}
-.history-section h4 { margin: 0 0 10px 0; color: #555; font-size: 1em; }
-
-.history-list {
-    max-height: 300px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.history-item {
-    font-size: 0.85em;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #eee;
-    line-height: 1.4;
-}
-
-/* Commenti Utente (Azzurro) */
-.history-item.comment {
-    background-color: #f0f7ff;
-    border-left: 3px solid #007bff;
-    border-color: #d6e9ff;
-}
-
-/* Azioni di Sistema (Giallo/Arancio) */
-.history-item.action {
-    background-color: #fff3cd;
-    border-left: 3px solid #ffc107;
-    border-color: #ffeeba;
-    color: #856404;
-}
-
-.history-item strong { font-weight: 600; }
-.history-item small { opacity: 0.7; margin-left: 5px; font-size: 0.9em; }
-
-/* Input Commento */
-.comment-box {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 6px;
-}
-.comment-box textarea {
-    flex: 1;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 8px;
-    resize: none;
-    font-family: inherit;
     font-size: 0.9em;
 }
+.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+.detail-item span { font-size: 1em; color: #333; font-weight: 500; }
 
-/* --- 9. MODALI (Archivio, Transfer) --- */
+/* Descrizione Integrata */
+.detail-description {
+    grid-column: 1 / -1; /* Occupa tutta la riga */
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
+}
+.detail-description strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+.description-text {
+    font-size: 0.95em; color: #444; line-height: 1.5; white-space: pre-wrap;
+    background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #eee;
+}
+
+/* Chat & Storia */
+.history-section h4 { margin: 0 0 10px 0; color: #555; font-size: 1em; padding-top: 10px; border-top: 1px solid #eee; }
+.history-list { max-height: 250px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.history-item { font-size: 0.85em; padding: 8px 10px; border-radius: 4px; border: 1px solid #eee; line-height: 1.4; }
+.history-item.comment { background-color: #f0f7ff; border-left: 3px solid #007bff; border-color: #d6e9ff; }
+.history-item.action { background-color: #fff3cd; border-left: 3px solid #ffc107; border-color: #ffeeba; color: #856404; }
+
+/* Box invio commento (FIX DIMENSIONI) */
+.comment-box { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
+.comment-box textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 0.9em; height: 38px; }
+.btn-send {
+    background-color: #007bff; color: white; border: none; border-radius: 4px;
+    width: 40px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.btn-send:hover { background-color: #0056b3; }
+
+/* Empty State */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ccc; text-align: center; }
+.empty-state i { margin-bottom: 15px; color: #e0e0e0; }
+
+/* Form Styles */
+.inspector-form label { display: block; margin-bottom: 4px; font-size: 0.85em; font-weight: bold; color: #555; }
+.inp-text, .inp-select, .inp-date, .inp-area { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; margin-bottom: 12px; }
+.inp-area { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 10px; } .form-col { flex: 1; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 15px; border-top: 1px solid #eee; }
+.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
+.button--success { background: #28a745; color: white; }
+.button--warning { background: #ffc107; color: #333; }
+
+/* Modali */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-.modal-content {
-    background: white;
-    margin: 10% auto;
-    padding: 0;
-    border-radius: 8px;
-    width: 400px; /* Piccolo per transfer */
-    max-width: 90%;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-}
-.modal-header {
-    padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0;
-    display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;
-}
-.modal-header h2 { margin: 0; font-size: 1.1em; }
-.modal-body { padding: 20px; }
-.modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
-.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
-
-/* Loader */
-.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; }
-.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-/* Archivio List */
-.archive-task-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
-}
-.archive-task-item:hover { background-color: #f9f9f9; }
+.modal-content { background: white; margin: 10% auto; padding: 0; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+.modal-header { padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+.modal-body { padding: 20px; } .modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
+.full-width-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
 
 /* Responsive Mobile */
-@media (max-width: 1024px) {
-    .task-inspector-fixed { min-width: 350px; }
-}
-
-@media (max-width: 768px) {
-    .task-view-wrapper { flex-direction: column; overflow-y: auto; }
-    .task-view-grid { min-height: 300px; flex: none; overflow-x: auto; }
-    .task-inspector-fixed { min-width: 100%; flex: 1; border-left: none; border-top: 1px solid #ddd; }
-}
+@media (max-width: 1024px) { .task-inspector-fixed { min-width: 350px; } }
+@media (max-width: 768px) { .task-view-wrapper { flex-direction: column; } .task-view-grid { flex: none; height: 300px; } .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; } }

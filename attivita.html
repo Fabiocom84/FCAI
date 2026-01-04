@@ -55,33 +55,24 @@
             <!-- COLONNA 5: ISPETTORE FISSO -->
             <aside id="taskInspector" class="task-inspector-fixed">
                 
-                <!-- TOOLBAR COMANDI (Sempre visibile in alto) -->
+                <!-- TOOLBAR NELL'HTML -->
                 <div class="inspector-header-toolbar">
-                    <!-- Pulsante Nuovo (Sempre attivo) -->
                     <button id="addTaskBtn" class="toolbar-btn btn-new" title="Nuovo Task">
                         <i class="fas fa-plus"></i> Nuovo
                     </button>
-                    
                     <div class="divider-vertical"></div>
-
-                    <!-- Pulsanti Contestuali (Si attivano selezionando un task) -->
-                    <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri Task" disabled>
-                        <i class="fas fa-check"></i>
+                    <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri" disabled>
+                        <i class="fas fa-check"></i> Chiudi
                     </button>
-                    
-                    <button id="inspectorTransferBtn" class="toolbar-btn btn-transfer" title="Trasferisci ad altro utente" disabled>
-                        <i class="fas fa-share"></i>
+                    <button id="inspectorTransferBtn" class="toolbar-btn btn-transfer" title="Trasferisci" disabled>
+                        <i class="fas fa-share"></i> Invia
                     </button>
-
-                    <button id="inspectorEditBtn" class="toolbar-btn" title="Modifica Dati" disabled>
-                        <i class="fas fa-edit"></i>
+                    <button id="inspectorEditBtn" class="toolbar-btn btn-edit" title="Modifica" disabled>
+                        <i class="fas fa-edit"></i> Edit
                     </button>
-                    
-                    <button id="inspectorDeleteBtn" class="toolbar-btn btn-danger" title="Elimina" disabled>
+                    <button id="inspectorDeleteBtn" class="toolbar-btn btn-delete" title="Elimina" disabled>
                         <i class="fas fa-trash"></i>
                     </button>
-
-                    <!-- Campanella Notifiche (Allineata a destra via CSS) -->
                     <button id="inspectorBellBtn" class="toolbar-btn btn-bell" title="Notifiche">
                         <i class="fas fa-bell"></i>
                     </button>
