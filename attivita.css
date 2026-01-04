@@ -1,8 +1,7 @@
 /* =================================================== */
-/* == Stili Attività (Task Manager) - Layout 5 Col  == */
+/* == Stili Attività - Layout 5 Colonne Fisso       == */
 /* =================================================== */
 
-/* --- 1. SETUP GENERALE --- */
 body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
@@ -10,341 +9,177 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Nessuno scroll sulla pagina intera */
+    overflow: hidden;
 }
 
 .page-wrapper {
-    width: 99%; /* Uso quasi tutto lo schermo */
-    max-width: 1920px;
-    margin: 0 auto;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* --- 2. HEADER COMPATTO --- */
+/* --- 1. HEADER COMPATTO CON FILTRI --- */
 .page-header {
     background-color: #34495e;
     color: white;
-    padding: 5px 15px; /* Ridotto padding verticale */
+    height: 50px; /* Altezza fissa ridotta */
+    padding: 0 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     flex-shrink: 0;
-    height: 50px; /* Altezza fissa ridotta */
 }
 
+.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+
 .page-header h1 {
-    margin: 0;
-    font-size: 1.2em; /* Font leggermente più piccolo */
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
+    position: absolute; left: 50%; transform: translateX(-50%); /* Centrato assoluto */
 }
 
 .header-button {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 5px 12px; /* Pulsanti più compatti */
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.85em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    cursor: pointer;
+    color: white; text-decoration: none; font-size: 0.9em;
+    display: flex; align-items: center; gap: 5px; opacity: 0.9;
 }
-.header-button:hover { background-color: rgba(255,255,255,0.2); }
-.btn-add { background-color: #28a745; border-color: #218838; }
-.btn-add:hover { background-color: #218838; }
+.header-button:hover { opacity: 1; }
 
-/* --- 3. CONTROLS BAR COMPATTA --- */
-.controls-container {
-    background-color: white;
-    margin: 8px 0; /* Meno margine sopra/sotto */
-    padding: 5px 15px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    height: 45px; /* Altezza ridotta */
+/* Filtro Utente nell'Header */
+.header-filter-wrapper {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.15);
+    padding: 3px 10px; border-radius: 4px;
 }
-
-/* Select più compatta */
-.styled-select-wrapper select {
-    padding: 4px 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    min-width: 180px;
-    font-size: 0.9em;
+.header-select {
+    background: transparent; border: none; color: white;
+    font-size: 0.9em; outline: none; cursor: pointer;
 }
+.header-select option { background-color: #34495e; }
 
-/* --- 4. LAYOUT PRINCIPALE (BOARD + INSPECTOR) --- */
+/* --- 2. LAYOUT 5 COLONNE --- */
 .task-view-wrapper {
     display: flex;
-    flex: 1; /* Occupa tutto lo spazio rimanente in altezza */
+    flex: 1;
     overflow: hidden;
-    position: relative;
-    padding-bottom: 5px;
+    padding: 10px;
     gap: 10px;
+    background-color: #eef2f5;
 }
 
-/* --- 5. KANBAN BOARD (4 Colonne a sinistra) --- */
+/* GRUPPO COLONNE 1-4 (Kanban) */
 .task-view-grid {
     display: flex;
-    gap: 10px; /* Spazio tra colonne ridotto */
-    flex: 1; /* Si espande per occupare lo spazio disponibile */
-    overflow-x: auto; /* Scroll orizzontale solo se necessario (schermi piccoli) */
-    padding: 2px;
+    gap: 10px;
+    flex: 3; /* Occupa 3/4 dello spazio */
     height: 100%;
-    
-    /* Quando l'ispettore si apre, questa grid si restringe */
-    transition: flex-basis 0.3s ease; 
+    overflow-x: auto;
 }
 
-/* COLONNA SINGOLA */
 .task-column {
     background-color: #ebecf0;
     border-radius: 6px;
     padding: 8px;
     display: flex;
     flex-direction: column;
-    
-    /* Logica Larghezza: */
-    flex: 1;           /* Tutte larghe uguali */
-    min-width: 200px;  /* Larghezza minima per non schiacciare troppo */
-    max-width: 100%;
-    
+    flex: 1; /* Distribuzione equa */
+    min-width: 220px;
     height: 100%;
 }
 
 .task-column-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #dcdcdc;
-    flex-shrink: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 8px; border-bottom: 2px solid #ddd; margin-bottom: 8px;
 }
-
-.task-column-header h2 {
-    font-size: 1em; /* Header più piccolo */
-    margin: 0;
-    color: #444;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.column-count {
-    background-color: #d1d5db;
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #555;
-}
+.task-column-header h2 { font-size: 0.95em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; }
+.column-count { background: #cbd2d9; padding: 1px 6px; border-radius: 8px; font-size: 0.75em; font-weight: bold; }
 
 .tasks-container {
-    flex-grow: 1;
-    overflow-y: auto; /* Scroll verticale dentro la colonna */
-    padding-right: 2px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 50px;
+    flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;
 }
 
-/* INDICATORI COLORE */
-.dot-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.task-column[data-status="Da Fare"] .dot-indicator { background-color: #007bff; }
-.task-column[data-status="In Corso"] .dot-indicator { background-color: #ffc107; }
-.task-column[data-status="In Revisione"] .dot-indicator { background-color: #fd7e14; }
-.task-column[data-status="Completato"] .dot-indicator { background-color: #28a745; }
-
-/* --- 6. TASK CARD (Compatta) --- */
+/* CARDS */
 .task-card {
-    background-color: white;
-    border-radius: 4px;
-    padding: 8px 10px; /* Meno padding interno */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    cursor: pointer;
-    border-left: 3px solid transparent;
-    transition: transform 0.1s;
+    background: white; border-radius: 4px; padding: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
+    border-left: 3px solid transparent; transition: all 0.1s;
 }
-
-.task-card:hover {
-    box-shadow: 0 3px 5px rgba(0,0,0,0.15);
-    transform: translateY(-1px);
-}
-
+.task-card:hover { transform: translateY(-1px); box-shadow: 0 3px 5px rgba(0,0,0,0.15); }
 .task-card.priority-alta { border-left-color: #dc3545; }
 .task-card.priority-media { border-left-color: #ffc107; }
 .task-card.priority-bassa { border-left-color: #28a745; }
+.task-card h4 { margin: 4px 0; font-size: 0.95em; color: #2c3e50; font-weight: 500; }
 
-.task-card h4 {
-    margin: 4px 0;
-    font-size: 0.95em;
-    font-weight: 500;
-    color: #2c3e50;
-    line-height: 1.3;
-}
+.cat-tag { font-size: 0.7em; background: #f1f3f5; padding: 2px 5px; border-radius: 3px; color: #666; text-transform: uppercase; }
+.commessa-tag { font-size: 0.7em; background: #e3f2fd; padding: 2px 5px; border-radius: 3px; color: #0d47a1; }
 
-/* Tag piccoli */
-.cat-tag, .commessa-tag {
-    font-size: 0.7em;
-    padding: 1px 4px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    display: inline-block;
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-}
-.cat-tag { background-color: #f1f3f5; color: #495057; }
-.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
-
-.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
-.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
-
-
-/* --- 7. ISPETTORE LATERALE (5a Colonna - Larga) --- */
-.task-inspector {
-    width: 0; /* Chiuso di default */
-    min-width: 0; /* Importante per l'animazione */
-    background-color: white;
-    border-left: 1px solid #ddd;
-    box-shadow: -2px 0 15px rgba(0,0,0,0.05);
+/* COLONNA 5: ISPETTORE FISSO */
+.task-inspector-fixed {
+    flex: 1.2; /* Leggermente più larga delle altre */
+    min-width: 350px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    overflow: hidden;
     height: 100%;
-    flex-shrink: 0; /* Non si restringe */
-    opacity: 0;
+    border: 1px solid #ddd;
 }
 
-/* QUANDO APERTO */
-.task-inspector.open {
-    width: 500px; /* Più largo delle altre colonne */
-    min-width: 400px;
-    opacity: 1;
-    border-radius: 6px 0 0 6px;
-    margin-left: 5px;
-}
-
-.inspector-header {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
+/* TOOLBAR 5a COLONNA */
+.inspector-header-toolbar {
+    padding: 8px 12px;
+    background: #f8f9fa;
     border-bottom: 1px solid #eee;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    height: 40px;
-}
-.inspector-header h2 { margin: 0; font-size: 1em; color: #333; text-transform: uppercase; }
-
-.inspector-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background-color: #fff;
-}
-
-.inspector-footer {
-    padding: 10px 15px;
-    border-top: 1px solid #eee;
-    background-color: #f8f9fa;
-}
-
-/* Stili Contenuto Ispettore */
-.badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    background: #e9ecef;
-    font-size: 0.85em;
-    font-weight: bold;
-}
-.read-only-box {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 15px;
-}
-.read-only-box p { margin: 6px 0; font-size: 0.9em; color: #444; }
-.read-only-box strong { color: #666; width: 90px; display: inline-block; }
-
-.description-block {
-    background: #fafafa;
-    padding: 12px;
-    border-radius: 4px;
-    margin-top: 15px;
-    font-size: 0.95em;
-    color: #333;
-    white-space: pre-wrap;
-    border: 1px solid #eee;
-}
-
-/* Chat Ispettore */
-.history-list {
-    margin-bottom: 15px;
-    display: flex;
-    flex-direction: column;
     gap: 8px;
+    height: 45px;
 }
+
+.toolbar-btn {
+    border: 1px solid #ced4da;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #555;
+    transition: all 0.2s;
+}
+.toolbar-btn:hover:not(:disabled) { background: #e9ecef; }
+.toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-new { background-color: #28a745; color: white; border-color: #218838; font-weight: 500; }
+.btn-new:hover { background-color: #218838; color: white; }
+.btn-danger { color: #dc3545; border-color: #dc3545; }
+.btn-danger:hover:not(:disabled) { background-color: #dc3545; color: white; }
+
+.divider-vertical { width: 1px; height: 24px; background: #ddd; margin: 0 5px; }
+
+/* BODY ISPETTORE */
+.inspector-body { flex: 1; overflow-y: auto; padding: 15px; position: relative; }
+
+.empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: #ccc; text-align: center;
+}
+.empty-state i { margin-bottom: 15px; }
+
+.read-only-box { background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; font-size: 0.9em; }
+.description-block { background: #fffde7; padding: 10px; border: 1px solid #f0f0c0; border-radius: 4px; margin-bottom: 15px; font-size: 0.9em; }
+
+/* CHAT */
+.history-list { max-height: 250px; overflow-y: auto; margin-bottom: 10px; }
 .history-item { font-size: 0.85em; padding: 8px; border-bottom: 1px solid #f0f0f0; }
-.comment-input-area { display: flex; gap: 8px; align-items: flex-end; background: #f1f3f5; padding: 10px; border-radius: 6px; }
-.comment-input-area textarea { flex: 1; border: 1px solid #ced4da; border-radius: 4px; padding: 8px; resize: none; font-size: 0.9em; }
+.comment-input-area { display: flex; gap: 5px; }
+.comment-input-area textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 5px; font-size: 0.9em; }
 
-/* --- 8. UTILITIES & MODALI --- */
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-.modal-content { background: white; margin: 3% auto; padding: 0; border-radius: 8px; width: 500px; max-width: 90%; max-height: 90vh; display: flex; flex-direction: column; }
-.modal-content.large { width: 650px; }
-.modal-header { padding: 12px 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-.modal-body { padding: 20px; overflow-y: auto; }
-.modal-footer { padding: 12px 15px; border-top: 1px solid #eee; text-align: right; }
-.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
+.inspector-footer { padding: 10px; background: #f8f9fa; border-top: 1px solid #eee; }
 
-/* Loader e vari */
-.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; }
-.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9em; }
-
-/* Buttons */
-.button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
+/* UTILS */
+.full-width { width: 100%; }
+.button { cursor: pointer; padding: 6px 12px; border-radius: 4px; border: none; font-size: 0.9em; }
 .button--primary { background: #007bff; color: white; }
 .button--success { background: #28a745; color: white; }
-.button--warning { background: #ffc107; color: #212529; }
-.full-width { width: 100%; }
-.full-width-input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-.form-section { margin-bottom: 15px; border: 1px solid #eee; border-radius: 4px; }
-.form-section-header { background: #f9f9f9; padding: 5px 10px; font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #eee; }
-.form-section-content { padding: 10px; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form-group { margin-bottom: 10px; }
-.save-button { background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .task-inspector.open { width: 350px; }
-    .task-column { min-width: 180px; }
-}
-
-@media (max-width: 768px) {
-    .task-view-wrapper { flex-direction: column; }
-    .task-view-grid { overflow-x: auto; padding-bottom: 10px; }
-    .task-inspector.open { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; z-index: 500; }
-}
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; }

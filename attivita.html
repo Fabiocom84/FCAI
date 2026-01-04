@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Stili Proprietari -->
     <link rel="stylesheet" href="style-v2.css">
@@ -19,75 +20,91 @@
 
     <div class="page-wrapper">
 
-        <!-- HEADER -->
+        <!-- HEADER OTTIMIZZATO (Filtri integrati) -->
         <header class="page-header">
-            <!-- Tasto Home -->
-            <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                <span>Home</span>
-            </a>
+            <div class="header-left">
+                <a href="index.html" class="header-button">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                
+                <!-- FILTRO UTENTE SPOSTATO QUI -->
+                <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
+                    <i class="fas fa-filter"></i>
+                    <select id="adminUserFilter" class="header-select"></select>
+                </div>
+            </div>
             
             <h1>GESTIONE ATTIVITÀ</h1>
             
-            <!-- Tasto Nuovo Task -->
-            <button id="addTaskBtn" class="header-button btn-add">
-                <img src="img/plus2.png" alt="Add" style="filter: brightness(0) invert(1); width: 16px; margin-right: 5px;">
-                <span>Nuovo Task</span>
-            </button>
+            <div class="header-right">
+                <!-- Spazio vuoto o info utente -->
+                <span id="currentUserDisplay" style="font-size: 0.9em; opacity: 0.8;"></span>
+            </div>
         </header>
 
-        <!-- BARRA CONTROLLI (Filtri) -->
-        <div class="controls-container">
-            <div class="controls-left">
-                <div id="adminFilterContainer" style="display: none; align-items: center; gap: 10px;">
-                    <label for="adminUserFilter" style="font-weight: 500; color: #555;">Filtra per utente:</label>
-                    <div class="styled-select-wrapper">
-                        <select id="adminUserFilter"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="controls-right">
-                <!-- Spazio per futuri filtri (es. Ricerca testuale) -->
-            </div>
-        </div>
-
-        <!-- MAIN WRAPPER (BOARD + ISPETTORE) -->
+        <!-- MAIN WRAPPER: GRIGLIA UNICA 5 COLONNE -->
         <div class="task-view-wrapper">
             
-            <!-- 1. KANBAN BOARD (Le 4 colonne vengono iniettate qui da JS) -->
+            <!-- COLONNE 1-4: KANBAN BOARD -->
             <main id="taskView" class="task-view-grid">
                 <div class="loader-container">
                     <div class="loader"></div>
-                    <p>Caricamento Board...</p>
+                    <p>Caricamento...</p>
                 </div>
             </main>
 
-            <!-- 2. ISPETTORE LATERALE (5a Colonna a comparsa) -->
-            <aside id="taskInspector" class="task-inspector">
-                <div class="inspector-header">
-                    <h2 id="inspectorTitle">Dettaglio</h2>
-                    <button class="close-button" id="closeInspectorBtn">&times;</button>
+            <!-- COLONNA 5: ISPETTORE FISSO (Toolbar Comandi in alto) -->
+            <aside id="taskInspector" class="task-inspector-fixed">
+                
+                <!-- INTESTAZIONE 5a COLONNA CON COMANDI -->
+                <div class="inspector-header-toolbar">
+                    <button id="addTaskBtn" class="toolbar-btn btn-new" title="Nuovo Task">
+                        <i class="fas fa-plus"></i> Nuovo
+                    </button>
+                    
+                    <div class="divider-vertical"></div>
+
+                    <!-- Pulsanti contestuali (attivi solo se selezionato un task) -->
+                    <button id="inspectorEditBtn" class="toolbar-btn" title="Modifica" disabled>
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button id="inspectorDeleteBtn" class="toolbar-btn btn-danger" title="Elimina" disabled>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <!-- Esempio pulsante "Invia A" -->
+                    <!-- <button id="inspectorAssignBtn" class="toolbar-btn" title="Assegna a..." disabled>
+                        <i class="fas fa-user-share"></i>
+                    </button> -->
                 </div>
                 
                 <div class="inspector-body">
                     <!-- Contenuto dinamico Task -->
-                    <div id="inspectorContent"></div>
+                    <div id="inspectorContent">
+                        <div class="empty-state">
+                            <i class="fas fa-tasks fa-3x"></i>
+                            <p>Seleziona un task dalla lista<br>o creane uno nuovo.</p>
+                        </div>
+                    </div>
                     
-                    <hr class="inspector-divider">
-                    
-                    <!-- Sezione Chat / Storia -->
-                    <h3>Attività & Commenti</h3>
-                    <div id="inspectorHistory" class="history-list"></div>
-                    
-                    <div class="comment-input-area">
-                        <textarea id="inspectorCommentInput" placeholder="Scrivi un commento..." rows="2"></textarea>
-                        <button id="inspectorAddCommentBtn" class="button button--primary small">Invia</button>
+                    <div id="inspectorDetailsArea" style="display: none;">
+                        <hr class="inspector-divider">
+                        
+                        <!-- Sezione Chat / Storia -->
+                        <h3>Attività & Commenti</h3>
+                        <div id="inspectorHistory" class="history-list"></div>
+                        
+                        <div class="comment-input-area">
+                            <textarea id="inspectorCommentInput" placeholder="Scrivi un commento..." rows="2"></textarea>
+                            <button id="inspectorAddCommentBtn" class="button button--primary small">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="inspector-footer">
+                <!-- Footer Azioni Rapide (Stato) -->
+                <div class="inspector-footer" id="inspectorFooter" style="display: none;">
                      <div class="action-buttons-container">
-                        <button id="inspectorEditBtn" class="button button--warning full-width" style="margin-bottom: 8px;">✏️ Modifica Dati</button>
                         <button id="inspectorCompleteBtn" class="button button--success full-width">✅ Segna Completato</button>
                         <button id="inspectorReopenBtn" class="button button--primary full-width" style="display:none;">↩️ Riapri Task</button>
                     </div>
@@ -98,116 +115,61 @@
 
     </div>
 
-    <!-- ================= MODALI ================= -->
-
-    <!-- MODALE 1: FORM CREAZIONE / MODIFICA -->
+    <!-- MODALI (Form e Archivio rimangono uguali strutturalmente) -->
     <div id="taskModal" class="modal" style="display: none;">
         <div class="modal-content large">
             <div class="modal-header">
                 <h2 id="modalTitle">Nuovo Task</h2>
-                <div class="modal-header-buttons">
-                    <button class="close-button" data-close-create>&times;</button>
-                </div>
+                <button class="close-button" data-close-create>&times;</button>
             </div>
-            
             <div class="modal-body">
                 <form id="taskForm" onsubmit="return false;">
                     <input type="hidden" id="taskId">
-                    
                     <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>Dati Principali</h3>
-                        </div>
+                        <div class="form-section-header"><h3>Dati Principali</h3></div>
                         <div class="form-section-content">
-                            <input type="text" id="taskTitle" placeholder="Titolo del task (es. Ordinare materiale)" required class="full-width-input">
-                            
+                            <input type="text" id="taskTitle" placeholder="Titolo del task" required class="full-width-input">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="taskCategory">Categoria *</label>
-                                    <select id="taskCategory" required></select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="taskPriority">Priorità *</label>
-                                    <select id="taskPriority" required>
-                                        <option value="Bassa">🟢 Bassa</option>
-                                        <option value="Media" selected>🟡 Media</option>
-                                        <option value="Alta">🔴 Alta</option>
-                                    </select>
-                                </div>
+                                <div class="form-group"><label>Categoria *</label><select id="taskCategory" required></select></div>
+                                <div class="form-group"><label>Priorità *</label><select id="taskPriority" required><option value="Bassa">🟢 Bassa</option><option value="Media" selected>🟡 Media</option><option value="Alta">🔴 Alta</option></select></div>
                             </div>
                         </div>
                     </div>
-
                     <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>Dettagli e Collegamenti</h3>
-                        </div>
+                        <div class="form-section-header"><h3>Dettagli</h3></div>
                         <div class="form-section-content">
-                            <!-- Switch dinamico JS -->
-                            <div id="textSubcategoryContainer" class="form-group">
-                                <label for="taskSubcategory">Dettaglio / Etichetta</label>
-                                <select id="taskSubcategory"></select>
-                            </div>
-                            <div id="commessaSubcategoryContainer" class="form-group" style="display: none;">
-                                 <label for="taskCommessa">Collega a Commessa</label>
-                                 <select id="taskCommessa"></select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="taskDescription">Descrizione Estesa</label>
-                                <textarea id="taskDescription" rows="3" placeholder="Aggiungi dettagli..."></textarea>
-                            </div>
+                            <div id="textSubcategoryContainer" class="form-group"><label>Dettaglio</label><select id="taskSubcategory"></select></div>
+                            <div id="commessaSubcategoryContainer" class="form-group" style="display: none;"><label>Commessa</label><select id="taskCommessa"></select></div>
+                            <div class="form-group"><label>Descrizione</label><textarea id="taskDescription" rows="3"></textarea></div>
                         </div>
                     </div>
-
                     <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>Assegnazione</h3>
-                        </div>
+                        <div class="form-section-header"><h3>Assegnazione</h3></div>
                         <div class="form-section-content">
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="taskAssignee">Assegnato a:</label>
-                                    <select id="taskAssignee"></select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="taskDueDate">Scadenza:</label>
-                                    <input type="date" id="taskDueDate">
-                                </div>
+                                <div class="form-group"><label>Assegnato a:</label><select id="taskAssignee"></select></div>
+                                <div class="form-group"><label>Scadenza:</label><input type="date" id="taskDueDate"></div>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
-
             <div class="modal-footer">
-                <button id="saveTaskBtn" class="save-button">
-                    <img src="img/save.png" alt="" style="width: 16px; filter: invert(1);"> Salva Task
-                </button>
+                <button id="saveTaskBtn" class="save-button"><i class="fas fa-save"></i> Salva Task</button>
             </div>
         </div>
     </div>
 
-    <!-- MODALE 2: ARCHIVIO -->
+    <!-- MODALE ARCHIVIO -->
     <div id="archiveModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Archivio Task Completati</h2>
-                <button class="close-button" data-close-archive>&times;</button>
-            </div>
-            <div class="modal-body" id="archiveTasksContainer">
-                <!-- Lista archivio -->
-            </div>
-            <div class="modal-footer centered">
-                <button id="loadMoreBtn" class="button">Carica Altri</button>
-                <div id="archiveLoader" class="loader" style="display: none;"></div>
-            </div>
+            <div class="modal-header"><h2>Archivio</h2><button class="close-button" data-close-archive>&times;</button></div>
+            <div class="modal-body" id="archiveTasksContainer"></div>
         </div>
     </div>
 
     <div id="modalOverlay" class="modal-overlay"></div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/api-client.js"></script>
