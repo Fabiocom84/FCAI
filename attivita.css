@@ -1,5 +1,5 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - STILE PROPRIETARIO (Ver. 7.0)    == */
+/* == GESTIONE ATTIVITÀ - STILE DEFINITIVO (Ver. 8.0)      == */
 /* ========================================================== */
 
 * { box-sizing: border-box; }
@@ -40,26 +40,32 @@ body {
 .header-button {
     color: white; text-decoration: none; font-size: 0.9em;
     display: flex; align-items: center; gap: 6px; opacity: 0.9;
+    background: transparent !important; /* Override globale */
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 5px 10px !important;
+    height: auto !important;
+    width: auto !important;
 }
-.header-button:hover { opacity: 1; }
+.header-button:hover { background: rgba(255,255,255,0.1) !important; opacity: 1; }
 
 /* Filtro Utente (Stile Classico) */
 .header-filter-wrapper {
     display: flex; align-items: center;
-    background: white; /* Sfondo bianco classico */
+    background: white; 
     padding: 2px 5px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    height: 30px;
 }
 
 .header-filter-wrapper label {
-    font-size: 0.85em; margin-right: 5px; color: #333; font-weight: 500;
+    font-size: 0.85em; margin-right: 8px; color: #333; font-weight: 500;
 }
 
 .header-select {
     background: transparent; border: none; color: #333;
     font-size: 0.9em; outline: none; cursor: pointer;
-    font-family: inherit; padding: 2px;
+    font-family: inherit; padding: 0; margin: 0;
 }
 .header-select option { background-color: white; color: #333; }
 
@@ -110,58 +116,63 @@ body {
 
 /* --- 3. ISPETTORE (Colonna 5) --- */
 .task-inspector-fixed {
-    flex: 1.5; /* Più largo per accogliere 5 bottoni */
+    flex: 1.5; /* Spazio generoso */
     min-width: 500px; 
     background-color: white; border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column;
     height: 100%; border: 1px solid #ddd; overflow: hidden;
 }
 
-/* TOOLBAR UNIFORMATA */
+/* TOOLBAR UNIFORMATA - Override aggressivi */
 .inspector-header-toolbar {
     padding: 10px;
     background-color: #f8f9fa;
     border-bottom: 1px solid #eee;
     display: flex;
     align-items: center;
-    gap: 8px; /* Spazio tra i bottoni */
+    gap: 8px;
     height: 55px;
     flex-shrink: 0;
 }
 
 /* Stile Base Pulsante Toolbar */
 .toolbar-btn {
-    flex: 1; /* Tutti larghezza uguale */
-    height: 34px;
-    border-radius: 4px;
-    border: none;
+    flex: 1; /* Distribuisce larghezza equamente */
+    height: 34px !important; /* Forza altezza umana */
+    border-radius: 4px !important;
+    border: none !important;
     cursor: pointer;
-    font-size: 0.85em;
-    font-weight: 500;
-    color: white;
+    font-size: 0.85em !important;
+    font-weight: 500 !important;
+    color: white !important;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
     transition: filter 0.2s;
     white-space: nowrap;
+    margin: 0 !important; /* Resetta margini globali */
+    width: auto !important; /* Previene il 100% width globale */
+    text-transform: none !important;
+    box-shadow: none !important;
 }
 .toolbar-btn:hover:not(:disabled) { filter: brightness(90%); }
 .toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #ccc !important; color: #666 !important; }
 
-/* Colori specifici */
-.btn-new { background-color: #28a745; }
-.btn-complete { background-color: #17a2b8; } /* Ciano per azione principale */
-.btn-transfer { background-color: #6c757d; } /* Grigio per secondaria */
-.btn-edit { background-color: #ffc107; color: #333; }
-.btn-delete { background-color: #dc3545; }
+/* Colori specifici pulsanti toolbar */
+.btn-new { background-color: #28a745 !important; }
+.btn-complete { background-color: #17a2b8 !important; }
+.btn-transfer { background-color: #6c757d !important; }
+.btn-edit { background-color: #ffc107 !important; color: #333 !important; }
+.btn-delete { background-color: #dc3545 !important; }
 .btn-bell { 
-    background-color: transparent; 
-    color: #555; 
-    border: 1px solid #ddd;
-    flex: 0 0 34px; /* Unico bottone piccolo quadrato */
+    background-color: transparent !important; 
+    color: #555 !important; 
+    border: 1px solid #ddd !important;
+    flex: 0 0 34px !important; /* Quadrato fisso */
+    padding: 0 !important;
 }
-.btn-bell:hover { background-color: #eee; }
+.btn-bell:hover { background-color: #eee !important; }
 
 /* Corpo */
 .inspector-body { flex: 1; overflow-y: auto; padding: 20px; position: relative; background-color: #fff; }
@@ -208,37 +219,88 @@ body {
 .history-item.action { background-color: #fff3cd; border-left: 3px solid #ffc107; border-color: #ffeeba; color: #856404; }
 
 /* Box invio commento (FIX DIMENSIONI) */
-.comment-box { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
-.comment-box textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 0.9em; height: 38px; }
-.btn-send {
-    background-color: #007bff; color: white; border: none; border-radius: 4px;
-    width: 40px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+.comment-box { display: flex; gap: 8px; margin-bottom: 15px; align-items: flex-start; }
+.comment-box textarea { 
+    flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 0.9em; 
+    min-height: 40px; height: 40px;
 }
-.btn-send:hover { background-color: #0056b3; }
+.btn-send {
+    background-color: #007bff !important; 
+    color: white !important; 
+    border: none !important; 
+    border-radius: 4px !important;
+    width: 40px !important; 
+    height: 40px !important; 
+    cursor: pointer; 
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.btn-send:hover { background-color: #0056b3 !important; }
 
 /* Empty State */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ccc; text-align: center; }
 .empty-state i { margin-bottom: 15px; color: #e0e0e0; }
 
-/* Form Styles */
+/* FORM STYLES & OVERRIDE BOTTONI */
 .inspector-form label { display: block; margin-bottom: 4px; font-size: 0.85em; font-weight: bold; color: #555; }
 .inp-text, .inp-select, .inp-date, .inp-area { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; margin-bottom: 12px; }
 .inp-area { resize: vertical; min-height: 80px; }
 .form-row { display: flex; gap: 10px; } .form-col { flex: 1; }
-.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 15px; border-top: 1px solid #eee; }
-.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
-.button--success { background: #28a745; color: white; }
-.button--warning { background: #ffc107; color: #333; }
 
-/* Modali */
+.form-actions { 
+    display: flex; 
+    justify-content: flex-end; /* Allinea a destra */
+    gap: 10px; 
+    margin-top: 10px; 
+    padding-top: 15px; 
+    border-top: 1px solid #eee; 
+}
+
+/* Pulsanti Form (Salva/Annulla) - Dimensioni umane */
+.form-actions button {
+    width: auto !important; /* Override 100% globale */
+    min-width: 100px !important; 
+    padding: 8px 20px !important;
+    height: auto !important;
+    font-size: 0.9em !important;
+    margin: 0 !important;
+    border-radius: 4px !important;
+    text-transform: none !important;
+    display: inline-block !important;
+}
+
+.button--success { background-color: #28a745 !important; color: white !important; border: none !important; }
+.button--success:hover { background-color: #218838 !important; }
+.button--warning { background-color: #ffc107 !important; color: #333 !important; border: none !important; }
+.button--warning:hover { background-color: #e0a800 !important; }
+
+/* Lista Notifiche */
+.notification-item {
+    padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9em; cursor: pointer; transition: background 0.2s;
+}
+.notification-item:hover { background-color: #f9f9f9; }
+.notification-item.unread { background-color: #e3f2fd; font-weight: 500; }
+.notification-item small { color: #888; display: block; margin-top: 4px; font-size: 0.8em; font-weight: normal; }
+
+/* Modali (Archivio) */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
 .modal-content { background: white; margin: 10% auto; padding: 0; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
 .modal-header { padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
 .modal-body { padding: 20px; } .modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
-.full-width-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
 .archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+
+/* Loader */
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; }
+.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* Responsive Mobile */
 @media (max-width: 1024px) { .task-inspector-fixed { min-width: 350px; } }
-@media (max-width: 768px) { .task-view-wrapper { flex-direction: column; } .task-view-grid { flex: none; height: 300px; } .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; } }
+@media (max-width: 768px) { 
+    .task-view-wrapper { flex-direction: column; } 
+    .task-view-grid { flex: none; height: 300px; overflow-x: auto; } 
+    .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; flex: 1; } 
+}
