@@ -1,5 +1,5 @@
 /* =================================================== */
-/* == Stili Attività (Task Manager) - 5 Columns     == */
+/* == Stili Attività (Task Manager) - Layout 5 Col  == */
 /* =================================================== */
 
 /* --- 1. SETUP GENERALE --- */
@@ -10,34 +10,35 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Nessuno scroll sulla pagina intera */
 }
 
 .page-wrapper {
-    width: 98%;
-    max-width: 1900px;
+    width: 99%; /* Uso quasi tutto lo schermo */
+    max-width: 1920px;
     margin: 0 auto;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* --- 2. HEADER --- */
+/* --- 2. HEADER COMPATTO --- */
 .page-header {
     background-color: #34495e;
     color: white;
-    padding: 10px 20px;
+    padding: 5px 15px; /* Ridotto padding verticale */
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     flex-shrink: 0;
+    height: 50px; /* Altezza fissa ridotta */
 }
 
 .page-header h1 {
     margin: 0;
-    font-size: 1.4em;
+    font-size: 1.2em; /* Font leggermente più piccolo */
     font-weight: 500;
     letter-spacing: 0.5px;
 }
@@ -46,13 +47,13 @@ body {
     background-color: rgba(255,255,255,0.1);
     color: white;
     border: 1px solid rgba(255,255,255,0.2);
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 5px 12px; /* Pulsanti più compatti */
+    border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9em;
+    font-size: 0.85em;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s;
     cursor: pointer;
 }
@@ -60,122 +61,129 @@ body {
 .btn-add { background-color: #28a745; border-color: #218838; }
 .btn-add:hover { background-color: #218838; }
 
-/* --- 3. CONTROLS BAR --- */
+/* --- 3. CONTROLS BAR COMPATTA --- */
 .controls-container {
     background-color: white;
-    margin: 15px 0;
-    padding: 10px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin: 8px 0; /* Meno margine sopra/sotto */
+    padding: 5px 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    height: 60px;
+    height: 45px; /* Altezza ridotta */
 }
 
+/* Select più compatta */
 .styled-select-wrapper select {
-    padding: 6px 10px;
+    padding: 4px 8px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    min-width: 200px;
+    min-width: 180px;
+    font-size: 0.9em;
 }
 
 /* --- 4. LAYOUT PRINCIPALE (BOARD + INSPECTOR) --- */
 .task-view-wrapper {
     display: flex;
-    flex: 1; /* Occupa tutto lo spazio rimanente */
+    flex: 1; /* Occupa tutto lo spazio rimanente in altezza */
     overflow: hidden;
     position: relative;
-    padding-bottom: 10px;
-    gap: 15px;
+    padding-bottom: 5px;
+    gap: 10px;
 }
 
-/* --- 5. KANBAN BOARD (Le 4 colonne) --- */
+/* --- 5. KANBAN BOARD (4 Colonne a sinistra) --- */
 .task-view-grid {
     display: flex;
-    gap: 15px;
-    flex: 1;
-    overflow-x: auto; /* Scroll orizzontale su schermi piccoli */
-    padding: 5px;
-    align-items: flex-start; /* Evita che le colonne vuote si stretchino male */
+    gap: 10px; /* Spazio tra colonne ridotto */
+    flex: 1; /* Si espande per occupare lo spazio disponibile */
+    overflow-x: auto; /* Scroll orizzontale solo se necessario (schermi piccoli) */
+    padding: 2px;
     height: 100%;
+    
+    /* Quando l'ispettore si apre, questa grid si restringe */
+    transition: flex-basis 0.3s ease; 
 }
 
 /* COLONNA SINGOLA */
 .task-column {
     background-color: #ebecf0;
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: 6px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    min-width: 280px;
-    flex: 1; /* Larghezza equa */
-    max-width: 450px;
+    
+    /* Logica Larghezza: */
+    flex: 1;           /* Tutte larghe uguali */
+    min-width: 200px;  /* Larghezza minima per non schiacciare troppo */
+    max-width: 100%;
+    
     height: 100%;
-    max-height: 100%;
 }
 
 .task-column-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
     border-bottom: 2px solid #dcdcdc;
     flex-shrink: 0;
 }
 
 .task-column-header h2 {
-    font-size: 1.1em;
+    font-size: 1em; /* Header più piccolo */
     margin: 0;
-    color: #333;
+    color: #444;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
 .column-count {
     background-color: #d1d5db;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.85em;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.75em;
     font-weight: bold;
     color: #555;
 }
 
 .tasks-container {
     flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 5px;
+    overflow-y: auto; /* Scroll verticale dentro la colonna */
+    padding-right: 2px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    min-height: 100px; /* Area di drop minima */
+    gap: 8px;
+    min-height: 50px;
 }
 
 /* INDICATORI COLORE */
-.dot-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .task-column[data-status="Da Fare"] .dot-indicator { background-color: #007bff; }
 .task-column[data-status="In Corso"] .dot-indicator { background-color: #ffc107; }
 .task-column[data-status="In Revisione"] .dot-indicator { background-color: #fd7e14; }
 .task-column[data-status="Completato"] .dot-indicator { background-color: #28a745; }
 
-/* --- 6. TASK CARD --- */
+/* --- 6. TASK CARD (Compatta) --- */
 .task-card {
     background-color: white;
-    border-radius: 6px;
-    padding: 12px 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    border-radius: 4px;
+    padding: 8px 10px; /* Meno padding interno */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     cursor: pointer;
-    border-left: 4px solid transparent;
-    transition: transform 0.1s, box-shadow 0.1s;
-    user-select: none;
+    border-left: 3px solid transparent;
+    transition: transform 0.1s;
 }
 
 .task-card:hover {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
 }
 
 .task-card.priority-alta { border-left-color: #dc3545; }
@@ -183,53 +191,68 @@ body {
 .task-card.priority-bassa { border-left-color: #28a745; }
 
 .task-card h4 {
-    margin: 5px 0;
-    font-size: 1em;
+    margin: 4px 0;
+    font-size: 0.95em;
     font-weight: 500;
     color: #2c3e50;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
+/* Tag piccoli */
 .cat-tag, .commessa-tag {
-    font-size: 0.75em;
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-size: 0.7em;
+    padding: 1px 4px;
+    border-radius: 3px;
     text-transform: uppercase;
+    display: inline-block;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
-.cat-tag { background-color: #e9ecef; color: #495057; }
+.cat-tag { background-color: #f1f3f5; color: #495057; }
 .commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
 
-.task-card.dragging { opacity: 0.5; border: 2px dashed #666; }
+.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
 .drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
 
-/* --- 7. ISPETTORE LATERALE (5a Colonna) --- */
+
+/* --- 7. ISPETTORE LATERALE (5a Colonna - Larga) --- */
 .task-inspector {
-    width: 0; /* Default chiuso */
+    width: 0; /* Chiuso di default */
+    min-width: 0; /* Importante per l'animazione */
     background-color: white;
     border-left: 1px solid #ddd;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+    box-shadow: -2px 0 15px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     overflow: hidden;
     height: 100%;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Non si restringe */
+    opacity: 0;
 }
 
+/* QUANDO APERTO */
 .task-inspector.open {
-    width: 420px;
-    border-radius: 8px 0 0 8px;
+    width: 500px; /* Più largo delle altre colonne */
+    min-width: 400px;
+    opacity: 1;
+    border-radius: 6px 0 0 6px;
+    margin-left: 5px;
 }
 
 .inspector-header {
-    padding: 15px 20px;
+    padding: 10px 15px;
     background-color: #f8f9fa;
     border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 40px;
 }
-.inspector-header h2 { margin: 0; font-size: 1.1em; color: #333; text-transform: uppercase; }
+.inspector-header h2 { margin: 0; font-size: 1em; color: #333; text-transform: uppercase; }
 
 .inspector-body {
     flex: 1;
@@ -238,10 +261,8 @@ body {
     background-color: #fff;
 }
 
-.inspector-divider { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
-
 .inspector-footer {
-    padding: 15px 20px;
+    padding: 10px 15px;
     border-top: 1px solid #eee;
     background-color: #f8f9fa;
 }
@@ -254,15 +275,22 @@ body {
     font-size: 0.85em;
     font-weight: bold;
 }
-.read-only-box p { margin: 8px 0; font-size: 0.95em; line-height: 1.5; color: #444; }
-.read-only-box strong { color: #777; width: 100px; display: inline-block; }
+.read-only-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+.read-only-box p { margin: 6px 0; font-size: 0.9em; color: #444; }
+.read-only-box strong { color: #666; width: 90px; display: inline-block; }
 
 .description-block {
     background: #fafafa;
-    padding: 10px;
+    padding: 12px;
     border-radius: 4px;
-    margin-top: 10px;
-    font-size: 0.9em;
+    margin-top: 15px;
+    font-size: 0.95em;
     color: #333;
     white-space: pre-wrap;
     border: 1px solid #eee;
@@ -270,108 +298,53 @@ body {
 
 /* Chat Ispettore */
 .history-list {
-    max-height: 300px;
-    overflow-y: auto;
     margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-}
-
-.history-item {
-    font-size: 0.9em;
-    padding: 8px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.history-item em { color: #666; font-style: normal; font-weight: 500; }
-
-.comment-input-area {
-    display: flex;
     gap: 8px;
-    align-items: flex-end;
-    background: #f1f3f5;
-    padding: 10px;
-    border-radius: 6px;
 }
-.comment-input-area textarea {
-    flex: 1;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 8px;
-    resize: none;
-    font-family: inherit;
-}
+.history-item { font-size: 0.85em; padding: 8px; border-bottom: 1px solid #f0f0f0; }
+.comment-input-area { display: flex; gap: 8px; align-items: flex-end; background: #f1f3f5; padding: 10px; border-radius: 6px; }
+.comment-input-area textarea { flex: 1; border: 1px solid #ced4da; border-radius: 4px; padding: 8px; resize: none; font-size: 0.9em; }
 
-/* --- 8. MODALI & FORM --- */
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1000; display: none;
-}
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); z-index: 999; display: none;
-}
-.modal-content {
-    background: white;
-    margin: 5% auto;
-    padding: 0;
-    border-radius: 8px;
-    width: 500px;
-    max-width: 90%;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-}
-.modal-content.large { width: 700px; }
-
-.modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-    border-radius: 8px 8px 0 0;
-}
+/* --- 8. UTILITIES & MODALI --- */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+.modal-content { background: white; margin: 3% auto; padding: 0; border-radius: 8px; width: 500px; max-width: 90%; max-height: 90vh; display: flex; flex-direction: column; }
+.modal-content.large { width: 650px; }
+.modal-header { padding: 12px 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
 .modal-body { padding: 20px; overflow-y: auto; }
-.modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; }
+.modal-footer { padding: 12px 15px; border-top: 1px solid #eee; text-align: right; }
 .close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
-.close-button:hover { color: #333; }
 
-/* Form Styles */
-.form-section { border: 1px solid #e9ecef; border-radius: 6px; margin-bottom: 15px; overflow: hidden; }
-.form-section-header { background: #f8f9fa; padding: 8px 15px; border-bottom: 1px solid #e9ecef; font-weight: bold; font-size: 0.9em; color: #555; text-transform: uppercase; }
-.form-section-content { padding: 15px; background: white; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-.full-width-input, select, input[type="date"], textarea { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-.full-width-input { font-size: 1.1em; padding: 10px; }
-.form-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #666; font-weight: 500; }
+/* Loader e vari */
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; }
+.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9em; }
 
 /* Buttons */
-.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.95em; transition: background 0.2s; }
+.button { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9em; }
 .button--primary { background: #007bff; color: white; }
-.button--primary:hover { background: #0056b3; }
 .button--success { background: #28a745; color: white; }
-.button--success:hover { background: #218838; }
 .button--warning { background: #ffc107; color: #212529; }
-.button--warning:hover { background: #e0a800; }
-.small { padding: 4px 10px; font-size: 0.85em; }
 .full-width { width: 100%; }
-.save-button { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; display: flex; align-items: center; gap: 8px; }
-.save-button:hover { background: #218838; }
+.full-width-input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.form-section { margin-bottom: 15px; border: 1px solid #eee; border-radius: 4px; }
+.form-section-header { background: #f9f9f9; padding: 5px 10px; font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #eee; }
+.form-section-content { padding: 10px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group { margin-bottom: 10px; }
+.save-button { background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-/* Loader */
-.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; }
-.loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+/* Responsive */
+@media (max-width: 1024px) {
+    .task-inspector.open { width: 350px; }
+    .task-column { min-width: 180px; }
+}
 
-/* Responsive Mobile */
 @media (max-width: 768px) {
     .task-view-wrapper { flex-direction: column; }
+    .task-view-grid { overflow-x: auto; padding-bottom: 10px; }
     .task-inspector.open { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; z-index: 500; }
-    .controls-container { display: none; } /* Semplificazione su mobile */
-    .task-column { min-width: 85vw; } /* Carosello su mobile */
 }
