@@ -1,6 +1,5 @@
 /* =================================================== */
-/* == Stili per Pagina Attività (Task Manager)      == */
-/* == Look & Feel allineato a Registro Presenze     == */
+/* == Stili Attività (Task Manager) - 5 Columns     == */
 /* =================================================== */
 
 /* --- 1. SETUP GENERALE --- */
@@ -8,22 +7,22 @@ body {
     background-color: #f4f7f9;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    height: 100vh; /* Altezza fissa viewport */
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Evita scroll pagina intera, scrollano i pannelli */
+    overflow: hidden;
 }
 
 .page-wrapper {
     width: 98%;
-    max-width: 1800px;
+    max-width: 1900px;
     margin: 0 auto;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* --- 2. HEADER (Stile Scuro) --- */
+/* --- 2. HEADER --- */
 .page-header {
     background-color: #34495e;
     color: white;
@@ -33,7 +32,7 @@ body {
     align-items: center;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* Non si schiaccia */
+    flex-shrink: 0;
 }
 
 .page-header h1 {
@@ -41,7 +40,6 @@ body {
     font-size: 1.4em;
     font-weight: 500;
     letter-spacing: 0.5px;
-    text-transform: uppercase;
 }
 
 .header-button {
@@ -58,20 +56,11 @@ body {
     transition: all 0.2s;
     cursor: pointer;
 }
+.header-button:hover { background-color: rgba(255,255,255,0.2); }
+.btn-add { background-color: #28a745; border-color: #218838; }
+.btn-add:hover { background-color: #218838; }
 
-.header-button:hover {
-    background-color: rgba(255,255,255,0.2);
-}
-
-.btn-add {
-    background-color: #28a745; /* Verde per azioni positive */
-    border-color: #218838;
-}
-.btn-add:hover {
-    background-color: #218838;
-}
-
-/* --- 3. CONTROLS BAR (Bianca) --- */
+/* --- 3. CONTROLS BAR --- */
 .controls-container {
     background-color: white;
     margin: 15px 0;
@@ -82,39 +71,50 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    height: 60px;
 }
 
-/* Select stilizzata semplice */
 .styled-select-wrapper select {
     padding: 6px 10px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    color: #495057;
-    font-size: 0.95em;
     min-width: 200px;
 }
 
-/* --- 4. BOARD KANBAN --- */
+/* --- 4. LAYOUT PRINCIPALE (BOARD + INSPECTOR) --- */
+.task-view-wrapper {
+    display: flex;
+    flex: 1; /* Occupa tutto lo spazio rimanente */
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 10px;
+    gap: 15px;
+}
+
+/* --- 5. KANBAN BOARD (Le 4 colonne) --- */
 .task-view-grid {
     display: flex;
-    gap: 20px;
-    flex-grow: 1; /* Occupa tutto lo spazio verticale rimanente */
-    min-height: 0; /* Fix per flexbox scroll */
-    padding-bottom: 20px;
+    gap: 15px;
+    flex: 1;
+    overflow-x: auto; /* Scroll orizzontale su schermi piccoli */
+    padding: 5px;
+    align-items: flex-start; /* Evita che le colonne vuote si stretchino male */
+    height: 100%;
 }
 
+/* COLONNA SINGOLA */
 .task-column {
-    background-color: #ebecf0; /* Grigio Trello */
+    background-color: #ebecf0;
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
-    min-width: 320px;
+    min-width: 280px;
+    flex: 1; /* Larghezza equa */
+    max-width: 450px;
+    height: 100%;
+    max-height: 100%;
 }
-
-/* Larghezze Colonne */
-#daFareContainer { flex: 2; } /* Più larga */
-#completatiContainer { flex: 1; }
 
 .task-column-header {
     display: flex;
@@ -123,6 +123,7 @@ body {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #dcdcdc;
+    flex-shrink: 0;
 }
 
 .task-column-header h2 {
@@ -134,25 +135,14 @@ body {
     gap: 10px;
 }
 
-.dot-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-}
-.dot-indicator.todo { background-color: #007bff; }
-.dot-indicator.done { background-color: #28a745; }
-
-.small-action-btn {
-    background: none;
-    border: 1px solid #aaa;
+.column-count {
+    background-color: #d1d5db;
+    padding: 2px 8px;
     border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.8em;
-    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
     color: #555;
 }
-.small-action-btn:hover { background-color: #fff; }
 
 .tasks-container {
     flex-grow: 1;
@@ -161,30 +151,26 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-height: 100px; /* Area di drop minima */
 }
 
-/* Gruppi Sottocategorie */
-.subcategory-group {
-    margin-bottom: 15px;
-}
-.subcategory-header {
-    font-size: 0.9em;
-    color: #6c757d;
-    text-transform: uppercase;
-    margin: 0 0 8px 5px;
-    font-weight: 700;
-}
+/* INDICATORI COLORE */
+.dot-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.task-column[data-status="Da Fare"] .dot-indicator { background-color: #007bff; }
+.task-column[data-status="In Corso"] .dot-indicator { background-color: #ffc107; }
+.task-column[data-status="In Revisione"] .dot-indicator { background-color: #fd7e14; }
+.task-column[data-status="Completato"] .dot-indicator { background-color: #28a745; }
 
-/* --- 5. CARD (Post-it) --- */
+/* --- 6. TASK CARD --- */
 .task-card {
     background-color: white;
     border-radius: 6px;
     padding: 12px 15px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     cursor: pointer;
-    border-left: 4px solid transparent; /* Indicatore Priorità */
+    border-left: 4px solid transparent;
     transition: transform 0.1s, box-shadow 0.1s;
-    position: relative;
+    user-select: none;
 }
 
 .task-card:hover {
@@ -192,209 +178,200 @@ body {
     transform: translateY(-2px);
 }
 
+.task-card.priority-alta { border-left-color: #dc3545; }
+.task-card.priority-media { border-left-color: #ffc107; }
+.task-card.priority-bassa { border-left-color: #28a745; }
+
 .task-card h4 {
-    margin: 0;
+    margin: 5px 0;
     font-size: 1em;
     font-weight: 500;
     color: #2c3e50;
     line-height: 1.4;
 }
 
-/* Colori Priorità (Bordo sinistro) */
-.task-card.priority-alta { border-left-color: #dc3545; }
-.task-card.priority-media { border-left-color: #ffc107; }
-.task-card.priority-bassa { border-left-color: #28a745; }
-
-/* Dragging state */
-.task-card.dragging {
-    opacity: 0.5;
-    background-color: #f8f9fa;
-    border: 1px dashed #999;
-}
-
-/* --- 6. MODALI (Stile Commesse) --- */
-.modal-content.large {
-    max-width: 800px;
-    width: 90%;
-}
-
-.form-section {
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    overflow: hidden;
-}
-
-.form-section-header {
-    background-color: #f8f9fa;
-    padding: 8px 15px;
-    border-bottom: 1px solid #e9ecef;
-}
-.form-section-header h3 {
-    margin: 0;
-    font-size: 1em;
-    color: #495057;
+.cat-tag, .commessa-tag {
+    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 4px;
     text-transform: uppercase;
 }
+.cat-tag { background-color: #e9ecef; color: #495057; }
+.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
 
-.form-section-content {
-    padding: 15px;
+.task-card.dragging { opacity: 0.5; border: 2px dashed #666; }
+.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
+
+/* --- 7. ISPETTORE LATERALE (5a Colonna) --- */
+.task-inspector {
+    width: 0; /* Default chiuso */
     background-color: white;
-}
-
-/* Input Styles */
-.full-width-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 1.1em;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    color: #666;
-    font-weight: 500;
-}
-
-.form-group select,
-.form-group input[type="date"],
-.form-group textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-family: inherit;
-    box-sizing: border-box;
-}
-
-/* --- 7. MODALE DETTAGLIO (Split View) --- */
-.modal-content.detail-view {
-    height: 80vh; /* Altezza fissa */
+    border-left: 1px solid #ddd;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-}
-
-.split-body {
-    display: flex;
-    flex: 1;
-    overflow: hidden; /* Gestisce scroll interni */
-    gap: 0;
-    padding: 0 !important; /* Reset padding body */
-}
-
-.detail-left {
-    flex: 1;
-    padding: 20px;
-    border-right: 1px solid #dee2e6;
-    overflow-y: auto;
-    background-color: #fff;
-}
-
-.detail-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa;
-}
-
-/* Box Sola Lettura */
-.read-only-box {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-.read-only-box p {
-    margin: 8px 0;
-    font-size: 0.95em;
-    color: #333;
-    line-height: 1.5;
-}
-.read-only-box strong { color: #555; display: inline-block; width: 100px; }
-.description-block {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed #ccc;
-    white-space: pre-wrap;
-}
-
-/* Chat Section */
-.chat-section {
-    display: flex;
-    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
     height: 100%;
-}
-.chat-section h3 {
-    padding: 15px;
-    margin: 0;
-    background-color: #fff;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 1em;
+    flex-shrink: 0;
 }
 
-.history-list {
+.task-inspector.open {
+    width: 420px;
+    border-radius: 8px 0 0 8px;
+}
+
+.inspector-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.inspector-header h2 { margin: 0; font-size: 1.1em; color: #333; text-transform: uppercase; }
+
+.inspector-body {
     flex: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.inspector-divider { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+
+.inspector-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+/* Stili Contenuto Ispettore */
+.badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #e9ecef;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+.read-only-box p { margin: 8px 0; font-size: 0.95em; line-height: 1.5; color: #444; }
+.read-only-box strong { color: #777; width: 100px; display: inline-block; }
+
+.description-block {
+    background: #fafafa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #333;
+    white-space: pre-wrap;
+    border: 1px solid #eee;
+}
+
+/* Chat Ispettore */
+.history-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .history-item {
-    margin-bottom: 15px;
     font-size: 0.9em;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 8px;
+    border-bottom: 1px solid #f0f0f0;
 }
-.history-item:last-child { border-bottom: none; }
+.history-item em { color: #666; font-style: normal; font-weight: 500; }
 
 .comment-input-area {
-    padding: 15px;
-    background-color: #fff;
-    border-top: 1px solid #dee2e6;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: flex-end;
+    background: #f1f3f5;
+    padding: 10px;
+    border-radius: 6px;
 }
 .comment-input-area textarea {
     flex: 1;
-    padding: 8px;
-    border-radius: 4px;
     border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px;
     resize: none;
+    font-family: inherit;
 }
 
-/* --- 8. ARCHIVIO --- */
-.archive-task-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    padding: 10px;
+/* --- 8. MODALI & FORM --- */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1000; display: none;
+}
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 999; display: none;
+}
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+.modal-content.large { width: 700px; }
+
+.modal-header {
+    padding: 15px 20px;
     border-bottom: 1px solid #eee;
-    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
 }
-.archive-task-item:hover { background-color: #f9f9f9; }
+.modal-body { padding: 20px; overflow-y: auto; }
+.modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; }
+.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
+.close-button:hover { color: #333; }
 
-/* --- 9. UTILITIES --- */
-.full-width { width: 100%; margin-bottom: 10px; }
-.button--success { background-color: #28a745; color: white; border: none; }
-.button--warning { background-color: #ffc107; color: #212529; border: none; }
-.button--primary { background-color: #007bff; color: white; border: none; }
-.icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 5px; }
+/* Form Styles */
+.form-section { border: 1px solid #e9ecef; border-radius: 6px; margin-bottom: 15px; overflow: hidden; }
+.form-section-header { background: #f8f9fa; padding: 8px 15px; border-bottom: 1px solid #e9ecef; font-weight: bold; font-size: 0.9em; color: #555; text-transform: uppercase; }
+.form-section-content { padding: 15px; background: white; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+.full-width-input, select, input[type="date"], textarea { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+.full-width-input { font-size: 1.1em; padding: 10px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #666; font-weight: 500; }
 
-/* Responsive */
+/* Buttons */
+.button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.95em; transition: background 0.2s; }
+.button--primary { background: #007bff; color: white; }
+.button--primary:hover { background: #0056b3; }
+.button--success { background: #28a745; color: white; }
+.button--success:hover { background: #218838; }
+.button--warning { background: #ffc107; color: #212529; }
+.button--warning:hover { background: #e0a800; }
+.small { padding: 4px 10px; font-size: 0.85em; }
+.full-width { width: 100%; }
+.save-button { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; display: flex; align-items: center; gap: 8px; }
+.save-button:hover { background: #218838; }
+
+/* Loader */
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; }
+.loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+
+/* Responsive Mobile */
 @media (max-width: 768px) {
-    .task-view-grid { flex-direction: column; overflow-y: auto; }
-    .task-column { min-width: auto; height: 400px; }
-    .split-body { flex-direction: column; }
-    .detail-left, .detail-right { flex: none; height: auto; border-right: none; border-bottom: 1px solid #ddd; }
+    .task-view-wrapper { flex-direction: column; }
+    .task-inspector.open { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; z-index: 500; }
+    .controls-container { display: none; } /* Semplificazione su mobile */
+    .task-column { min-width: 85vw; } /* Carosello su mobile */
 }

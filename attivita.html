@@ -19,7 +19,7 @@
 
     <div class="page-wrapper">
 
-        <!-- HEADER (Stile Registro Presenze) -->
+        <!-- HEADER -->
         <header class="page-header">
             <!-- Tasto Home -->
             <a href="index.html" class="header-button">
@@ -36,7 +36,7 @@
             </button>
         </header>
 
-        <!-- BARRA CONTROLLI (Filtri Admin) -->
+        <!-- BARRA CONTROLLI (Filtri) -->
         <div class="controls-container">
             <div class="controls-left">
                 <div id="adminFilterContainer" style="display: none; align-items: center; gap: 10px;">
@@ -47,41 +47,60 @@
                 </div>
             </div>
             <div class="controls-right">
-                <!-- Qui potremmo mettere filtri futuri (es. Cerca task...) -->
+                <!-- Spazio per futuri filtri (es. Ricerca testuale) -->
             </div>
         </div>
 
-        <!-- MAIN KANBAN BOARD -->
-        <main id="taskView" class="task-view-grid">
+        <!-- MAIN WRAPPER (BOARD + ISPETTORE) -->
+        <div class="task-view-wrapper">
             
-            <!-- Colonna 1: DA FARE -->
-            <div class="task-column" id="daFareContainer">
-                <div class="task-column-header">
-                    <h2><span class="dot-indicator todo"></span> Da Fare</h2>
-                    <span class="column-count" id="todoCount"></span>
+            <!-- 1. KANBAN BOARD (Le 4 colonne vengono iniettate qui da JS) -->
+            <main id="taskView" class="task-view-grid">
+                <div class="loader-container">
+                    <div class="loader"></div>
+                    <p>Caricamento Board...</p>
                 </div>
-                <div id="daFareContent" class="tasks-container" data-status-container="Da Fare">
-                    <!-- I task vengono iniettati qui da JS -->
+            </main>
+
+            <!-- 2. ISPETTORE LATERALE (5a Colonna a comparsa) -->
+            <aside id="taskInspector" class="task-inspector">
+                <div class="inspector-header">
+                    <h2 id="inspectorTitle">Dettaglio</h2>
+                    <button class="close-button" id="closeInspectorBtn">&times;</button>
                 </div>
-            </div>
-            
-            <!-- Colonna 2: COMPLETATI -->
-            <div class="task-column" id="completatiContainer">
-                <div class="task-column-header">
-                    <h2><span class="dot-indicator done"></span> Completati (Recenti)</h2>
-                    <button id="openArchiveBtn" class="small-action-btn">Archivio</button>
+                
+                <div class="inspector-body">
+                    <!-- Contenuto dinamico Task -->
+                    <div id="inspectorContent"></div>
+                    
+                    <hr class="inspector-divider">
+                    
+                    <!-- Sezione Chat / Storia -->
+                    <h3>Attività & Commenti</h3>
+                    <div id="inspectorHistory" class="history-list"></div>
+                    
+                    <div class="comment-input-area">
+                        <textarea id="inspectorCommentInput" placeholder="Scrivi un commento..." rows="2"></textarea>
+                        <button id="inspectorAddCommentBtn" class="button button--primary small">Invia</button>
+                    </div>
                 </div>
-                <div class="tasks-container" data-status-container="Completato">
-                    <!-- I task completati vengono iniettati qui -->
+
+                <div class="inspector-footer">
+                     <div class="action-buttons-container">
+                        <button id="inspectorEditBtn" class="button button--warning full-width" style="margin-bottom: 8px;">✏️ Modifica Dati</button>
+                        <button id="inspectorCompleteBtn" class="button button--success full-width">✅ Segna Completato</button>
+                        <button id="inspectorReopenBtn" class="button button--primary full-width" style="display:none;">↩️ Riapri Task</button>
+                    </div>
                 </div>
-            </div>
-        </main>
+            </aside>
+
+        </div>
 
     </div>
 
     <!-- ================= MODALI ================= -->
 
-    <!-- MODALE 1: CREAZIONE / MODIFICA FORM -->
+    <!-- MODALE 1: FORM CREAZIONE / MODIFICA -->
     <div id="taskModal" class="modal" style="display: none;">
         <div class="modal-content large">
             <div class="modal-header">
@@ -124,7 +143,7 @@
                             <h3>Dettagli e Collegamenti</h3>
                         </div>
                         <div class="form-section-content">
-                            <!-- Switch dinamico tra select commessa e select testo -->
+                            <!-- Switch dinamico JS -->
                             <div id="textSubcategoryContainer" class="form-group">
                                 <label for="taskSubcategory">Dettaglio / Etichetta</label>
                                 <select id="taskSubcategory"></select>
@@ -169,48 +188,7 @@
         </div>
     </div>
 
-    <!-- MODALE 2: DETTAGLIO TASK -->
-    <div id="taskDetailModal" class="modal" style="display: none;">
-        <div class="modal-content large detail-view">
-            <div class="modal-header">
-                <h2 id="detailModalTitle">Dettaglio Task</h2>
-                <div class="modal-header-buttons">
-                    <button id="detailOpenEditBtn" class="icon-btn" title="Modifica">✏️</button>
-                    <button class="close-button" data-close-detail>&times;</button>
-                </div>
-            </div>
-            
-            <div class="modal-body split-body">
-                <!-- Colonna Sinistra: Info -->
-                <div class="detail-left">
-                    <div class="read-only-box" id="taskDetailReadOnlyContainer">
-                        <!-- Iniettato via JS -->
-                    </div>
-                    
-                    <div class="action-buttons-container">
-                        <button id="detailCompleteTaskBtn" class="button button--success full-width">✅ Segna come Completato</button>
-                        <button id="detailReopenTaskBtn" class="button button--warning full-width" style="display: none;">↩️ Riapri Task</button>
-                    </div>
-                </div>
-
-                <!-- Colonna Destra: Chat e Storia -->
-                <div class="detail-right">
-                    <div class="chat-section">
-                        <h3>Attività & Commenti</h3>
-                        <div id="detailTaskHistoryContainer" class="history-list">
-                            <!-- Storia iniettata via JS -->
-                        </div>
-                        <div class="comment-input-area">
-                            <textarea id="detailTaskCommentInput" placeholder="Scrivi un commento..." rows="2"></textarea>
-                            <button id="detailAddCommentBtn" class="button button--primary small">Invia</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALE ARCHIVIO -->
+    <!-- MODALE 2: ARCHIVIO -->
     <div id="archiveModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
