@@ -335,3 +335,29 @@ body {
     .task-view-grid { flex: none; height: 300px; overflow-x: auto; } 
     .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; flex: 1; } 
 }
+
+/* Task Delegato (Bloccato per chi l'ha inviato) */
+.task-card.delegated-out {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+    border: 1px dashed #ccc;
+    cursor: default; /* Non cliccabile per drag */
+}
+
+/* Task In Arrivo (Evidenziato per chi lo riceve) */
+.task-card.incoming-task {
+    border: 2px solid #3498db; /* Bordo Blu deciso */
+    background-color: #f0f8ff; /* Azzurrino */
+}
+
+.incoming-badge {
+    font-size: 0.7em;
+    background: #3498db;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}

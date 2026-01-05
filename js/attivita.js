@@ -1,5 +1,5 @@
 // js/attivita.js
-// Versione 8.0 - Full Inspector UI (Transfer, Comments, Notifications in Column 5)
+// Versione 9.0 - Logic: Delegation Flow, Read-Only Locks, Incoming Highlights
 
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
@@ -10,13 +10,14 @@ const TaskApp = {
         initData: { categorie: [], commesse: [], etichette: [] },
         personale: [],
         currentUserProfile: null,
-        currentTask: null,
+        currentTask: null, // Task correntemente aperto nell'inspector
         choicesInstances: [],
         
+        // Configurazione Colonne Aggiornata
         columnsConfig: [
             { key: 'todo',   label: 'Da Fare',       status: 'Da Fare',      colorClass: 'todo' },
             { key: 'doing',  label: 'In Corso',      status: 'In Corso',     colorClass: 'doing' },
-            { key: 'review', label: 'Delegati / Monitoraggio',  status: 'In Revisione', colorClass: 'review' }, // <--- Modificato
+            { key: 'review', label: 'Delegati / Monitoraggio', status: 'In Revisione', colorClass: 'review' }, 
             { key: 'done',   label: 'Completato',    status: 'Completato',   colorClass: 'done' }
         ]
     },
@@ -47,7 +48,7 @@ const TaskApp = {
         this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
         this.dom.adminUserFilter = document.getElementById('adminUserFilter');
 
-        // Modals (Solo Archivio rimasto)
+        // Modals
         this.dom.modalOverlay = document.getElementById('modalOverlay');
 
         await this.loadInitialData();
@@ -76,6 +77,8 @@ const TaskApp = {
         const params = new URLSearchParams();
         const filterUser = this.dom.adminUserFilter?.value;
         if (filterUser) params.append('id_utente_filtro', filterUser);
+        
+        // Il backend ora gestisce la logica "Delegati" nella colonna 'review'
         const res = await apiFetch(`/api/tasks/?${params.toString()}`);
         return await res.json();
     },
@@ -89,7 +92,7 @@ const TaskApp = {
         this.state.columnsConfig.forEach(col => {
             const columnEl = document.createElement('div');
             columnEl.className = 'task-column';
-            columnEl.dataset.status = col.status;
+            columnEl.dataset.status = col.status; // Label per API (es. 'Da Fare')
             
             const tasksInCol = this.state.boardData[col.key] || [];
             // Icona Archivio solo nell'ultima colonna
@@ -108,6 +111,7 @@ const TaskApp = {
 
             const container = columnEl.querySelector('.tasks-container');
             tasksInCol.forEach(task => container.appendChild(this.createTaskCard(task)));
+            
             this.setupDragDrop(container);
             this.dom.taskView.appendChild(columnEl);
         });
@@ -118,24 +122,74 @@ const TaskApp = {
 
     createTaskCard: function(task) {
         const el = document.createElement('div');
-        el.className = `task-card priority-${(task.priorita || 'Media').toLowerCase()}`;
-        el.draggable = true;
-        el.dataset.taskId = task.id_task;
+        const myId = this.state.currentUserProfile.id_personale;
+        
+        // --- LOGICA RUOLI ---
+        const isCreator = (task.id_creatore_fk === myId);
+        const isAssignee = (task.id_assegnatario_fk === myId);
+        
+        // SCENARIO A: Ho delegato io il task (è mio, ma ce l'ha un altro) -> BLOCCO
+        // (Escluso Admin che può sempre tutto, ma qui blocchiamo l'interfaccia base)
+        const isDelegatedOut = isCreator && !isAssignee && task.stato !== 'Completato';
+        
+        // SCENARIO B: Il task mi è arrivato da qualcun altro -> EVIDENZIO
+        const isIncoming = isAssignee && !isCreator;
 
+        // Classi CSS e Attributi
+        el.className = `task-card priority-${(task.priorita || 'Media').toLowerCase()}`;
+        el.dataset.taskId = task.id_task;
+        
+        // Salviamo l'assegnatario nel dataset per il drag & drop
+        el.dataset.assigneeId = task.id_assegnatario_fk; 
+
+        if (isDelegatedOut) {
+            el.classList.add('delegated-out'); // Stile grigio/trasparente
+            el.draggable = false; // IMPEDISCE IL DRAG
+        } else {
+            el.draggable = true;
+        }
+
+        if (isIncoming) {
+            el.classList.add('incoming-task'); // Bordo blu / Sfondo azzurrino
+        }
+
+        // Header Tag
         let headerText = task.categoria?.nome_categoria || 'Generale';
         let headerClass = 'cat-tag';
         if (task.commessa) { headerText = task.commessa.codice_commessa; headerClass = 'commessa-tag'; }
 
+        // Icone e Badge
+        const creatorName = task.creatore?.nome_cognome?.split(' ')[0] || '?';
+        const assigneeName = task.assegnatario?.nome_cognome?.split(' ')[0] || '';
+
+        const incomingBadge = isIncoming ? `<span class="incoming-badge"><i class="fas fa-inbox"></i> Da ${creatorName}</span>` : '';
+        const lockIcon = isDelegatedOut ? `<i class="fas fa-lock" style="color:#999; float:right;" title="Monitoraggio - Non modificabile"></i>` : '';
+
         el.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <span class="${headerClass}">${headerText}</span>
-                <span style="font-size:0.7em; color:#888;">${task.assegnatario?.nome_cognome.split(' ')[0] || ''}</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; align-items:center;">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    ${incomingBadge}
+                    <span class="${headerClass}">${headerText}</span>
+                </div>
+                ${lockIcon}
             </div>
             <h4>${task.titolo}</h4>
-            ${task.data_obiettivo ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'red' : '#999'}; margin-top:4px;"><i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}</div>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+                 ${task.data_obiettivo ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'red' : '#999'};"><i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}</div>` : '<div></div>'}
+                 <span style="font-size:0.75em; color:#666; font-weight:500;">${assigneeName}</span>
+            </div>
         `;
+
         el.addEventListener('click', () => this.renderInspectorView(task.id_task));
-        el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', task.id_task); });
+        
+        if (!isDelegatedOut) {
+            el.addEventListener('dragstart', (e) => { 
+                e.dataTransfer.setData('text/plain', task.id_task);
+                // Passiamo anche l'assegnatario corrente via dataTransfer o usiamo lo state
+                this.state.draggedTaskAssignee = task.id_assegnatario_fk; 
+            });
+        }
+        
         return el;
     },
 
@@ -152,16 +206,19 @@ const TaskApp = {
             if(!targetColumn) return;
             
             const newStatusKey = targetColumn.querySelector('.tasks-container').dataset.statusKey; // todo, doing, review, done
-            const newStatusLabel = targetColumn.dataset.status; // 'Da Fare', 'In Revisione', etc.
+            const newStatusLabel = targetColumn.dataset.status; 
 
-            // --- NUOVA LOGICA: Se trascino in "In Revisione" (Colonna 3) ---
+            // --- INTERCEZIONE DRAG VERSO COLONNA 3 (Review/Delegati) ---
             if (newStatusKey === 'review') {
-                // 1. Carica il task corrente nello stato (hack per farlo vedere al modale)
-                // Se abbiamo i dati completi nel DOM o in memoria sarebbe meglio, 
-                // ma qui forziamo il caricamento veloce per aprire il modale.
-                this.state.currentTask = { id_task: taskId }; 
+                // Costruiamo un oggetto task temporaneo per il modale
+                // (L'assegnatario serve per filtrare la select e non mostrare se stessi se necessario, 
+                // ma lo recuperiamo dallo state o dal DOM)
+                this.state.currentTask = { 
+                    id_task: taskId, 
+                    id_assegnatario_fk: this.state.draggedTaskAssignee 
+                }; 
                 
-                // 2. Apri il modale di trasferimento invece di salvare subito
+                // Apri Modale Trasferimento (che include il messaggio obbligatorio)
                 this.renderTransferMode();
                 return; // STOP: Non esegue l'update automatico qui sotto
             }
@@ -182,21 +239,29 @@ const TaskApp = {
 
     renderInspectorView: async function(taskId) {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
-        this.toggleToolbar(false); // Disabilita toolbar durante caricamento
+        this.toggleToolbar(false); 
 
         try {
             const res = await apiFetch(`/api/tasks/${taskId}`);
             const task = await res.json();
             this.state.currentTask = task;
             
-            // Configura Toolbar
-            this.toggleToolbar(true);
+            // --- LOGICA PERMESSI TOOLBAR ---
+            const myId = this.state.currentUserProfile.id_personale;
+            const isAssignee = (task.id_assegnatario_fk === myId);
+            const isAdmin = this.state.currentUserProfile.is_admin;
+            
+            // Posso modificare solo se: Sono l'assegnatario ATTUALE, oppure sono Admin.
+            // Se l'ho creato io ma l'ho delegato (quindi isAssignee è false), NON posso toccare.
+            const canEdit = isAssignee || isAdmin;
+
+            this.toggleToolbar(canEdit);
+
             const isDone = task.stato === 'Completato';
-            this.dom.btnComplete.innerHTML = isDone ? 'Riapri' : 'Chiudi';
+            this.dom.btnComplete.innerHTML = isDone ? '<i class="fas fa-undo"></i> Riapri' : '<i class="fas fa-check"></i> Chiudi';
             this.dom.btnComplete.title = isDone ? "Riapri Task" : "Segna come Completato";
-            // Cambia colore bottone se necessario (es. grigio se riapri)
             this.dom.btnComplete.classList.toggle('btn-complete', !isDone); 
-            this.dom.btnComplete.classList.toggle('btn-transfer', isDone); // Uso stile neutro per riapri
+            this.dom.btnComplete.classList.toggle('btn-transfer', isDone);
 
             const html = `
                 <h2 class="detail-title">${task.titolo}</h2>
@@ -220,19 +285,21 @@ const TaskApp = {
                 <div class="history-section">
                     <h4>Attività & Commenti</h4>
                     
-                    <!-- BOX COMMENTO: SPOSTATO SOPRA LA LISTA -->
                     <div class="comment-box">
                         <textarea id="inpComment" placeholder="Scrivi un commento..." rows="1"></textarea>
                         <button id="btnSendComment" class="btn-send"><i class="fas fa-paper-plane"></i></button>
                     </div>
 
-                    <!-- LISTA STORIA -->
                     <div id="inspectorHistory" class="history-list"></div>
                 </div>
             `;
             this.dom.inspectorBody.innerHTML = html;
             
+            // Abilita invio commenti anche se read-only? 
+            // Solitamente si vuole permettere di commentare anche sui task delegati per chiedere info.
+            // Se vuoi bloccare anche i commenti, avvolgi questo listener in un if(canEdit).
             document.getElementById('btnSendComment').addEventListener('click', () => this.postComment());
+            
             this.renderHistory(task.task_storia, task.task_commenti);
 
         } catch(e) { this.dom.inspectorBody.innerHTML = `<p style="color:red; text-align:center;">Errore caricamento: ${e.message}</p>`; }
@@ -247,26 +314,32 @@ const TaskApp = {
     },
 
     // =================================================================
-    // == 4. INSPECTOR: MODALITÀ TRASFERIMENTO (NO MODAL)             ==
+    // == 4. INSPECTOR: MODALITÀ TRASFERIMENTO (CON MESSAGGIO)        ==
     // =================================================================
 
     renderTransferMode: function() {
         if(!this.state.currentTask) return;
-        this.toggleToolbar(false); // Disabilita navigazione durante azione
+        this.toggleToolbar(false); 
 
-        const currentAssignee = this.state.currentTask.id_assegnatario_fk;
+        const currentAssignee = this.state.currentTask.id_assegnatario_fk; // Può essere undefined se viene dal drag, ma gestito
+        
         const html = `
             <h2 class="detail-title">Invia / Trasferisci Task</h2>
             <div style="padding: 20px 0;">
-                <label style="display:block; margin-bottom:10px; font-weight:500;">Seleziona il nuovo assegnatario:</label>
-                <div class="styled-select-wrapper">
-                    <select id="transferUserSelect" class="full-width-input" style="padding:10px; font-size:1em;">
+                <label style="display:block; margin-bottom:5px; font-weight:500; color:#444;">Seleziona il nuovo assegnatario:</label>
+                <div class="styled-select-wrapper" style="margin-bottom:15px;">
+                    <select id="transferUserSelect" class="full-width-input" style="padding:10px; width:100%; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+                        <option value="" disabled selected>-- Seleziona Persona --</option>
                         ${this.state.personale
                             .filter(p => p.puo_accedere && p.id_personale != currentAssignee)
                             .map(p => `<option value="${p.id_personale}">${p.nome_cognome}</option>`)
                             .join('')}
                     </select>
                 </div>
+
+                <label style="display:block; margin-bottom:5px; font-weight:500; color:#444;">Messaggio per il destinatario *:</label>
+                <textarea id="transferMessage" rows="3" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit;" placeholder="Spiega perché stai inviando questo task o cosa deve fare..."></textarea>
+                <small style="color:#888;">Questo messaggio verrà salvato come commento.</small>
             </div>
             <div class="form-actions">
                 <button id="btnCancelTransfer" class="button button--warning">Annulla</button>
@@ -275,36 +348,60 @@ const TaskApp = {
         `;
         this.dom.inspectorBody.innerHTML = html;
 
-        document.getElementById('btnCancelTransfer').addEventListener('click', () => this.renderInspectorView(this.state.currentTask.id_task));
+        document.getElementById('btnCancelTransfer').addEventListener('click', () => {
+            // Se stavamo visualizzando il task, ricaricalo. Se veniamo da drag drop, mostra empty
+            if(this.state.currentTask.titolo) { // check rapido se task completo caricato
+                 this.renderInspectorView(this.state.currentTask.id_task);
+            } else {
+                 this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Trasferimento annullato.</p></div>';
+            }
+        });
+        
         document.getElementById('btnConfirmTransfer').addEventListener('click', () => this.executeTransfer());
     },
 
     executeTransfer: async function() {
         const newAssignee = document.getElementById('transferUserSelect').value;
-        if(!newAssignee) return;
+        const message = document.getElementById('transferMessage').value;
+
+        if(!newAssignee) return alert("Seleziona un assegnatario.");
+        if(!message || !message.trim()) return alert("Inserisci un messaggio obbligatorio per il destinatario.");
         
+        // UI Feedback
+        const btn = document.getElementById('btnConfirmTransfer');
+        btn.textContent = "Invio in corso...";
+        btn.disabled = true;
+
         try {
-            // Quando trasferisco, imposto anche lo stato a 'In Revisione'
-            // Così finisce nella colonna corretta sia per logica che per stato.
+            // 1. Aggiorna Task (Cambia Assegnatario + Forza Stato 'In Revisione')
             const payload = { 
                 id_assegnatario_fk: newAssignee,
                 stato: 'In Revisione' 
             };
-
+            
             await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {
                 method: 'PUT', body: JSON.stringify(payload)
             });
             
+            // 2. Invia Messaggio come Commento
+            const commentText = `➡️ **TRASFERITO:** ${message}`;
+            await apiFetch(`/api/tasks/${this.state.currentTask.id_task}/commenti`, {
+                method: 'POST', body: JSON.stringify({testo_commento: commentText})
+            });
+
             await this.refreshBoard();
             
-            // Torna alla vista dettaglio o chiudi, a seconda del flusso.
-            // Qui ricarichiamo il dettaglio per conferma visiva
+            // Ricarica la vista dettaglio per conferma
             this.renderInspectorView(this.state.currentTask.id_task);
-        } catch(e) { alert('Errore trasferimento: ' + e.message); }
+        } catch(e) { 
+            alert('Errore trasferimento: ' + e.message); 
+            btn.textContent = "Conferma Invio";
+            btn.disabled = false;
+        }
     },
 
     // =================================================================
-    // == 5. INSPECTOR: MODALITÀ NOTIFICHE (NO MODAL)                 ==
+    // == 5. INSPECTOR: MODALITÀ NOTIFICHE & ALTRI                    ==
     // =================================================================
 
     renderNotificationsMode: async function() {
@@ -316,7 +413,7 @@ const TaskApp = {
 
             const listHtml = notes.length > 0 
                 ? notes.map(n => `
-                    <div class="notification-item ${n.letto ? '' : 'unread'}" onclick="alert('TODO: Link al task')">
+                    <div class="notification-item ${n.letto ? '' : 'unread'}" onclick="alert('Vai al task ' + ${n.id_task_fk})">
                         <div style="font-weight:500; margin-bottom:4px;">${n.tipo_notifica} <span style="float:right; font-size:0.8em; color:#999;">${new Date(n.data_creazione).toLocaleDateString()}</span></div>
                         <div>${n.messaggio}</div>
                         <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
@@ -336,7 +433,7 @@ const TaskApp = {
             this.dom.inspectorBody.innerHTML = html;
 
             document.getElementById('btnCloseNotes').addEventListener('click', () => {
-                if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
+                if(this.state.currentTask && this.state.currentTask.id_task) this.renderInspectorView(this.state.currentTask.id_task);
                 else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
             });
 
@@ -422,7 +519,6 @@ const TaskApp = {
         document.getElementById('inpCat').addEventListener('change', () => this.toggleSubField());
     },
 
-    // --- FORM HELPERS ---
     populateFormDropdowns: function(vals) {
         const cat = document.getElementById('inpCat');
         cat.innerHTML = '<option value="" disabled selected>Seleziona...</option>';
@@ -498,23 +594,18 @@ const TaskApp = {
     // =================================================================
 
     addEventListeners: function() {
-        // Toolbar
         this.dom.btnNew.addEventListener('click', () => this.renderInspectorForm(null));
         this.dom.btnEdit.addEventListener('click', () => { if(this.state.currentTask) this.renderInspectorForm(this.state.currentTask); });
         this.dom.btnDelete.addEventListener('click', () => this.deleteTask());
         this.dom.btnComplete.addEventListener('click', () => this.toggleCompleteStatus());
-        
-        // NUOVI BOTTONI COLLEGATI
         this.dom.btnTransfer.addEventListener('click', () => this.renderTransferMode());
         this.dom.btnBell.addEventListener('click', () => this.renderNotificationsMode());
 
-        // Filtro Header
         if (this.state.currentUserProfile.is_admin) {
             this.dom.adminFilterContainer.style.display = 'flex';
             this.dom.adminUserFilter.addEventListener('change', () => this.refreshBoard());
         }
         
-        // Modale Archivio close
         document.querySelectorAll('.close-button').forEach(b => b.addEventListener('click', (e) => {
             if(e.target.dataset.closeArchive !== undefined) {
                 document.getElementById('archiveModal').style.display = 'none';
@@ -559,7 +650,7 @@ const TaskApp = {
     deleteTask: async function() {
         if(!confirm("Eliminare definitivamente questo task?")) return;
         // await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {method:'DELETE'});
-        this.dom.inspectorBody.innerHTML = '<div class="empty-state"><p>Task eliminato</p></div>';
+        this.dom.inspectorBody.innerHTML = '<div class="empty-state"><p>Task eliminato (simulazione)</p></div>';
         this.toggleToolbar(false);
         this.refreshBoard();
     },
