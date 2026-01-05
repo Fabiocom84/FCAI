@@ -78,21 +78,31 @@ function setupUI() {
 
     // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
-        // ELENCO DI TUTTI I BOTTONI CHE UN UTENTE NORMALE NON DEVE VEDERE
-        // (Nota: Ho lasciato visibili solo quelli operativi)
+        // Verifica se l'utente ha il ruolo specifico "Impiegato"
+        // (Assicurati che nel database il campo si chiami 'ruolo' o adatta questa riga)
+        const isImpiegato = CurrentUser.ruolo === 'Impiegato';
+
+        // ELENCO DI BASE: Bottoni che un utente NON-Admin non deve MAI vedere
         const buttonsToHide = [
-            'btn-inserisci-dati',           // Inserimento Knowledge Base
+            'btn-inserisci-dati',           // Knowledge Base
             'openChatModalBtn',             // Chat AI
-            'openDataGridBtn',              // Vista Agile (Gestione)
-            'btn-inserimento-ordini',       // <--- AGGIUNTO/CORRETTO (Inserimento Ordini)
-            'openViewProductionOrdersBtn', // Registro Ordini (Se vuoi lasciarlo visibile, commenta questa riga)
-            'btn-dashboard-link',           // <--- AGGIUNTO/CORRETTO (Dashboard Analisi)            
+            'openDataGridBtn',              // Vista Agile
+            'btn-inserimento-ordini',       // Inserimento Ordini
+            'openViewProductionOrdersBtn',  // Registro Ordini
+            'btn-dashboard-link',           // Dashboard
             'btn-registro-presenze',        // Registro Presenze
             'openConfigBtn',                // Configurazione
-            'btn-attivita',                 // Task Manager
             'openTrainingModalBtn'          // Addestramento
         ];
 
+        // LOGICA CONDIZIONALE:
+        // Se l'utente NON è Impiegato, nascondiamo anche il bottone Attività.
+        // (Se è Impiegato, questa riga viene saltata e il bottone resta visibile)
+        if (!isImpiegato) {
+            buttonsToHide.push('btn-attivita');
+        }
+
+        // Applica il nascondimento
         buttonsToHide.forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'none';
@@ -103,7 +113,7 @@ function setupUI() {
 
     } else {
         // Se è Admin, assicuriamoci che i tasti speciali siano visibili
-        ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn'].forEach(id => {
+        ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn', 'btn-attivita'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'flex';
         });

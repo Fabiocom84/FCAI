@@ -29,10 +29,27 @@ const TaskApp = {
     // =================================================================
 
     init: async function() {
-        if (!IsAdmin) { window.location.replace('index.html'); return; }
+        // 1. Carica il profilo SUBITO dal LocalStorage
         this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
 
-        // Cache DOM Elements
+        // Verifica sicurezza base: se non c'è profilo, torna al login
+        if (!this.state.currentUserProfile) {
+            window.location.replace('login.html');
+            return;
+        }
+
+        // 2. CONTROLLO ACCESSO: Admin O Impiegato
+        const isAdmin = IsAdmin; // Importato da core-init.js
+        const isImpiegato = this.state.currentUserProfile.ruolo === 'Impiegato';
+
+        // Se l'utente NON è Admin E NON è Impiegato -> Redirect alla Home
+        if (!isAdmin && !isImpiegato) { 
+            console.warn("Accesso negato: Pagina riservata ad Admin o Impiegati.");
+            window.location.replace('index.html'); 
+            return; 
+        }
+
+        // 3. Cache DOM Elements
         this.dom.taskView = document.getElementById('taskView');
         this.dom.inspectorBody = document.getElementById('inspectorBody');
         
@@ -51,6 +68,7 @@ const TaskApp = {
         // Modals
         this.dom.modalOverlay = document.getElementById('modalOverlay');
 
+        // 4. Avvio caricamento dati
         await this.loadInitialData();
         this.addEventListeners();
     },
