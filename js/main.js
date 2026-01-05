@@ -78,41 +78,47 @@ function setupUI() {
 
     // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
-        // Verifica se l'utente ha il ruolo specifico "Impiegato"
-        // (Assicurati che nel database il campo si chiami 'ruolo' o adatta questa riga)
-        const isImpiegato = CurrentUser.ruolo === 'Impiegato';
+        
+        // --- CONTROLLO RUOLO BASATO SU SCHEMA DB ---
+        // L'oggetto CurrentUser riflette la risposta del DB.
+        // La relazione è: CurrentUser -> ruoli (oggetto) -> nome_ruolo (stringa)
+        
+        let isImpiegato = false;
 
-        // ELENCO DI BASE: Bottoni che un utente NON-Admin non deve MAI vedere
+        // Verifica difensiva: controlliamo se esiste l'oggetto annidato 'ruoli'
+        if (CurrentUser.ruoli && CurrentUser.ruoli.nome_ruolo === 'Impiegato') {
+            isImpiegato = true;
+        }
+
+        console.log("Check Ruolo:", CurrentUser.ruoli, "IsImpiegato:", isImpiegato);
+
+        // ELENCO BOTTONI DA NASCONDERE PER CHI NON È NE ADMIN NE IMPIEGATO
         const buttonsToHide = [
-            'btn-inserisci-dati',           // Knowledge Base
-            'openChatModalBtn',             // Chat AI
-            'openDataGridBtn',              // Vista Agile
-            'btn-inserimento-ordini',       // Inserimento Ordini
-            'openViewProductionOrdersBtn',  // Registro Ordini
-            'btn-dashboard-link',           // Dashboard
-            'btn-registro-presenze',        // Registro Presenze
-            'openConfigBtn',                // Configurazione
-            'openTrainingModalBtn'          // Addestramento
+            'btn-inserisci-dati',           
+            'openChatModalBtn',             
+            'openDataGridBtn',              
+            'btn-inserimento-ordini',       
+            'openViewProductionOrdersBtn',  
+            'btn-dashboard-link',           
+            'btn-registro-presenze',        
+            'openConfigBtn',                
+            'openTrainingModalBtn'          
         ];
 
-        // LOGICA CONDIZIONALE:
-        // Se l'utente NON è Impiegato, nascondiamo anche il bottone Attività.
-        // (Se è Impiegato, questa riga viene saltata e il bottone resta visibile)
+        // Se NON è Impiegato, nascondiamo anche il bottone Attività
         if (!isImpiegato) {
             buttonsToHide.push('btn-attivita');
         }
 
-        // Applica il nascondimento
         buttonsToHide.forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'none';
         });
         
-        // Nascondi anche le voci della legenda corrispondenti
         hideLegendItemsForNonAdmin();
 
     } else {
-        // Se è Admin, assicuriamoci che i tasti speciali siano visibili
+        // Admin vede tutto
         ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn', 'btn-attivita'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.style.display = 'flex';
@@ -124,7 +130,6 @@ function setupUI() {
         window.uiEventsBound = true;
     }
     
-    // Inizializza la legenda
     new Legend();
 }
 

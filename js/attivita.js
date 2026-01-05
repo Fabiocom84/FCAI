@@ -29,22 +29,23 @@ const TaskApp = {
     // =================================================================
 
     init: async function() {
-        // 1. Carica il profilo SUBITO dal LocalStorage
+        // 1. Carica profilo
         this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
-
-        // Verifica sicurezza base: se non c'è profilo, torna al login
         if (!this.state.currentUserProfile) {
             window.location.replace('login.html');
             return;
         }
 
-        // 2. CONTROLLO ACCESSO: Admin O Impiegato
-        const isAdmin = IsAdmin; // Importato da core-init.js
-        const isImpiegato = this.state.currentUserProfile.ruolo === 'Impiegato';
+        // 2. CONTROLLO ACCESSO (SCHEMA DB)
+        const isAdmin = IsAdmin;
+        
+        // Leggiamo la proprietà annidata 'ruoli.nome_ruolo'
+        const roleObj = this.state.currentUserProfile.ruoli || {};
+        const isImpiegato = roleObj.nome_ruolo === 'Impiegato';
 
-        // Se l'utente NON è Admin E NON è Impiegato -> Redirect alla Home
+        // Se NON è Admin E NON è Impiegato -> Redirect
         if (!isAdmin && !isImpiegato) { 
-            console.warn("Accesso negato: Pagina riservata ad Admin o Impiegati.");
+            console.warn("Accesso negato.");
             window.location.replace('index.html'); 
             return; 
         }
