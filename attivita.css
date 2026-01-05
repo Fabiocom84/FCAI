@@ -250,24 +250,35 @@ body {
 
 .form-actions { 
     display: flex; 
-    justify-content: flex-end; /* Allinea a destra */
-    gap: 10px; 
-    margin-top: 10px; 
+    justify-content: flex-end; /* Allinea i pulsanti a destra */
+    gap: 10px; /* Spazio tra i due pulsanti */
+    margin-top: 15px; 
     padding-top: 15px; 
     border-top: 1px solid #eee; 
 }
 
-/* Pulsanti Form (Salva/Annulla) - Dimensioni umane */
+/* Pulsanti Form (Salva/Annulla) - Dimensioni Ridotte */
 .form-actions button {
-    width: auto !important; /* Override 100% globale */
-    min-width: 100px !important; 
-    padding: 8px 20px !important;
-    height: auto !important;
-    font-size: 0.9em !important;
+    /* Reset Dimensioni: impedisce di occupare tutto lo spazio */
+    flex: 0 1 auto !important; 
+    width: auto !important;   
+    
+    /* Dimensioni fisse più contenute */
+    min-width: 90px !important; 
+    height: 36px !important;       /* Altezza fissa ridotta */
+    padding: 0 20px !important;    /* Padding laterale */
+    
+    /* Stile testo */
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    
+    /* Reset margini e bordi */
     margin: 0 !important;
     border-radius: 4px !important;
-    text-transform: none !important;
-    display: inline-block !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 .button--success { background-color: #28a745 !important; color: white !important; border: none !important; }

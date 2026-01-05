@@ -1,6 +1,7 @@
 // js/inserimento-ore.js (Versione aggiornata per parlare con il Backend)
 
 import { API_BASE_URL } from './config.js'; // Importa l'URL del backend
+import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELEZIONE ELEMENTI DEL DOM ---
