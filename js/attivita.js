@@ -36,7 +36,7 @@ const TaskApp = {
             return;
         }
 
-        // 2. CONTROLLO ACCESSO (ROBUSTO)
+        // 2. CONTROLLO ACCESSO (ROBUSTO & CASE-INSENSITIVE)
         const isAdmin = IsAdmin;
         let isImpiegato = false;
         
@@ -51,7 +51,10 @@ const TaskApp = {
             }
         }
         
-        if (roleName === 'Impiegato') isImpiegato = true;
+        // --- FIX MAIUSCOLE/MINUSCOLE ---
+        if (roleName && roleName.trim().toLowerCase() === 'impiegato') {
+            isImpiegato = true;
+        }
 
         // Se NON è Admin E NON è Impiegato -> Redirect
         if (!isAdmin && !isImpiegato) { 

@@ -79,28 +79,29 @@ function setupUI() {
     // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
         
-        // --- CONTROLLO RUOLO ROBUSTO (ARRAY vs OBJECT) ---
+        // --- CONTROLLO RUOLO ROBUSTO & CASE-INSENSITIVE ---
         let isImpiegato = false;
         let roleNameFound = "Nessuno";
 
         if (CurrentUser.ruoli) {
-            // CASO A: Supabase restituisce un Array (lista)
+            // CASO A: Array
             if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) {
                 roleNameFound = CurrentUser.ruoli[0].nome_ruolo;
             } 
-            // CASO B: Supabase restituisce un Oggetto singolo
+            // CASO B: Oggetto
             else if (typeof CurrentUser.ruoli === 'object') {
                 roleNameFound = CurrentUser.ruoli.nome_ruolo;
             }
         }
         
-        // CASO C: Fallback colonna diretta 'ruolo' (se esiste)
+        // CASO C: Fallback colonna diretta
         if (!roleNameFound || roleNameFound === "Nessuno") {
              if (CurrentUser.ruolo) roleNameFound = CurrentUser.ruolo;
         }
 
-        // Verifica finale (Trim toglie spazi vuoti per sicurezza)
-        if (roleNameFound && roleNameFound.trim() === 'Impiegato') {
+        // --- FIX MAIUSCOLE/MINUSCOLE ---
+        // Convertiamo tutto in minuscolo prima di confrontare
+        if (roleNameFound && roleNameFound.trim().toLowerCase() === 'impiegato') {
             isImpiegato = true;
         }
 
