@@ -29,41 +29,55 @@ const TaskApp = {
     // =================================================================
 
     init: async function() {
-        // 1. Carica profilo
-        this.state.currentUserProfile = JSON.parse(localStorage.getItem('user_profile'));
-        if (!this.state.currentUserProfile) {
+        console.log("🚀 Init Attività...");
+
+        // 1. Carica il profilo SUBITO dal LocalStorage
+        const profileStr = localStorage.getItem('user_profile');
+        if (!profileStr) {
+            console.warn("Nessun profilo trovato. Redirect al login.");
             window.location.replace('login.html');
             return;
         }
-
-        // 2. CONTROLLO ACCESSO (ROBUSTO & CASE-INSENSITIVE)
-        const isAdmin = IsAdmin;
-        let isImpiegato = false;
         
+        this.state.currentUserProfile = JSON.parse(profileStr);
         const user = this.state.currentUserProfile;
-        let roleName = "";
 
+        // 2. CONTROLLO ACCESSO ROBUSTO
+        // Importiamo IsAdmin da core-init (o lo ricalcoliamo per sicurezza)
+        const isAdmin = (user.is_admin === true || user.is_admin === "true" || user.is_admin === 1);
+        
+        let isImpiegato = false;
+        let roleNameFound = "Nessuno";
+
+        // A. Cerca dentro 'ruoli' (Array o Oggetto)
         if (user.ruoli) {
             if (Array.isArray(user.ruoli) && user.ruoli.length > 0) {
-                roleName = user.ruoli[0].nome_ruolo;
+                roleNameFound = user.ruoli[0].nome_ruolo;
             } else if (typeof user.ruoli === 'object') {
-                roleName = user.ruoli.nome_ruolo;
+                roleNameFound = user.ruoli.nome_ruolo;
             }
         }
-        
-        // --- FIX MAIUSCOLE/MINUSCOLE ---
-        if (roleName && roleName.trim().toLowerCase() === 'impiegato') {
+
+        // B. Cerca colonna diretta 'ruolo' (Piano B)
+        if ((!roleNameFound || roleNameFound === "Nessuno") && user.ruolo) {
+            roleNameFound = user.ruolo;
+        }
+
+        // C. Verifica Case-Insensitive
+        if (roleNameFound && String(roleNameFound).trim().toLowerCase() === 'impiegato') {
             isImpiegato = true;
         }
 
-        // Se NON è Admin E NON è Impiegato -> Redirect
+        console.log("👮 Check Accesso Attività -> Admin:", isAdmin, "| Ruolo:", roleNameFound, "| Accesso Impiegato:", isImpiegato);
+
+        // 3. BLOCCO: Se non è Admin E non è Impiegato -> Via
         if (!isAdmin && !isImpiegato) { 
-            console.warn("Accesso negato. Ruolo rilevato:", roleName);
+            alert("Accesso Negato: Questa pagina è riservata."); // Alert per capire se succede questo
             window.location.replace('index.html'); 
             return; 
         }
 
-        // 3. Cache DOM Elements
+        // 4. Cache DOM Elements
         this.dom.taskView = document.getElementById('taskView');
         this.dom.inspectorBody = document.getElementById('inspectorBody');
         
@@ -82,7 +96,7 @@ const TaskApp = {
         // Modals
         this.dom.modalOverlay = document.getElementById('modalOverlay');
 
-        // 4. Avvio caricamento dati
+        // 5. Avvio caricamento dati
         await this.loadInitialData();
         this.addEventListeners();
     },
