@@ -249,43 +249,63 @@ body {
 .form-row { display: flex; gap: 10px; } .form-col { flex: 1; }
 
 .form-actions { 
-    display: flex; 
-    justify-content: flex-end; /* Allinea i pulsanti a destra */
-    gap: 10px; /* Spazio tra i due pulsanti */
-    margin-top: 15px; 
-    padding-top: 15px; 
-    border-top: 1px solid #eee; 
+    display: flex !important; 
+    justify-content: flex-end !important; /* Allinea a destra */
+    align-items: center !important;
+    gap: 10px !important; 
+    
+    margin-top: 15px !important; 
+    padding-top: 15px !important; 
+    border-top: 1px solid #eee !important; 
+    width: 100% !important;
 }
 
-/* Pulsanti Form (Salva/Annulla) - Dimensioni Ridotte */
+/* Override Totale sui bottoni del form */
 .form-actions button {
-    /* Reset Dimensioni: impedisce di occupare tutto lo spazio */
-    flex: 0 1 auto !important; 
-    width: auto !important;   
+    /* 1. Reset Geometria Globale */
+    width: auto !important;       /* No 100% width */
+    flex: 0 0 auto !important;    /* No flex grow */
+    min-width: 100px !important;  /* Larghezza minima leggibile */
+    max-width: 200px !important;
     
-    /* Dimensioni fisse più contenute */
-    min-width: 90px !important; 
-    height: 36px !important;       /* Altezza fissa ridotta */
-    padding: 0 20px !important;    /* Padding laterale */
+    /* 2. Reset Altezza */
+    height: 38px !important;      /* Altezza fissa umana */
+    min-height: 0 !important;     /* Annulla min-height globali */
+    padding: 0 20px !important;   /* Padding laterale */
     
-    /* Stile testo */
+    /* 3. Reset Testo e Allineamento */
     font-size: 0.9rem !important;
     font-weight: 500 !important;
     text-transform: none !important;
+    line-height: 1 !important;
     
-    /* Reset margini e bordi */
+    /* 4. Reset Margini e Display */
     margin: 0 !important;
-    border-radius: 4px !important;
     display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
 }
 
-.button--success { background-color: #28a745 !important; color: white !important; border: none !important; }
-.button--success:hover { background-color: #218838 !important; }
-.button--warning { background-color: #ffc107 !important; color: #333 !important; border: none !important; }
-.button--warning:hover { background-color: #e0a800 !important; }
+/* Mantieni i colori specifici (con !important per sicurezza) */
+.button--success {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+}
+.button--success:hover {
+    background-color: #218838 !important;
+}
 
+.button--warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+    border: 1px solid #ffc107 !important;
+}
+.button--warning:hover {
+    background-color: #e0a800 !important;
+}
 /* Lista Notifiche */
 .notification-item {
     padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9em; cursor: pointer; transition: background 0.2s;
