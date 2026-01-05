@@ -16,7 +16,7 @@ const TaskApp = {
         columnsConfig: [
             { key: 'todo',   label: 'Da Fare',       status: 'Da Fare',      colorClass: 'todo' },
             { key: 'doing',  label: 'In Corso',      status: 'In Corso',     colorClass: 'doing' },
-            { key: 'review', label: 'In Revisione',  status: 'In Revisione', colorClass: 'review' },
+            { key: 'review', label: 'Delegati / Monitoraggio',  status: 'In Revisione', colorClass: 'review' }, // <--- Modificato
             { key: 'done',   label: 'Completato',    status: 'Completato',   colorClass: 'done' }
         ]
     },
@@ -142,16 +142,35 @@ const TaskApp = {
     setupDragDrop: function(container) {
         container.addEventListener('dragover', e => { e.preventDefault(); container.classList.add('drag-over'); });
         container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
+        
         container.addEventListener('drop', async e => {
-            e.preventDefault(); container.classList.remove('drag-over');
+            e.preventDefault(); 
+            container.classList.remove('drag-over');
+            
             const taskId = e.dataTransfer.getData('text/plain');
             const targetColumn = container.closest('.task-column');
             if(!targetColumn) return;
-            const newStatus = targetColumn.dataset.status;
+            
+            const newStatusKey = targetColumn.querySelector('.tasks-container').dataset.statusKey; // todo, doing, review, done
+            const newStatusLabel = targetColumn.dataset.status; // 'Da Fare', 'In Revisione', etc.
+
+            // --- NUOVA LOGICA: Se trascino in "In Revisione" (Colonna 3) ---
+            if (newStatusKey === 'review') {
+                // 1. Carica il task corrente nello stato (hack per farlo vedere al modale)
+                // Se abbiamo i dati completi nel DOM o in memoria sarebbe meglio, 
+                // ma qui forziamo il caricamento veloce per aprire il modale.
+                this.state.currentTask = { id_task: taskId }; 
+                
+                // 2. Apri il modale di trasferimento invece di salvare subito
+                this.renderTransferMode();
+                return; // STOP: Non esegue l'update automatico qui sotto
+            }
+
+            // Logica Standard per le altre colonne
             try { 
-                await apiFetch(`/api/tasks/${taskId}`, {method:'PUT', body:JSON.stringify({stato:newStatus})}); 
+                await apiFetch(`/api/tasks/${taskId}`, {method:'PUT', body:JSON.stringify({stato:newStatusLabel})}); 
                 this.refreshBoard(); 
-            } catch(e){}
+            } catch(e){ console.error(e); }
         });
     },
 
@@ -263,11 +282,23 @@ const TaskApp = {
     executeTransfer: async function() {
         const newAssignee = document.getElementById('transferUserSelect').value;
         if(!newAssignee) return;
+        
         try {
+            // Quando trasferisco, imposto anche lo stato a 'In Revisione'
+            // Così finisce nella colonna corretta sia per logica che per stato.
+            const payload = { 
+                id_assegnatario_fk: newAssignee,
+                stato: 'In Revisione' 
+            };
+
             await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, {
-                method: 'PUT', body: JSON.stringify({ id_assegnatario_fk: newAssignee })
+                method: 'PUT', body: JSON.stringify(payload)
             });
+            
             await this.refreshBoard();
+            
+            // Torna alla vista dettaglio o chiudi, a seconda del flusso.
+            // Qui ricarichiamo il dettaglio per conferma visiva
             this.renderInspectorView(this.state.currentTask.id_task);
         } catch(e) { alert('Errore trasferimento: ' + e.message); }
     },
