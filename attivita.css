@@ -336,18 +336,33 @@ body {
     .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; flex: 1; } 
 }
 
-/* Task Delegato (Bloccato per chi l'ha inviato) */
+/* Task Delegato (Sbiadito) */
 .task-card.delegated-out {
-    opacity: 0.7;
-    background-color: #f8f9fa;
-    border: 1px dashed #ccc;
-    cursor: default; /* Non cliccabile per drag */
+    opacity: 0.6;
+    background-color: #f3f3f3;
+    border: 1px dashed #bbb;
+    cursor: default;
 }
 
-/* Task In Arrivo (Evidenziato per chi lo riceve) */
+/* Task In Arrivo (Molto Evidente) */
 .task-card.incoming-task {
-    border: 2px solid #3498db; /* Bordo Blu deciso */
-    background-color: #f0f8ff; /* Azzurrino */
+    border-left: 5px solid #3498db !important; /* Barra laterale blu spessa */
+    background-color: #f0f7ff; /* Sfondo azzurro */
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2); /* Ombra azzurrina */
+}
+
+/* Badge interno per task in arrivo */
+.incoming-alert {
+    background-color: #3498db;
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
 }
 
 .incoming-badge {

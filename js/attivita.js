@@ -122,70 +122,98 @@ const TaskApp = {
 
     createTaskCard: function(task) {
         const el = document.createElement('div');
-        const myId = this.state.currentUserProfile.id_personale;
         
-        // --- LOGICA RUOLI ---
-        const isCreator = (task.id_creatore_fk === myId);
-        const isAssignee = (task.id_assegnatario_fk === myId);
+        // 1. Conversione sicura degli ID in numeri per evitare errori di confronto (String vs Int)
+        const myId = parseInt(this.state.currentUserProfile.id_personale, 10);
+        const taskCreatorId = parseInt(task.id_creatore_fk, 10);
+        const taskAssigneeId = parseInt(task.id_assegnatario_fk, 10);
+
+        // 2. Logica Ruoli
+        const isCreator = (taskCreatorId === myId);
+        const isAssignee = (taskAssigneeId === myId);
         
-        // SCENARIO A: Ho delegato io il task (è mio, ma ce l'ha un altro) -> BLOCCO
-        // (Escluso Admin che può sempre tutto, ma qui blocchiamo l'interfaccia base)
+        // SCENARIO DELEGANTE (Monitoraggio): 
+        // L'ho creato io, NON ce l'ho io in carico, e non è ancora finito.
+        // -> Vedo il task "grigino" con il lucchetto.
         const isDelegatedOut = isCreator && !isAssignee && task.stato !== 'Completato';
         
-        // SCENARIO B: Il task mi è arrivato da qualcun altro -> EVIDENZIO
+        // SCENARIO DESTINATARIO (In Arrivo): 
+        // Ce l'ho io in carico, MA non l'ho creato io.
+        // -> Vedo il task evidenziato in blu con banner.
         const isIncoming = isAssignee && !isCreator;
 
-        // Classi CSS e Attributi
+        // 3. Assegnazione Classi CSS
         el.className = `task-card priority-${(task.priorita || 'Media').toLowerCase()}`;
         el.dataset.taskId = task.id_task;
-        
-        // Salviamo l'assegnatario nel dataset per il drag & drop
         el.dataset.assigneeId = task.id_assegnatario_fk; 
 
         if (isDelegatedOut) {
-            el.classList.add('delegated-out'); // Stile grigio/trasparente
-            el.draggable = false; // IMPEDISCE IL DRAG
+            el.classList.add('delegated-out'); 
+            el.draggable = false; // Impedisce trascinamento fisico
         } else {
-            el.draggable = true;
+            el.draggable = true; // Abilita trascinamento
         }
 
         if (isIncoming) {
-            el.classList.add('incoming-task'); // Bordo blu / Sfondo azzurrino
+            el.classList.add('incoming-task'); 
         }
 
-        // Header Tag
+        // 4. Preparazione Contenuti (Tags, Nomi, Date)
         let headerText = task.categoria?.nome_categoria || 'Generale';
         let headerClass = 'cat-tag';
-        if (task.commessa) { headerText = task.commessa.codice_commessa; headerClass = 'commessa-tag'; }
+        if (task.commessa) { 
+            headerText = task.commessa.codice_commessa; 
+            headerClass = 'commessa-tag'; 
+        }
 
-        // Icone e Badge
+        // Recupero nomi per visualizzazione
         const creatorName = task.creatore?.nome_cognome?.split(' ')[0] || '?';
         const assigneeName = task.assegnatario?.nome_cognome?.split(' ')[0] || '';
 
-        const incomingBadge = isIncoming ? `<span class="incoming-badge"><i class="fas fa-inbox"></i> Da ${creatorName}</span>` : '';
-        const lockIcon = isDelegatedOut ? `<i class="fas fa-lock" style="color:#999; float:right;" title="Monitoraggio - Non modificabile"></i>` : '';
+        // Elementi Visivi Speciali
+        // Banner evidente se il task arriva da un altro
+        const incomingAlert = isIncoming 
+            ? `<div class="incoming-alert"><i class="fas fa-arrow-down"></i> Da ${creatorName}</div>` 
+            : '';
+            
+        // Lucchetto se sto solo monitorando
+        const lockIcon = isDelegatedOut 
+            ? `<i class="fas fa-lock" style="color:#999; font-size:0.9em;" title="In carico a ${assigneeName}"></i>` 
+            : '';
 
+        // Formattazione data scadenza
+        const dateHtml = task.data_obiettivo 
+            ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? '#e74c3c' : '#95a5a6'}; display:flex; align-items:center; gap:4px;">
+                 <i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}
+               </div>` 
+            : '<div></div>';
+
+        // 5. Costruzione HTML Card
         el.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px; align-items:center;">
-                <div style="display:flex; align-items:center; gap:5px;">
-                    ${incomingBadge}
-                    <span class="${headerClass}">${headerText}</span>
-                </div>
+            ${incomingAlert}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span class="${headerClass}">${headerText}</span>
                 ${lockIcon}
             </div>
-            <h4>${task.titolo}</h4>
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
-                 ${task.data_obiettivo ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'red' : '#999'};"><i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}</div>` : '<div></div>'}
-                 <span style="font-size:0.75em; color:#666; font-weight:500;">${assigneeName}</span>
+            
+            <h4 style="margin: 5px 0 10px 0; font-size:0.95em; line-height:1.4;">${task.titolo}</h4>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f0f0f0; padding-top:6px;">
+                 ${dateHtml}
+                 <span style="font-size:0.75em; color:#555; font-weight:600; background:#f1f3f5; padding:2px 6px; border-radius:4px;">
+                    ${assigneeName}
+                 </span>
             </div>
         `;
 
+        // 6. Event Listeners
+        // Click apre sempre l'inspector
         el.addEventListener('click', () => this.renderInspectorView(task.id_task));
         
+        // Drag start solo se non è delegato fuori (locked)
         if (!isDelegatedOut) {
             el.addEventListener('dragstart', (e) => { 
                 e.dataTransfer.setData('text/plain', task.id_task);
-                // Passiamo anche l'assegnatario corrente via dataTransfer o usiamo lo state
                 this.state.draggedTaskAssignee = task.id_assegnatario_fk; 
             });
         }
