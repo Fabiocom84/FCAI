@@ -79,20 +79,34 @@ function setupUI() {
     // 2. GESTIONE VISIBILITÀ BOTTONI
     if (!IsAdmin) {
         
-        // --- CONTROLLO RUOLO BASATO SU SCHEMA DB ---
-        // L'oggetto CurrentUser riflette la risposta del DB.
-        // La relazione è: CurrentUser -> ruoli (oggetto) -> nome_ruolo (stringa)
-        
+        // --- CONTROLLO RUOLO ROBUSTO (ARRAY vs OBJECT) ---
         let isImpiegato = false;
+        let roleNameFound = "Nessuno";
 
-        // Verifica difensiva: controlliamo se esiste l'oggetto annidato 'ruoli'
-        if (CurrentUser.ruoli && CurrentUser.ruoli.nome_ruolo === 'Impiegato') {
+        if (CurrentUser.ruoli) {
+            // CASO A: Supabase restituisce un Array (lista)
+            if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) {
+                roleNameFound = CurrentUser.ruoli[0].nome_ruolo;
+            } 
+            // CASO B: Supabase restituisce un Oggetto singolo
+            else if (typeof CurrentUser.ruoli === 'object') {
+                roleNameFound = CurrentUser.ruoli.nome_ruolo;
+            }
+        }
+        
+        // CASO C: Fallback colonna diretta 'ruolo' (se esiste)
+        if (!roleNameFound || roleNameFound === "Nessuno") {
+             if (CurrentUser.ruolo) roleNameFound = CurrentUser.ruolo;
+        }
+
+        // Verifica finale (Trim toglie spazi vuoti per sicurezza)
+        if (roleNameFound && roleNameFound.trim() === 'Impiegato') {
             isImpiegato = true;
         }
 
-        console.log("Check Ruolo:", CurrentUser.ruoli, "IsImpiegato:", isImpiegato);
+        console.log("🔍 DEBUG RUOLO -> Trovato:", roleNameFound, "| IsImpiegato:", isImpiegato);
 
-        // ELENCO BOTTONI DA NASCONDERE PER CHI NON È NE ADMIN NE IMPIEGATO
+        // ELENCO BOTTONI DA NASCONDERE
         const buttonsToHide = [
             'btn-inserisci-dati',           
             'openChatModalBtn',             
@@ -105,7 +119,7 @@ function setupUI() {
             'openTrainingModalBtn'          
         ];
 
-        // Se NON è Impiegato, nascondiamo anche il bottone Attività
+        // Se NON è Impiegato, nascondi anche il bottone Attività
         if (!isImpiegato) {
             buttonsToHide.push('btn-attivita');
         }
