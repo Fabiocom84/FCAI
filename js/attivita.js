@@ -36,16 +36,26 @@ const TaskApp = {
             return;
         }
 
-        // 2. CONTROLLO ACCESSO (SCHEMA DB)
+        // 2. CONTROLLO ACCESSO (ROBUSTO)
         const isAdmin = IsAdmin;
+        let isImpiegato = false;
         
-        // Leggiamo la proprietà annidata 'ruoli.nome_ruolo'
-        const roleObj = this.state.currentUserProfile.ruoli || {};
-        const isImpiegato = roleObj.nome_ruolo === 'Impiegato';
+        const user = this.state.currentUserProfile;
+        let roleName = "";
+
+        if (user.ruoli) {
+            if (Array.isArray(user.ruoli) && user.ruoli.length > 0) {
+                roleName = user.ruoli[0].nome_ruolo;
+            } else if (typeof user.ruoli === 'object') {
+                roleName = user.ruoli.nome_ruolo;
+            }
+        }
+        
+        if (roleName === 'Impiegato') isImpiegato = true;
 
         // Se NON è Admin E NON è Impiegato -> Redirect
         if (!isAdmin && !isImpiegato) { 
-            console.warn("Accesso negato.");
+            console.warn("Accesso negato. Ruolo rilevato:", roleName);
             window.location.replace('index.html'); 
             return; 
         }
