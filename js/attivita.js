@@ -28,87 +28,75 @@ const TaskApp = {
     init: async function() {
         console.log("🚀 Init Attività...");
 
-        // 1. Carica profilo
         const profileStr = localStorage.getItem('user_profile');
         if (!profileStr) { window.location.replace('login.html'); return; }
         
         this.state.currentUserProfile = JSON.parse(profileStr);
         const user = this.state.currentUserProfile;
 
-        // 2. CHECK RUOLI (Frontend UI only - il backend fa il vero check)
+        // Check Admin
         const isAdmin = (user.is_admin === true || user.is_admin === "true" || user.is_admin === 1);
         
-        // Recupero nome ruolo in modo sicuro (gestisce oggetto o array da Supabase)
+        // Check Ruolo Impiegato
         let roleName = "";
         if (user.ruoli) {
             if (Array.isArray(user.ruoli) && user.ruoli.length > 0) roleName = user.ruoli[0].nome_ruolo;
             else if (typeof user.ruoli === 'object') roleName = user.ruoli.nome_ruolo;
         }
-        
         const isImpiegato = (roleName && roleName.toLowerCase().trim() === 'impiegato');
 
-        console.log(`👤 User: ${user.nome_cognome} | Admin: ${isAdmin} | Ruolo: ${roleName}`);
-
-        // 3. Blocco accessi non autorizzati (UI Level)
         if (!isAdmin && !isImpiegato) {
             alert("Accesso non autorizzato.");
             window.location.replace('index.html');
             return;
         }
 
-        // 4. Cache DOM
+        // Cache DOM
         this.dom.taskView = document.getElementById('taskView');
         this.dom.inspectorBody = document.getElementById('inspectorBody');
+        this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
+        this.dom.adminUserFilter = document.getElementById('adminUserFilter');
+        
+        // Pulsanti
         this.dom.btnNew = document.getElementById('addTaskBtn');
         this.dom.btnEdit = document.getElementById('inspectorEditBtn');
         this.dom.btnDelete = document.getElementById('inspectorDeleteBtn');
         this.dom.btnComplete = document.getElementById('inspectorCompleteBtn');
         this.dom.btnTransfer = document.getElementById('inspectorTransferBtn');
         this.dom.btnBell = document.getElementById('inspectorBellBtn');
-        this.dom.adminFilterContainer = document.getElementById('adminFilterContainer');
-        this.dom.adminUserFilter = document.getElementById('adminUserFilter');
-        this.dom.modalOverlay = document.getElementById('modalOverlay');
 
-        // 5. GESTIONE VISIBILITÀ FILTRO ADMIN
+        // VISIBILITÀ FILTRO ADMIN
         if (this.dom.adminFilterContainer) {
-            if (isAdmin) {
-                this.dom.adminFilterContainer.style.display = 'flex';
-                // Caricheremo la select dopo aver preso i dati del personale
-            } else {
-                this.dom.adminFilterContainer.style.display = 'none'; // Nascondi a impiegati
-            }
+            this.dom.adminFilterContainer.style.display = isAdmin ? 'flex' : 'none';
         }
 
-        // 6. Avvio
         await this.loadInitialData();
         this.addEventListeners();
     },
 
     loadInitialData: async function() {
         try {
-            // Carichiamo tutto in parallelo
-            const [boardRes, personaleRes, initDataRes, etichetteRes] = await Promise.all([
-                this.fetchBoardData(),           // Se qui da 403, apiFetch fa redirect
+            // 1. Carichiamo PRIMA i metadati (Personale e Categorie)
+            const [personaleRes, initDataRes, etichetteRes] = await Promise.all([
                 apiFetch('/api/personale/'),
                 apiFetch('/api/tasks/init-data'),
                 apiFetch('/api/get-etichette')
             ]);
 
-            this.state.boardData = await boardRes.json();
             this.state.personale = (await personaleRes.json()).data;
             this.state.initData = await initDataRes.json();
             this.state.initData.etichette = await etichetteRes.json();
 
-            // Setup filtro admin solo ora che abbiamo il personale
+            // 2. Se Admin, configuriamo il filtro ORA (prima di chiamare i task)
             if (this.dom.adminFilterContainer.style.display !== 'none') {
                 this.setupAdminFilter();
             }
 
-            this.renderKanbanBoard(); 
+            // 3. SOLO ORA scarichiamo i Task (così il filtro è già impostato)
+            await this.refreshBoard();
+
         } catch (error) { 
             console.error("Init Error:", error); 
-            // Se apiFetch ha già gestito il 403, non serve fare altro.
-            // Altrimenti visualizza errore
         }
     },
 
@@ -853,12 +841,24 @@ const TaskApp = {
     },
 
     setupAdminFilter: function() {
-        if (!this.state.currentUserProfile.is_admin) return;
         const sel = this.dom.adminUserFilter;
-        sel.innerHTML = '<option value="">Tutti</option>';
-        this.state.personale.filter(p=>p.puo_accedere).forEach(p => {
-            sel.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
-        });
+        if (!sel) return;
+        
+        sel.innerHTML = '<option value="all">Tutti gli utenti</option>';
+        
+        this.state.personale
+            .filter(p => p.puo_accedere && p.attivo)
+            .sort((a,b) => a.nome_cognome.localeCompare(b.nome_cognome))
+            .forEach(p => {
+                sel.innerHTML += `<option value="${p.id_personale}">${p.nome_cognome}</option>`;
+            });
+
+        // IMPOSTAZIONE DEFAULT: Utente Loggato
+        // Se l'utente loggato è nella lista, lo selezioniamo. Altrimenti resta "Tutti".
+        const myId = this.state.currentUserProfile.id_personale;
+        if (sel.querySelector(`option[value="${myId}"]`)) {
+            sel.value = myId;
+        }
     },
 
     postComment: async function() {
