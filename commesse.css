@@ -1,134 +1,141 @@
-/* commesse.css - Adattato al Master Layout */
+/* commesse.css - Layout Full Width & Safe Mobile */
 
-/* --- 0. ADATTAMENTO AL GUSCIO (Reset) --- */
-/* Il container interno deve riempire lo spazio disponibile nello std-app-content */
+/* --- 0. LAYOUT GENERALE --- */
 .commesse-view-wrapper {
     width: 100%;
     min-height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #fcfcfc; /* Leggero grigio per far risaltare le card bianche */
+    background-color: #fcfcfc;
 }
 
 /* --- 1. BARRA FILTRI (Sticky) --- */
 .controls-container {
-    position: sticky; /* Rimane fissa in alto mentre scrolli le card */
+    position: sticky;
     top: 0;
-    z-index: 10;
-    
+    z-index: 20; /* Z-index alto per stare sopra le card */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    
-    background-color: #ffffff; /* Sfondo bianco per stacco */
-    padding: 15px 25px;
+    flex-wrap: wrap; /* Importante per mobile: i filtri vanno a capo */
+    gap: 10px;
+    background-color: #ffffff;
+    padding: 10px 15px;
     border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.filters-group { display: flex; gap: 10px; align-items: center; }
-.search-group { display: flex; gap: 10px; align-items: center; flex-grow: 1; justify-content: flex-end; }
+.filters-group, .search-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap; /* I bottoni vanno a capo su schermi piccoli */
+}
+
+.search-group { flex-grow: 1; justify-content: flex-end; }
+
+/* Adattamento mobile per la ricerca */
+@media (max-width: 600px) {
+    .search-group { justify-content: flex-start; width: 100%; }
+    #search-input { width: 100%; }
+}
 
 .filter-btn {
-    padding: 6px 15px;
+    padding: 6px 12px;
     border: 1px solid #dfe6ed;
     background-color: #fff;
     cursor: pointer;
     border-radius: 20px;
-    font-weight: 500;
     font-size: 0.85em;
-    color: #666;
-    transition: all 0.2s;
+    font-weight: 500;
+    white-space: nowrap; /* Non spezzare il testo del bottone */
 }
-.filter-btn:hover { background-color: #f8f9fa; border-color: #cbd5e0; }
+.filter-btn:hover { background-color: #f8f9fa; }
 .filter-btn.active {
-    background-color: #3498db; /* Blu coerente col tema */
+    background-color: #3498db;
     color: white;
     border-color: #3498db;
-    box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
 }
 
 #search-input, #sort-select {
-    padding: 8px 12px;
+    padding: 8px;
     border: 1px solid #dfe6ed;
     border-radius: 6px;
     font-size: 0.9em;
-    outline: none;
 }
-#search-input:focus { border-color: #3498db; }
 
 /* --- 2. GRIGLIA CARD --- */
 .commesse-grid {
     display: grid;
-    /* Grid reattiva: colonne minime di 350px, si adattano allo spazio */
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
-    padding: 25px;
+    /* Colonne: minimo 300px per stare bene su mobile, si espandono */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
-/* --- 3. STILI CARD (Mantenuti e Rifiniti) --- */
+/* --- 3. CARD STYLES (Fix Sovrapposizioni) --- */
 .commesse-card {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     border: 1px solid #eef2f6;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.commesse-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    overflow: hidden; /* Importante per bordi arrotondati */
 }
 
 .card-image {
     width: 100%;
-    height: 220px; /* Altezza leggermente ridotta per compattezza */
+    height: 180px; /* Ridotto un po' per far vedere più contenuto */
     background-color: #e9ecef;
     background-size: cover;
     background-position: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #adb5bd;
-    font-weight: 500;
-    font-size: 0.9em;
-    border-bottom: 1px solid #f0f0f0;
+    display: flex; justify-content: center; align-items: center;
+    color: #adb5bd; font-size: 0.9em; border-bottom: 1px solid #f0f0f0;
 }
 
 .card-details {
-    padding: 20px;
+    padding: 15px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
+/* FIX SOVRAPPOSIZIONI HEADER CARD */
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-start; /* Allinea in alto */
+    gap: 10px; /* Spazio minimo tra titolo e toggle */
     margin-bottom: 5px;
 }
+
 .card-header h3 {
     margin: 0;
-    font-size: 1.15em;
+    font-size: 1.1em;
     color: #2d3748;
     line-height: 1.3;
+    /* Gestione testo lungo */
+    word-break: break-word; 
+    min-width: 0; /* Permette al flex item di rimpicciolirsi */
+}
+
+/* Contenitore Toggle + Badge (Non si schiaccia mai) */
+.status-and-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0; /* Questo elemento non si restringe mai! */
 }
 
 /* Badge Stato */
 .status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7em;
     font-weight: bold;
     color: white;
-    flex-shrink: 0;
-    margin-left: 10px;
     text-transform: uppercase;
 }
 .status-in-lavorazione { background-color: #28a745; }
@@ -136,37 +143,25 @@
 .status-default { background-color: #95a5a6; }
 
 /* Info Testuali */
-.card-info p {
-    margin: 4px 0;
-    font-size: 0.9em;
-    color: #555;
-    line-height: 1.5;
-}
-.card-info strong { color: #333; font-weight: 600; }
+.card-info p { margin: 2px 0; font-size: 0.9em; color: #555; }
+.card-info strong { color: #333; }
 
-/* Sezione Link Registrazioni */
+/* Sezione Link */
 .registrazioni-section {
-    margin-top: auto;
-    padding-top: 15px;
-    border-top: 1px dashed #e0e0e0;
-    font-size: 0.9em;
+    margin-top: auto; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 0.9em;
 }
-.registrazioni-section a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 600;
-    display: flex; align-items: center; gap: 5px;
-}
-.registrazioni-section a:hover { text-decoration: underline; }
+.registrazioni-section a { color: #3498db; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
-/* Bottoni Azione Card */
+/* Card Actions */
 .card-actions {
-    padding: 0 20px 20px;
+    padding: 0 15px 15px;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap; /* Su schermi piccolissimi i bottoni vanno a capo */
 }
 .card-actions .button {
     flex: 1;
+    min-width: 100px; /* Larghezza minima per evitare testi illeggibili */
     padding: 10px;
     font-size: 0.85em;
     border-radius: 6px;
@@ -175,62 +170,27 @@
     font-weight: 700;
 }
 .card-actions .button--warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.card-actions .button--warning:hover { background-color: #ffeeba; }
 .card-actions .button--danger { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
-.card-actions .button--danger:hover { background-color: #fed7d7; }
 
-/* --- 4. PROGRESS BARS & FASI (Mantenuti) --- */
-.progress-section {
-    display: flex; align-items: center; gap: 10px;
-    margin-top: 10px; padding: 8px;
-    background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;
-}
-.progress-container { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
-.progress-labels { display: flex; justify-content: space-between; font-size: 0.7em; color: #777; font-weight: 700; text-transform: uppercase; }
-.progress-bar-bg { width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden; }
-.progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; width: 0%; }
-.progress-bar-fill.low { background: #f1c40f; }
-.progress-bar-fill.mid { background: #3498db; }
-.progress-bar-fill.high { background: #2ecc71; }
-.hours-badge {
-    background: white; border: 1px solid #ddd; border-radius: 6px;
-    padding: 2px 8px; text-align: center; min-width: 40px;
-}
-.hours-value { font-size: 0.9em; font-weight: 800; color: #333; display: block; }
-.hours-label { font-size: 0.6em; color: #999; text-transform: uppercase; display: block; }
-
-/* Fasi Grid */
+/* Fasi & Toggle Switch (Stili invariati ma ottimizzati) */
 .phases-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; }
-.phases-title { font-size: 0.75em; color: #999; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
 .phases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-.phase-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; color: #555; background: #f8f9fa; padding: 3px 6px; border-radius: 4px; border: 1px solid #eee; }
+.phase-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.75em; background: #f8f9fa; padding: 4px; border-radius: 4px; border: 1px solid #eee; }
 
-/* Toggle Switch (Mantenuto) */
-.toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: #28a745; }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* --- 5. STILE PULSANTE "AGGIUNGI" NELL'HEADER --- */
-/* Questo ID sarà nel nuovo HTML dentro .std-app-header */
+/* Pulsante Aggiungi (Header) */
 #add-commessa-btn {
-    background-color: #28a745; /* Verde */
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-    height: 36px; /* Altezza coerente */
+    background-color: #28a745; color: white; border: none; padding: 0 16px;
+    border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;
+    display: flex; align-items: center; gap: 6px; height: 36px;
 }
 #add-commessa-btn:hover { background-color: #218838; }
 
-/* --- 6. MESSAGGI ERRORE/LOADER --- */
-.loader, .error-text { text-align: center; padding: 40px; font-size: 1.1em; color: #6c757d; grid-column: 1 / -1; }
+/* Error/Loader */
+.loader, .error-text { text-align: center; padding: 40px; color: #6c757d; grid-column: 1 / -1; }

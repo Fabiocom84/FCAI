@@ -421,63 +421,73 @@ input:focus, select:focus, textarea:focus { border-color: #2A76B8; box-shadow: 0
 }
 
 /* ==========================================================================
-   MASTER LAYOUT SYSTEM (Per pagine interne)
+   MASTER LAYOUT SYSTEM (v2.1 - Mobile Fix & Full Width)
    Da applicare a: <body> con classe "internal-page"
    ========================================================================== */
 
 /* 1. Reset del Body per le pagine interne */
 body.internal-page {
-    display: block !important;    /* Sovrascrive il flex center del login */
+    display: block !important;
     margin: 0;
-    padding: 10px;                /* IL BORDO GRIGIO (10px) */
-    height: 100vh;
+    padding: 8px;                 /* Bordo ridotto a 8px per massimizzare spazio */
+    width: 100vw;
+    height: 100vh;                /* Fallback per browser vecchi */
+    height: 100dvh;               /* FIX MOBILE: Si adatta alla barra di navigazione dinamica */
     box-sizing: border-box;
-    background-color: #f4f7f9;    /* Sfondo grigio esterno */
-    overflow: hidden;             /* Nessuno scroll sul body, solo dentro il guscio */
+    background-color: #f4f7f9;
+    overflow: hidden;             /* Blocca lo scroll del body */
 }
 
 /* 2. Il Guscio (Container Bianco Flottante) */
 .std-app-shell {
     width: 100%;
-    height: 100%;                 /* Occupa tutto lo spazio disponibile dentro il padding */
+    height: 100%;
     background-color: #ffffff;
-    border-radius: 12px;          /* Angoli arrotondati */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* Ombra leggera */
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
     display: flex;
-    flex-direction: column;       /* Header sopra, contenuto sotto */
-    overflow: hidden;             /* Maschera gli angoli */
+    flex-direction: column;
+    overflow: hidden;
     position: relative;
 }
 
 /* 3. Header Standardizzato */
 .std-app-header {
-    height: 60px;                 /* Altezza fissa per tutti */
+    height: 60px;
     min-height: 60px;
-    background-color: #2c3e50;    /* Blu scuro */
+    background-color: #2c3e50;
     color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    flex-shrink: 0;               /* Non si schiaccia mai */
+    padding: 0 15px;              /* Meno padding laterale su mobile */
+    flex-shrink: 0;
     z-index: 50;
 }
 
-/* Stile titolo standard dentro l'header */
-.std-app-header h1, 
-.std-app-header .header-title {
+.std-app-header h1 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;      /* Taglia il titolo se troppo lungo su mobile */
+    text-align: center;
+    flex-grow: 1;
+    padding: 0 10px;
 }
 
 /* 4. Area Contenuto Scrollabile */
 .std-app-content {
-    flex: 1;                      /* Occupa tutto lo spazio rimanente */
-    overflow-y: auto;             /* SCROLL QUI DENTRO */
+    flex: 1;
+    overflow-y: auto;             /* Scroll interno */
+    overflow-x: hidden;
     position: relative;
-    padding: 0;                   /* Reset padding */
+    padding: 0;
+    
+    /* FIX MOBILE: Cuscinetto finale per non nascondere il bottone salva */
+    padding-bottom: 80px; 
 }

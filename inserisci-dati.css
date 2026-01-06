@@ -15,11 +15,10 @@
     width: 100%;
     height: 100%; /* Occupa l'altezza per permettere lo stretch */
     box-sizing: border-box;
-    padding: 20px; /* Spazio interno bianco */
+    padding: 15px; /* Spazio interno bianco */
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-width: 1800px; /* Limite massimo larghezza su schermi enormi */
     margin: 0 auto;    /* Centra se lo schermo è > 1800px */
 }
 
