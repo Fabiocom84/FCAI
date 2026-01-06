@@ -9,31 +9,32 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Choices.js per le select ricercabili -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
-    <!-- FontAwesome per le icone -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Stili Proprietari -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="attivita.css">
 </head>
-<body>
+<!-- AGGIUNTO: classe internal-page per attivare il layout full screen -->
+<body class="internal-page">
 
-    <div class="page-wrapper">
+    <!-- GUSCIO STANDARD -->
+    <div class="std-app-shell">
 
-        <!-- HEADER -->
-        <header class="page-header">
-            <div class="header-left">
-                <a href="index.html" class="header-button">
+        <!-- HEADER STANDARD -->
+        <header class="std-app-header">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <!-- Bottone Home stile Ghost ma bianco per contrasto header -->
+                <a href="index.html" class="std-btn std-btn--ghost" style="color:white; border-color:rgba(255,255,255,0.3); padding: 5px 12px;">
                     <i class="fas fa-home"></i> Home
                 </a>
             </div>
             
             <h1>GESTIONE ATTIVITÀ</h1>
             
-            <div class="header-right">
-                <!-- FILTRO UTENTE (Spostato qui come richiesto) -->
+            <div style="display:flex; gap:10px; align-items:center;">
+                <!-- Filtro Utente (Visibile solo Admin) -->
                 <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
                     <label for="adminUserFilter">Utente:</label>
                     <select id="adminUserFilter" class="header-select"></select>
@@ -41,56 +42,66 @@
             </div>
         </header>
 
-        <!-- MAIN WRAPPER: GRIGLIA UNICA 5 COLONNE -->
-        <div class="task-view-wrapper">
+        <!-- CONTENUTO SCROLLABILE (ma qui usiamo flex interno per la Kanban) -->
+        <div class="std-app-content" style="display:flex; flex-direction:column; overflow:hidden;">
             
-            <!-- COLONNE 1-4: KANBAN BOARD -->
-            <main id="taskView" class="task-view-grid">
-                <div class="loader-container">
-                    <div class="loader"></div>
-                    <p>Caricamento...</p>
-                </div>
-            </main>
-
-            <!-- COLONNA 5: ISPETTORE FISSO -->
-            <aside id="taskInspector" class="task-inspector-fixed">
+            <!-- WRAPPER SPECIFICO ATTIVITÀ -->
+            <div class="task-view-wrapper">
                 
-                <!-- TOOLBAR NELL'HTML -->
-                <div class="inspector-header-toolbar">
-                    <button id="addTaskBtn" class="toolbar-btn btn-new" title="Nuovo Task">
-                        <i class="fas fa-plus"></i> Nuovo
-                    </button>
-                    <div class="divider-vertical"></div>
-                    <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri" disabled>
-                        <i class="fas fa-check"></i> Chiudi
-                    </button>
-                    <button id="inspectorTransferBtn" class="toolbar-btn btn-transfer" title="Trasferisci" disabled>
-                        <i class="fas fa-share"></i> Invia
-                    </button>
-                    <button id="inspectorEditBtn" class="toolbar-btn btn-edit" title="Modifica" disabled>
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button id="inspectorDeleteBtn" class="toolbar-btn btn-delete" title="Elimina" disabled>
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button id="inspectorBellBtn" class="toolbar-btn btn-bell" title="Notifiche">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                </div>
-                
-                <!-- CORPO DINAMICO (Qui viene iniettato il Dettaglio o il Form) -->
-                <div class="inspector-body" id="inspectorBody">
-                    <div class="empty-state">
-                        <i class="fas fa-tasks fa-3x"></i>
-                        <p>Seleziona un task dalla lista<br>o creane uno nuovo.</p>
+                <!-- COLONNE 1-4: KANBAN BOARD -->
+                <main id="taskView" class="task-view-grid">
+                    <div class="loader-container">
+                        <div class="loader"></div>
+                        <p>Caricamento...</p>
                     </div>
-                </div>
-            </aside>
+                </main>
 
+                <!-- COLONNA 5: ISPETTORE FISSO -->
+                <aside id="taskInspector" class="task-inspector-fixed">
+                    
+                    <!-- TOOLBAR (Bottoni aggiornati alle classi std-btn) -->
+                    <div class="inspector-header-toolbar">
+                        <button id="addTaskBtn" class="std-btn std-btn--primary" title="Nuovo Task" style="flex:1;">
+                            <i class="fas fa-plus"></i> Nuovo
+                        </button>
+                        
+                        <div class="divider-vertical"></div>
+                        
+                        <!-- Nota: usiamo classi utility per i colori specifici nel JS o inline se necessario, 
+                             ma usiamo la struttura base std-btn -->
+                        <button id="inspectorCompleteBtn" class="std-btn std-btn--blue" title="Chiudi / Riapri" disabled style="flex:1;">
+                            <i class="fas fa-check"></i> Chiudi
+                        </button>
+                        <button id="inspectorTransferBtn" class="std-btn std-btn--ghost" title="Trasferisci" disabled style="flex:1;">
+                            <i class="fas fa-share"></i> Invia
+                        </button>
+                        
+                        <!-- Gruppo icone piccole -->
+                        <button id="inspectorEditBtn" class="std-btn std-btn--warning" title="Modifica" disabled style="padding: 5px 10px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button id="inspectorDeleteBtn" class="std-btn std-btn--danger" title="Elimina" disabled style="padding: 5px 10px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button id="inspectorBellBtn" class="std-btn std-btn--ghost" title="Notifiche" style="padding: 5px 10px;">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- CORPO DINAMICO -->
+                    <div class="inspector-body" id="inspectorBody">
+                        <div class="empty-state">
+                            <i class="fas fa-tasks fa-3x"></i>
+                            <p>Seleziona un task dalla lista<br>o creane uno nuovo.</p>
+                        </div>
+                    </div>
+                </aside>
+
+            </div>
         </div>
     </div>
 
-    <!-- MODALE ARCHIVIO -->
+    <!-- MODALE ARCHIVIO (FIXED CENTER) -->
     <div id="archiveModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">

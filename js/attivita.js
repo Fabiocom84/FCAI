@@ -422,18 +422,22 @@ const TaskApp = {
     // == 4. INSPECTOR: MODALITÀ TRASFERIMENTO (CON MESSAGGIO)        ==
     // =================================================================
 
+    // =================================================================
+    // == 4. INSPECTOR: TRANSFER MODE (Aggiornato con std-btn)        ==
+    // =================================================================
+
     renderTransferMode: function() {
         if(!this.state.currentTask) return;
         this.toggleToolbar(false); 
 
-        const currentAssignee = this.state.currentTask.id_assegnatario_fk; // Può essere undefined se viene dal drag, ma gestito
+        const currentAssignee = this.state.currentTask.id_assegnatario_fk; 
         
         const html = `
             <h2 class="detail-title">Invia / Trasferisci Task</h2>
             <div style="padding: 20px 0;">
-                <label style="display:block; margin-bottom:5px; font-weight:500; color:#444;">Seleziona il nuovo assegnatario:</label>
+                <label style="display:block; margin-bottom:5px; font-weight:600; color:#444;">Seleziona il nuovo assegnatario:</label>
                 <div class="styled-select-wrapper" style="margin-bottom:15px;">
-                    <select id="transferUserSelect" class="full-width-input" style="padding:10px; width:100%; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+                    <select id="transferUserSelect" class="inp-select">
                         <option value="" disabled selected>-- Seleziona Persona --</option>
                         ${this.state.personale
                             .filter(p => p.puo_accedere && p.id_personale != currentAssignee)
@@ -442,24 +446,20 @@ const TaskApp = {
                     </select>
                 </div>
 
-                <label style="display:block; margin-bottom:5px; font-weight:500; color:#444;">Messaggio per il destinatario *:</label>
-                <textarea id="transferMessage" rows="3" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit;" placeholder="Spiega perché stai inviando questo task o cosa deve fare..."></textarea>
-                <small style="color:#888;">Questo messaggio verrà salvato come commento.</small>
+                <label style="display:block; margin-bottom:5px; font-weight:600; color:#444;">Messaggio per il destinatario *:</label>
+                <textarea id="transferMessage" rows="3" class="inp-area" placeholder="Spiega perché stai inviando questo task o cosa deve fare..."></textarea>
+                <small style="color:#888;">Questo messaggio verrà salvato come commento e inviato come notifica.</small>
             </div>
             <div class="form-actions">
-                <button id="btnCancelTransfer" class="button button--warning">Annulla</button>
-                <button id="btnConfirmTransfer" class="button button--success">Conferma Invio</button>
+                <button id="btnCancelTransfer" class="std-btn std-btn--ghost">Annulla</button>
+                <button id="btnConfirmTransfer" class="std-btn std-btn--primary">Conferma Invio</button>
             </div>
         `;
         this.dom.inspectorBody.innerHTML = html;
 
         document.getElementById('btnCancelTransfer').addEventListener('click', () => {
-            // Se stavamo visualizzando il task, ricaricalo. Se veniamo da drag drop, mostra empty
-            if(this.state.currentTask.titolo) { // check rapido se task completo caricato
-                 this.renderInspectorView(this.state.currentTask.id_task);
-            } else {
-                 this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Trasferimento annullato.</p></div>';
-            }
+            if(this.state.currentTask.titolo) this.renderInspectorView(this.state.currentTask.id_task);
+            else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Trasferimento annullato.</p></div>';
         });
         
         document.getElementById('btnConfirmTransfer').addEventListener('click', () => this.executeTransfer());
@@ -506,18 +506,19 @@ const TaskApp = {
     },
 
     // =================================================================
-    // == 5. INSPECTOR: MODALITÀ NOTIFICHE (Checklist Mode)           ==
+    // == 5. INSPECTOR: MODALITÀ NOTIFICHE (Checklist & Std Style)    ==
     // =================================================================
 
     renderNotificationsMode: async function() {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
-        this.toggleToolbar(false);
+        this.toggleToolbar(false); // Nasconde i bottoni standard della toolbar
         
         try {
-            // Recupera solo le notifiche dell'utente corrente (già filtrato dal backend)
+            // Recupera solo le notifiche non lette (o le ultime N in base al backend)
             const res = await apiFetch(`/api/tasks/notifiche`);
             const notes = await res.json();
 
+            // --- CASO 1: NESSUNA NOTIFICA ---
             if (notes.length === 0) {
                 this.dom.inspectorBody.innerHTML = `
                     <h2 class="detail-title">Notifiche</h2>
@@ -525,19 +526,27 @@ const TaskApp = {
                         <i class="far fa-bell-slash fa-3x"></i>
                         <p>Non hai nuove notifiche.</p>
                         <small style="color:#999;">Tutti i messaggi precedenti sono stati letti.</small>
-                        <button id="btnCloseNotes" class="button button--warning" style="margin-top:15px;">Indietro</button>
+                        <div style="margin-top: 20px;">
+                            <button id="btnCloseNotes" class="std-btn std-btn--ghost">Indietro</button>
+                        </div>
                     </div>`;
+                
                 document.getElementById('btnCloseNotes').addEventListener('click', () => {
-                    if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
-                    else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
+                    if(this.state.currentTask && this.state.currentTask.id_task) {
+                        this.renderInspectorView(this.state.currentTask.id_task);
+                    } else {
+                        this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
+                    }
                 });
                 return;
             }
 
-            // Genera la lista HTML con il nuovo pulsante "Vedi Task" separato
+            // --- CASO 2: LISTA NOTIFICHE ---
+            
+            // Generazione HTML della lista
             const listHtml = notes.map(n => `
                 <div class="notification-item-wrapper ${n.letto ? 'read' : 'unread'}" id="notif-${n.id_notifica}">
-                    <!-- Area cliccabile per segnare come letto -->
+                    <!-- A. Area Contenuto (Clicca per segnare letto) -->
                     <div class="notification-content" data-action="mark-read" data-id="${n.id_notifica}">
                         <div class="notif-header">
                             <span class="notif-type">${n.tipo_notifica}</span> 
@@ -547,74 +556,110 @@ const TaskApp = {
                         <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
                     </div>
                     
-                    <!-- Pulsante specifico per andare al task -->
+                    <!-- B. Pulsante Azione (Vai al Task) -->
                     <button class="btn-go-to-task" data-action="go-task" data-task="${n.id_task_fk}" title="Vai al Task">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             `).join('');
 
+            // Struttura completa pannello
             const html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
                     <h2 class="detail-title" style="margin:0;">Le tue Notifiche</h2>
-                    <button id="btnMarkAll" class="button button--primary" style="font-size:0.7em; padding:4px 8px !important; min-width:auto !important;">Segna tutte lette</button>
+                    <button id="btnMarkAll" class="std-btn std-btn--blue" style="font-size:0.75em; padding:4px 10px; min-height:auto;">
+                        <i class="fas fa-check-double"></i> Segna tutte lette
+                    </button>
                 </div>
+                
                 <div class="notification-list" id="notifList">
                     ${listHtml}
                 </div>
-                <div style="margin-top:20px; text-align:center; border-top:1px solid #eee; padding-top:10px;">
-                     <button id="btnCloseNotes" class="button button--warning">Chiudi</button>
+                
+                <div class="form-actions">
+                     <button id="btnCloseNotes" class="std-btn std-btn--ghost">Chiudi</button>
                 </div>
             `;
             this.dom.inspectorBody.innerHTML = html;
 
-            // EVENTI GLOBALI
+            // --- EVENT LISTENER ---
+
+            // 1. Chiudi Pannello
             document.getElementById('btnCloseNotes').addEventListener('click', () => {
-                // Aggiorna il badge in Home (opzionale, richiede reload o logica complessa, per ora chiudiamo solo)
-                if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
-                else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
+                if(this.state.currentTask && this.state.currentTask.id_task) {
+                    this.renderInspectorView(this.state.currentTask.id_task);
+                } else {
+                    this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
+                }
             });
 
-            // "Segna tutte come lette" (Opzionale ma comodo)
+            // 2. Segna tutte come lette
             document.getElementById('btnMarkAll').addEventListener('click', async () => {
-                document.querySelectorAll('.notification-item-wrapper.unread').forEach(el => el.classList.remove('unread'));
-                // Qui servirebbe API backend bulk, per ora facciamo un loop veloce o lasciamo visivo
-                notes.forEach(n => { if(!n.letto) apiFetch(`/api/tasks/notifiche/leggi/${n.id_notifica}`, { method: 'PUT' }); });
+                // Feedback visivo immediato
+                const unreadItems = document.querySelectorAll('.notification-item-wrapper.unread');
+                unreadItems.forEach(el => {
+                    el.classList.remove('unread');
+                    el.classList.add('read');
+                });
+                
+                // Chiamate API (Loop sulle note caricate)
+                for (const n of notes) {
+                    if (!n.letto) {
+                        // Non usiamo await per non bloccare l'UI, lasciamo andare in background
+                        apiFetch(`/api/tasks/notifiche/leggi/${n.id_notifica}`, { method: 'PUT' }).catch(console.error);
+                    }
+                }
             });
 
-            // GESTIONE CLICK SMART (Delegation)
+            // 3. Gestione Click sulla Lista (Event Delegation)
             const listContainer = document.getElementById('notifList');
             listContainer.addEventListener('click', async (e) => {
-                // 1. Cliccato sul pulsante "Vai al Task"?
+                
+                // A. Click su "Vai al Task" (Freccia)
                 const btnGo = e.target.closest('[data-action="go-task"]');
                 if (btnGo) {
                     const taskId = btnGo.dataset.task;
+                    // Prima segna come letta la notifica relativa (opzionale, ma consigliato)
+                    const wrapper = btnGo.closest('.notification-item-wrapper');
+                    const notifId = wrapper.querySelector('[data-action="mark-read"]').dataset.id;
+                    apiFetch(`/api/tasks/notifiche/leggi/${notifId}`, { method: 'PUT' }).catch(console.error);
+                    
+                    // Poi naviga
                     await this.renderInspectorView(taskId);
                     return;
                 }
 
-                // 2. Cliccato sul contenuto (Segna come letto)?
+                // B. Click sul Contenuto (Segna come letto)
                 const contentDiv = e.target.closest('[data-action="mark-read"]');
                 if (contentDiv) {
                     const wrapper = contentDiv.closest('.notification-item-wrapper');
+                    
+                    // Agisci solo se è ancora non letta
                     if (wrapper.classList.contains('unread')) {
+                        // Update UI
                         wrapper.classList.remove('unread');
                         wrapper.classList.add('read');
+                        
+                        // Update DB
                         const notifId = contentDiv.dataset.id;
                         try {
                             await apiFetch(`/api/tasks/notifiche/leggi/${notifId}`, { method: 'PUT' });
-                        } catch (err) { console.error(err); }
+                        } catch (err) { 
+                            console.error("Errore aggiornamento notifica", err); 
+                            // Revert UI in caso di errore critico (opzionale)
+                            wrapper.classList.add('unread');
+                        }
                     }
                 }
             });
 
         } catch(e) { 
-            this.dom.inspectorBody.innerHTML = `<p style="color:red">Errore caricamento notifiche: ${e.message}</p>`; 
+            this.dom.inspectorBody.innerHTML = `<p style="color:red; text-align:center; padding:20px;">Errore caricamento notifiche: ${e.message}</p>`; 
         }
     },
 
     // =================================================================
-    // == 6. INSPECTOR: EDIT / CREATE FORM                            ==
+    // == 6. INSPECTOR: EDIT / CREATE FORM (Aggiornato con std-btn)   ==
     // =================================================================
 
     renderInspectorForm: function(task = null) {
@@ -670,8 +715,8 @@ const TaskApp = {
                 <textarea id="inpDesc" class="inp-area">${vals.desc || ''}</textarea>
 
                 <div class="form-actions">
-                    <button id="btnCancel" class="button button--warning">Annulla</button>
-                    <button id="btnSave" class="button button--success">Salva</button>
+                    <button id="btnCancel" class="std-btn std-btn--ghost">Annulla</button>
+                    <button id="btnSave" class="std-btn std-btn--primary">Salva</button>
                 </div>
             </form>
         `;

@@ -1,92 +1,29 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - STILE DEFINITIVO (Fix Layout)    == */
+/* == GESTIONE ATTIVITÀ - STILE ARMONIZZATO (Ver. 10.0)    == */
 /* ========================================================== */
 
-* { box-sizing: border-box; }
+/* --- 1. LAYOUT SPECIFICO KANBAN --- */
+/* Nota: Il contenitore esterno è .std-app-content che ha display flex */
 
-body {
-    background-color: #f4f7f9;
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.page-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
-
-/* --- 1. HEADER COMPATTO --- */
-.page-header {
-    background-color: #34495e;
-    color: white;
-    height: 50px;
-    padding: 0 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-shrink: 0;
-    z-index: 10;
-}
-
-.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
-
-.page-header h1 {
-    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
-    position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
-}
-
-.header-button {
-    color: white; text-decoration: none; font-size: 0.9em;
-    display: flex; align-items: center; gap: 6px; opacity: 0.9;
-    background: transparent !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    padding: 5px 10px !important;
-    height: auto !important;
-    width: auto !important;
-}
-.header-button:hover { background: rgba(255,255,255,0.1) !important; opacity: 1; }
-
-.header-filter-wrapper {
-    display: flex; align-items: center;
-    background: white; 
-    padding: 2px 5px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    height: 30px;
-}
-
-.header-filter-wrapper label {
-    font-size: 0.85em; margin-right: 8px; color: #333; font-weight: 500;
-}
-
-.header-select {
-    background: transparent; border: none; color: #333;
-    font-size: 0.9em; outline: none; cursor: pointer;
-    font-family: inherit; padding: 0; margin: 0;
-}
-.header-select option { background-color: white; color: #333; }
-
-/* --- 2. LAYOUT A 5 COLONNE (FIXED) --- */
 .task-view-wrapper {
     display: flex; 
-    flex: 1; 
+    flex: 1; /* Occupa tutto lo spazio verticale disponibile */
     overflow: hidden; 
     padding: 10px; 
     gap: 10px; 
     background-color: #eef2f5;
     width: 100%;
+    height: 100%; /* Forza altezza piena */
 }
 
 /* KANBAN BOARD (Colonne 1-4) */
 .task-view-grid {
     display: flex; 
     gap: 10px; 
-    flex: 1; /* Prende tutto lo spazio disponibile meno l'ispettore */
+    flex: 1; /* Espanditi */
     height: 100%; 
-    overflow-x: auto; /* Scroll orizzontale se lo schermo è minuscolo */
-    min-width: 0; /* CRUCIALE: permette a flexbox di restringere il contenitore */
+    overflow-x: auto; 
+    min-width: 0;
 }
 
 .task-column {
@@ -95,280 +32,189 @@ body {
     padding: 6px;
     display: flex; 
     flex-direction: column; 
-    /* Flex: grow, shrink, basis */
-    flex: 1 1 200px; 
-    min-width: 200px; /* Non diventare mai più piccolo di così */
+    /* Flex responsive */
+    flex: 1 0 240px; 
+    min-width: 240px; 
     max-width: 400px;
     height: 100%;
+    border: 1px solid #e0e0e0;
 }
 
 .task-column-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 4px 8px 4px; border-bottom: 2px solid #dcdcdc; margin-bottom: 6px; flex-shrink: 0;
 }
-.task-column-header h2 { font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
-.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.75em; font-weight: bold; color: #555; }
+.task-column-header h2 { 
+    font-size: 0.9em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; 
+    display: flex; align-items: center; gap: 8px; 
+}
+.dot-indicator {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+}
+/* Colori pallini colonne */
+.task-column[data-status="Da Fare"] .dot-indicator { background-color: #3498db; }
+.task-column[data-status="In Corso"] .dot-indicator { background-color: #f1c40f; }
+.task-column[data-status="In Revisione"] .dot-indicator { background-color: #9b59b6; }
+.task-column[data-status="Completato"] .dot-indicator { background-color: #2ecc71; }
+
+.column-count { background-color: #d1d5db; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; color: #555; }
 
 .tasks-container { flex: 1; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 8px; min-height: 50px; }
 
-/* --- 3. ISPETTORE (Colonna 5 - FIXED) --- */
+/* --- 2. ISPETTORE (Colonna 5) --- */
 .task-inspector-fixed {
-    /* Dimensione fissa ma responsive */
-    flex: 0 0 380px; /* Larghezza target: 380px */
-    min-width: 350px; /* Mai meno di questo */
-    max-width: 500px; 
+    flex: 0 0 400px; /* Larghezza fissa ottimale */
+    min-width: 350px; 
+    max-width: 500px;
     
     background-color: white; border-radius: 6px;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;
     height: 100%; border: 1px solid #ddd; overflow: hidden;
     z-index: 20;
 }
 
-/* CARDS */
-.task-card {
-    background-color: white; border-radius: 4px; padding: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
-    border-left: 4px solid transparent; transition: transform 0.1s; user-select: none;
-}
-.task-card:hover { box-shadow: 0 3px 6px rgba(0,0,0,0.15); transform: translateY(-1px); }
-.task-card.priority-alta { border-left-color: #dc3545; }
-.task-card.priority-media { border-left-color: #ffc107; }
-.task-card.priority-bassa { border-left-color: #28a745; }
-.task-card h4 { margin: 4px 0; font-size: 0.95em; color: #2c3e50; font-weight: 500; line-height: 1.3; }
-
-.cat-tag, .commessa-tag {
-    font-size: 0.7em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
-    font-weight: 600; display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
-}
-.cat-tag { background-color: #f1f3f5; color: #555; }
-.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
-.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
-.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
-
-/* TOOLBAR & FORMS */
+/* TOOLBAR INTERNA */
 .inspector-header-toolbar {
     padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
-    display: flex; align-items: center; gap: 8px; height: 55px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px; height: 60px; flex-shrink: 0;
 }
-
-.toolbar-btn {
-    flex: 1; height: 34px !important; border-radius: 4px !important; border: none !important;
-    cursor: pointer; font-size: 0.85em !important; font-weight: 500 !important; color: white !important;
-    display: flex; align-items: center; justify-content: center; gap: 5px; transition: filter 0.2s;
-    white-space: nowrap; margin: 0 !important; width: auto !important;
-}
-.toolbar-btn:hover:not(:disabled) { filter: brightness(90%); }
-.toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #ccc !important; color: #666 !important; }
-
-.btn-new { background-color: #28a745 !important; }
-.btn-complete { background-color: #17a2b8 !important; }
-.btn-transfer { background-color: #6c757d !important; }
-.btn-edit { background-color: #ffc107 !important; color: #333 !important; }
-.btn-delete { background-color: #dc3545 !important; }
-.btn-bell { 
-    background-color: transparent !important; color: #555 !important; 
-    border: 1px solid #ddd !important; flex: 0 0 34px !important; padding: 0 !important;
+/* Override specifici per i bottoni della toolbar se necessario (es. dimensioni) */
+.inspector-header-toolbar .std-btn {
+    height: 36px; /* Leggermente più compatti */
+    font-size: 0.85em;
 }
 
 .inspector-body { flex: 1; overflow-y: auto; padding: 20px; position: relative; background-color: #fff; }
 
-.read-only-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 0.9em; }
-.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-.detail-item span { font-size: 1em; color: #333; font-weight: 500; }
-.detail-description { grid-column: 1 / -1; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; }
-.description-text { font-size: 0.95em; color: #444; line-height: 1.5; white-space: pre-wrap; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #eee; }
-
-/* CHAT & STORIA */
-.history-section h4 { margin: 0 0 10px 0; color: #555; font-size: 1em; padding-top: 10px; border-top: 1px solid #eee; }
-.history-list { max-height: 250px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-.history-item { font-size: 0.85em; padding: 8px 10px; border-radius: 4px; border: 1px solid #eee; line-height: 1.4; }
-.history-item.comment { background-color: #f0f7ff; border-left: 3px solid #007bff; border-color: #d6e9ff; }
-.history-item.action { background-color: #fff3cd; border-left: 3px solid #ffc107; border-color: #ffeeba; color: #856404; }
-
-.comment-box { display: flex; gap: 8px; margin-bottom: 15px; align-items: flex-start; }
-.comment-box textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 0.9em; min-height: 40px; height: 40px; }
-.btn-send { background-color: #007bff !important; color: white !important; border: none !important; border-radius: 4px !important; width: 40px !important; height: 40px !important; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 !important; }
-
-.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ccc; text-align: center; }
-.empty-state i { margin-bottom: 15px; color: #e0e0e0; }
-
-/* FORM & BUTTONS */
-.inspector-form label { display: block; margin-bottom: 4px; font-size: 0.85em; font-weight: bold; color: #555; }
-.inp-text, .inp-select, .inp-date, .inp-area { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; margin-bottom: 12px; }
-.inp-area { resize: vertical; min-height: 80px; }
-.form-row { display: flex; gap: 10px; } .form-col { flex: 1; }
-.form-actions { display: flex !important; justify-content: flex-end !important; align-items: center !important; gap: 10px !important; margin-top: 15px !important; padding-top: 15px !important; border-top: 1px solid #eee !important; width: 100% !important; }
-.form-actions button { width: auto !important; flex: 0 0 auto !important; min-width: 100px !important; max-width: 200px !important; height: 38px !important; padding: 0 20px !important; font-size: 0.9rem !important; margin: 0 !important; }
-
-/* MODALI E NOTIFICHE */
-.notification-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9em; cursor: pointer; transition: background 0.2s; }
-.notification-item:hover { background-color: #f9f9f9; }
-.notification-item.unread { background-color: #e3f2fd; font-weight: 500; }
-.notification-item small { color: #888; display: block; margin-top: 4px; font-size: 0.8em; font-weight: normal; }
-
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-.modal-content { background: white; margin: 10% auto; padding: 0; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
-.modal-header { padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
-.modal-body { padding: 20px; } .modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
-.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
-.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
-
-/* Responsive Mobile */
-@media (max-width: 1024px) { 
-    .task-inspector-fixed { min-width: 320px; } 
+/* --- 3. CARDS --- */
+.task-card {
+    background-color: white; border-radius: 6px; padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer;
+    border-left: 4px solid transparent; transition: all 0.2s; user-select: none;
+    border: 1px solid #e0e0e0;
 }
+.task-card:hover { box-shadow: 0 5px 10px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: #ccc; }
+
+.task-card.priority-alta { border-left: 4px solid #dc3545; }
+.task-card.priority-media { border-left: 4px solid #ffc107; }
+.task-card.priority-bassa { border-left: 4px solid #28a745; }
+
+.task-card h4 { margin: 8px 0; font-size: 1rem; color: #2c3e50; font-weight: 500; line-height: 1.4; }
+
+.cat-tag, .commessa-tag {
+    font-size: 0.75em; padding: 3px 6px; border-radius: 4px; text-transform: uppercase;
+    font-weight: 700; display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
+}
+.cat-tag { background-color: #f1f3f5; color: #555; }
+.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
+
+.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
+.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
+
+/* Stati speciali Card */
+.task-card.delegated-out { opacity: 0.7; background-color: #f9f9f9; border: 1px dashed #ccc; cursor: default; }
+.task-card.incoming-task { border-left: 5px solid #3498db !important; background-color: #f0f7ff; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15); }
+.incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: block; text-align: center; }
+
+/* --- 4. CONTENUTI ISPETTORE --- */
+.read-only-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; font-size: 0.95em; }
+.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+.detail-item span { font-size: 1rem; color: #333; font-weight: 500; }
+.detail-description { grid-column: 1 / -1; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; }
+.description-text { font-size: 0.95em; color: #444; line-height: 1.6; white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
+
+/* Chat */
+.history-section h4 { margin: 0 0 15px 0; color: #555; font-size: 1rem; padding-top: 15px; border-top: 1px solid #eee; }
+.history-list { max-height: 300px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+.history-item { font-size: 0.9em; padding: 10px; border-radius: 6px; border: 1px solid #eee; line-height: 1.4; background: #fff; }
+.history-item.comment { background-color: #f0f7ff; border-left: 3px solid #007bff; }
+.history-item.action { background-color: #fff8e1; border-left: 3px solid #ffc107; color: #5d4037; }
+
+.comment-box { display: flex; gap: 10px; margin-bottom: 15px; }
+.comment-box textarea { flex: 1; resize: none; border: 1px solid #ccc; border-radius: 6px; padding: 10px; font-size: 0.95em; min-height: 45px; }
+.btn-send { 
+    background-color: #3498db !important; color: white !important; 
+    border: none; border-radius: 6px; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
+}
+
+/* Forms */
+.inspector-form label { display: block; margin-bottom: 6px; font-size: 0.85em; font-weight: 600; color: #555; }
+.inp-text, .inp-select, .inp-date, .inp-area { 
+    width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; 
+    font-size: 0.95em; box-sizing: border-box; margin-bottom: 15px; 
+    font-family: inherit;
+}
+.inp-area { resize: vertical; min-height: 100px; }
+.form-row { display: flex; gap: 15px; } .form-col { flex: 1; }
+
+.form-actions { 
+    display: flex !important; justify-content: flex-end !important; gap: 10px !important; 
+    margin-top: 20px !important; padding-top: 20px !important; border-top: 1px solid #eee !important; 
+}
+
+/* Filtro Utente Header (Stile specifico per stare nell'header scuro) */
+.header-filter-wrapper {
+    display: flex; align-items: center;
+    background: rgba(255,255,255,0.1); 
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2);
+    height: 32px;
+}
+.header-filter-wrapper label { color: white; margin-right: 8px; font-size: 0.85em; }
+.header-select { background: transparent; border: none; color: white; outline: none; cursor: pointer; font-weight: 500; }
+.header-select option { background-color: #34495e; color: white; }
+
+/* --- 5. NOTIFICHE LISTA (Stile Aggiornato) --- */
+.notification-list { display: flex; flex-direction: column; gap: 0; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
+.notification-item-wrapper { display: flex; align-items: center; border-bottom: 1px solid #eee; transition: background-color 0.2s; text-align: left; }
+.notification-item-wrapper:last-child { border-bottom: none; }
+
+.notification-item-wrapper.unread { background-color: #e3f2fd; }
+.notification-item-wrapper.unread .notif-msg { font-weight: 600; color: #000; }
+.notification-item-wrapper.unread .notif-type { color: #1976d2; font-weight: 800; }
+
+.notification-item-wrapper.read { background-color: #fff; }
+.notification-item-wrapper.read .notif-msg { color: #555; }
+
+.notification-content { flex: 1; padding: 12px; cursor: pointer; }
+.notif-header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85em; }
+.notif-type { text-transform: uppercase; font-size: 0.8em; letter-spacing: 0.5px; }
+.notif-date { color: #999; font-size: 0.8em; }
+
+.btn-go-to-task {
+    background: transparent; border: none; border-left: 1px solid #eee;
+    width: 50px; align-self: stretch; cursor: pointer; color: #ccc;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.btn-go-to-task:hover { background-color: #f8f9fa; color: #3498db; }
+
+/* --- 6. MODALE ARCHIVIO (FORCE CENTER FIX) --- */
+#archiveModal {
+    position: fixed !important; z-index: 9999 !important; 
+    left: 0 !important; top: 0 !important;
+    width: 100vw !important; height: 100vh !important;
+    background-color: rgba(0,0,0,0.5); pointer-events: auto !important; 
+}
+#archiveModal .modal-content {
+    margin: 0 !important; 
+    position: absolute !important; 
+    top: 50% !important; left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 600px !important; max-width: 90% !important; max-height: 85vh !important;
+    background: #fff !important; border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+    display: flex !important; flex-direction: column !important;
+}
+#archiveTasksContainer { overflow-y: auto !important; flex-grow: 1 !important; padding: 0 !important; }
+.archive-task-item { padding: 12px 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr; align-items: center; font-size: 0.95em; }
+.archive-task-item:hover { background-color: #f9f9f9; }
+
+/* Responsive */
+@media (max-width: 1024px) { .task-inspector-fixed { min-width: 320px; } }
 @media (max-width: 768px) { 
     .task-view-wrapper { flex-direction: column; overflow-y: auto; } 
-    .task-view-grid { flex: none; height: 350px; overflow-x: auto; min-height: 300px; } 
-    .task-inspector-fixed { width: 100%; border-left: none; border-top: 1px solid #ddd; flex: none; min-height: 400px; height: auto; } 
-}
-
-/* Extras */
-.task-card.delegated-out { opacity: 0.6; background-color: #f3f3f3; border: 1px dashed #bbb; cursor: default; }
-.task-card.incoming-task { border-left: 5px solid #3498db !important; background-color: #f0f7ff; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2); }
-.incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; width: 100%; text-align: center; }
-
-/* ========================================================== */
-/* == FIX DEFINITIVO MODALE ARCHIVIO (FORCE CENTER)        == */
-/* ========================================================== */
-
-/* 1. Il contenitore scuro deve coprire tutto */
-#archiveModal {
-    /* Assicura che sia sopra tutto e fisso */
-    position: fixed !important;
-    z-index: 9999 !important; 
-    left: 0 !important;
-    top: 0 !important;
-    width: 100vw !important; /* Usa Viewport Width */
-    height: 100vh !important; /* Usa Viewport Height */
-    background-color: rgba(0,0,0,0.5); /* Sfondo scuro */
-    
-    /* Questo serve per bloccare click passanti */
-    pointer-events: auto !important; 
-}
-
-/* 2. Il box bianco: Centratura Assoluta */
-#archiveModal .modal-content {
-    /* CRUCIALE: Rimuove il "margin: 10% auto" che causava il problema */
-    margin: 0 !important; 
-    
-    /* Posizionamento assoluto rispetto allo schermo */
-    position: absolute !important; /* O 'fixed', ma absolute dentro un fixed va bene */
-    top: 50% !important;
-    left: 50% !important;
-    
-    /* Sposta indietro del 50% della propria dimensione per centrarsi */
-    transform: translate(-50%, -50%) !important;
-    
-    /* Dimensioni fisse */
-    width: 500px !important;
-    max-width: 90% !important;
-    max-height: 85vh !important;
-    
-    /* Stile Visivo */
-    background: #fff !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
-    
-    /* Layout interno flex per header/body/footer */
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* 3. Assicuriamo che l'header e il footer non collassino */
-#archiveModal .modal-header,
-#archiveModal .modal-footer {
-    flex-shrink: 0 !important;
-}
-
-/* 4. Il corpo deve scrollare se il contenuto è lungo */
-#archiveTasksContainer {
-    overflow-y: auto !important;
-    flex-grow: 1 !important;
-    max-height: none !important; /* Lascia gestire l'altezza al flex parent */
-    padding: 15px;
-}
-
-/* --- NUOVO STILE NOTIFICHE --- */
-
-.notification-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.notification-item-wrapper {
-    display: flex;
-    align-items: center; /* Allinea verticalmente */
-    border-bottom: 1px solid #eee;
-    transition: background-color 0.2s;
-    text-align: left;
-}
-
-/* Stato Non Letto */
-.notification-item-wrapper.unread {
-    background-color: #e3f2fd; /* Azzurrino */
-}
-.notification-item-wrapper.unread .notif-msg {
-    font-weight: 600;
-    color: #000;
-}
-.notification-item-wrapper.unread .notif-type {
-    color: #1976d2;
-    font-weight: 800;
-}
-
-/* Stato Letto */
-.notification-item-wrapper.read {
-    background-color: #fff;
-    opacity: 0.8;
-}
-.notification-item-wrapper.read .notif-msg {
-    color: #555;
-    font-weight: 400;
-}
-
-/* Contenuto Testuale (Cliccabile per leggere) */
-.notification-content {
-    flex: 1; /* Prende tutto lo spazio disponibile */
-    padding: 12px;
-    cursor: pointer;
-}
-
-.notif-header {
-    display: flex; 
-    justify-content: space-between; 
-    margin-bottom: 4px;
-    font-size: 0.85em;
-}
-
-.notif-type {
-    text-transform: uppercase;
-    font-size: 0.9em;
-}
-
-.notif-date {
-    color: #999;
-}
-
-/* Pulsante Vai al Task */
-.btn-go-to-task {
-    background: transparent;
-    border: none;
-    border-left: 1px solid #ddd;
-    width: 50px;
-    height: 100%;
-    min-height: 80px; /* Altezza minima per cliccabilità */
-    cursor: pointer;
-    color: #999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-.btn-go-to-task:hover {
-    background-color: #f0f0f0;
-    color: #3498db;
+    .task-view-grid { flex: none; height: 400px; overflow-x: auto; } 
+    .task-inspector-fixed { width: 100%; border-left: none; border-top: 1px solid #ddd; flex: none; min-height: 500px; } 
 }
