@@ -1,213 +1,210 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - LAYOUT FLEX FULL HEIGHT (Final)  == */
+/* == GESTIONE ATTIVITÀ - LAYOUT STANDARD & FULL HEIGHT    == */
 /* ========================================================== */
 
-* { box-sizing: border-box; }
-
-/* 1. IMPOSTAZIONI PAGINA FULL HEIGHT */
+/* --- 1. RESET & FULL HEIGHT --- */
 html, body {
-    height: 100%; /* Occupa tutta l'altezza del browser */
+    height: 100%; /* Fondamentale */
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Nessuno scroll sul body */
-    font-family: 'Roboto', sans-serif;
+    overflow: hidden; /* Nessuno scroll sulla pagina principale */
     background-color: #f4f7f9;
+    font-family: 'Roboto', sans-serif;
 }
 
 .page-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Forza altezza viewport */
+    height: 100%; /* Occupa tutto il body */
     width: 100%;
 }
 
-/* --- 2. HEADER STANDARD --- */
-.page-header {
-    background-color: #34495e;
-    color: white;
-    height: 50px; /* Altezza fissa header */
-    padding: 0 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* L'header non si schiaccia mai */
-    z-index: 10;
-}
-
-.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+/* --- 2. HEADER: Eredita da style-v2.css --- */
+/* NON sovrascrivere .page-header o .header-button qui! 
+   Lasciamo che style-v2 comandi per avere lo stile standard. */
 
 .page-header h1 {
-    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
-    position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
+    /* Solo centratura titolo specifica se serve */
+    margin: 0; font-size: 1.4em; font-weight: 500; letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
-/* Stile Pulsante Home (Standard) */
-.header-button {
-    color: white; text-decoration: none; font-size: 0.9em;
-    display: flex; align-items: center; gap: 6px; opacity: 0.9;
-    background: transparent !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    padding: 5px 12px !important;
-    border-radius: 4px;
-    height: auto !important;
-    width: auto !important;
-}
-.header-button:hover { background: rgba(255,255,255,0.1) !important; opacity: 1; }
-
-/* Filtro Utente */
+/* Stile specifico per il filtro utente nell'header */
 .header-filter-wrapper {
     display: flex; align-items: center;
-    background: white; padding: 2px 5px; border-radius: 4px;
-    border: 1px solid #ccc; height: 30px;
+    background: rgba(255,255,255,0.9); 
+    padding: 4px 8px; border-radius: 4px;
+    height: 34px;
 }
-.header-filter-wrapper label { font-size: 0.85em; margin-right: 8px; color: #333; font-weight: 500; }
-.header-select { background: transparent; border: none; color: #333; outline: none; cursor: pointer; }
+.header-filter-wrapper label { font-size: 0.85em; margin-right: 8px; color: #333; font-weight: 600; }
+.header-select { background: transparent; border: none; color: #333; outline: none; cursor: pointer; font-weight: 500; }
 
-/* --- 3. WRAPPER PRINCIPALE (Contiene Colonne + Ispettore) --- */
+/* --- 3. LAYOUT PRINCIPALE (Flexbox) --- */
 .task-view-wrapper {
     display: flex;
-    flex: 1; /* Prende tutto lo spazio rimanente sotto l'header */
-    height: calc(100vh - 50px); /* Altezza totale meno header */
-    overflow: hidden; /* Niente scroll qui, lo gestiamo dentro */
-    padding: 10px;
-    gap: 10px;
-    background-color: #eef2f5;
+    flex: 1; /* Prende tutto lo spazio verticale rimanente */
+    overflow: hidden; /* Blocca scroll esterni */
+    padding: 15px; /* Spaziatura esterna */
+    gap: 15px;
 }
 
-/* --- 4. GRIGLIA KANBAN (Colonne 1-4) --- */
+/* --- 4. GRIGLIA KANBAN (Sinistra) --- */
 .task-view-grid {
     display: flex;
-    gap: 10px;
-    /* Flex: cresce (3 parti), si restringe (1), base 0 */
-    flex: 3 1 0; 
+    flex: 1; /* Occupa tutto lo spazio lasciato libero dall'ispettore */
+    gap: 12px;
     height: 100%;
-    overflow-x: auto; /* Scroll orizzontale se necessario */
+    /* Se lo schermo è piccolissimo, abilita scroll orizzontale SOLO qui */
+    overflow-x: auto; 
     overflow-y: hidden;
 }
 
 .task-column {
+    /* Flex: 1 = Tutte le colonne larghe uguali */
+    flex: 1; 
+    /* Min-width: 0 permette alle colonne di stringersi per stare nello schermo */
+    min-width: 200px; 
+    
     background-color: #ebecf0;
-    border-radius: 6px;
-    padding: 6px;
+    border-radius: 8px;
+    padding: 8px 6px;
     display: flex;
     flex-direction: column;
-    /* Le colonne si dividono lo spazio equamente */
-    flex: 1 0 220px; /* Minimo 220px per leggibilità */
     height: 100%;
-    max-width: 400px;
     border: 1px solid #dcdcdc;
 }
 
 .task-column-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 4px 8px 4px; border-bottom: 2px solid #dcdcdc; margin-bottom: 6px; flex-shrink: 0;
+    padding-bottom: 8px; margin-bottom: 8px;
+    border-bottom: 2px solid #d0d4db;
+    flex-shrink: 0;
 }
-.task-column-header h2 { font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; }
-.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.75em; font-weight: bold; color: #555; }
+.task-column-header h2 { 
+    font-size: 0.9em; margin: 0; color: #34495e; font-weight: 700; 
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.column-count { background-color: #d1d5db; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: 700; color: #555; }
 
-/* Contenitore Card Scrollabile */
+/* Area Scrollabile VERTICALE (Lista Card) */
 .tasks-container {
-    flex: 1; /* Prende tutto lo spazio verticale nella colonna */
-    overflow-y: auto; /* Scroll VERTICALE qui */
-    padding-right: 2px;
-    display: flex; flex-direction: column; gap: 8px;
+    flex: 1; /* Occupa tutto lo spazio verticale nella colonna */
+    overflow-y: auto; /* Scroll qui se ci sono tanti task */
+    padding-right: 4px;
+    display: flex; flex-direction: column; gap: 10px;
     min-height: 50px;
 }
 
-/* --- 5. ISPETTORE (Colonna 5) --- */
+/* --- 5. ISPETTORE (Destra - Larghezza Fissa) --- */
 .task-inspector-fixed {
-    /* Flex: cresce (1.2 parti), si restringe (0), base 350px */
-    flex: 1.2 0 350px; 
-    /* Larghezza minima per non rompere il form */
-    min-width: 350px; 
-    max-width: 600px; /* Non diventare enorme su schermi larghi */
+    width: 420px; /* Larghezza fissa solida */
+    flex-shrink: 0; /* Non si schiaccia mai */
     
-    background-color: white; border-radius: 6px;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    background-color: white; border-radius: 8px;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.08);
     display: flex; flex-direction: column;
     height: 100%;
     border: 1px solid #ddd;
     overflow: hidden;
+    z-index: 20;
 }
 
+/* Toolbar Ispettore */
 .inspector-header-toolbar {
-    padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
-    display: flex; align-items: center; gap: 8px; height: 55px; flex-shrink: 0;
+    padding: 10px 15px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
+    display: flex; align-items: center; gap: 8px; height: 60px; flex-shrink: 0;
 }
 
 /* Pulsanti Toolbar */
 .toolbar-btn {
-    flex: 1; height: 34px !important; border-radius: 4px !important; border: none !important;
-    cursor: pointer; font-size: 0.85em !important; font-weight: 500 !important; color: white !important;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
+    flex: 1; height: 36px !important; border-radius: 4px !important; border: none !important;
+    cursor: pointer; font-size: 0.85em !important; font-weight: 600 !important; color: white !important;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
     white-space: nowrap; margin: 0 !important; width: auto !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-new { background-color: #28a745 !important; }
+.btn-new:hover { background-color: #218838 !important; }
 .btn-complete { background-color: #17a2b8 !important; }
 .btn-transfer { background-color: #6c757d !important; }
 .btn-edit { background-color: #ffc107 !important; color: #333 !important; }
 .btn-delete { background-color: #dc3545 !important; }
-.btn-bell { background-color: transparent !important; color: #555 !important; border: 1px solid #ddd !important; flex: 0 0 34px !important; padding: 0 !important; }
+.btn-bell { background-color: white !important; color: #555 !important; border: 1px solid #ccc !important; flex: 0 0 36px !important; padding: 0 !important; }
 
-/* Corpo Ispettore Scrollabile */
+/* Corpo Ispettore */
 .inspector-body {
-    flex: 1; /* Occupa tutto lo spazio verticale */
-    overflow-y: auto; /* Scroll VERTICALE qui */
-    padding: 20px;
-    background-color: #fff;
+    flex: 1; overflow-y: auto; padding: 25px; background-color: #fff;
 }
 
-/* --- 6. CARDS & STILI --- */
+/* --- 6. CARD STYLE --- */
 .task-card {
-    background-color: white; border-radius: 4px; padding: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: grab;
-    border-left: 4px solid transparent; transition: transform 0.1s; user-select: none;
+    background-color: white; border-radius: 6px; padding: 12px 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03); cursor: grab;
+    border: 1px solid #e0e0e0; border-left: 4px solid transparent;
+    transition: all 0.15s ease;
 }
-.task-card:hover { box-shadow: 0 3px 6px rgba(0,0,0,0.15); transform: translateY(-1px); }
+.task-card:hover { box-shadow: 0 5px 10px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: #ccc; }
+.task-card:active { cursor: grabbing; }
+
 .task-card.priority-alta { border-left-color: #dc3545; }
 .task-card.priority-media { border-left-color: #ffc107; }
 .task-card.priority-bassa { border-left-color: #28a745; }
-.task-card h4 { margin: 4px 0; font-size: 0.95em; color: #2c3e50; font-weight: 500; line-height: 1.3; }
+
+.task-card h4 { margin: 8px 0; font-size: 1rem; color: #2c3e50; font-weight: 500; line-height: 1.3; }
 
 .cat-tag, .commessa-tag {
-    font-size: 0.7em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
-    font-weight: 600; display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 0.7em; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+    font-weight: 700; display: inline-block; max-width: 100%; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cat-tag { background-color: #f1f3f5; color: #555; }
-.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
+.cat-tag { background-color: #f1f3f5; color: #666; }
+.commessa-tag { background-color: #e3f2fd; color: #1565c0; }
 
-.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
-.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
-.task-card.delegated-out { opacity: 0.6; background-color: #f3f3f3; border: 1px dashed #bbb; cursor: default; }
-.task-card.incoming-task { border-left: 5px solid #3498db !important; background-color: #f0f7ff; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2); }
-.incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: block; text-align: center; }
+.task-card.dragging { opacity: 0.4; border: 1px dashed #999; background: #f9f9f9; }
+.drag-over { background-color: #e3f2fd; border: 2px dashed #3498db; }
+.task-card.delegated-out { opacity: 0.7; background-color: #f9f9f9; border: 1px dashed #bbb; cursor: default; }
+.task-card.incoming-task { border-left: 5px solid #3498db !important; background-color: #f4faff; }
+.incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px; border-radius: 4px; margin-bottom: 8px; display: block; text-align: center; }
 
-/* --- 7. DETTAGLI, FORM & NOTIFICHE --- */
-.read-only-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 0.9em; }
-.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-.detail-description { grid-column: 1 / -1; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; }
-.description-text { font-size: 0.95em; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #eee; }
+/* --- 7. DETTAGLI ISPETTORE --- */
+.detail-title { margin: 0 0 20px 0; font-size: 1.4rem; color: #2c3e50; font-weight: 400; }
+.read-only-box { background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.95rem; }
+.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+.detail-description { margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd; grid-column: 1 / -1; }
+.description-text { font-size: 1rem; color: #444; background: white; padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-top: 5px; line-height: 1.6; }
 
-/* Notifiche */
-.notification-list { border: 1px solid #eee; border-radius: 6px; overflow: hidden; margin-bottom: 15px; }
-.notification-item-wrapper { display: flex; align-items: stretch; border-bottom: 1px solid #eee; background: white; }
+/* Chat */
+.history-section h4 { margin: 20px 0 15px; font-size: 1.1rem; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-item { padding: 12px; border-radius: 6px; font-size: 0.9em; border: 1px solid #eee; background: white; }
+.history-item.comment { background-color: #f0f8ff; border-left: 3px solid #3498db; }
+.history-item.action { background-color: #fff8e1; border-left: 3px solid #ffc107; color: #666; font-style: italic; }
+
+.comment-box { display: flex; gap: 10px; margin-bottom: 20px; }
+.comment-box textarea { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 10px; height: 45px; resize: none; font-family: inherit; }
+.btn-send { background-color: #3498db !important; color: white !important; border: none; border-radius: 4px; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* --- 8. NOTIFICHE & MODALE --- */
+.notification-list { border: 1px solid #eee; border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+.notification-item-wrapper { display: flex; align-items: stretch; border-bottom: 1px solid #eee; background: white; transition: background 0.2s; }
 .notification-item-wrapper.unread { background-color: #e3f2fd; }
-.notification-content { flex: 1; padding: 12px; cursor: pointer; }
-.btn-go-to-task { width: 40px; background: transparent; border: none; border-left: 1px solid #eee; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; }
+.notification-content { flex: 1; padding: 15px; cursor: pointer; }
+.btn-go-to-task { width: 50px; background: transparent; border: none; border-left: 1px solid #eee; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
 .btn-go-to-task:hover { background: #f1f3f5; color: #3498db; }
 
 /* Modale Archivio (Centrato) */
 #archiveModal { position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9999; display: none; }
-#archiveModal .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; max-width: 90%; max-height: 85vh; background: white; border-radius: 8px; margin: 0; display: flex; flex-direction: column; }
+#archiveModal .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; max-width: 90%; max-height: 85vh; background: white; border-radius: 8px; margin: 0; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 #archiveTasksContainer { overflow-y: auto; padding: 0; flex: 1; }
-.archive-task-item { padding: 12px 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr; }
+.archive-task-item { padding: 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr; gap: 10px; font-size: 0.95rem; }
 
-/* Responsive */
-@media (max-width: 1200px) { .task-inspector-fixed { flex: 1 0 320px; min-width: 320px; } }
-@media (max-width: 768px) { 
-    .task-view-wrapper { flex-direction: column; overflow-y: auto; } 
-    .task-view-grid { flex: none; height: 400px; } 
-    .task-inspector-fixed { width: 100%; border-left: none; border-top: 1px solid #ddd; flex: none; min-height: 500px; } 
+/* --- 9. RESPONSIVE --- */
+@media (max-width: 1200px) {
+    .task-inspector-fixed { width: 350px; min-width: 350px; }
+}
+@media (max-width: 768px) {
+    .task-view-wrapper { flex-direction: column; overflow-y: auto; }
+    .task-view-grid { flex: none; height: 450px; overflow-x: auto; }
+    .task-inspector-fixed { width: 100%; border-left: none; border-top: 1px solid #ddd; height: auto; min-height: 500px; flex: none; }
 }
