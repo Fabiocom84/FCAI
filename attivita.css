@@ -231,44 +231,62 @@ body {
 .incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; width: 100%; text-align: center; }
 
 /* ========================================================== */
-/* == FIX CENTRATURA MODALE ARCHIVIO                       == */
+/* == FIX DEFINITIVO MODALE ARCHIVIO (FORCE CENTER)        == */
 /* ========================================================== */
 
-/* 1. Forza il contenitore a coprire tutto lo schermo */
+/* 1. Il contenitore scuro deve coprire tutto */
 #archiveModal {
+    /* Assicura che sia sopra tutto e fisso */
     position: fixed !important;
-    top: 0 !important;
+    z-index: 9999 !important; 
     left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 2000 !important; /* Sopra a tutto */
-    /* Il display viene gestito dal JS (block/none), quindi non lo tocchiamo qui */
+    top: 0 !important;
+    width: 100vw !important; /* Usa Viewport Width */
+    height: 100vh !important; /* Usa Viewport Height */
+    background-color: rgba(0,0,0,0.5); /* Sfondo scuro */
+    
+    /* Questo serve per bloccare click passanti */
+    pointer-events: auto !important; 
 }
 
-/* 2. Centra il box bianco perfettamente */
+/* 2. Il box bianco: Centratura Assoluta */
 #archiveModal .modal-content {
-    position: absolute !important;
+    /* CRUCIALE: Rimuove il "margin: 10% auto" che causava il problema */
+    margin: 0 !important; 
+    
+    /* Posizionamento assoluto rispetto allo schermo */
+    position: absolute !important; /* O 'fixed', ma absolute dentro un fixed va bene */
     top: 50% !important;
     left: 50% !important;
-    transform: translate(-50%, -50%) !important; /* Centratura magica */
     
-    margin: 0 !important; /* Rimuove i vecchi margini che causavano l'errore */
+    /* Sposta indietro del 50% della propria dimensione per centrarsi */
+    transform: translate(-50%, -50%) !important;
     
+    /* Dimensioni fisse */
     width: 500px !important;
     max-width: 90% !important;
-    max-height: 85vh !important; /* Evita che esca in verticale */
+    max-height: 85vh !important;
     
+    /* Stile Visivo */
+    background: #fff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+    
+    /* Layout interno flex per header/body/footer */
     display: flex !important;
     flex-direction: column !important;
-    
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-/* 3. Gestione scroll interno della lista archivio */
+/* 3. Assicuriamo che l'header e il footer non collassino */
+#archiveModal .modal-header,
+#archiveModal .modal-footer {
+    flex-shrink: 0 !important;
+}
+
+/* 4. Il corpo deve scrollare se il contenuto è lungo */
 #archiveTasksContainer {
-    overflow-y: auto;
-    flex: 1; /* Occupa tutto lo spazio disponibile nel box */
-    padding: 10px;
+    overflow-y: auto !important;
+    flex-grow: 1 !important;
+    max-height: none !important; /* Lascia gestire l'altezza al flex parent */
+    padding: 15px;
 }
