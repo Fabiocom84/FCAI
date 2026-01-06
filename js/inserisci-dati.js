@@ -25,31 +25,40 @@ async function loadCommesseDropdown() {
     if (!select) return;
 
     try {
-        const response = await apiFetch('/api/commesse/simple'); 
-        
+        // 1. CORREZIONE: Puntiamo all'endpoint esistente e corretto
+        const response = await apiFetch('/api/get-etichette');
+
         if (!response.ok) {
-            // Gestione silenziosa dell'errore per non bloccare la pagina se il backend è giù
-            console.warn("API Commesse non raggiungibile, uso fallback vuoto.");
+            console.warn("API Etichette non raggiungibile, uso fallback vuoto.");
             return;
         }
-        
+
         const commesse = await response.json();
-        
+
+        // Pulisce e rimette l'opzione di default
         select.innerHTML = '<option value="" selected>Nessuna associazione</option>';
 
+        // 2. CORREZIONE: Adattiamo il ciclo al formato { id, label } restituito da /api/get-etichette
         commesse.forEach(c => {
             const option = document.createElement('option');
-            option.value = c.id_commessa; 
-            option.textContent = `${c.cliente || '?'} | ${c.descrizione || c.modello || 'N/D'}`;
+            option.value = c.id;      // Il backend restituisce "id"
+            option.textContent = c.label; // Il backend restituisce "label" già formattata
             select.appendChild(option);
         });
 
+        // Inizializza Choices.js
         if (window.Choices) {
-            new Choices(select, { searchEnabled: true, itemSelectText: '', shouldSort: false });
+            new Choices(select, { 
+                searchEnabled: true, 
+                itemSelectText: '', 
+                shouldSort: false,
+                placeholder: true,
+                placeholderValue: 'Cerca commessa...'
+            });
         }
 
     } catch (error) {
-        console.warn("Errore caricamento dropdown:", error);
+        console.error("Errore caricamento dropdown:", error);
     }
 }
 
