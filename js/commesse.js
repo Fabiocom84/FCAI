@@ -221,8 +221,13 @@ const App = {
         if (IsAdmin) {
             actionsHtml = `
             <div class="card-actions">
-                <button class="button button--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
-                <button class="button button--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
+                <!-- NOTA: Usiamo std-btn invece di button per evitare conflitti con la home -->
+                <button class="std-btn std-btn--warning" data-action="edit" data-id="${commessa.id_commessa}">
+                    <span>✏️ Modifica</span>
+                </button>
+                <button class="std-btn std-btn--danger" data-action="delete" data-id="${commessa.id_commessa}">
+                    <span>🗑️ Elimina</span>
+                </button>
             </div>`;
         }
 

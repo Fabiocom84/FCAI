@@ -180,25 +180,18 @@
 }
 .registrazioni-section a { color: #3498db; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
 
-/* Card Actions */
+/* Card Actions (Footer della Card) */
 .card-actions {
     padding: 0 15px 15px;
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Su schermi piccolissimi i bottoni vanno a capo */
+    margin-top: auto; /* Spinge in fondo se c'è spazio */
 }
-.card-actions .button {
-    flex: 1;
-    min-width: 100px; /* Larghezza minima per evitare testi illeggibili */
-    padding: 10px;
-    font-size: 0.85em;
-    border-radius: 6px;
-    justify-content: center;
-    text-transform: uppercase;
-    font-weight: 700;
+
+/* Facciamo espandere i bottoni per riempire la card */
+.card-actions .std-btn {
+    flex: 1; 
 }
-.card-actions .button--warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.card-actions .button--danger { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
 
 /* Fasi & Toggle Switch (Stili invariati ma ottimizzati) */
 .phases-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; }

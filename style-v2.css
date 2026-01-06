@@ -491,3 +491,113 @@ body.internal-page {
     /* FIX MOBILE: Cuscinetto finale per non nascondere il bottone salva */
     padding-bottom: 80px; 
 }
+
+/* ==========================================================================
+   MASTER UI BUTTONS (Sistema std-btn)
+   Da usare nelle pagine interne per disaccoppiarsi dai bottoni della Home
+   ========================================================================== */
+
+/* Stile Base */
+.std-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Spazio tra icona e testo */
+    
+    padding: 8px 16px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+    text-decoration: none;
+    
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    
+    /* Reset proprietà ereditate per sbaglio */
+    width: auto;
+    height: auto;
+    min-height: unset;
+    background: none;
+    box-shadow: none;
+}
+
+.std-btn:active {
+    transform: translateY(1px);
+}
+
+.std-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+/* --- VARIANTI COLORE --- */
+
+/* Primary (Verde - es. Salva, Aggiungi) */
+.std-btn--primary {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+.std-btn--primary:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Secondary (Blu - es. Conferma, Filtri attivi) */
+.std-btn--blue {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+}
+.std-btn--blue:hover {
+    background-color: #2980b9;
+}
+
+/* Warning (Giallo - es. Modifica) */
+.std-btn--warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+.std-btn--warning:hover {
+    background-color: #ffeeba;
+    border-color: #ffdf7e;
+}
+
+/* Danger (Rosso - es. Elimina) */
+.std-btn--danger {
+    background-color: #fff5f5;
+    color: #c53030;
+    border-color: #feb2b2;
+}
+.std-btn--danger:hover {
+    background-color: #fed7d7;
+    border-color: #fc8181;
+}
+
+/* Ghost / Neutral (Bianco/Grigio - es. Annulla, Filtri inattivi) */
+.std-btn--ghost {
+    background-color: #ffffff;
+    color: #555;
+    border-color: #dcdcdc;
+}
+.std-btn--ghost:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+    color: #333;
+}
+
+/* Icone dentro i bottoni (se presenti) */
+.std-btn img, 
+.std-btn svg {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
