@@ -551,36 +551,48 @@ const MobileHoursApp = {
             }
         }
         else if (type === 'assenza') {
-            // 1. COMMESSA: Cerchiamo ID 68 (GESTIONE PERSONALE / SYS-JOB-ABS)
-            let absId = null;
-            if (this.state.commesseMap) {
-                absId = Object.keys(this.state.commesseMap).find(key => {
-                    const label = (this.state.commesseMap[key] || '').toUpperCase();
-                    return label.includes('GESTIONE PERSONALE') || label.includes('SYS-JOB-ABS');
+            // 1. COMMESSA: Logica identica al Cantiere (Lookup automatico o Fallback)
+            // Cerchiamo la commessa "GESTIONE PERSONALE" (SYS-JOB-ABS / ID 68)
+            let absCommessaId = null;
+            if (this.state.choicesInstance) {
+                // Cerchiamo tra le opzioni caricate nella select
+                const choices = this.state.choicesInstance.config.choices; 
+                const found = choices.find(c => {
+                    const lbl = (c.label || '').toUpperCase();
+                    return lbl.includes('GESTIONE PERSONALE') || lbl.includes('SYS-JOB-ABS');
                 });
+                if (found) absCommessaId = found.value;
             }
-            // Usa l'ID trovato o 68 come fallback fisso
-            payload.id_commessa = absId ? parseInt(absId) : 68;
-
-            // 2. LAVORAZIONE: Mappiamo la scelta (Ferie, Permesso...) agli ID Componente (101-104)
-            const absValue = this.dom.absType.value; // Valori: 'Ferie', 'Permesso', 'Malattia', 'L104'
             
-            const mapAssenze = {
-                'Ferie': 101,    // SYS-FER
-                'Permesso': 102, // SYS-PER
-                'Malattia': 103, // SYS-MAL
-                'L104': 104      // SYS-104 (Legge 104)
-            };
+            // Assegnazione ID Commessa (Automatico o Fallback su 68)
+            payload.id_commessa = absCommessaId ? parseInt(absCommessaId) : 68;
 
-            // Assegniamo l'ID componente corretto (Default a 101/Ferie se non trovato)
-            payload.id_componente = mapAssenze[absValue] || 101;
+            // 2. COMPONENTE (Lavorazione): Logica differenziata per tipo
+            // Mappatura: Tipo Assenza -> ID Componente (tabella componenti)
+            const absType = this.dom.absType.value; // Valore dalla select (Ferie, Permesso...)
+            let componentId = 101; // Default Ferie (SYS-FER)
 
-            // Nota: Impostando id_componente a 101-104, il database (o Supabase) 
-            // assocerà automaticamente la Macrocategoria 30 (ASSENZE) se la relazione 
-            // nella tabella 'componenti' è configurata correttamente.
+            switch (absType) {
+                case 'Ferie':
+                    componentId = 101; // SYS-FER
+                    break;
+                case 'Permesso':
+                    componentId = 102; // SYS-PER
+                    break;
+                case 'Malattia':
+                    componentId = 103; // SYS-MAL
+                    break;
+                case 'L104':
+                    componentId = 104; // SYS-104
+                    break;
+                default:
+                    componentId = 101; // Fallback
+            }
             
-            // 3. NOTE: Formattazione standard
-            payload.note = `[${absValue.toUpperCase()}] ${payload.note}`;
+            payload.id_componente = componentId;
+
+            // 3. NOTE: Aggiunta prefisso per chiarezza nel database
+            payload.note = `[${absType.toUpperCase()}] ${payload.note}`;
         }
 
         btn.disabled = true;
