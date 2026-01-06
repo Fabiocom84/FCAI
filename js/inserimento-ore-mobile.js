@@ -551,7 +551,7 @@ const MobileHoursApp = {
             }
         }
         else if (type === 'assenza') {
-            // 1. Cerchiamo l'ID della commessa "GESTIONE PERSONALE" o "SYS-JOB-ABS" nella lista caricata
+            // 1. COMMESSA: Cerchiamo ID 68 (GESTIONE PERSONALE / SYS-JOB-ABS)
             let absId = null;
             if (this.state.commesseMap) {
                 absId = Object.keys(this.state.commesseMap).find(key => {
@@ -559,12 +559,28 @@ const MobileHoursApp = {
                     return label.includes('GESTIONE PERSONALE') || label.includes('SYS-JOB-ABS');
                 });
             }
-
-            // 2. Assegniamo l'ID trovato, oppure usiamo 68 (ID dal tuo screenshot) come sicurezza
+            // Usa l'ID trovato o 68 come fallback fisso
             payload.id_commessa = absId ? parseInt(absId) : 68;
+
+            // 2. LAVORAZIONE: Mappiamo la scelta (Ferie, Permesso...) agli ID Componente (101-104)
+            const absValue = this.dom.absType.value; // Valori: 'Ferie', 'Permesso', 'Malattia', 'L104'
             
-            // Formattazione nota
-            payload.note = `[${this.dom.absType.value.toUpperCase()}] ${payload.note}`;
+            const mapAssenze = {
+                'Ferie': 101,    // SYS-FER
+                'Permesso': 102, // SYS-PER
+                'Malattia': 103, // SYS-MAL
+                'L104': 104      // SYS-104 (Legge 104)
+            };
+
+            // Assegniamo l'ID componente corretto (Default a 101/Ferie se non trovato)
+            payload.id_componente = mapAssenze[absValue] || 101;
+
+            // Nota: Impostando id_componente a 101-104, il database (o Supabase) 
+            // assocerà automaticamente la Macrocategoria 30 (ASSENZE) se la relazione 
+            // nella tabella 'componenti' è configurata correttamente.
+            
+            // 3. NOTE: Formattazione standard
+            payload.note = `[${absValue.toUpperCase()}] ${payload.note}`;
         }
 
         btn.disabled = true;
