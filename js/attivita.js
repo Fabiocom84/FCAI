@@ -511,39 +511,86 @@ const TaskApp = {
 
     renderNotificationsMode: async function() {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
+        this.toggleToolbar(false); // Nascondi bottoni modifica
         
         try {
             const res = await apiFetch(`/api/tasks/notifiche`);
             const notes = await res.json();
 
-            const listHtml = notes.length > 0 
-                ? notes.map(n => `
-                    <div class="notification-item ${n.letto ? '' : 'unread'}" onclick="alert('Vai al task ' + ${n.id_task_fk})">
-                        <div style="font-weight:500; margin-bottom:4px;">${n.tipo_notifica} <span style="float:right; font-size:0.8em; color:#999;">${new Date(n.data_creazione).toLocaleDateString()}</span></div>
-                        <div>${n.messaggio}</div>
-                        <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
+            if (notes.length === 0) {
+                this.dom.inspectorBody.innerHTML = `
+                    <h2 class="detail-title">Notifiche</h2>
+                    <div class="empty-state">
+                        <i class="far fa-bell-slash fa-3x"></i>
+                        <p>Nessuna notifica presente.</p>
+                        <button id="btnCloseNotes" class="button button--warning" style="margin-top:15px;">Indietro</button>
+                    </div>`;
+                document.getElementById('btnCloseNotes').addEventListener('click', () => {
+                    if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
+                    else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
+                });
+                return;
+            }
+
+            // Genera la lista HTML
+            const listHtml = notes.map(n => `
+                <div class="notification-item ${n.letto ? '' : 'unread'}" 
+                     data-id="${n.id_notifica}" 
+                     data-task="${n.id_task_fk}">
+                    <div style="font-weight:500; margin-bottom:4px; display:flex; justify-content:space-between;">
+                        <span>${n.tipo_notifica}</span> 
+                        <span style="font-size:0.8em; color:#999;">${new Date(n.data_creazione).toLocaleDateString()}</span>
                     </div>
-                  `).join('')
-                : '<div class="empty-state"><p>Nessuna notifica recente.</p></div>';
+                    <div style="margin-bottom:5px;">${n.messaggio}</div>
+                    <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
+                </div>
+            `).join('');
 
             const html = `
-                <h2 class="detail-title">Notifiche</h2>
-                <div class="notification-list">
+                <h2 class="detail-title">Le tue Notifiche</h2>
+                <div class="notification-list" id="notifList">
                     ${listHtml}
                 </div>
-                <div style="margin-top:20px; text-align:center;">
-                    <button id="btnCloseNotes" class="button button--warning">Indietro</button>
+                <div style="margin-top:20px; text-align:center; border-top:1px solid #eee; padding-top:10px;">
+                     <button id="btnCloseNotes" class="button button--warning">Chiudi</button>
                 </div>
             `;
             this.dom.inspectorBody.innerHTML = html;
 
+            // EVENTI
             document.getElementById('btnCloseNotes').addEventListener('click', () => {
-                if(this.state.currentTask && this.state.currentTask.id_task) this.renderInspectorView(this.state.currentTask.id_task);
+                if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
                 else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
             });
 
+            // GESTIONE CLICK SULLA NOTIFICA
+            const items = document.querySelectorAll('.notification-item');
+            items.forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    const notifId = item.dataset.id;
+                    const taskId = item.dataset.task;
+
+                    // 1. Segna come letta visivamente subito
+                    item.classList.remove('unread');
+                    item.style.opacity = '0.7'; // Feedback visivo
+
+                    try {
+                        // 2. Segna come letta nel DB
+                        await apiFetch(`/api/tasks/notifiche/leggi/${notifId}`, { method: 'PUT' });
+                        
+                        // 3. Apri il task relativo
+                        await this.renderInspectorView(taskId);
+                        
+                        // Nota: Il contatore in Home si aggiornerà solo al prossimo refresh della Home,
+                        // ma va bene così.
+                    } catch (err) {
+                        console.error("Errore lettura notifica:", err);
+                    }
+                });
+            });
+
         } catch(e) { 
-            this.dom.inspectorBody.innerHTML = `<p>Errore: ${e.message}</p>`; 
+            this.dom.inspectorBody.innerHTML = `<p style="color:red">Errore caricamento notifiche: ${e.message}</p>`; 
         }
     },
 

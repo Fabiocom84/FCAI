@@ -140,6 +140,9 @@ function setupUI() {
         });
     }
 
+    // CHIAMATA CHECK NOTIFICHE
+    checkUnreadNotifications();
+
     if (!window.uiEventsBound) {
         bindGlobalEvents();
         window.uiEventsBound = true;
@@ -232,5 +235,33 @@ function toggleModal(modalId, show) {
         m.style.display = 'none';
         o.style.display = 'none';
         document.body.classList.remove('modal-open');
+    }
+}
+
+async function checkUnreadNotifications() {
+    const btnTask = document.getElementById('btn-attivita');
+    
+    // Se il bottone non esiste (es. utente non abilitato), non fare nulla
+    if (!btnTask || btnTask.style.display === 'none') return;
+
+    try {
+        // Chiamata all'endpoint appena creato
+        const res = await apiFetch('/api/tasks/notifiche/count');
+        const data = await res.json();
+        
+        if (data.count > 0) {
+            // Crea il badge
+            const badge = document.createElement('div');
+            badge.className = 'notification-badge';
+            badge.textContent = data.count > 99 ? '99+' : data.count;
+            
+            // Rimuovi vecchi badge se ce ne sono
+            const oldBadge = btnTask.querySelector('.notification-badge');
+            if (oldBadge) oldBadge.remove();
+            
+            btnTask.appendChild(badge);
+        }
+    } catch (error) {
+        console.warn("Impossibile recuperare notifiche:", error);
     }
 }
