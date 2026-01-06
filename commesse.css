@@ -426,37 +426,144 @@ input:checked + .slider:before { transform: translateX(18px); }
 /* ==   FIX POSIZIONAMENTO MODALE COMMESSA          == */
 /* =================================================== */
 
-/* Usiamo l'ID per avere priorità sulla classe globale .modal */
+/* FIX POSIZIONAMENTO MODALE */
 #commessaModal {
-    /* 1. Reset del posizionamento globale che causava l'errore */
-    position: fixed;
+    position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    transform: none !important; /* FONDAMENTALE: Rimuove lo spostamento a sinistra */
-    
-    /* 2. Impostazioni Overlay a tutto schermo */
-    width: 100%;
-    height: 100%;
+    width: 100vw !important;  /* Larghezza viewport */
+    height: 100vh !important; /* Altezza viewport */
+    transform: none !important; /* RIMUOVE lo spostamento che lo manda fuori schermo */
+    z-index: 9999;
     background-color: rgba(0,0,0,0.5);
-    z-index: 2000; /* Assicurati che sia sopra a tutto */
-
-    /* 3. Centratura Flexbox */
-    display: none; /* Nascosto di default */
-    align-items: center;
+    
+    /* Centratura Flexbox */
+    display: none;
     justify-content: center;
+    align-items: center;
 }
 
-/* Quando attivato via JS */
 #commessaModal.active {
     display: flex !important;
 }
 
-/* Assicuriamoci che il contenuto interno non erediti stranezze */
+/* Assicuriamo che il contenuto non erediti margini strani */
 #commessaModal .modal-content {
+    margin: 0 !important;
     position: relative;
-    transform: none; 
-    margin: 0; /* Il flexbox del genitore lo centrerà */
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Stile per Choices.js dentro il modale */
+#commessaModal .choices {
+    margin-bottom: 0; /* Fix spaziatura */
+}
+
+/* --- STILI NUOVO MODALE (VECCHIO STILE REINTEGRATO) --- */
+
+/* Larghezza modale più generosa per ospitare le colonne */
+.modal-content.large-modal {
+    max-width: 800px; /* Più largo per le griglie */
+    width: 95%;
+}
+
+/* Sezioni Form */
+.form-section {
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+.form-section-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Griglie Responsive */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.align-center {
+    align-items: end; /* Allinea input e file upload in basso */
+}
+
+/* Choices.js fix nel modale */
+.choices {
+    margin-bottom: 0;
+}
+.choices__inner {
+    background-color: #fff;
+    min-height: 42px; /* Altezza uniforme agli input */
+    border-radius: 6px;
+}
+
+/* Input File Custom più bello */
+.custom-file-upload.compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 42px; /* Altezza fissa uguale agli input */
+    box-sizing: border-box;
+}
+.custom-file-upload.compact:hover {
+    border-color: #3498db;
+    background-color: #f0f7ff;
+}
+.file-name {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Pulsante piccolo per rimuovere foto */
+.std-btn--small {
+    padding: 4px 10px;
+    font-size: 0.8em;
+}
+
+/* MOBILE RESPONSIVE PER IL FORM */
+@media (max-width: 600px) {
+    .form-grid-2, .form-grid-3 {
+        grid-template-columns: 1fr; /* Tutto in colonna su mobile */
+        gap: 10px;
+    }
+    .custom-file-upload.compact {
+        justify-content: flex-start;
+    }
 }

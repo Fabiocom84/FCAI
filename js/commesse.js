@@ -1,5 +1,3 @@
-// js/commesse.js
-
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
@@ -17,10 +15,10 @@ const App = {
         allPhases: []
     },
     
-    dom: {}, // Contenitore riferimenti DOM
+    dom: {},
 
     init: async function() {
-        // Mappatura elementi DOM
+        // Mappatura DOM
         this.dom = {
             grid: document.getElementById('commesse-grid'),
             loader: document.getElementById('loader'),
@@ -28,70 +26,129 @@ const App = {
             searchInput: document.getElementById('search-input'),
             sortSelect: document.getElementById('sort-select'),
             addBtn: document.getElementById('add-commessa-btn'),
-            deepSearchWrapper: document.getElementById('deep-search-wrapper'), // La label con la checkbox
+            deepSearchWrapper: document.getElementById('deep-search-wrapper'),
             deepSearchCheckbox: document.getElementById('search-deep'),
-            
-            // Elementi del Modale
+
+            // Elementi Modale
             modal: document.getElementById('commessaModal'),
             closeModalBtn: document.getElementById('closeModal'),
             modalForm: document.getElementById('commessaForm'),
             modalTitle: document.getElementById('modalTitle'),
-            overlay: document.getElementById('modalOverlay')
+            overlay: document.getElementById('modalOverlay'),
+
+            // Campi Select Modale
+            modelloSelect: document.getElementById('modello'),
+            clienteSelect: document.getElementById('cliente'),
+            statusSelect: document.getElementById('status-select'),
+
+            // Campi Upload Immagine
+            imageInput: document.getElementById('imageInput'),
+            uploadWidget: document.getElementById('uploadWidget'),
+            uploadText: document.getElementById('uploadText'),
+            previewContainer: document.getElementById('imagePreviewContainer'),
+            imagePreview: document.getElementById('imagePreview'),
+            removeImageBtn: document.getElementById('removeImageBtn')
         };
 
-        // 1. GESTIONE PERMESSI (Admin vs User)
+        // Gestione Permessi
         if (!IsAdmin) {
-            // Nascondi pulsante aggiungi
             if (this.dom.addBtn) this.dom.addBtn.style.display = 'none';
-            // Nascondi checkbox "Reg." (Deep search)
             if (this.dom.deepSearchWrapper) this.dom.deepSearchWrapper.style.display = 'none';
         } else {
-            // Assicurati che siano visibili se admin
             if (this.dom.addBtn) this.dom.addBtn.style.display = 'flex';
             if (this.dom.deepSearchWrapper) this.dom.deepSearchWrapper.style.display = 'flex';
         }
 
-        // Caricamento dati iniziali (Fasi e Status)
+        // Caricamento Dati Iniziali
         try {
-            const [statusRes, phasesRes] = await Promise.all([
-                apiFetch('/api/simple/status_commessa'),
-                apiFetch('/api/commesse/fasi')
-            ]);
-            this.state.allStatuses = await statusRes.json();
+            await this.loadDropdowns(); // Carica select per il modale
+            
+            // Carica le fasi per le card
+            const phasesRes = await apiFetch('/api/commesse/fasi');
             this.state.allPhases = await phasesRes.json();
+            
         } catch (error) {
-            console.warn("Impossibile caricare metadati (status/fasi), uso fallback.", error);
+            console.warn("Errore caricamento metadati.", error);
         }
         
         this.addEventListeners();
         this.fetchCommesse(true);
     },
-    
+
+    // --- CARICAMENTO DROPDOWN (Choices.js) ---
+    loadDropdowns: async function() {
+        if (!IsAdmin) return; // Non serve caricare le select se non puoi aggiungere
+
+        try {
+            const [modelliRes, clientiRes, statusRes] = await Promise.all([
+                apiFetch('/api/simple/modelli'),
+                apiFetch('/api/simple/clienti'),
+                apiFetch('/api/simple/status_commessa')
+            ]);
+
+            const modelli = await modelliRes.json();
+            const clienti = await clientiRes.json();
+            const statuses = await statusRes.json();
+
+            this.state.allStatuses = statuses;
+
+            // Inizializza Choices.js
+            this.initChoice(this.dom.modelloSelect, modelli, 'id_modello', 'nome_modello', 'Cerca modello...');
+            this.initChoice(this.dom.clienteSelect, clienti, 'id_cliente', 'ragione_sociale', 'Cerca cliente...');
+            
+            // Select Status (Standard HTML è sufficiente per pochi valori)
+            if (this.dom.statusSelect) {
+                this.dom.statusSelect.innerHTML = statuses.map(s => 
+                    `<option value="${s.id_status}" ${s.nome_status === 'In Lavorazione' ? 'selected' : ''}>${s.nome_status}</option>`
+                ).join('');
+            }
+
+        } catch (e) {
+            console.error("Errore caricamento dropdown:", e);
+        }
+    },
+
+    initChoice: function(element, data, valueKey, labelKey, placeholder) {
+        if (!element) return;
+        
+        // Distruggi istanza precedente se esiste (per evitare duplicati su hot reload)
+        if (element.choicesInstance) {
+            element.choicesInstance.destroy();
+        }
+
+        const choices = new Choices(element, {
+            searchEnabled: true,
+            itemSelectText: '',
+            placeholder: true,
+            placeholderValue: placeholder,
+            shouldSort: true,
+            removeItemButton: true,
+            searchResultLimit: 10,
+            position: 'bottom'
+        });
+
+        const formattedData = data.map(item => ({ 
+            value: item[valueKey], 
+            label: item[labelKey] 
+        }));
+        
+        choices.setChoices(formattedData, 'value', 'label', true);
+        element.choicesInstance = choices; // Salviamo riferimento
+    },
+
+    // --- EVENT LISTENERS ---
     addEventListeners: function() {
-        // Apertura Modale Nuova Commessa
-        if (this.dom.addBtn) {
-            this.dom.addBtn.addEventListener('click', () => this.openModal(false));
-        }
+        // Modale
+        if (this.dom.addBtn) this.dom.addBtn.addEventListener('click', () => this.openModal(false));
+        if (this.dom.closeModalBtn) this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
+        if (this.dom.overlay) this.dom.overlay.addEventListener('click', () => this.closeModal());
+        if (this.dom.modalForm) this.dom.modalForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
 
-        // Chiusura Modale
-        if (this.dom.closeModalBtn) {
-            this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
-        }
-        if (this.dom.overlay) {
-            this.dom.overlay.addEventListener('click', () => this.closeModal());
-        }
-
-        // Salvataggio Form
-        if (this.dom.modalForm) {
-            this.dom.modalForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
-        }
-
-        // Filtri Status
+        // Filtri e Ricerca
         this.dom.statusFilters.forEach(btn => {
             btn.addEventListener('click', () => this.handleStatusFilter(btn));
         });
         
-        // Ricerca (Debounce)
         let searchTimeout;
         this.dom.searchInput.addEventListener('input', () => {
             clearTimeout(searchTimeout);
@@ -101,90 +158,132 @@ const App = {
             }, 500);
         });
 
-        // Ordinamento
         this.dom.sortSelect.addEventListener('change', () => this.handleSort());
-        
-        // Infinite Scroll
         window.addEventListener('scroll', () => this.handleScroll());
-    },
 
-    // --- LOGICA MODALE (Nuovo/Modifica) ---
-    openModal: function(isEdit, commessaId = null) {
-        if (!IsAdmin) return; // Sicurezza extra
-
-        const modal = this.dom.modal;
-        const form = this.dom.modalForm;
-        
-        // Reset Form
-        form.reset();
-        document.getElementById('commessaId').value = '';
-        
-        if (isEdit && commessaId) {
-            this.dom.modalTitle.textContent = "Modifica Commessa";
-            this.loadCommessaDetails(commessaId);
-        } else {
-            this.dom.modalTitle.textContent = "Nuova Commessa";
+        // Gestione Formattazione Input (Modale)
+        const voInput = document.getElementById('vo');
+        if (voInput) {
+            voInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, ''); // Solo numeri
+                if (val.length > 2) val = val.slice(0, 2) + '-' + val.slice(2, 6);
+                e.target.value = val;
+            });
         }
 
-        // Mostra Modale (CSS usa .active per display: flex)
-        modal.classList.add('active');
-        this.dom.overlay.style.display = 'block';
+        const rifInput = document.getElementById('rif_tecnico');
+        if (rifInput) {
+            rifInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.toUpperCase();
+            });
+        }
+
+        // Gestione Immagine
+        if (this.dom.imageInput) this.dom.imageInput.addEventListener('change', (e) => this.handleImageSelect(e));
+        if (this.dom.removeImageBtn) this.dom.removeImageBtn.addEventListener('click', () => this.resetImage());
+        if (this.dom.uploadWidget) this.dom.uploadWidget.addEventListener('click', () => this.dom.imageInput.click());
+    },
+
+    // --- GESTIONE MODALE ---
+    openModal: function(isEdit, commessaId = null) {
+        if (!IsAdmin) return;
+
+        // Reset Form
+        this.dom.modalForm.reset();
+        document.getElementById('commessaId').value = '';
+        this.resetImage();
+
+        // Reset Choices (opzionale ma consigliato se si vuole pulire la selezione)
+        // Qui lasciamo l'ultimo stato o resettiamo se necessario
+
+        if (isEdit && commessaId) {
+            this.dom.modalTitle.textContent = "MODIFICA COMMESSA";
+            // TODO: Qui andrebbe la logica per fetchare i dati della singola commessa e popolare il form
+        } else {
+            this.dom.modalTitle.textContent = "NUOVA COMMESSA";
+            // Default anno corrente
+            const yearInput = document.getElementById('anno');
+            if(yearInput) yearInput.value = new Date().getFullYear();
+        }
+
+        this.dom.modal.classList.add('active');
     },
 
     closeModal: function() {
         this.dom.modal.classList.remove('active');
-        this.dom.overlay.style.display = 'none';
     },
 
-    loadCommessaDetails: async function(id) {
-        try {
-            // Simulazione caricamento dati per edit (o chiamata API specifica se esiste endpoint singolo)
-            // Per ora non implementato nel dettaglio, resetta solo il form
-            console.log("Loading details for", id);
-        } catch (e) {
-            console.error(e);
+    // --- GESTIONE IMMAGINE ---
+    handleImageSelect: function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            this.dom.uploadText.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                this.dom.imagePreview.src = ev.target.result;
+                this.dom.previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
     },
 
+    resetImage: function() {
+        this.dom.imageInput.value = '';
+        this.dom.uploadText.textContent = 'Scegli file...';
+        this.dom.previewContainer.style.display = 'none';
+        this.dom.imagePreview.src = '';
+    },
+
+    // --- SALVATAGGIO FORM (MULTIPART) ---
     handleFormSubmit: async function(e) {
         e.preventDefault();
         
-        // Raccolta dati base
-        const formData = {
-            cliente: document.getElementById('cliente').value,
-            impianto: document.getElementById('impianto').value,
-            luogo: document.getElementById('luogo').value,
-            modello: document.getElementById('modello').value,
-            anno: document.getElementById('anno').value,
-            vo: document.getElementById('vo').value,
-            matricola: document.getElementById('matricola').value,
-            riferimento_tecnico: document.getElementById('rif_tecnico').value,
-            note: document.getElementById('note').value
-        };
+        const saveBtn = this.dom.modalForm.querySelector('.save-button');
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span>Salvataggio...</span>';
 
         const id = document.getElementById('commessaId').value;
         const method = id ? 'PUT' : 'POST';
         const url = id ? `/api/commesse/${id}` : '/api/commesse';
 
+        // Usiamo FormData per gestire file + testo
+        const formData = new FormData(this.dom.modalForm);
+
         try {
-            const res = await apiFetch(url, {
+            // Nota: Usiamo fetch nativo invece di apiFetch perché dobbiamo gestire FormData
+            // senza che venga forzato l'header 'Content-Type: application/json'
+            const token = localStorage.getItem('session_token');
+            const baseUrl = 'https://segretario-ai-backend-service-460205196659.europe-west1.run.app'; // O importalo da config
+
+            const res = await fetch(baseUrl + url, {
                 method: method,
-                body: JSON.stringify(formData)
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // NON impostare Content-Type, il browser lo mette automatico con il boundary corretto per FormData
+                },
+                body: formData
             });
 
-            if (!res.ok) throw new Error("Errore salvataggio");
+            if (!res.ok) {
+                const errJson = await res.json();
+                throw new Error(errJson.error || "Errore durante il salvataggio");
+            }
 
             this.closeModal();
             showModal({ title: "Successo", message: "Commessa salvata correttamente." });
-            this.fetchCommesse(true); // Ricarica lista
+            this.fetchCommesse(true); // Ricarica la griglia
 
         } catch (error) {
             console.error(error);
-            showModal({ title: "Errore", message: "Impossibile salvare la commessa." });
+            showModal({ title: "Errore", message: error.message });
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnText;
         }
     },
 
-    // --- LOGICA LISTA (Fetch & Render) ---
+    // --- FETCH COMMESSE ---
     fetchCommesse: async function(isNewQuery = false) {
         if (this.state.isLoading) return;
         this.state.isLoading = true;
@@ -196,25 +295,34 @@ const App = {
         
         if(this.dom.loader) this.dom.loader.style.display = 'block';
 
-        // Checkbox Deep Search (Gestione sicura null)
         const isDeepSearch = this.dom.deepSearchCheckbox ? this.dom.deepSearchCheckbox.checked : false;
+        
+        // Gestione Sort
+        let sortBy = 'data_commessa';
+        let sortOrder = 'desc';
+        if (this.dom.sortSelect.value.includes(':')) {
+            [sortBy, sortOrder] = this.dom.sortSelect.value.split(':');
+        } else {
+            // Compatibilità vecchi value
+            if (this.dom.sortSelect.value === 'recent') { sortBy = 'data_commessa'; sortOrder = 'desc'; }
+            if (this.dom.sortSelect.value === 'oldest') { sortBy = 'data_commessa'; sortOrder = 'asc'; }
+            if (this.dom.sortSelect.value === 'alpha')  { sortBy = 'cliente'; sortOrder = 'asc'; }
+        }
 
         const params = new URLSearchParams({
             page: this.state.currentPage,
             limit: 20,
             status: this.state.activeStatus,
             search: this.state.searchTerm,
-            sortBy: this.state.sortBy,
-            sortOrder: this.state.sortOrder,
+            sortBy: sortBy,
+            sortOrder: sortOrder,
         });
 
-        if (isDeepSearch) {
-            params.append('deep_search', 'true');
-        }
+        if (isDeepSearch) params.append('deep_search', 'true');
 
         try {
             const response = await apiFetch(`/api/commesse/view?${params.toString()}`);
-            if (!response.ok) throw new Error('Risposta di rete non valida.');
+            if (!response.ok) throw new Error('Errore API');
             const data = await response.json();
             
             this.state.totalCount = data.count;
@@ -223,16 +331,17 @@ const App = {
             
         } catch (error) {
             console.error("Errore fetch:", error);
-            this.dom.grid.innerHTML = `<p class="error-text">Errore nel caricamento.</p>`;
+            this.dom.grid.innerHTML = `<p class="error-text">Impossibile caricare i dati.</p>`;
         } finally {
             this.state.isLoading = false;
             if(this.dom.loader) this.dom.loader.style.display = 'none';
         }
     },
 
+    // --- RENDER CARDS ---
     renderCards: function(commesseData) {
         if (!commesseData || (commesseData.length === 0 && this.state.currentPage === 1)) {
-            this.dom.grid.innerHTML = `<p class="error-text">Nessuna commessa trovata.</p>`;
+            this.dom.grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">Nessuna commessa trovata.</div>`;
             return;
         }
         
@@ -250,86 +359,63 @@ const App = {
         card.dataset.commessaId = commessa.id_commessa;
 
         const statusName = commessa.status_commessa?.nome_status?.toLowerCase().replace(' ', '-') || 'default';
-        card.classList.add(`status-bg-${statusName}`);
-        const statusClass = `status-${statusName}`;
-        
-        // Logica Barre Avanzamento (Fissa)
-        const phaseConfig = {
-            '1': { label: 'Ufficio', weight: 10 },
-            '2': { label: 'Carpenteria', weight: 30 },
-            '7': { label: 'Assemblaggio', weight: 50 },
-            '4': { label: 'Preparazione', weight: 80 }
-        };
+        // Aggiunge bordo colorato in base allo stato (opzionale se gestito da CSS)
+        card.classList.add(`status-border-${statusName}`);
 
-        let maxProgress = 5; 
-        let progressLabel = "Avvio";
-        
+        // --- Logica Fasi Attive ---
         let activeIds = [];
         if (Array.isArray(commessa.ids_fasi_attive)) {
-            activeIds = commessa.ids_fasi_attive.map(id => String(id));
-        } else if (typeof commessa.ids_fasi_attive === 'string') {
-            try { activeIds = JSON.parse(commessa.ids_fasi_attive).map(id => String(id)); } catch(e){}
+            activeIds = commessa.ids_fasi_attive.map(String);
         }
 
-        activeIds.forEach(id => {
-            const phase = phaseConfig[id];
-            if (phase && phase.weight > maxProgress) {
-                maxProgress = phase.weight;
-                progressLabel = phase.label;
-            }
-        });
+        // --- Logica Avanzamento (Barra) ---
+        // Pesi: Ufficio(1)=10, Carpenteria(2)=30, Assemblaggio(7)=60, Preparazione(4)=80, Completato=100
+        let maxProgress = 5; 
         
-        if(commessa.status_commessa?.nome_status === 'Completato') {
+        if (commessa.status_commessa?.nome_status === 'Completato') {
             maxProgress = 100;
-            progressLabel = "Completato";
+        } else {
+            if (activeIds.includes('1')) maxProgress = Math.max(maxProgress, 15);
+            if (activeIds.includes('2')) maxProgress = Math.max(maxProgress, 35);
+            if (activeIds.includes('7')) maxProgress = Math.max(maxProgress, 65);
+            if (activeIds.includes('4')) maxProgress = Math.max(maxProgress, 85);
         }
-
-        let progressColorClass = maxProgress >= 80 ? 'high' : (maxProgress >= 40 ? 'mid' : 'low');
+        
+        let progressColor = maxProgress >= 80 ? 'high' : (maxProgress >= 40 ? 'mid' : 'low');
         const totalHours = commessa.totale_ore ? parseFloat(commessa.totale_ore).toFixed(1) : "0.0";
 
-        // HTML Condizionale Admin
-        const noteHtml = IsAdmin ? `<p><strong>Note:</strong> ${commessa.note || 'Nessuna'}</p>` : '';
+        // HTML Elementi condizionali
+        const noteHtml = IsAdmin ? `<p class="card-note"><strong>Note:</strong> ${commessa.note || '-'}</p>` : '';
         
-        let registrazioniHtml = '';
-        if (IsAdmin) {
-            const count = commessa.registrazioni ? commessa.registrazioni.length : 0;
-            const link = count > 0 ? `| <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${commessa.id_commessa}" target="_blank">Dettagli</a>` : '';
-            registrazioniHtml = `<div class="registrazioni-section"><p><strong>Registrazioni:</strong> ${count} ${link}</p></div>`;
-        }
-
-        let actionsHtml = '';
-        if (IsAdmin) {
-            actionsHtml = `
-            <div class="card-actions">
-                <button class="std-btn std-btn--warning" data-action="edit" data-id="${commessa.id_commessa}">
-                    <span>✏️ Modifica</span>
-                </button>
-                <button class="std-btn std-btn--danger" data-action="delete" data-id="${commessa.id_commessa}">
-                    <span>🗑️ Elimina</span>
-                </button>
-            </div>`;
+        let adminToggleHtml = '';
+        if (IsAdmin) { 
+            adminToggleHtml = `
+                <div class="status-and-toggle">
+                    <span class="status-badge status-${statusName}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-action="toggle-status" data-id="${commessa.id_commessa}" ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                </div>`;
+        } else {
+             adminToggleHtml = `<span class="status-badge status-${statusName}">${commessa.status_commessa?.nome_status || 'N/D'}</span>`;
         }
 
         let phasesHtml = '';
-        const phasesToRender = (this.state.allPhases && this.state.allPhases.length > 0) 
-            ? this.state.allPhases 
-            : [ 
-                {id_fase: 1, nome_fase: 'Ufficio'},
-                {id_fase: 2, nome_fase: 'Carpenteria'},
-                {id_fase: 7, nome_fase: 'Assemblaggio'},
-                {id_fase: 4, nome_fase: 'Preparazione'}
-              ];
-
         if (IsAdmin) {
-            phasesHtml = `<div class="phases-container"><div class="phases-title">Fasi Attive</div><div class="phases-grid">`;
-            phasesToRender.forEach(phase => {
-                const currentPhaseId = String(phase.id_fase);
-                const isChecked = activeIds.includes(currentPhaseId) ? 'checked' : '';
+            // Default fasi se API fallisce
+            const phasesToRender = (this.state.allPhases && this.state.allPhases.length > 0) 
+                ? this.state.allPhases 
+                : [{id_fase:1, nome_fase:'Ufficio'}, {id_fase:2, nome_fase:'Carpenteria'}, {id_fase:7, nome_fase:'Assemblaggio'}, {id_fase:4, nome_fase:'Preparazione'}];
+
+            phasesHtml = `<div class="phases-container"><div class="phases-grid">`;
+            phasesToRender.forEach(p => {
+                const isChecked = activeIds.includes(String(p.id_fase)) ? 'checked' : '';
                 phasesHtml += `
                     <div class="phase-item">
-                        <span>${phase.nome_fase}</span>
+                        <span>${p.nome_fase}</span>
                         <label class="mini-switch">
-                            <input type="checkbox" data-action="toggle-phase" data-commessa-id="${commessa.id_commessa}" data-phase-id="${phase.id_fase}" ${isChecked}>
+                            <input type="checkbox" data-action="toggle-phase" data-commessa-id="${commessa.id_commessa}" data-phase-id="${p.id_fase}" ${isChecked}>
                             <span class="mini-slider"></span>
                         </label>
                     </div>`;
@@ -337,37 +423,31 @@ const App = {
             phasesHtml += `</div></div>`;
         }
 
-        let adminToggleHtml = '';
-        if (IsAdmin) { 
-            adminToggleHtml = `
-                <div class="status-and-toggle">
-                    <span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" data-action="toggle-status" data-id="${commessa.id_commessa}" ${commessa.status_commessa?.nome_status === 'Completato' ? 'checked' : ''}>
-                        <span class="slider"></span>
-                    </label>
-                </div>`;
-        } else {
-            // Per non admin mostriamo solo il badge
-             adminToggleHtml = `<span class="status-badge ${statusClass}">${commessa.status_commessa?.nome_status || 'N/D'}</span>`;
+        let actionsHtml = '';
+        if (IsAdmin) {
+            actionsHtml = `
+            <div class="card-actions">
+                <button class="std-btn std-btn--warning" data-action="edit" data-id="${commessa.id_commessa}">✏️ Modifica</button>
+                <button class="std-btn std-btn--danger" data-action="delete" data-id="${commessa.id_commessa}">🗑️ Elimina</button>
+            </div>`;
         }
 
-        // Template Card
+        // Costruzione HTML Card
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${commessa.immagine || 'img/placeholder.png'}')">
-                ${!commessa.immagine ? 'Nessuna Immagine' : ''}
+                ${!commessa.immagine ? '<span style="opacity:0.5">No Image</span>' : ''}
             </div>
             <div class="card-details">
                 <div class="card-header">
-                    <h3>${commessa.clienti?.ragione_sociale || 'Cliente non definito'}</h3>
+                    <h3>${commessa.clienti?.ragione_sociale || 'Cliente Sconosciuto'}</h3>
                     ${adminToggleHtml}
                 </div>
                 
                 <div class="card-info">
-                    <p><strong>Impianto:</strong> ${commessa.impianto || 'N/D'} | <strong>Modello:</strong> ${commessa.modelli?.nome_modello || 'N/D'}</p>
-                    <p><strong>Luogo:</strong> ${commessa.paese || 'N/D'} (${commessa.provincia || '-'})</p>
-                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || 'N/D'} | Matr: ${commessa.matricola || 'N/D'} | Anno: ${commessa.anno || 'N/D'}</p>
-                    <p><strong>Rif. Tecnico:</strong> ${commessa.riferimento_tecnico || 'N/D'}</p>
+                    <p><strong>Imp:</strong> ${commessa.impianto || '-'} | <strong>Mod:</strong> ${commessa.modelli?.nome_modello || '-'}</p>
+                    <p><strong>Luogo:</strong> ${commessa.paese || ''} (${commessa.provincia || ''}) - ${commessa.anno || ''}</p>
+                    <p><strong>Dettagli:</strong> VO: ${commessa.vo || '-'} | Matr: ${commessa.matricola || '-'}</p>
+                    <p><strong>Rif. Tec:</strong> ${commessa.riferimento_tecnico || '-'}</p>
                     ${noteHtml}
                 </div>
                 
@@ -375,12 +455,8 @@ const App = {
 
                 <div class="progress-section">
                     <div class="progress-container">
-                        <div class="progress-labels">
-                            <span>Avanzamento</span>
-                            <span>${progressLabel} (${maxProgress}%)</span>
-                        </div>
                         <div class="progress-bar-bg">
-                            <div class="progress-bar-fill ${progressColorClass}" style="width: ${maxProgress}%"></div>
+                            <div class="progress-bar-fill ${progressColor}" style="width: ${maxProgress}%"></div>
                         </div>
                     </div>
                     <div class="hours-badge">
@@ -388,66 +464,61 @@ const App = {
                         <span class="hours-label">ORE</span>
                     </div>
                 </div>
-
-                ${registrazioniHtml}
             </div>
-            
             ${actionsHtml}
         `;
 
-        // Event Listeners Card
-        const deleteBtn = card.querySelector('[data-action="delete"]');
-        if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleDelete(deleteBtn.dataset.id); });
-        
-        const editBtn = card.querySelector('[data-action="edit"]');
-        if (editBtn) editBtn.addEventListener('click', (e) => { e.stopPropagation(); this.handleEdit(editBtn.dataset.id); });
-        
-        const toggleInput = card.querySelector('[data-action="toggle-status"]');
-        if (toggleInput) toggleInput.addEventListener('change', (e) => { this.handleStatusToggle(e); });
+        // Binding Eventi Card
+        if (IsAdmin) {
+            const delBtn = card.querySelector('[data-action="delete"]');
+            if (delBtn) delBtn.addEventListener('click', () => this.handleDelete(commessa.id_commessa));
 
-        card.querySelectorAll('[data-action="toggle-phase"]').forEach(toggle => {
-            toggle.addEventListener('change', (e) => this.handlePhaseToggle(e));
-        });
+            const editBtn = card.querySelector('[data-action="edit"]');
+            if (editBtn) editBtn.addEventListener('click', () => this.handleEdit(commessa.id_commessa)); // TODO: Implementare Edit completo
+
+            const statusToggle = card.querySelector('[data-action="toggle-status"] input');
+            if (statusToggle) statusToggle.addEventListener('change', (e) => this.handleStatusToggle(e));
+
+            card.querySelectorAll('[data-action="toggle-phase"] input').forEach(cb => {
+                cb.addEventListener('change', (e) => this.handlePhaseToggle(e));
+            });
+        }
 
         return card;
     },
 
-    // --- UTILS EVENTI ---
-    handleStatusFilter: function(clickedBtn) {
-        this.dom.statusFilters.forEach(btn => btn.classList.remove('active'));
-        clickedBtn.classList.add('active');
-        this.state.activeStatus = clickedBtn.dataset.filter; // Nota: nel HTML è data-filter
-        this.fetchCommesse(true);
-    },
-
-    handleSort: function() {
-        const val = this.dom.sortSelect.value;
-        if(val === 'recent') { this.state.sortBy = 'data_commessa'; this.state.sortOrder = 'desc'; }
-        if(val === 'oldest') { this.state.sortBy = 'data_commessa'; this.state.sortOrder = 'asc'; }
-        if(val === 'alpha')  { this.state.sortBy = 'cliente'; this.state.sortOrder = 'asc'; }
-        this.fetchCommesse(true);
-    },
-
+    // --- ACTIONS HANDLERS ---
+    
     handleScroll: function() {
         if (this.state.isLoading) return;
-        const { scrollTop, scrollHeight, clientHeight } = document.querySelector('.std-app-content'); // Scroll è sul div interno ora
-        const loadedCommesse = this.dom.grid.children.length;
-        
-        // Se siamo vicini alla fine
-        if (scrollTop + clientHeight >= scrollHeight - 50 && loadedCommesse < this.state.totalCount) {
+        // Lo scroll è su std-app-content, non window
+        const contentDiv = document.querySelector('.std-app-content');
+        if (!contentDiv) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = contentDiv;
+        if (scrollTop + clientHeight >= scrollHeight - 50 && this.dom.grid.children.length < this.state.totalCount) {
             this.fetchCommesse(false);
         }
     },
 
-    // Funzioni Azione (Toggle, Delete, ecc.) rimangono invariate nella logica
-    handlePhaseToggle: async function(event) {
-        /* ...Logica fase invariata, vedi versioni precedenti se serve copia/incolla... */
-        /* Per brevità, assumiamo sia uguale a prima */
-        const checkbox = event.target;
+    handleStatusFilter: function(btn) {
+        this.dom.statusFilters.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.state.activeStatus = btn.dataset.filter;
+        this.fetchCommesse(true);
+    },
+
+    handleSort: function() { this.fetchCommesse(true); },
+
+    // Toggle Phase
+    handlePhaseToggle: async function(e) {
+        const checkbox = e.target;
         const commessaId = checkbox.dataset.commessaId;
-        const newActiveIds = [];
         const card = this.dom.grid.querySelector(`[data-commessa-id="${commessaId}"]`);
-        card.querySelectorAll('[data-action="toggle-phase"]').forEach(cb => {
+        
+        // Raccogli tutte le checkbox attive nella card
+        const newActiveIds = [];
+        card.querySelectorAll('[data-action="toggle-phase"] input').forEach(cb => {
             if (cb.checked) newActiveIds.push(parseInt(cb.dataset.phaseId));
         });
 
@@ -457,29 +528,35 @@ const App = {
                 method: 'PUT',
                 body: JSON.stringify({ ids_fasi_attive: newActiveIds })
             });
+            // Non serve ricaricare tutta la griglia, l'UI è già aggiornata
         } catch (error) {
             console.error(error);
-            checkbox.checked = !checkbox.checked;
+            checkbox.checked = !checkbox.checked; // Revert visuale
             showModal({ title: 'Errore', message: 'Impossibile aggiornare la fase.' });
         } finally {
             checkbox.disabled = false;
         }
     },
 
-    handleStatusToggle: async function(event) {
-        const checkbox = event.target;
+    // Toggle Status (Completato/In Lavorazione)
+    handleStatusToggle: async function(e) {
+        const checkbox = e.target;
         const commessaId = checkbox.dataset.id;
+        // ID 5 = Completato, ID 2 = In Lavorazione (da verificare nel tuo DB)
         const newStatusId = checkbox.checked ? 5 : 2; 
 
         try {
             checkbox.disabled = true;
             await apiFetch(`/api/commesse/${commessaId}/status`, {
                 method: 'PUT',
-                body: JSON.stringify({ id_status: newStatusId })
+                body: JSON.stringify({ id_status_fk: newStatusId })
             });
-            this.fetchCommesse(false);
-        } catch (e) {
-            console.error(e);
+            
+            // Se siamo nel filtro "In Lavorazione" e completiamo, la card dovrebbe sparire o aggiornarsi
+            // Ricarichiamo per coerenza
+            this.fetchCommesse(false); 
+        } catch (err) {
+            console.error(err);
             checkbox.checked = !checkbox.checked;
             showModal({ title: "Errore", message: "Impossibile aggiornare lo stato." });
         } finally {
@@ -487,27 +564,30 @@ const App = {
         }
     },
 
-    handleDelete: async function(commessaId) {
+    handleDelete: async function(id) {
         const confirm = await showModal({
             title: "Elimina Commessa",
-            message: "Sei sicuro?",
-            confirmText: "Elimina",
+            message: "Sei sicuro di voler eliminare questa commessa? L'azione è irreversibile.",
+            confirmText: "ELIMINA",
             cancelText: "Annulla"
         });
+
         if (!confirm) return;
 
         try {
-            await apiFetch(`/api/commesse/${commessaId}`, { method: 'DELETE' });
-            showModal({ title: "Successo", message: "Commessa eliminata." });
+            await apiFetch(`/api/commesse/${id}`, { method: 'DELETE' });
+            showModal({ title: "Eliminata", message: "Commessa rimossa con successo." });
             this.fetchCommesse(true);
         } catch (e) {
-            console.error(e);
-            showModal({ title: "Errore", message: "Impossibile eliminare." });
+            showModal({ title: "Errore", message: "Impossibile eliminare: " + e.message });
         }
     },
 
-    handleEdit: function(commessaId) {
-        this.openModal(true, commessaId);
+    handleEdit: function(id) {
+        // Per ora apriamo solo il modale vuoto o con un alert, 
+        // implementare logica di fetch singolo se necessario
+        this.openModal(true, id);
+        // showModal({ title: "Info", message: "Funzione modifica completa in arrivo." });
     }
 };
 

@@ -8,37 +8,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     
-    <!-- CSS Globale + Specifico -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="commesse.css">
 </head>
 
-<body class="internal-page"> <!-- Classe per il layout "Guscio" -->
+<body class="internal-page">
 
     <div class="std-app-shell">
-
-        <!-- HEADER STANDARD -->
+        <!-- HEADER -->
         <div class="std-app-header">
             <a href="index.html" class="std-btn std-btn--blue">
-                <!-- Mantengo il tuo stile inline per l'icona per ora, va bene -->
                 <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
                 <span>Home</span>
             </a>
-            
             <h1>GESTIONE COMMESSE</h1>
-            
-            <!-- Pulsante Aggiungi nell'header (più pulito) -->
             <button id="add-commessa-btn" class="std-btn std-btn--primary">
                 <span>+ Aggiungi</span>
             </button>
         </div>
 
-        <!-- CONTENUTO SCROLLABILE -->
+        <!-- CONTENUTO -->
         <div class="std-app-content">
-            
             <div class="commesse-view-wrapper">
                 
-                <!-- BARRA FILTRI (Sticky) -->
+                <!-- BARRA FILTRI -->
                 <div class="controls-container">
                     <div class="filters-group">
                         <span style="font-weight: 600; color: #333; margin-right: 5px;">Stato:</span>
@@ -50,7 +43,7 @@
                     <div class="search-group">
                         <input type="text" id="search-input" placeholder="Cerca...">
                         <label id="deep-search-wrapper" style="display: flex; align-items: center; gap: 5px; font-size: 0.9em; color: #555;">
-                                <input type="checkbox" id="search-deep"> Reg.
+                            <input type="checkbox" id="search-deep"> Reg.
                         </label>
                         <select id="sort-select">
                             <option value="recent">Più Recenti</option>
@@ -62,90 +55,125 @@
 
                 <!-- GRIGLIA CARD -->
                 <div id="commesse-grid" class="commesse-grid">
-                    <!-- Le card vengono inserite qui via JS -->
                     <div id="loader" class="loader">Caricamento commesse...</div>
                 </div>
-
             </div>
+        </div>
+    </div>
 
-        </div> <!-- Fine std-app-content -->
-
-    </div> <!-- Fine std-app-shell -->
-
-    <!-- MODALE AGGIUNGI/MODIFICA COMMESSA -->
+    <!-- MODALE "VECCHIO STILE" INTEGRATO -->
     <div id="modalOverlay" class="modal-overlay"></div>
     <div id="commessaModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content large-modal"> <!-- Aggiunta classe large-modal -->
             <div class="modal-header">
-                <h2 id="modalTitle">Nuova Commessa</h2>
+                <h2 id="modalTitle">NUOVA COMMESSA</h2>
                 <span class="close-button" id="closeModal">&times;</span>
             </div>
+            
             <div class="modal-body">
                 <form id="commessaForm">
                     <input type="hidden" id="commessaId">
-                    
-                    <div class="form-group">
-                        <label>Cliente / Cantiere</label>
-                        <input type="text" id="cliente" required placeholder="Es. API S.P.A.">
-                    </div>
 
-                    <div class="form-row" style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Impianto</label>
-                            <input type="text" id="impianto" placeholder="Es. Magazzino 2026">
+                    <!-- SEZIONE 1: DATI PRINCIPALI -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <h3>🏭 Dati Principali</h3>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Luogo</label>
-                            <input type="text" id="luogo" placeholder="Es. Trevignano">
+                        <div class="form-grid-2"> <!-- Griglia a 2 colonne -->
+                            <div class="form-group">
+                                <label>Nome Impianto *</label>
+                                <input type="text" id="impianto" name="nome_commessa" placeholder="Es. Magazzino 2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Cliente *</label>
+                                <select id="cliente" name="id_cliente_fk" required></select> <!-- Diventerà Choices.js -->
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="form-row" style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Modello Macchina</label>
-                            <input type="text" id="modello" placeholder="Es. Filtro a tamburo">
-                        </div>
-                        <div class="form-group" style="width: 100px;">
-                            <label>Anno</label>
-                            <input type="number" id="anno" placeholder="2026">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row" style="display: flex; gap: 15px;">
-                         <div class="form-group" style="flex: 1;">
-                            <label>Codice VO</label>
-                            <input type="text" id="vo" placeholder="Es. 26-0000">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Matricola</label>
-                            <input type="text" id="matricola" placeholder="Es. S2026">
-                        </div>
-                         <div class="form-group" style="flex: 1;">
-                            <label>Rif. Tecnico</label>
-                            <input type="text" id="rif_tecnico" placeholder="Es. C2026">
+                        <div class="form-group">
+                            <label>Modello Macchina *</label>
+                            <select id="modello" name="id_modello_fk" required></select> <!-- Diventerà Choices.js -->
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Note</label>
-                        <textarea id="note" rows="3" placeholder="Eventuali note..."></textarea>
+                    <!-- SEZIONE 2: RIFERIMENTI -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <h3>📝 Riferimenti</h3>
+                        </div>
+                        <div class="form-grid-3"> <!-- Griglia a 3 colonne -->
+                            <div class="form-group">
+                                <label>Ordine Vendita (VO) *</label>
+                                <input type="text" id="vo" name="vo_offerta" placeholder="00-0000" maxlength="7" required style="font-weight: bold; letter-spacing: 1px;">
+                            </div>
+                            <div class="form-group">
+                                <label>Rif. Tecnico</label>
+                                <input type="text" id="rif_tecnico" name="riferimento_tecnico" placeholder="C0000" maxlength="5" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label>Matricola</label>
+                                <input type="text" id="matricola" name="matricola" placeholder="Es. S2026">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrizione / Note</label>
+                            <textarea id="note" name="descrizione" rows="2" placeholder="Dettagli aggiuntivi..."></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Immagine (Opzionale)</label>
-                        <div id="uploadWidget" class="custom-file-upload compact">
-                            <span class="custom-file-upload-icon">📷</span>
-                            <span id="uploadText">Carica Foto</span>
-                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    <!-- SEZIONE 3: LOCATION & DETTAGLI -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <h3>📍 Luogo e Anno</h3>
                         </div>
-                        <div id="imagePreviewContainer" style="display: none; margin-top: 10px; position: relative;">
-                            <img id="imagePreview" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-                            <button type="button" id="removeImageBtn" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">&times;</button>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label>Luogo (Città)</label>
+                                <input type="text" id="luogo" name="paese" placeholder="Es. Montebelluna">
+                            </div>
+                            <div class="form-group">
+                                <label>Provincia</label>
+                                <input type="text" id="provincia" name="provincia" placeholder="Es. TV">
+                            </div>
+                            <div class="form-group">
+                                <label>Anno</label>
+                                <input type="number" id="anno" name="anno" placeholder="2026">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEZIONE 4: STATO & FOTO -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <h3>📷 Immagine & Stato</h3>
+                        </div>
+                        <div class="form-grid-2 align-center">
+                            <div class="form-group">
+                                <label>Stato Iniziale</label>
+                                <select id="status-select" name="id_status_fk"></select>
+                            </div>
+                            
+                            <!-- Widget Caricamento Foto -->
+                            <div class="form-group">
+                                <label>Foto Copertina</label>
+                                <div id="uploadWidget" class="custom-file-upload compact">
+                                    <span class="custom-file-upload-icon">📷</span>
+                                    <span id="uploadText" class="file-name">Scegli file...</span>
+                                    <input type="file" id="imageInput" name="immagine" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Anteprima Foto -->
+                        <div id="imagePreviewContainer" style="display: none; margin-top: 10px; text-align: center;">
+                            <img id="imagePreview" src="" style="max-height: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                            <button type="button" id="removeImageBtn" class="std-btn std-btn--danger std-btn--small" style="margin-top: 5px;">Rimuovi</button>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="submit" class="save-button">Salva Commessa</button>
+                        <button type="submit" class="save-button">
+                            <img src="img/save.png" alt="Save" style="width: 18px; filter: brightness(0) invert(1);">
+                            <span>SALVA COMMESSA</span>
+                        </button>
                     </div>
                 </form>
             </div>

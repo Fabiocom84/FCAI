@@ -1,5 +1,5 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - LAYOUT & STYLING V9.2            == */
+/* == GESTIONE ATTIVITÀ - LAYOUT & STYLING V9.3 (FIX HEADER) == */
 /* ========================================================== */
 
 * { box-sizing: border-box; }
@@ -23,18 +23,28 @@ html, body {
     height: 100%;
 }
 
-/* --- 2. HEADER --- */
+/* --- 2. HEADER (FIX APPLICATO) --- */
 .page-header {
-    flex: 0 0 50px;      
+    /* DIMENSIONI STANDARD */
+    flex: 0 0 60px;       /* Portato a 60px come lo standard */
+    width: 100%;
+    
+    /* STILE */
     background-color: #34495e;
     color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    
+    /* LAYOUT */
     padding: 0 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 20;
     white-space: nowrap; 
+
+    /* RESET IMPORTANTE (Override di style-v2.css) */
+    margin: 0;            /* Rimuove lo spazio bianco sotto */
+    border-radius: 0;     /* Rimuove i bordi arrotondati */
 }
 
 .header-left, .header-right { 
@@ -221,121 +231,29 @@ html, body {
 #archiveTasksContainer { overflow-y: auto; padding: 0; flex: 1; }
 .archive-task-item { padding: 12px 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr; }
 
+/* --- 8. STILI CONTENUTO ISPETTORE --- */
+.detail-title { margin: 10px 0 15px 0; font-size: 1.2em; color: #2c3e50; font-weight: 700; text-transform: uppercase; }
+.read-only-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.95em; }
+.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 3px; font-weight: 600; }
+.detail-item span { color: #333; font-weight: 500; }
+.detail-description { grid-column: 1 / -1; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; }
+.description-text { font-size: 0.95em; color: #444; line-height: 1.5; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; margin-top: 5px; }
 
-/* ========================================================================= */
-/* --- 8. STILI CONTENUTO ISPETTORE (RIPRISTINATI) --- */
-/* ========================================================================= */
-
-/* TITOLI */
-.detail-title {
-    margin: 10px 0 15px 0;
-    font-size: 1.2em;
-    color: #2c3e50;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-/* BOX GRIGIO DATI (Read Only) */
-.read-only-box {
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
-/* GRIGLIA CHIAVE-VALORE */
-.detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Due colonne */
-    gap: 15px;
-    font-size: 0.95em;
-}
-
-.detail-item strong {
-    display: block;
-    font-size: 0.75em;
-    color: #888;
-    text-transform: uppercase;
-    margin-bottom: 3px;
-    font-weight: 600;
-}
-
-.detail-item span {
-    color: #333;
-    font-weight: 500;
-}
-
-.detail-description {
-    grid-column: 1 / -1; /* Occupa tutta la larghezza */
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #ccc;
-}
-
-.description-text {
-    font-size: 0.95em;
-    color: #444;
-    line-height: 1.5;
-    background: #fff;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #eee;
-    margin-top: 5px;
-}
-
-/* STORIA & COMMENTI */
-.history-section {
-    margin-top: 20px;
-    border-top: 2px solid #f0f0f0;
-    padding-top: 15px;
-}
-.history-section h4 {
-    font-size: 1em; margin: 0 0 10px 0; color: #555;
-}
-
-/* Box Inserimento Commento */
-.comment-box {
-    display: flex; gap: 8px; margin-bottom: 15px;
-}
-.comment-box textarea {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc; border-radius: 4px;
-    resize: vertical; min-height: 40px;
-    font-family: inherit;
-}
-.btn-send {
-    background-color: #3498db; color: white; border: none; border-radius: 4px; width: 40px; cursor: pointer;
-}
+.history-section { margin-top: 20px; border-top: 2px solid #f0f0f0; padding-top: 15px; }
+.history-section h4 { font-size: 1em; margin: 0 0 10px 0; color: #555; }
+.comment-box { display: flex; gap: 8px; margin-bottom: 15px; }
+.comment-box textarea { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; min-height: 40px; font-family: inherit; }
+.btn-send { background-color: #3498db; color: white; border: none; border-radius: 4px; width: 40px; cursor: pointer; }
 .btn-send:hover { background-color: #2980b9; }
 
-/* Lista Storia */
-.history-list {
-    display: flex; flex-direction: column; gap: 10px;
-}
-.history-item {
-    font-size: 0.85em;
-    padding: 8px; border-radius: 4px;
-    border-left: 3px solid #ccc;
-    background: #fdfdfd;
-}
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.history-item { font-size: 0.85em; padding: 8px; border-radius: 4px; border-left: 3px solid #ccc; background: #fdfdfd; }
 .history-item.action { border-left-color: #f39c12; background: #fffdf5; }
 .history-item.comment { border-left-color: #3498db; background: #f0f7ff; }
 
-/* --- FORM MODIFICA / CREAZIONE (Input Styles) --- */
-.inspector-form label {
-    display: block; font-size: 0.85em; color: #666; font-weight: 600; margin: 10px 0 4px 0;
-}
-.inspector-form .inp-text,
-.inspector-form .inp-date,
-.inspector-form .inp-select,
-.inspector-form .inp-area {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc; border-radius: 4px;
-    font-size: 0.95em; box-sizing: border-box;
-}
+.inspector-form label { display: block; font-size: 0.85em; color: #666; font-weight: 600; margin: 10px 0 4px 0; }
+.inspector-form .inp-text, .inspector-form .inp-date, .inspector-form .inp-select, .inspector-form .inp-area { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; }
 .inspector-form .inp-area { resize: vertical; min-height: 80px; }
 .form-row { display: flex; gap: 15px; }
 .form-col { flex: 1; }
