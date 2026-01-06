@@ -1,6 +1,8 @@
 // js/inserisci-dati.js
 
-import { apiFetch, API_BASE_URL } from './api-client.js'; // Importiamo anche API_BASE_URL se esportato, altrimenti lo ricostruiamo
+// 1. IMPORT CORRETTI
+import { apiFetch } from './api-client.js';
+import { API_BASE_URL } from './config.js'; // PRENDIAMO L'URL DALLA FONTE CORRETTA
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import Legend from './legend.js'; 
 
@@ -24,8 +26,12 @@ async function loadCommesseDropdown() {
 
     try {
         const response = await apiFetch('/api/commesse/simple'); 
-        // Gestione robusta per evitare blocchi se il backend risponde male
-        if (!response.ok) throw new Error("Errore server commesse");
+        
+        if (!response.ok) {
+            // Gestione silenziosa dell'errore per non bloccare la pagina se il backend è giù
+            console.warn("API Commesse non raggiungibile, uso fallback vuoto.");
+            return;
+        }
         
         const commesse = await response.json();
         
@@ -43,8 +49,7 @@ async function loadCommesseDropdown() {
         }
 
     } catch (error) {
-        console.warn("Dropdown commesse non caricato:", error);
-        // Non blocchiamo l'intera pagina, lasciamo la select base
+        console.warn("Errore caricamento dropdown:", error);
     }
 }
 
@@ -162,7 +167,7 @@ function setupSpeechRecognition() {
     }
 }
 
-// --- INVIO DATI (Fix 500 Error) ---
+// --- INVIO DATI (Fix 500 Error + Content-Type) ---
 async function handleFormSubmit(e) {
     e.preventDefault();
 
@@ -179,12 +184,9 @@ async function handleFormSubmit(e) {
         const commessaId = document.getElementById('riferimentoDropdown').value;
         const fileInput = document.getElementById('fileUpload');
 
-        // Backend fields: 'transcription', 'riferimento', 'fileUpload'
+        // Campi backend
         formData.append('transcription', text || ""); 
 
-        // IMPORTANTE: Se commessaId è vuoto, NON appenderlo. Il backend Python fa:
-        // id = request.form.get('riferimento'); if id: ...
-        // Se mandiamo "" (stringa vuota), Python potrebbe provare a convertirlo in int e fallire.
         if (commessaId && commessaId.trim() !== "") {
             formData.append('riferimento', commessaId);
         }
@@ -195,33 +197,25 @@ async function handleFormSubmit(e) {
             formData.append('fileUpload', audioBlob, 'registrazione_vocale.webm');
         }
 
-        // 2. Recupero Token e URL Base
-        // NOTA: Usiamo fetch nativo per evitare che apiFetch forzi 'Content-Type: application/json'
+        // 2. Chiamata Fetch Nativa per bypassare header JSON di apiFetch
         const token = localStorage.getItem('session_token');
-        
-        // Ricostruiamo l'URL completo (assumendo che api-client.js abbia una base URL o sia relativo)
-        // Se usi un proxy o URL relativo, '/api/registrazioni' va bene.
-        // Se API_BASE_URL è esportato da api-client, usalo qui. Altrimenti hardcodalo o usa relativo.
-        // Fallback sicuro su URL relativo:
-        const url = '/api/registrazioni'; 
+        const url = `${API_BASE_URL}/api/registrazioni`; // URL Completo da Config
 
-        // 3. Chiamata Fetch Nativa (Lasciamo che il browser gestisca il Content-Type per FormData)
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
-                // NON METTERE 'Content-Type': 'application/json' QUI!
-                // NON METTERE 'Content-Type': 'multipart/form-data' QUI! (Il browser mette il boundary da solo)
+                // Lasciamo che il browser gestisca il Content-Type (multipart/form-data + boundary)
             },
             body: formData
         });
 
         if (!response.ok) {
-            const errJson = await response.json().catch(() => ({}));
-            throw new Error(errJson.error || `Errore server ${response.status}`);
+            // Tentiamo di leggere l'errore JSON, altrimenti testo
+            const errText = await response.text();
+            throw new Error(`Errore server ${response.status}: ${errText}`);
         }
 
-        // 4. Successo
         const result = await response.json();
         console.log("Successo:", result);
 
@@ -233,7 +227,7 @@ async function handleFormSubmit(e) {
 
     } catch (error) {
         console.error("Errore salvataggio:", error);
-        showModal({ title: "Errore", message: error.message });
+        showModal({ title: "Errore", message: "Impossibile salvare i dati.\n" + error.message });
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalBtnContent;
