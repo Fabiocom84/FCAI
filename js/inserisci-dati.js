@@ -2,8 +2,8 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
-// Importiamo anche la legenda se serve inizializzarla manualmente (dipende da come è fatto legend.js, ma è più sicuro)
-import { initLegend } from './legend.js'; 
+// MODIFICA: Importiamo la classe Default invece di una funzione nominata
+import Legend from './legend.js'; 
 
 // Stato interno
 let mediaRecorder = null;
@@ -15,8 +15,8 @@ let recognition = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("Inizializzazione Inserisci Dati...");
     
-    // Inizializza componenti
-    if(typeof initLegend === 'function') initLegend();
+    // MODIFICA: Istanziamo la classe Legend (che attiva i listener nel costruttore)
+    new Legend();
     
     await loadCommesseDropdown();
     setupEventListeners();
@@ -73,15 +73,13 @@ function setupEventListeners() {
         fileInput.addEventListener('change', handleFileSelect);
     }
 
-    // --- AGGIUNTA: GESTIONE DRAG & DROP ---
+    // Gestione Drag & Drop
     const dropZone = document.querySelector('.file-drop-zone-expanded');
     if (dropZone) {
-        // Previene l'apertura del file nel browser
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, preventDefaults, false);
         });
 
-        // Effetti visivi (highlight)
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, () => dropZone.classList.add('highlight'), false);
         });
@@ -90,7 +88,6 @@ function setupEventListeners() {
             dropZone.addEventListener(eventName, () => dropZone.classList.remove('highlight'), false);
         });
 
-        // Gestione Drop
         dropZone.addEventListener('drop', handleDrop, false);
     }
 }
@@ -107,7 +104,7 @@ function handleDrop(e) {
     const fileInput = document.getElementById('fileUpload');
     
     if (files && files.length > 0) {
-        fileInput.files = files; // Assegna i file droppati all'input nascosto
+        fileInput.files = files; 
         updateFileLabel(files[0].name);
     }
 }
@@ -128,7 +125,7 @@ function updateFileLabel(filename) {
         fileNameSpan.style.fontWeight = 'bold';
     }
     if (dropIcon) {
-        dropIcon.textContent = '✅'; // Cambia icona per feedback
+        dropIcon.textContent = '✅'; 
     }
 }
 
