@@ -1,475 +1,236 @@
-/* =================================================== */
-/* == Stili Definitivi per la Pagina Commesse       == */
-/* =================================================== */
+/* commesse.css - Adattato al Master Layout */
 
-.commesse-page {
-    background-color: #f4f7f9;
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
+/* --- 0. ADATTAMENTO AL GUSCIO (Reset) --- */
+/* Il container interno deve riempire lo spazio disponibile nello std-app-content */
+.commesse-view-wrapper {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #fcfcfc; /* Leggero grigio per far risaltare le card bianche */
 }
 
-/* --- Contenitore Principale --- */
-.page-wrapper {
-    width: 95%;
-    max-width: 1800px;
-    margin: 0 auto;
-}
-
-/* Stile specifico per il pulsante "Aggiungi" */
-#add-commessa-btn {
-    background-color: #28a745;
-    color: white;
-    padding: 8px 16px;
-    font-size: 0.9em;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    /* ...altre proprietà... */
-    display: inline-flex;
-    align-items: center;
-    flex-direction: row;
-    min-height: unset;
-    width: auto;
-    flex-basis: auto;
-}
-.commesse-header .button:hover {
-    background-color: #218838;
-}
-
+/* --- 1. BARRA FILTRI (Sticky) --- */
 .controls-container {
+    position: sticky; /* Rimane fissa in alto mentre scrolli le card */
+    top: 0;
+    z-index: 10;
+    
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
-    background-color: #f8f9fa;
-    padding: 15px 20px;
-    border-bottom: 2px solid #e0e0e0;
+    gap: 15px;
+    
+    background-color: #ffffff; /* Sfondo bianco per stacco */
+    padding: 15px 25px;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
+
+.filters-group { display: flex; gap: 10px; align-items: center; }
+.search-group { display: flex; gap: 10px; align-items: center; flex-grow: 1; justify-content: flex-end; }
+
 .filter-btn {
-    padding: 8px 15px;
-    border: 1px solid #ccc;
+    padding: 6px 15px;
+    border: 1px solid #dfe6ed;
     background-color: #fff;
     cursor: pointer;
     border-radius: 20px;
     font-weight: 500;
-    font-size: 0.9em;
+    font-size: 0.85em;
+    color: #666;
+    transition: all 0.2s;
 }
+.filter-btn:hover { background-color: #f8f9fa; border-color: #cbd5e0; }
 .filter-btn.active {
-    background-color: #007bff;
+    background-color: #3498db; /* Blu coerente col tema */
     color: white;
-    border-color: #007bff;
+    border-color: #3498db;
+    box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
 }
-#search-input,
-#sort-select {
+
+#search-input, #sort-select {
     padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #dfe6ed;
+    border-radius: 6px;
     font-size: 0.9em;
+    outline: none;
 }
+#search-input:focus { border-color: #3498db; }
 
-
-/* --- Griglia Card Responsive --- */
+/* --- 2. GRIGLIA CARD --- */
 .commesse-grid {
     display: grid;
+    /* Grid reattiva: colonne minime di 350px, si adattano allo spazio */
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 25px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 25px;
 }
 
-/* --- Stili Card --- */
+/* --- 3. STILI CARD (Mantenuti e Rifiniti) --- */
 .commesse-card {
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid #eef2f6;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
+.commesse-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
 .card-image {
     width: 100%;
-    height: 280px;
+    height: 220px; /* Altezza leggermente ridotta per compattezza */
     background-color: #e9ecef;
     background-size: cover;
     background-position: center;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #6c757d;
+    color: #adb5bd;
     font-weight: 500;
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
 }
+
 .card-details {
     padding: 20px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
+
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 .card-header h3 {
     margin: 0;
-    font-size: 1.2em;
-    color: #343a40;
+    font-size: 1.15em;
+    color: #2d3748;
+    line-height: 1.3;
 }
+
+/* Badge Stato */
 .status-badge {
     padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.8em;
+    font-size: 0.75em;
     font-weight: bold;
     color: white;
     flex-shrink: 0;
     margin-left: 10px;
+    text-transform: uppercase;
 }
 .status-in-lavorazione { background-color: #28a745; }
-.status-completato { background-color: #007bff; } /* Corretto da 'status-chiuso' */
-.status-default { background-color: #6c757d; }
+.status-completato { background-color: #3498db; }
+.status-default { background-color: #95a5a6; }
+
+/* Info Testuali */
 .card-info p {
-    margin: 5px 0;
+    margin: 4px 0;
     font-size: 0.9em;
-    color: #495057;
+    color: #555;
     line-height: 1.5;
 }
-.card-info strong {
-    color: #212529;
-}
+.card-info strong { color: #333; font-weight: 600; }
+
+/* Sezione Link Registrazioni */
 .registrazioni-section {
     margin-top: auto;
     padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.9em;
 }
 .registrazioni-section a {
-    color: #007bff;
+    color: #3498db;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 5px;
 }
+.registrazioni-section a:hover { text-decoration: underline; }
 
+/* Bottoni Azione Card */
 .card-actions {
     padding: 0 20px 20px;
     display: flex;
     gap: 10px;
 }
-/* Stile specifico per i pulsanti sulla card */
 .card-actions .button {
-    flex-grow: 1;
-    min-height: unset;
-    width: auto;
-    flex-basis: auto;
-    padding: 8px 12px;
-    font-size: 0.9em;
-    flex-direction: row;
-    cursor: pointer;
-}
-.card-actions .button--warning { background-color: #ffc107; color: #212529;}
-.card-actions .button--danger { background-color: #dc3545; color: white;}
-
-.loader, .error-text {
-    text-align: center;
-    padding: 40px;
-    font-size: 1.2em;
-    color: #6c757d;
-    grid-column: 1 / -1;
-}
-
-/* Sfondo per le commesse "In Lavorazione" (verde chiaro) */
-.commesse-card.status-bg-in-lavorazione {
-    background-color: #f0fff4; 
-    border-left: 5px solid #28a745;
-}
-
-/* Sfondo per le commesse "Completato" (grigio chiaro) */
-.commesse-card.status-bg-completato { /* Corretto da 'status-bg-chiuso' */
-    background-color: #fafafa;
-    border-left: 5px solid #6c757d;
-}
-
-/* Potremmo anche aggiungere un leggero effetto per distinguere meglio il testo */
-.commesse-card.status-bg-chiuso .card-details {
-    opacity: 0.85;
-}
-
-/*
- * FIX PER LA FRECCIA DI CHOICES.JS
- * Sposta la freccia del menu a tendina più a sinistra
- * per evitare che sporga dal modale.
-*/
-.choices__inner::after {
-    right: 15.5px; /* Aumenta questo valore per spostarla più a sinistra */
-}
-
-/* Contenitore per allineare badge e toggle */
-.status-and-toggle {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Spazio tra il badge e il toggle */
-    flex-shrink: 0;
-}
-
-/* Stile base per il toggle switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px; /* Larghezza del toggle */
-    height: 28px; /* Altezza del toggle */
-}
-
-/* Nasconde la checkbox di default */
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-/* Lo sfondo del toggle */
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 28px;
-}
-
-/* Il "pallino" che si sposta */
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-/* Cambia colore quando il toggle è attivo (checked) */
-input:checked + .slider {
-    background-color: #28a745; /* Verde per "Completato" */
-}
-
-/* Sposta il pallino quando il toggle è attivo */
-input:checked + .slider:before {
-    transform: translateX(22px);
-}
-
-/* --- Griglia Fasi Produzione nella Card --- */
-.phases-container {
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px dashed #e0e0e0;
-}
-
-.phases-title {
-    font-size: 0.85em;
-    color: #888;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.phases-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 colonne */
-    gap: 8px 15px; /* Spazio verticale 8px, orizzontale 15px */
-}
-
-.phase-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.85em;
-    color: #555;
-    background-color: #f8f9fa;
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
-/* Stile Mini-Switch */
-.mini-switch {
-    position: relative;
-    display: inline-block;
-    width: 30px;
-    height: 16px;
-}
-.mini-switch input { opacity: 0; width: 0; height: 0; }
-.mini-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 16px;
-}
-.mini-slider:before {
-    position: absolute;
-    content: "";
-    height: 12px; width: 12px;
-    left: 2px; bottom: 2px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-.mini-switch input:checked + .mini-slider { background-color: #28a745; } /* Verde quando attivo */
-.mini-switch input:checked + .mini-slider:before { transform: translateX(14px); }
-
-/* --- PROGRESS BAR & ORE --- */
-.progress-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 15px;
+    flex: 1;
     padding: 10px;
-    background-color: #f8f9fa;
+    font-size: 0.85em;
     border-radius: 6px;
-    border: 1px solid #e9ecef;
-}
-
-.progress-container {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.progress-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75em;
-    color: #666;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.progress-bar-bg {
-    width: 100%;
-    height: 10px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
-    border-radius: 10px;
-    transition: width 0.6s ease-in-out;
-    width: 0%; /* Di default 0, gestito da JS */
-}
-
-/* Colori dinamici in base alla percentuale (gestiti via classe o inline style) */
-.progress-bar-fill.low { background: #f1c40f; } /* Giallo (Ufficio) */
-.progress-bar-fill.mid { background: #3498db; } /* Blu (Lavorazione) */
-.progress-bar-fill.high { background: #2ecc71; } /* Verde (Finitura) */
-
-.hours-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    background-color: #fff;
-    border: 1px solid #dcdcdc;
-    border-radius: 8px;
-    padding: 5px 10px;
-    min-width: 60px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.hours-value {
-    font-size: 1.1em;
-    font-weight: 800;
-    color: #2c3e50;
-}
-
-.hours-label {
-    font-size: 0.65em;
-    color: #888;
     text-transform: uppercase;
+    font-weight: 700;
 }
+.card-actions .button--warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.card-actions .button--warning:hover { background-color: #ffeeba; }
+.card-actions .button--danger { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+.card-actions .button--danger:hover { background-color: #fed7d7; }
 
-/* =================================================== */
-/* ==   FIX LAYOUT HEADER (DESKTOP & MOBILE)        == */
-/* =================================================== */
-
-/* 1. CONFIGURAZIONE DESKTOP (Default) */
-.page-header {
-    display: grid !important; 
-    grid-template-columns: auto 1fr auto; 
-    align-items: center;
-    gap: 15px;
-    padding: 15px 20px;
+/* --- 4. PROGRESS BARS & FASI (Mantenuti) --- */
+.progress-section {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; padding: 8px;
+    background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;
 }
-
-/* Gestione Titolo */
-.page-header h1 {
-    grid-column: 2;
-    text-align: center;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+.progress-container { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 0.7em; color: #777; font-weight: 700; text-transform: uppercase; }
+.progress-bar-bg { width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; width: 0%; }
+.progress-bar-fill.low { background: #f1c40f; }
+.progress-bar-fill.mid { background: #3498db; }
+.progress-bar-fill.high { background: #2ecc71; }
+.hours-badge {
+    background: white; border: 1px solid #ddd; border-radius: 6px;
+    padding: 2px 8px; text-align: center; min-width: 40px;
 }
+.hours-value { font-size: 0.9em; font-weight: 800; color: #333; display: block; }
+.hours-label { font-size: 0.6em; color: #999; text-transform: uppercase; display: block; }
 
-/* Posizionamento Elementi */
-.page-header .header-button:first-child { grid-column: 1; justify-self: start; }
-.page-header #add-commessa-btn { grid-column: 3; justify-self: end; }
+/* Fasi Grid */
+.phases-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; }
+.phases-title { font-size: 0.75em; color: #999; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
+.phases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.phase-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; color: #555; background: #f8f9fa; padding: 3px 6px; border-radius: 4px; border: 1px solid #eee; }
 
-/* OVERRIDE COLORE PER IL TASTO AGGIUNGI (Default header-button è blu) */
+/* Toggle Switch (Mantenuto) */
+.toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #28a745; }
+input:checked + .slider:before { transform: translateX(18px); }
+
+/* --- 5. STILE PULSANTE "AGGIUNGI" NELL'HEADER --- */
+/* Questo ID sarà nel nuovo HTML dentro .std-app-header */
 #add-commessa-btn {
     background-color: #28a745; /* Verde */
-    border: none; /* Rimuove bordi standard dei button */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    /* Reset dimensioni per allinearlo al link Home */
-    height: auto; 
-    min-height: unset; 
+    font-weight: 600;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+    height: 36px; /* Altezza coerente */
 }
-#add-commessa-btn:hover {
-    background-color: #218838;
-}
+#add-commessa-btn:hover { background-color: #218838; }
 
-/* 2. CONFIGURAZIONE MOBILE (< 600px) */
-@media (max-width: 600px) {
-    .page-header {
-        grid-template-columns: min-content 1fr min-content !important;
-        padding: 10px;
-        gap: 10px;
-    }
-
-    /* Nascondiamo il testo dentro gli span di TUTTI gli header-button */
-    .page-header .header-button span {
-        display: none !important;
-    }
-
-    /* Rendiamo i bottoni quadrati e compatti */
-    .page-header .header-button {
-        padding: 0;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Centriamo le icone */
-    .page-header .header-button img {
-        margin: 0 !important;
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Titolo responsivo */
-    .page-header h1 {
-        white-space: normal;
-        font-size: 1.1em;
-        line-height: 1.2;
-    }
-}
+/* --- 6. MESSAGGI ERRORE/LOADER --- */
+.loader, .error-text { text-align: center; padding: 40px; font-size: 1.1em; color: #6c757d; grid-column: 1 / -1; }
