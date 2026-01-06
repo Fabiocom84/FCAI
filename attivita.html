@@ -22,19 +22,19 @@
     <!-- GUSCIO STANDARD -->
     <div class="std-app-shell">
 
-        <!-- HEADER STANDARD -->
-        <header class="std-app-header">
-            <div style="display:flex; gap:10px; align-items:center;">
-                <!-- Bottone Home stile Ghost ma bianco per contrasto header -->
-                <a href="index.html" class="std-btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px;">
+        <!-- HEADER CLASSICO (Ripristinato) -->
+        <header class="page-header">
+            <div class="header-left">
+                <!-- Pulsante Home Standard -->
+                <a href="index.html" class="header-button">
                     <i class="fas fa-home"></i> Home
                 </a>
             </div>
             
             <h1>GESTIONE ATTIVITÀ</h1>
             
-            <div style="display:flex; gap:10px; align-items:center;">
-                <!-- Filtro Utente (Visibile solo Admin) -->
+            <div class="header-right">
+                <!-- FILTRO UTENTE (Stile Classico Standard) -->
                 <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
                     <label for="adminUserFilter">Utente:</label>
                     <select id="adminUserFilter" class="header-select"></select>
@@ -59,31 +59,25 @@
                 <!-- COLONNA 5: ISPETTORE FISSO -->
                 <aside id="taskInspector" class="task-inspector-fixed">
                     
-                    <!-- TOOLBAR (Bottoni aggiornati alle classi std-btn) -->
+                    <!-- TOOLBAR NELL'HTML -->
                     <div class="inspector-header-toolbar">
-                        <button id="addTaskBtn" class="std-btn std-btn--primary" title="Nuovo Task" style="flex:1;">
+                        <button id="addTaskBtn" class="toolbar-btn btn-new" title="Nuovo Task">
                             <i class="fas fa-plus"></i> Nuovo
                         </button>
-                        
                         <div class="divider-vertical"></div>
-                        
-                        <!-- Nota: usiamo classi utility per i colori specifici nel JS o inline se necessario, 
-                             ma usiamo la struttura base std-btn -->
-                        <button id="inspectorCompleteBtn" class="std-btn std-btn--blue" title="Chiudi / Riapri" disabled style="flex:1;">
+                        <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri" disabled>
                             <i class="fas fa-check"></i> Chiudi
                         </button>
-                        <button id="inspectorTransferBtn" class="std-btn std-btn--ghost" title="Trasferisci" disabled style="flex:1;">
+                        <button id="inspectorTransferBtn" class="toolbar-btn btn-transfer" title="Trasferisci" disabled>
                             <i class="fas fa-share"></i> Invia
                         </button>
-                        
-                        <!-- Gruppo icone piccole -->
-                        <button id="inspectorEditBtn" class="std-btn std-btn--warning" title="Modifica" disabled style="padding: 5px 10px;">
-                            <i class="fas fa-edit"></i>
+                        <button id="inspectorEditBtn" class="toolbar-btn btn-edit" title="Modifica" disabled>
+                            <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button id="inspectorDeleteBtn" class="std-btn std-btn--danger" title="Elimina" disabled style="padding: 5px 10px;">
+                        <button id="inspectorDeleteBtn" class="toolbar-btn btn-delete" title="Elimina" disabled>
                             <i class="fas fa-trash"></i>
                         </button>
-                        <button id="inspectorBellBtn" class="std-btn std-btn--ghost" title="Notifiche" style="padding: 5px 10px;">
+                        <button id="inspectorBellBtn" class="toolbar-btn btn-bell" title="Notifiche">
                             <i class="fas fa-bell"></i>
                         </button>
                     </div>

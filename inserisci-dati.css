@@ -141,3 +141,10 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
 }
 .big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
 .big-save-btn img { width: 20px; filter: invert(1); }
+
+/* Effetto Highlight per Drag & Drop */
+.file-drop-zone-expanded.highlight {
+    background-color: #e3f2fd; /* Azzurro chiaro */
+    border-color: #3498db;
+    transform: scale(1.02);
+}

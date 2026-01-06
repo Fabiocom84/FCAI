@@ -1,115 +1,129 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - LAYOUT FIX DEFINITIVO            == */
+/* == GESTIONE ATTIVITÀ - STILE DEFINITIVO (Ver. 8.0)      == */
 /* ========================================================== */
 
-/* --- 1. STRUTTURA PAGINA (Override e Adattamento) --- */
+* { box-sizing: border-box; }
 
-/* Forza il contenitore principale a non scrollare globalmente */
-.std-app-content {
+body {
+    background-color: #f4f7f9;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden !important; /* Blocca scroll esterno */
-    padding: 0 !important;       /* Rimuove padding standard per full width */
-    height: 100%;
-}
-
-.task-view-wrapper {
-    display: flex;
-    flex: 1;               /* Occupa tutto lo spazio verticale */
-    height: 100%;
     overflow: hidden;
-    background-color: #eef2f5;
-    padding: 10px;         /* Margine interno generale */
-    gap: 10px;
 }
 
-/* --- 2. GRIGLIA KANBAN (Sinistra) --- */
-.task-view-grid {
-    display: flex;
-    gap: 10px;
-    flex: 1;               /* Prende tutto lo spazio rimanente */
-    height: 100%;
-    overflow-x: auto;      /* Scroll orizzontale SOLO qui se necessario */
-    overflow-y: hidden;    /* No scroll verticale sul contenitore colonne */
-    
-    /* Scrollbar personalizzata per essere meno invasiva */
-    scrollbar-width: thin; 
-    scrollbar-color: #ccc #eef2f5;
-}
+.page-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
-.task-column {
-    background-color: #ebecf0;
-    border-radius: 6px;
-    padding: 8px 6px;
-    display: flex;
-    flex-direction: column;
-    
-    /* Larghezza Colonne: Flessibile ma con limiti */
-    flex: 1 0 260px;       /* Base 260px, non restringere sotto */
-    min-width: 260px;
-    max-width: 400px;      /* Non diventare enormi su schermi larghi */
-    height: 100%;
-    border: 1px solid #dcdcdc;
-}
-
-.task-column-header {
+/* --- 1. HEADER COMPATTO --- */
+.page-header {
+    background-color: #34495e;
+    color: white;
+    height: 50px;
+    padding: 0 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-    border-bottom: 2px solid #dcdcdc;
-    flex-shrink: 0;        /* L'header non si schiaccia */
-}
-
-.task-column-header h2 {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #444;
-    margin: 0;
-    text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-}
-
-.column-count {
-    background-color: #d1d5db;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #555;
-}
-
-/* Area Scrollabile dentro la colonna (dove stanno le card) */
-.tasks-container {
-    flex: 1;               /* Occupa spazio verticale */
-    overflow-y: auto;      /* Scroll verticale QUI */
-    padding-right: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 50px;      /* Zona di drop sempre attiva */
-}
-
-/* --- 3. ISPETTORE (Destra - Fisso) --- */
-.task-inspector-fixed {
-    /* Dimensioni fisse e stabili */
-    flex: 0 0 420px;       /* Larghezza fissa 420px */
-    width: 420px;
-    min-width: 420px;
-    
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: -4px 0 15px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 1px solid #ddd;
-    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-shrink: 0;
     z-index: 10;
 }
 
-/* Toolbar Ispettore */
+.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+
+.page-header h1 {
+    margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
+    position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
+}
+
+.header-button {
+    color: white; text-decoration: none; font-size: 0.9em;
+    display: flex; align-items: center; gap: 6px; opacity: 0.9;
+    background: transparent !important; /* Override globale */
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 5px 10px !important;
+    height: auto !important;
+    width: auto !important;
+}
+.header-button:hover { background: rgba(255,255,255,0.1) !important; opacity: 1; }
+
+/* Filtro Utente (Stile Classico) */
+.header-filter-wrapper {
+    display: flex; align-items: center;
+    background: white; 
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    height: 30px;
+}
+
+.header-filter-wrapper label {
+    font-size: 0.85em; margin-right: 8px; color: #333; font-weight: 500;
+}
+
+.header-select {
+    background: transparent; border: none; color: #333;
+    font-size: 0.9em; outline: none; cursor: pointer;
+    font-family: inherit; padding: 0; margin: 0;
+}
+.header-select option { background-color: white; color: #333; }
+
+/* --- 2. LAYOUT A 5 COLONNE --- */
+.task-view-wrapper {
+    display: flex; flex: 1; overflow: hidden; padding: 10px; gap: 10px; background-color: #eef2f5;
+}
+
+/* KANBAN BOARD (1-4) */
+.task-view-grid {
+    display: flex; gap: 8px; flex: 2; height: 100%; overflow-x: auto;
+}
+
+.task-column {
+    background-color: #ebecf0; border-radius: 6px; padding: 6px;
+    display: flex; flex-direction: column; flex: 1; min-width: 200px; height: 100%;
+}
+
+.task-column-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px 8px 4px; border-bottom: 2px solid #dcdcdc; margin-bottom: 6px; flex-shrink: 0;
+}
+.task-column-header h2 { font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.75em; font-weight: bold; color: #555; }
+
+.tasks-container { flex: 1; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 8px; min-height: 50px; }
+
+/* CARDS */
+.task-card {
+    background-color: white; border-radius: 4px; padding: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
+    border-left: 4px solid transparent; transition: transform 0.1s; user-select: none;
+}
+.task-card:hover { box-shadow: 0 3px 6px rgba(0,0,0,0.15); transform: translateY(-1px); }
+.task-card.priority-alta { border-left-color: #dc3545; }
+.task-card.priority-media { border-left-color: #ffc107; }
+.task-card.priority-bassa { border-left-color: #28a745; }
+.task-card h4 { margin: 4px 0; font-size: 0.95em; color: #2c3e50; font-weight: 500; line-height: 1.3; }
+
+.cat-tag, .commessa-tag {
+    font-size: 0.7em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
+    font-weight: 600; display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
+}
+.cat-tag { background-color: #f1f3f5; color: #555; }
+.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
+.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
+.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
+
+/* --- 3. ISPETTORE (Colonna 5) --- */
+.task-inspector-fixed {
+    flex: 1.5; /* Spazio generoso */
+    min-width: 500px; 
+    background-color: white; border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+    height: 100%; border: 1px solid #ddd; overflow: hidden;
+}
+
+/* TOOLBAR UNIFORMATA - Override aggressivi */
 .inspector-header-toolbar {
     padding: 10px;
     background-color: #f8f9fa;
@@ -117,105 +131,248 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 60px;
+    height: 55px;
     flex-shrink: 0;
 }
 
-/* Corpo Ispettore */
-.inspector-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background-color: #fff;
+/* Stile Base Pulsante Toolbar */
+.toolbar-btn {
+    flex: 1; /* Distribuisce larghezza equamente */
+    height: 34px !important; /* Forza altezza umana */
+    border-radius: 4px !important;
+    border: none !important;
+    cursor: pointer;
+    font-size: 0.85em !important;
+    font-weight: 500 !important;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: filter 0.2s;
+    white-space: nowrap;
+    margin: 0 !important; /* Resetta margini globali */
+    width: auto !important; /* Previene il 100% width globale */
+    text-transform: none !important;
+    box-shadow: none !important;
 }
+.toolbar-btn:hover:not(:disabled) { filter: brightness(90%); }
+.toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #ccc !important; color: #666 !important; }
 
-/* --- 4. CARDS (Stile Grafico) --- */
-.task-card {
-    background-color: white;
-    border-radius: 6px;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    cursor: grab;
+/* Colori specifici pulsanti toolbar */
+.btn-new { background-color: #28a745 !important; }
+.btn-complete { background-color: #17a2b8 !important; }
+.btn-transfer { background-color: #6c757d !important; }
+.btn-edit { background-color: #ffc107 !important; color: #333 !important; }
+.btn-delete { background-color: #dc3545 !important; }
+.btn-bell { 
+    background-color: transparent !important; 
+    color: #555 !important; 
+    border: 1px solid #ddd !important;
+    flex: 0 0 34px !important; /* Quadrato fisso */
+    padding: 0 !important;
+}
+.btn-bell:hover { background-color: #eee !important; }
+
+/* Corpo */
+.inspector-body { flex: 1; overflow-y: auto; padding: 20px; position: relative; background-color: #fff; }
+
+/* BOX DETTAGLI COMPATTO */
+.read-only-box {
+    background-color: #f9f9f9;
     border: 1px solid #e0e0e0;
-    border-left: 4px solid transparent;
-    transition: transform 0.1s, box-shadow 0.1s;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
-.task-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-    border-color: #ccc;
+
+/* Griglia Info */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
 }
-.task-card:active { cursor: grabbing; }
+.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+.detail-item span { font-size: 1em; color: #333; font-weight: 500; }
 
-/* Bordi Priorità */
-.task-card.priority-alta { border-left-color: #dc3545; }
-.task-card.priority-media { border-left-color: #ffc107; }
-.task-card.priority-bassa { border-left-color: #28a745; }
-
-/* Contenuto Card */
-.task-card h4 { margin: 8px 0; font-size: 0.95rem; font-weight: 500; color: #2c3e50; line-height: 1.4; }
-
-/* Tag */
-.cat-tag, .commessa-tag {
-    font-size: 0.7em; padding: 3px 6px; border-radius: 4px; 
-    text-transform: uppercase; font-weight: 700; 
-    display: inline-block; max-width: 100%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+/* Descrizione Integrata */
+.detail-description {
+    grid-column: 1 / -1; /* Occupa tutta la riga */
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
 }
-.cat-tag { background-color: #f1f3f5; color: #555; }
-.commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
-
-/* Stati Drag & Drop */
-.task-card.dragging { opacity: 0.4; border: 1px dashed #999; background: #f9f9f9; }
-.drag-over { background-color: #e3f2fd; border: 2px dashed #3498db; }
-
-/* --- 5. DETTAGLI ISPETTORE --- */
-.detail-title { margin: 0 0 15px 0; font-size: 1.2rem; color: #2c3e50; }
-.read-only-box { background: #f8f9fa; border: 1px solid #eee; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; font-size: 0.9rem; }
-.detail-item strong { display: block; font-size: 0.7em; color: #888; text-transform: uppercase; margin-bottom: 3px; }
-.detail-description { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; }
-.description-text { font-size: 0.95em; color: #444; background: white; padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-top: 5px; }
+.detail-description strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+.description-text {
+    font-size: 0.95em; color: #444; line-height: 1.5; white-space: pre-wrap;
+    background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #eee;
+}
 
 /* Chat & Storia */
-.history-section h4 { margin: 20px 0 10px; font-size: 1rem; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 5px; }
-.history-list { display: flex; flex-direction: column; gap: 10px; }
-.history-item { padding: 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid #eee; background: white; }
-.history-item.comment { background-color: #f0f8ff; border-color: #cfe8fc; }
-.history-item.action { background-color: #fff8e1; border-color: #ffe0b2; color: #e65100; }
+.history-section h4 { margin: 0 0 10px 0; color: #555; font-size: 1em; padding-top: 10px; border-top: 1px solid #eee; }
+.history-list { max-height: 250px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
 
-.comment-box { display: flex; gap: 8px; margin-bottom: 15px; }
-.comment-box textarea { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 8px; resize: none; height: 40px; }
+.history-item { font-size: 0.85em; padding: 8px 10px; border-radius: 4px; border: 1px solid #eee; line-height: 1.4; }
+.history-item.comment { background-color: #f0f7ff; border-left: 3px solid #007bff; border-color: #d6e9ff; }
+.history-item.action { background-color: #fff3cd; border-left: 3px solid #ffc107; border-color: #ffeeba; color: #856404; }
 
-/* --- 6. NOTIFICHE (Lista) --- */
-.notification-list { border: 1px solid #eee; border-radius: 6px; overflow: hidden; margin-bottom: 15px; }
-.notification-item-wrapper { display: flex; align-items: stretch; border-bottom: 1px solid #eee; background: white; }
-.notification-item-wrapper.unread { background-color: #e3f2fd; }
-.notification-content { flex: 1; padding: 12px; cursor: pointer; }
-.btn-go-to-task { width: 40px; background: transparent; border: none; border-left: 1px solid #eee; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-.btn-go-to-task:hover { background: #f1f3f5; color: #3498db; }
-
-/* --- 7. MODALE ARCHIVIO (Centrato) --- */
-#archiveModal {
-    position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.5); z-index: 9999; display: none;
+/* Box invio commento (FIX DIMENSIONI) */
+.comment-box { display: flex; gap: 8px; margin-bottom: 15px; align-items: flex-start; }
+.comment-box textarea { 
+    flex: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 0.9em; 
+    min-height: 40px; height: 40px;
 }
-#archiveModal .modal-content {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 600px; max-width: 90%; max-height: 85vh;
-    background: white; border-radius: 8px; margin: 0;
-    display: flex; flex-direction: column;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+.btn-send {
+    background-color: #007bff !important; 
+    color: white !important; 
+    border: none !important; 
+    border-radius: 4px !important;
+    width: 40px !important; 
+    height: 40px !important; 
+    cursor: pointer; 
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
 }
-#archiveTasksContainer { overflow-y: auto; padding: 0; flex: 1; }
-.archive-task-item { padding: 12px 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr; gap: 10px; font-size: 0.9rem; }
+.btn-send:hover { background-color: #0056b3 !important; }
 
-/* --- 8. RESPONSIVE --- */
-@media (max-width: 1200px) {
-    .task-inspector-fixed { flex: 0 0 350px; width: 350px; min-width: 350px; }
+/* Empty State */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ccc; text-align: center; }
+.empty-state i { margin-bottom: 15px; color: #e0e0e0; }
+
+/* FORM STYLES & OVERRIDE BOTTONI */
+.inspector-form label { display: block; margin-bottom: 4px; font-size: 0.85em; font-weight: bold; color: #555; }
+.inp-text, .inp-select, .inp-date, .inp-area { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; margin-bottom: 12px; }
+.inp-area { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 10px; } .form-col { flex: 1; }
+
+.form-actions { 
+    display: flex !important; 
+    justify-content: flex-end !important; /* Allinea a destra */
+    align-items: center !important;
+    gap: 10px !important; 
+    
+    margin-top: 15px !important; 
+    padding-top: 15px !important; 
+    border-top: 1px solid #eee !important; 
+    width: 100% !important;
 }
-@media (max-width: 768px) {
-    .task-view-wrapper { flex-direction: column; overflow-y: auto; }
-    .task-view-grid { flex: none; height: 400px; min-height: 400px; }
-    .task-inspector-fixed { width: 100%; border-left: none; border-top: 1px solid #ddd; height: auto; min-height: 500px; flex: none; }
+
+/* Override Totale sui bottoni del form */
+.form-actions button {
+    /* 1. Reset Geometria Globale */
+    width: auto !important;       /* No 100% width */
+    flex: 0 0 auto !important;    /* No flex grow */
+    min-width: 100px !important;  /* Larghezza minima leggibile */
+    max-width: 200px !important;
+    
+    /* 2. Reset Altezza */
+    height: 38px !important;      /* Altezza fissa umana */
+    min-height: 0 !important;     /* Annulla min-height globali */
+    padding: 0 20px !important;   /* Padding laterale */
+    
+    /* 3. Reset Testo e Allineamento */
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    line-height: 1 !important;
+    
+    /* 4. Reset Margini e Display */
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+/* Mantieni i colori specifici (con !important per sicurezza) */
+.button--success {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: 1px solid #28a745 !important;
+}
+.button--success:hover {
+    background-color: #218838 !important;
+}
+
+.button--warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+    border: 1px solid #ffc107 !important;
+}
+.button--warning:hover {
+    background-color: #e0a800 !important;
+}
+/* Lista Notifiche */
+.notification-item {
+    padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9em; cursor: pointer; transition: background 0.2s;
+}
+.notification-item:hover { background-color: #f9f9f9; }
+.notification-item.unread { background-color: #e3f2fd; font-weight: 500; }
+.notification-item small { color: #888; display: block; margin-top: 4px; font-size: 0.8em; font-weight: normal; }
+
+/* Modali (Archivio) */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+.modal-content { background: white; margin: 10% auto; padding: 0; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+.modal-header { padding: 15px; background: #f8f9fa; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+.modal-body { padding: 20px; } .modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; }
+.close-button { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #aaa; }
+.archive-task-item { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+
+/* Loader */
+.loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa; }
+.loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Responsive Mobile */
+@media (max-width: 1024px) { .task-inspector-fixed { min-width: 350px; } }
+@media (max-width: 768px) { 
+    .task-view-wrapper { flex-direction: column; } 
+    .task-view-grid { flex: none; height: 300px; overflow-x: auto; } 
+    .task-inspector-fixed { min-width: 100%; border-left: none; border-top: 1px solid #ddd; flex: 1; } 
+}
+
+/* Task Delegato (Sbiadito) */
+.task-card.delegated-out {
+    opacity: 0.6;
+    background-color: #f3f3f3;
+    border: 1px dashed #bbb;
+    cursor: default;
+}
+
+/* Task In Arrivo (Molto Evidente) */
+.task-card.incoming-task {
+    border-left: 5px solid #3498db !important; /* Barra laterale blu spessa */
+    background-color: #f0f7ff; /* Sfondo azzurro */
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2); /* Ombra azzurrina */
+}
+
+/* Badge interno per task in arrivo */
+.incoming-alert {
+    background-color: #3498db;
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.incoming-badge {
+    font-size: 0.7em;
+    background: #3498db;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
