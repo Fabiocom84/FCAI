@@ -94,8 +94,12 @@ const App = {
         }
         this.dom.loader.style.display = 'block';
 
-        const deepSearchCheckbox = document.getElementById('deep-search-checkbox');
-        const isDeepSearch = deepSearchCheckbox.checked;
+        // --- CORREZIONE QUI ---
+        // Cerchiamo l'ID corretto 'search-deep'
+        const deepSearchCheckbox = document.getElementById('search-deep');
+        // Aggiungiamo un controllo di sicurezza (? :) per evitare crash se l'elemento non esiste
+        const isDeepSearch = deepSearchCheckbox ? deepSearchCheckbox.checked : false; 
+        // ----------------------
 
         const params = new URLSearchParams({
             page: this.state.currentPage,
