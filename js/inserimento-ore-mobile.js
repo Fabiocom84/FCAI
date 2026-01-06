@@ -402,10 +402,20 @@ const MobileHoursApp = {
 
                 let sub = w.componenti?.nome_componente || 'Attività generica';
                 
-                if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso')) {
-                    cardClass = 'card-abs'; title = 'Assenza';
-                } else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere') || w.ore_viaggio_andata > 0) {
+                if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia') || sub.toLowerCase().includes('104')) {
+                    cardClass = 'card-abs';
+                    
+                    // FIX: Se il titolo è ancora generico o vuoto, forziamo "GESTIONE PERSONALE".
+                    // Altrimenti lasciamo quello che arriva dal DB (che ora sarà corretto grazie al salvataggio su ID 68).
+                    if (title === 'N/D' || title === 'Assenza') {
+                        title = 'GESTIONE PERSONALE (SYS-JOB-ABS)';
+                    }
+                    // NOTA: Non sovrascriviamo più 'title' con la parola fissa 'Assenza'.
+                } 
+                // 2. Caso CANTIERE
+                else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere') || w.ore_viaggio_andata > 0) {
                     cardClass = 'card-site';
+                    // Qui il titolo è già corretto (ATTIVITÀ DI CANTIERE...) perché viene dalla commessa
                 }
 
                 // Opacità se bloccato
