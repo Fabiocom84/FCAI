@@ -1,30 +1,30 @@
 /* ========================================================== */
-/* == GESTIONE ATTIVITÀ - LAYOUT FINAL 100% HEIGHT         == */
+/* == GESTIONE ATTIVITÀ - LAYOUT OPTIMIZED V9.0            == */
 /* ========================================================== */
 
 * { box-sizing: border-box; }
 
-/* 1. RESET FULL HEIGHT */
+/* 1. RESET FULL HEIGHT (Desktop) */
 html, body {
-    height: 100%;        /* Occupa sempre tutto lo schermo */
+    height: 100%;        
     width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;    /* Blocca lo scroll del browser su Desktop */
-    font-family: 'Roboto', sans-serif;
+    overflow: hidden;    /* Blocca scroll pagina su Desktop */
     background-color: #f4f7f9;
 }
 
-.page-wrapper {
+/* Sovrascriviamo il comportamento standard del guscio per questa pagina */
+.std-app-content {
+    overflow: hidden !important; /* FONDAMENTALE: impedisce doppio scroll */
     display: flex;
     flex-direction: column;
-    height: 100%;        /* Eredita 100% dal body */
-    width: 100%;
+    padding: 0 !important; /* Rimuoviamo padding esterno per full immersion */
 }
 
-/* --- 2. HEADER --- */
+/* --- 2. HEADER SPECIFICO --- */
 .page-header {
-    flex: 0 0 50px;      /* Altezza fissa */
+    flex: 0 0 50px;      
     background-color: #34495e;
     color: white;
     padding: 0 15px;
@@ -35,124 +35,165 @@ html, body {
     z-index: 20;
 }
 
+/* Stili Header Standard */
 .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
-
 .page-header h1 {
     margin: 0; font-size: 1.1em; font-weight: 500; letter-spacing: 1px;
     position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
 }
-
-/* PULSANTE HOME STANDARD (BLU) */
 .header-button {
-    background-color: #3498db !important; /* Blu Standard */
+    background-color: #3498db !important; 
     color: white !important;
-    text-decoration: none;
-    font-size: 0.9em;
-    font-weight: 500;
-    padding: 8px 16px !important;
-    border-radius: 4px;
-    border: none !important;
+    text-decoration: none; font-size: 0.9em; font-weight: 500;
+    padding: 6px 12px !important; border-radius: 4px;
     display: flex; align-items: center; gap: 8px;
-    height: auto;
-    transition: background-color 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.header-button:hover { background-color: #2980b9 !important; opacity: 1; }
-
 .header-filter-wrapper {
     display: flex; align-items: center; justify-content: center;
-    background: white; padding: 0 10px; border-radius: 4px;
-    border: 1px solid #ccc; height: 32px;
+    background: white; padding: 0 10px; border-radius: 4px; height: 32px;
 }
-.header-filter-wrapper label { font-size: 0.85em; margin: 0 8px 0 0; color: #333; font-weight: 600; line-height: 1; display: flex; align-items: center; }
-.header-select { background: transparent; border: none; color: #333; outline: none; cursor: pointer; height: 100%; padding: 0; margin: 0; font-family: inherit; font-size: 0.9em; }
+.header-select { border: none; outline: none; background: transparent; }
 
-/* --- 3. LAYOUT DESKTOP (> 1200px) --- */
-/* Qui usiamo Flex orizzontale e blocchiamo lo scroll esterno */
-
+/* --- 3. LAYOUT DESKTOP (Larghezza > 1366px) --- */
 .task-view-wrapper {
     display: flex;
-    flex-direction: row; /* Affiancati */
+    flex-direction: row; 
     flex: 1;             /* Occupa tutto lo spazio verticale rimanente */
-    height: 100%;        /* Forza altezza */
-    overflow: hidden;    /* Niente scroll qui */
+    height: 100%;        
+    overflow: hidden;    
     padding: 10px;
     gap: 10px;
     background-color: #eef2f5;
 }
 
-/* GRIGLIA KANBAN (Sinistra) */
+/* GRIGLIA KANBAN (Colonne 1-4) */
 .task-view-grid {
     display: flex;
     flex-direction: row;
     gap: 10px;
-    flex: 3;             /* 75% dello spazio */
-    height: 100%;        /* Altezza piena */
-    min-width: 0;
+    flex: 1;             /* Occupa lo spazio lasciato libero dall'ispettore */
+    height: 100%;        
+    min-width: 0;        /* Permette al flex di restringersi se serve */
     overflow: hidden;
 }
 
 .task-column {
-    flex: 1;             /* Larghezza equa */
+    flex: 1;             /* Tutte le colonne larghezza uguale */
+    min-width: 260px;    /* Larghezza minima sensata per una card */
     background-color: #ebecf0;
     border-radius: 6px;
     padding: 6px;
     display: flex;
     flex-direction: column;
-    height: 100%;        /* Altezza piena */
+    height: 100%;        /* Occupa tutta l'altezza verticale */
     border: 1px solid #dcdcdc;
-    /* Nessun min-width qui per permettere il resize fluido */
 }
 
-/* ISPETTORE (Destra) */
+/* ISPETTORE (Colonna 5) - MODIFICATO PER TUA RICHIESTA */
 .task-inspector-fixed {
-    flex: 1;             /* 25% dello spazio */
-    min-width: 320px;
-    max-width: 500px;
-    background-color: white; border-radius: 6px;
+    /* Larghezza fissa più ampia per evitare scroll orizzontale toolbar */
+    flex: 0 0 420px;     
+    width: 420px;
+    background-color: white; 
+    border-radius: 6px;
     box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    display: flex; flex-direction: column;
-    height: 100%;        /* Altezza piena */
+    display: flex; 
+    flex-direction: column;
+    height: 100%;        
     border: 1px solid #ddd;
     overflow: hidden;
     z-index: 15;
 }
 
-/* Elementi Interni */
+/* Elementi Interni Colonna */
 .task-column-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 4px 8px 4px; border-bottom: 2px solid #dcdcdc; margin-bottom: 6px; flex-shrink: 0;
 }
 .task-column-header h2 { 
     font-size: 0.85em; margin: 0; color: #444; font-weight: 700; text-transform: uppercase; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.7em; font-weight: bold; color: #555; }
+.column-count { background-color: #d1d5db; padding: 1px 6px; border-radius: 10px; font-size: 0.7em; font-weight: bold; }
 
-/* SCROLL INTERNO ALLE COLONNE */
+/* SCROLL VERTICALE INTERNO ALLE COLONNE */
 .tasks-container {
     flex: 1; 
-    overflow-y: auto;    /* Scroll verticale QUI */
+    overflow-y: auto;    /* Scrolla SOLO se le card superano l'altezza */
+    overflow-x: hidden;
     padding-right: 2px;
     display: flex; flex-direction: column; gap: 8px;
-    min-height: 50px;
+    min-height: 0;       /* Fix per Firefox/Flexbox scrolling */
 }
 
-.inspector-body { flex: 1; overflow-y: auto; padding: 20px; background-color: #fff; }
+/* Scrollbar personalizzata per le colonne */
+.tasks-container::-webkit-scrollbar { width: 6px; }
+.tasks-container::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
 
-/* --- 4. LAYOUT MOBILE / TABLET (< 1200px) --- */
-/* Qui passiamo alla modalità VERTICALE con scroll di pagina */
+/* Corpo Ispettore Scrollabile */
+.inspector-body { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px; 
+    background-color: #fff; 
+}
 
-@media (max-width: 1200px) {
+/* --- 4. TOOLBAR ISPETTORE OTTIMIZZATA --- */
+.inspector-header-toolbar {
+    padding: 8px; 
+    background-color: #f8f9fa; 
+    border-bottom: 1px solid #eee;
+    display: flex; 
+    align-items: center; 
+    gap: 5px;            /* Gap ridotto */
+    height: 50px; 
+    flex-shrink: 0; 
+    /* overflow-x rimosso perché ora abbiamo spazio */
+}
+
+.toolbar-btn {
+    flex: 1; 
+    height: 32px !important; 
+    border-radius: 4px !important; 
+    border: none !important;
+    cursor: pointer; 
+    font-size: 0.8em !important; /* Font leggermente più piccolo */
+    font-weight: 600 !important; 
+    color: white !important;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 4px;
+    white-space: nowrap; 
+    margin: 0 !important; 
+    min-width: unset !important; /* Rimuove larghezza minima forzata */
+    padding: 0 5px !important;   /* Padding ridotto */
+}
+.btn-new { background-color: #28a745 !important; }
+.btn-complete { background-color: #17a2b8 !important; }
+.btn-transfer { background-color: #6c757d !important; }
+.btn-edit { background-color: #ffc107 !important; color: #333 !important; }
+.btn-delete { background-color: #dc3545 !important; }
+.btn-bell { 
+    background-color: transparent !important; color: #555 !important; border: 1px solid #ddd !important; 
+    flex: 0 0 32px !important; padding: 0 !important; 
+}
+
+/* --- 5. LAYOUT MOBILE / TABLET (< 1366px) --- */
+/* Breakpoint alzato per garantire che le colonne stiano affiancate solo se c'è spazio vero */
+
+@media (max-width: 1366px) {
     /* Sblocca lo scroll sul body */
     html, body { overflow: auto; height: auto; }
-    .page-wrapper { height: auto; min-height: 100vh; }
+    
+    /* Content deve permettere lo scroll */
+    .std-app-content { overflow: visible !important; height: auto; display: block; }
 
     /* Cambia direzione al wrapper */
     .task-view-wrapper {
         flex-direction: column; /* Uno sotto l'altro */
-        overflow: visible;      /* Lascia che il contenuto si espanda */
-        height: auto;           /* Altezza automatica basata sul contenuto */
+        overflow: visible;      
+        height: auto;           
+        padding-bottom: 40px;   /* Spazio in fondo per scrollare */
     }
 
     /* Griglia in colonna */
@@ -160,6 +201,7 @@ html, body {
         flex-direction: column;
         flex: none;
         height: auto;
+        overflow: visible;
     }
 
     /* Le colonne diventano righe alte */
@@ -167,42 +209,26 @@ html, body {
         width: 100%;
         height: auto;
         min-height: 300px;      /* Altezza minima per vedere i task */
-        margin-bottom: 15px;    /* Spazio tra le "righe" */
+        max-height: 500px;      /* Limite altezza su mobile per non renderle infinite */
+        margin-bottom: 15px;    
     }
+    .tasks-container { min-height: 200px; }
     
-    /* Ispettore va in fondo o in cima */
+    /* Ispettore in cima */
     .task-inspector-fixed {
         width: 100%;
-        max-width: none;
-        min-width: 0;
-        height: 600px;          /* Altezza fissa generosa per l'editor */
-        order: -1;              /* Mettilo IN CIMA su mobile per usarlo subito */
+        flex: none;
+        height: 600px;          
+        order: -1;              
         margin-bottom: 20px;
         border-left: 1px solid #ddd;
     }
 }
 
-/* --- 5. STILI COMPONENTI (Card, Toolbar, etc.) --- */
-.inspector-header-toolbar {
-    padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
-    display: flex; align-items: center; gap: 6px; height: 55px; flex-shrink: 0; overflow-x: auto;
-}
-.toolbar-btn {
-    flex: 1; height: 34px !important; border-radius: 4px !important; border: none !important;
-    cursor: pointer; font-size: 0.85em !important; font-weight: 600 !important; color: white !important;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-    white-space: nowrap; margin: 0 !important; min-width: 80px;
-}
-.btn-new { background-color: #28a745 !important; }
-.btn-complete { background-color: #17a2b8 !important; }
-.btn-transfer { background-color: #6c757d !important; }
-.btn-edit { background-color: #ffc107 !important; color: #333 !important; }
-.btn-delete { background-color: #dc3545 !important; }
-.btn-bell { background-color: transparent !important; color: #555 !important; border: 1px solid #ddd !important; flex: 0 0 34px !important; padding: 0 !important; min-width: 34px; }
-
+/* --- 6. STILI CARD --- */
 .task-card {
     background-color: white; border-radius: 4px; padding: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: grab;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer;
     border-left: 4px solid transparent; transition: transform 0.1s; user-select: none;
     border: 1px solid #e0e0e0;
 }
@@ -219,19 +245,11 @@ html, body {
 .cat-tag { background-color: #f1f3f5; color: #555; }
 .commessa-tag { background-color: #e3f2fd; color: #0d47a1; }
 
-.task-card.dragging { opacity: 0.5; border: 1px dashed #666; }
-.drag-over { background-color: #e2e4e9; border: 2px dashed #aaa; }
 .task-card.delegated-out { opacity: 0.6; background-color: #f3f3f3; border: 1px dashed #bbb; cursor: default; }
 .task-card.incoming-task { border-left: 5px solid #3498db !important; background-color: #f0f7ff; box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2); }
 .incoming-alert { background-color: #3498db; color: white; font-size: 0.75em; font-weight: bold; padding: 4px; border-radius: 4px; margin-bottom: 6px; display: block; text-align: center; }
 
-/* Extra */
-.read-only-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em; }
-.detail-item strong { display: block; font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
-.detail-description { grid-column: 1 / -1; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; }
-.description-text { font-size: 0.95em; color: #444; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #eee; }
-
+/* --- 7. NOTIFICHE & MODALI EXTRA --- */
 .notification-list { border: 1px solid #eee; border-radius: 6px; overflow: hidden; margin-bottom: 15px; }
 .notification-item-wrapper { display: flex; align-items: stretch; border-bottom: 1px solid #eee; background: white; transition: background 0.2s; }
 .notification-item-wrapper.unread { background-color: #e3f2fd; }
@@ -239,6 +257,7 @@ html, body {
 .btn-go-to-task { width: 40px; background: transparent; border: none; border-left: 1px solid #eee; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; }
 .btn-go-to-task:hover { background: #f1f3f5; color: #3498db; }
 
+/* Archivio */
 #archiveModal { position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9999; display: none; }
 #archiveModal .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; max-width: 90%; max-height: 85vh; background: white; border-radius: 8px; margin: 0; display: flex; flex-direction: column; }
 #archiveTasksContainer { overflow-y: auto; padding: 0; flex: 1; }
