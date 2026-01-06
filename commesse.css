@@ -9,59 +9,87 @@
     background-color: #fcfcfc;
 }
 
-/* --- 1. BARRA FILTRI (Sticky) --- */
+/* --- 1. BARRA FILTRI (Sticky & Compatta) --- */
 .controls-container {
     position: sticky;
     top: 0;
-    z-index: 20; /* Z-index alto per stare sopra le card */
+    z-index: 20;
+    
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Spinge a dx e sx */
     align-items: center;
-    flex-wrap: wrap; /* Importante per mobile: i filtri vanno a capo */
-    gap: 10px;
+    flex-wrap: wrap; /* A capo solo se strettissimo */
+    gap: 15px;
+    
     background-color: #ffffff;
-    padding: 10px 15px;
+    padding: 10px 20px; /* Padding equilibrato */
     border-bottom: 1px solid #e0e0e0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.filters-group, .search-group {
+.filters-group {
     display: flex;
     gap: 8px;
     align-items: center;
-    flex-wrap: wrap; /* I bottoni vanno a capo su schermi piccoli */
+    /* Non permettiamo a questo gruppo di espandersi troppo */
+    flex-shrink: 0; 
 }
 
-.search-group { flex-grow: 1; justify-content: flex-end; }
-
-/* Adattamento mobile per la ricerca */
-@media (max-width: 600px) {
-    .search-group { justify-content: flex-start; width: 100%; }
-    #search-input { width: 100%; }
+.search-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    /* Togliamo flex-grow per non farlo allargare all'infinito */
+    width: auto; 
 }
 
-.filter-btn {
-    padding: 6px 12px;
+/* INPUT COMPATTI E DEFINITI */
+#search-input {
+    width: 250px; /* Larghezza fissa: non si allarga più a tutto schermo */
+    padding: 8px 12px;
     border: 1px solid #dfe6ed;
-    background-color: #fff;
-    cursor: pointer;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 500;
-    white-space: nowrap; /* Non spezzare il testo del bottone */
-}
-.filter-btn:hover { background-color: #f8f9fa; }
-.filter-btn.active {
-    background-color: #3498db;
-    color: white;
-    border-color: #3498db;
+    border-radius: 6px;
+    font-size: 0.9em;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-#search-input, #sort-select {
+#sort-select {
+    width: 160px; /* Larghezza fissa per il menu */
     padding: 8px;
     border: 1px solid #dfe6ed;
     border-radius: 6px;
     font-size: 0.9em;
+    cursor: pointer;
+}
+
+/* Stile Checkbox Reg. */
+.search-group label {
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+    font-size: 0.9em; 
+    color: #555;
+    white-space: nowrap; /* Evita che "Reg." vada a capo da solo */
+}
+
+/* MEDIA QUERY MOBILE: Qui lasciamo che vadano a capo se serve */
+@media (max-width: 768px) {
+    .controls-container {
+        flex-direction: column;
+        align-items: stretch; /* Allarga tutto su mobile */
+        gap: 10px;
+    }
+    .filters-group {
+        overflow-x: auto; /* Permette scroll orizzontale dei bottoni stato */
+        padding-bottom: 5px;
+    }
+    .search-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    #search-input { width: 100%; flex: 1; } /* Su mobile usa tutto lo spazio */
+    #sort-select { width: auto; flex: 1; }
 }
 
 /* --- 2. GRIGLIA CARD --- */
