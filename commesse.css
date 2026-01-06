@@ -421,3 +421,42 @@ input:checked + .slider:before { transform: translateX(18px); }
     text-transform: uppercase;
     margin-top: 2px;
 }
+
+/* =================================================== */
+/* ==   FIX POSIZIONAMENTO MODALE COMMESSA          == */
+/* =================================================== */
+
+/* Usiamo l'ID per avere priorità sulla classe globale .modal */
+#commessaModal {
+    /* 1. Reset del posizionamento globale che causava l'errore */
+    position: fixed;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important; /* FONDAMENTALE: Rimuove lo spostamento a sinistra */
+    
+    /* 2. Impostazioni Overlay a tutto schermo */
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 2000; /* Assicurati che sia sopra a tutto */
+
+    /* 3. Centratura Flexbox */
+    display: none; /* Nascosto di default */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Quando attivato via JS */
+#commessaModal.active {
+    display: flex !important;
+}
+
+/* Assicuriamoci che il contenuto interno non erediti stranezze */
+#commessaModal .modal-content {
+    position: relative;
+    transform: none; 
+    margin: 0; /* Il flexbox del genitore lo centrerà */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
