@@ -339,10 +339,11 @@ const TaskApp = {
             // --- LOGICA PERMESSI TOOLBAR ---
             const myId = this.state.currentUserProfile.id_personale;
             const isAssignee = (task.id_assegnatario_fk === myId);
-            const isAdmin = this.state.currentUserProfile.is_admin;
+            // Calcolo Admin sicuro
+            const isAdmin = (this.state.currentUserProfile.is_admin === true || 
+                             this.state.currentUserProfile.is_admin === "true" || 
+                             this.state.currentUserProfile.is_admin === 1);
             
-            // Posso modificare solo se: Sono l'assegnatario ATTUALE, oppure sono Admin.
-            // Se l'ho creato io ma l'ho delegato (quindi isAssignee è false), NON posso toccare.
             const canEdit = isAssignee || isAdmin;
 
             this.toggleToolbar(canEdit);
@@ -353,6 +354,21 @@ const TaskApp = {
             this.dom.btnComplete.classList.toggle('btn-complete', !isDone); 
             this.dom.btnComplete.classList.toggle('btn-transfer', isDone);
 
+            // --- MODIFICA ETICHETTA COMMESSA ---
+            // Cerchiamo l'etichetta formattata (Cliente | Impianto...) nella lista caricata all'init
+            let commessaLabel = null;
+            if (task.id_commessa_fk) {
+                // Cerchiamo nell'array etichette scaricato da /api/get-etichette
+                const found = this.state.initData.etichette.find(e => e.id === task.id_commessa_fk);
+                if (found) {
+                    commessaLabel = found.label; // Usa la formattazione completa
+                } else if (task.commessa) {
+                    // Fallback se la commessa è archiviata (non è in get-etichette) ma abbiamo i dati base
+                    commessaLabel = `${task.commessa.impianto} (${task.commessa.codice_commessa})`;
+                }
+            }
+            // -----------------------------------
+
             const html = `
                 <h2 class="detail-title">${task.titolo}</h2>
                 <div class="read-only-box">
@@ -361,7 +377,9 @@ const TaskApp = {
                         <div class="detail-item"><strong>Priorità</strong> <span>${task.priorita}</span></div>
                         <div class="detail-item"><strong>Categoria</strong> <span>${task.categoria?.nome_categoria}</span></div>
                         <div class="detail-item"><strong>Assegnato</strong> <span>${task.assegnatario?.nome_cognome}</span></div>
-                        ${task.commessa ? `<div class="detail-item" style="grid-column: span 2;"><strong>Commessa</strong> <span>${task.commessa.impianto} (${task.commessa.codice_commessa})</span></div>` : ''}
+                        
+                        ${commessaLabel ? `<div class="detail-item" style="grid-column: span 2;"><strong>Commessa</strong> <span>${commessaLabel}</span></div>` : ''}
+                        
                         ${task.sottocategoria ? `<div class="detail-item" style="grid-column: span 2;"><strong>Tag</strong> <span>${task.sottocategoria}</span></div>` : ''}
                         <div class="detail-item"><strong>Scadenza</strong> <span>${task.data_obiettivo ? new Date(task.data_obiettivo).toLocaleDateString() : '-'}</span></div>
                         
@@ -385,9 +403,6 @@ const TaskApp = {
             `;
             this.dom.inspectorBody.innerHTML = html;
             
-            // Abilita invio commenti anche se read-only? 
-            // Solitamente si vuole permettere di commentare anche sui task delegati per chiedere info.
-            // Se vuoi bloccare anche i commenti, avvolgi questo listener in un if(canEdit).
             document.getElementById('btnSendComment').addEventListener('click', () => this.postComment());
             
             this.renderHistory(task.task_storia, task.task_commenti);
