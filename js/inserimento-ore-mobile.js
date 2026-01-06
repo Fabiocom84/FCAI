@@ -551,7 +551,19 @@ const MobileHoursApp = {
             }
         }
         else if (type === 'assenza') {
-            payload.id_commessa = null;
+            // 1. Cerchiamo l'ID della commessa "GESTIONE PERSONALE" o "SYS-JOB-ABS" nella lista caricata
+            let absId = null;
+            if (this.state.commesseMap) {
+                absId = Object.keys(this.state.commesseMap).find(key => {
+                    const label = (this.state.commesseMap[key] || '').toUpperCase();
+                    return label.includes('GESTIONE PERSONALE') || label.includes('SYS-JOB-ABS');
+                });
+            }
+
+            // 2. Assegniamo l'ID trovato, oppure usiamo 68 (ID dal tuo screenshot) come sicurezza
+            payload.id_commessa = absId ? parseInt(absId) : 68;
+            
+            // Formattazione nota
             payload.note = `[${this.dom.absType.value.toUpperCase()}] ${payload.note}`;
         }
 
