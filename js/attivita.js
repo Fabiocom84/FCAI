@@ -262,40 +262,62 @@ const TaskApp = {
     },
 
     setupDragDrop: function(container) {
-        container.addEventListener('dragover', e => { e.preventDefault(); container.classList.add('drag-over'); });
-        container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
+        // Drag Over
+        container.addEventListener('dragover', e => { 
+            e.preventDefault(); 
+            container.classList.add('drag-over'); 
+        });
+
+        // Drag Leave
+        container.addEventListener('dragleave', () => {
+            container.classList.remove('drag-over');
+        });
         
+        // DROP EVENT
         container.addEventListener('drop', async e => {
             e.preventDefault(); 
             container.classList.remove('drag-over');
             
             const taskId = e.dataTransfer.getData('text/plain');
+            if (!taskId) return; // Sicurezza
+
             const targetColumn = container.closest('.task-column');
             if(!targetColumn) return;
             
-            const newStatusKey = targetColumn.querySelector('.tasks-container').dataset.statusKey; // todo, doing, review, done
-            const newStatusLabel = targetColumn.dataset.status; 
+            const newStatusKey = container.dataset.statusKey; // es: 'todo', 'doing'
+            const newStatusLabel = targetColumn.dataset.status; // es: 'Da Fare'
 
-            // --- INTERCEZIONE DRAG VERSO COLONNA 3 (Review/Delegati) ---
+            // --- INTERCEZIONE DRAG VERSO COLONNA 'review' (Delegati) ---
             if (newStatusKey === 'review') {
-                // Costruiamo un oggetto task temporaneo per il modale
-                // (L'assegnatario serve per filtrare la select e non mostrare se stessi se necessario, 
-                // ma lo recuperiamo dallo state o dal DOM)
                 this.state.currentTask = { 
                     id_task: taskId, 
                     id_assegnatario_fk: this.state.draggedTaskAssignee 
                 }; 
-                
-                // Apri Modale Trasferimento (che include il messaggio obbligatorio)
                 this.renderTransferMode();
-                return; // STOP: Non esegue l'update automatico qui sotto
+                return;
             }
 
-            // Logica Standard per le altre colonne
             try { 
-                await apiFetch(`/api/tasks/${taskId}`, {method:'PUT', body:JSON.stringify({stato:newStatusLabel})}); 
-                this.refreshBoard(); 
-            } catch(e){ console.error(e); }
+                // TRUCCO VISIVO: Spostiamo la card nel DOM *subito*, senza aspettare il server.
+                const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                if (card) {
+                    container.appendChild(card); // La sposta nella nuova colonna visivamente
+                }
+
+                // Ora chiamiamo il server per salvare
+                await apiFetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT', 
+                    body: JSON.stringify({stato: newStatusLabel})
+                }); 
+                
+                // Infine sincronizziamo i dati veri (silenziosamente)
+                await this.refreshBoard(); 
+
+            } catch(error){ 
+                console.error("Errore Drop:", error); 
+                alert("Impossibile spostare il task. Ricarica la pagina.");
+                await this.refreshBoard(); // Ripristina stato corretto in caso di errore
+            }
         });
     },
 
@@ -683,8 +705,25 @@ const TaskApp = {
     },
 
     refreshBoard: async function() {
-        this.state.boardData = await this.fetchBoardData();
-        this.renderKanbanBoard();
+        // NON svuotiamo this.state.boardData o l'HTML qui.
+        // Aspettiamo che il server risponda.
+        try {
+            const res = await this.fetchBoardData(); // Scarica i dati grezzi (Response object)
+            // Se fetchBoardData usa apiFetch, res è l'oggetto Response.
+            // Se usa direttamente i dati (dipende dalla tua implementazione), adatta qui.
+            // Assumendo che fetchBoardData ritorni la Response:
+            const data = await res.json(); 
+            
+            // Ora che abbiamo i dati sicuri, aggiorniamo lo stato
+            this.state.boardData = data; 
+            
+            // E ridisegniamo la board (qui avverrà il cambio HTML)
+            this.renderKanbanBoard();
+        } catch (error) {
+            console.error("Errore refresh board:", error);
+            // Se fallisce, non facciamo nulla: l'utente continua a vedere i vecchi dati
+            // invece di una pagina bianca.
+        }
     },
 
     setupAdminFilter: function() {
