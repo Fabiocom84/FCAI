@@ -506,14 +506,15 @@ const TaskApp = {
     },
 
     // =================================================================
-    // == 5. INSPECTOR: MODALITÀ NOTIFICHE & ALTRI                    ==
+    // == 5. INSPECTOR: MODALITÀ NOTIFICHE (Checklist Mode)           ==
     // =================================================================
 
     renderNotificationsMode: async function() {
         this.dom.inspectorBody.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
-        this.toggleToolbar(false); // Nascondi bottoni modifica
+        this.toggleToolbar(false);
         
         try {
+            // Recupera solo le notifiche dell'utente corrente (già filtrato dal backend)
             const res = await apiFetch(`/api/tasks/notifiche`);
             const notes = await res.json();
 
@@ -522,7 +523,8 @@ const TaskApp = {
                     <h2 class="detail-title">Notifiche</h2>
                     <div class="empty-state">
                         <i class="far fa-bell-slash fa-3x"></i>
-                        <p>Nessuna notifica presente.</p>
+                        <p>Non hai nuove notifiche.</p>
+                        <small style="color:#999;">Tutti i messaggi precedenti sono stati letti.</small>
                         <button id="btnCloseNotes" class="button button--warning" style="margin-top:15px;">Indietro</button>
                     </div>`;
                 document.getElementById('btnCloseNotes').addEventListener('click', () => {
@@ -532,22 +534,31 @@ const TaskApp = {
                 return;
             }
 
-            // Genera la lista HTML
+            // Genera la lista HTML con il nuovo pulsante "Vedi Task" separato
             const listHtml = notes.map(n => `
-                <div class="notification-item ${n.letto ? '' : 'unread'}" 
-                     data-id="${n.id_notifica}" 
-                     data-task="${n.id_task_fk}">
-                    <div style="font-weight:500; margin-bottom:4px; display:flex; justify-content:space-between;">
-                        <span>${n.tipo_notifica}</span> 
-                        <span style="font-size:0.8em; color:#999;">${new Date(n.data_creazione).toLocaleDateString()}</span>
+                <div class="notification-item-wrapper ${n.letto ? 'read' : 'unread'}" id="notif-${n.id_notifica}">
+                    <!-- Area cliccabile per segnare come letto -->
+                    <div class="notification-content" data-action="mark-read" data-id="${n.id_notifica}">
+                        <div class="notif-header">
+                            <span class="notif-type">${n.tipo_notifica}</span> 
+                            <span class="notif-date">${new Date(n.data_creazione).toLocaleDateString()}</span>
+                        </div>
+                        <div class="notif-msg">${n.messaggio}</div>
+                        <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
                     </div>
-                    <div style="margin-bottom:5px;">${n.messaggio}</div>
-                    <small>Da: ${n.sender ? n.sender.nome_cognome : 'Sistema'}</small>
+                    
+                    <!-- Pulsante specifico per andare al task -->
+                    <button class="btn-go-to-task" data-action="go-task" data-task="${n.id_task_fk}" title="Vai al Task">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             `).join('');
 
             const html = `
-                <h2 class="detail-title">Le tue Notifiche</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 class="detail-title" style="margin:0;">Le tue Notifiche</h2>
+                    <button id="btnMarkAll" class="button button--primary" style="font-size:0.7em; padding:4px 8px !important; min-width:auto !important;">Segna tutte lette</button>
+                </div>
                 <div class="notification-list" id="notifList">
                     ${listHtml}
                 </div>
@@ -557,36 +568,44 @@ const TaskApp = {
             `;
             this.dom.inspectorBody.innerHTML = html;
 
-            // EVENTI
+            // EVENTI GLOBALI
             document.getElementById('btnCloseNotes').addEventListener('click', () => {
+                // Aggiorna il badge in Home (opzionale, richiede reload o logica complessa, per ora chiudiamo solo)
                 if(this.state.currentTask) this.renderInspectorView(this.state.currentTask.id_task);
                 else this.dom.inspectorBody.innerHTML = '<div class="empty-state"><i class="fas fa-tasks fa-3x"></i><p>Seleziona un task.</p></div>';
             });
 
-            // GESTIONE CLICK SULLA NOTIFICA
-            const items = document.querySelectorAll('.notification-item');
-            items.forEach(item => {
-                item.addEventListener('click', async (e) => {
-                    const notifId = item.dataset.id;
-                    const taskId = item.dataset.task;
+            // "Segna tutte come lette" (Opzionale ma comodo)
+            document.getElementById('btnMarkAll').addEventListener('click', async () => {
+                document.querySelectorAll('.notification-item-wrapper.unread').forEach(el => el.classList.remove('unread'));
+                // Qui servirebbe API backend bulk, per ora facciamo un loop veloce o lasciamo visivo
+                notes.forEach(n => { if(!n.letto) apiFetch(`/api/tasks/notifiche/leggi/${n.id_notifica}`, { method: 'PUT' }); });
+            });
 
-                    // 1. Segna come letta visivamente subito
-                    item.classList.remove('unread');
-                    item.style.opacity = '0.7'; // Feedback visivo
+            // GESTIONE CLICK SMART (Delegation)
+            const listContainer = document.getElementById('notifList');
+            listContainer.addEventListener('click', async (e) => {
+                // 1. Cliccato sul pulsante "Vai al Task"?
+                const btnGo = e.target.closest('[data-action="go-task"]');
+                if (btnGo) {
+                    const taskId = btnGo.dataset.task;
+                    await this.renderInspectorView(taskId);
+                    return;
+                }
 
-                    try {
-                        // 2. Segna come letta nel DB
-                        await apiFetch(`/api/tasks/notifiche/leggi/${notifId}`, { method: 'PUT' });
-                        
-                        // 3. Apri il task relativo
-                        await this.renderInspectorView(taskId);
-                        
-                        // Nota: Il contatore in Home si aggiornerà solo al prossimo refresh della Home,
-                        // ma va bene così.
-                    } catch (err) {
-                        console.error("Errore lettura notifica:", err);
+                // 2. Cliccato sul contenuto (Segna come letto)?
+                const contentDiv = e.target.closest('[data-action="mark-read"]');
+                if (contentDiv) {
+                    const wrapper = contentDiv.closest('.notification-item-wrapper');
+                    if (wrapper.classList.contains('unread')) {
+                        wrapper.classList.remove('unread');
+                        wrapper.classList.add('read');
+                        const notifId = contentDiv.dataset.id;
+                        try {
+                            await apiFetch(`/api/tasks/notifiche/leggi/${notifId}`, { method: 'PUT' });
+                        } catch (err) { console.error(err); }
                     }
-                });
+                }
             });
 
         } catch(e) { 

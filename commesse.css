@@ -340,3 +340,84 @@ input:checked + .slider:before { transform: translateX(18px); }
 
 /* Overlay secondario (se presente nel JS) */
 .modal-overlay { display: none; }
+
+/* --- 4. PROGRESS BARS & FASI --- */
+
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.progress-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #555;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Sfondo della barra (Grigio) */
+.progress-bar-bg {
+    width: 100%;
+    height: 10px; /* Altezza fissa esplicita */
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden; /* Importante per i bordi arrotondati del fill */
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); /* Piccola ombra interna per profondità */
+}
+
+/* Il riempimento colorato */
+.progress-bar-fill {
+    height: 100%; /* Occupa tutta l'altezza del genitore */
+    border-radius: 5px;
+    transition: width 0.6s ease-in-out;
+    width: 0%; /* Default */
+}
+
+/* Colori delle barre */
+.progress-bar-fill.low { background-color: #f1c40f; } /* Giallo */
+.progress-bar-fill.mid { background-color: #3498db; } /* Blu */
+.progress-bar-fill.high { background-color: #2ecc71; } /* Verde */
+
+/* Badge Ore a destra */
+.hours-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 5px 10px;
+    min-width: 50px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.hours-value {
+    font-size: 1em;
+    font-weight: 800;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.hours-label {
+    font-size: 0.6em;
+    color: #888;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
