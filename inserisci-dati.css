@@ -1,54 +1,76 @@
-/* inserisci-dati.css - Layout Definitivo & Header Fix */
+/* inserisci-dati.css - Adattato al Master Layout */
 
-/* --- 0. RESET & STRUTTURA --- */
-body { display: block !important; overflow-y: auto; }
-.page-wrapper { width: 100%; min-height: 100vh; box-sizing: border-box; padding-bottom: 40px; }
-
-/* --- 1. HEADER (MODIFICATO) --- */
-/* Ora applichiamo le dimensioni direttamente al contenitore grigio */
-.page-header {
-    width: 95%;
-    max-width: 1800px;
-    margin: 0 auto 20px auto; /* Centrato + Margine inferiore */
-    padding: 15px 20px;
-    box-sizing: border-box;
-    /* Sovrascriviamo eventuali display flex che potrebbero interferire */
-    display: flex; 
-    justify-content: center;
+/* --- 0. ADATTAMENTO AL GUSCIO (Reset) --- */
+/* Rimuoviamo margini e larghezze fisse perché ora siamo dentro .std-app-content */
+.page-wrapper { 
+    width: 100%; 
+    box-sizing: border-box; 
+    padding: 0;
+    height: 100%; /* Importante per il layout a colonne */
 }
 
-/* Il contenuto interno si allarga per riempire la barra */
-.header-content-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* --- 2. CONTENITORE PRINCIPALE --- */
+/* --- 1. CONTENITORE INTERNO --- */
+/* Aggiungiamo il padding qui invece che sul body */
 .insert-container {
-    width: 95%;
-    max-width: 1800px;
-    margin: 0 auto;
+    width: 100%;
+    height: 100%; /* Occupa l'altezza per permettere lo stretch */
+    box-sizing: border-box;
+    padding: 20px; /* Spazio interno bianco */
     display: flex;
     flex-direction: column;
     gap: 20px;
+    max-width: 1800px; /* Limite massimo larghezza su schermi enormi */
+    margin: 0 auto;    /* Centra se lo schermo è > 1800px */
 }
 
-/* Card generica */
-.card-section {
-    background: white; border-radius: 12px; padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;
-    display: flex; flex-direction: column;
+/* --- 2. LAYOUT GRID RESPONSIVE (Migliorato) --- */
+.columns-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%; /* Usa l'altezza disponibile */
 }
 
-.section-header h3 {
-    margin: 0; font-size: 1rem; color: #4a5568; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; margin-bottom: 15px;
+/* DESKTOP (Larghezza > 900px) */
+@media (min-width: 900px) {
+    .columns-wrapper {
+        display: grid;
+        grid-template-columns: 320px 1fr; /* Colonna SX fissa, DX flessibile */
+        gap: 25px;
+        height: 100%; /* Forza altezza 100% per allineare i pannelli */
+        align-items: stretch;
+    }
+
+    .left-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 100%;
+        overflow: hidden; /* Evita scroll indesiderati interni */
+    }
+
+    .right-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
 }
 
-/* --- COLONNA SINISTRA: REGISTRAZIONE --- */
+/* --- 3. COMPONENTI SPECIFICI (Card, Bottoni, ecc) --- */
+
+/* Card Styles */
+.card-section, .editor-card {
+    background: white; 
+    border-radius: 12px; 
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    border: 1px solid #e0e0e0;
+    display: flex; 
+    flex-direction: column;
+}
+
+/* Colonna Sinistra: Registrazione */
 .recording-ui { display: flex; flex-direction: column; align-items: center; gap: 15px; }
 .status-text { text-align: center; color: #666; font-size: 0.9em; margin: 0; min-height: 1.2em; font-weight: 500; }
 .voice-controls-stacked { display: flex; flex-direction: column; gap: 10px; width: 100%; }
@@ -73,15 +95,17 @@ body { display: block !important; overflow-y: auto; }
 .audio-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
 .audio-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
 
-/* --- COLONNA SINISTRA: ALLEGATI --- */
+/* Colonna Sinistra: Allegati */
+.attachment-section { flex: 1; display: flex; flex-direction: column; } /* Si espande per riempire lo spazio */
+
 .file-drop-zone-expanded {
+    flex-grow: 1; /* Occupa tutto lo spazio verticale disponibile */
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 10px; cursor: pointer; text-align: center;
     border: 2px dashed #cbd5e0; border-radius: 8px;
     background-color: #fcfcfc;
     transition: background 0.2s;
     padding: 20px;
-    height: 100%;
     box-sizing: border-box;
 }
 .file-drop-zone-expanded:hover { background-color: #f0f7ff; border-color: #3498db; }
@@ -89,19 +113,22 @@ body { display: block !important; overflow-y: auto; }
 .drop-text strong { display: block; color: #2d3748; font-size: 0.9em; margin-bottom: 2px; }
 .file-name { color: #718096; font-size: 0.8em; word-break: break-all; }
 
-/* --- COLONNA DESTRA: EDITOR E SALVA --- */
-.editor-card { height: 100%; display: flex; flex-direction: column; box-sizing: border-box; }
+/* Colonna Destra: Editor */
+.editor-card { height: 100%; display: flex; flex-direction: column; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px; font-size: 0.85em; text-transform: uppercase; }
 .commessa-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; }
 
-/* Textarea */
-.editor-group { flex-grow: 1; display: flex; flex-direction: column; margin-bottom: 20px; }
+/* Textarea che riempie lo spazio */
+.editor-group { flex-grow: 1; display: flex; flex-direction: column; margin-bottom: 20px; min-height: 0; }
 textarea#voiceTranscription {
-    width: 100%; flex-grow: 1; min-height: 250px; padding: 20px;
+    width: 100%; 
+    flex-grow: 1; /* Si espande verticalmente */
+    padding: 20px;
     border: 1px solid #cbd5e0; border-radius: 8px;
     font-family: 'Roboto', sans-serif; font-size: 1.1em; line-height: 1.6; color: #2d3748;
-    resize: none; box-sizing: border-box;
+    resize: none; /* Disabilita resize manuale perché è flex */
+    box-sizing: border-box;
 }
 textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
 
@@ -115,60 +142,3 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
 }
 .big-save-btn:hover { background-color: #218838; transform: translateY(-2px); }
 .big-save-btn img { width: 20px; filter: invert(1); }
-
-
-/* ==========================================================================
-   LAYOUT GRID RESPONSIVE
-   ========================================================================== */
-
-/* MOBILE (Default) */
-.columns-wrapper { display: flex; flex-direction: column; gap: 20px; }
-.left-panel { display: flex; flex-direction: column; gap: 20px; }
-/* Impostiamo un'altezza minima per gli allegati su mobile per bilanciare visivamente */
-.attachment-section { min-height: 180px; } 
-
-/* DESKTOP (Larghezza > 900px) */
-@media (min-width: 900px) {
-    
-    .columns-wrapper {
-        display: grid;
-        /* Colonna Sinistra 300px, Destra resto */
-        grid-template-columns: 300px 1fr; 
-        gap: 25px;
-        align-items: stretch; /* Stira le colonne alla stessa altezza */
-    }
-
-    .left-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        height: 100%;
-    }
-
-    .recording-section { flex: 0 0 auto; }
-    
-    /* La sezione allegati cresce per riempire lo spazio */
-    .attachment-section { 
-        flex: 1; 
-        display: flex; 
-        flex-direction: column; 
-    }
-    
-    .file-drop-zone-expanded {
-        flex-grow: 1;
-    }
-    
-    .right-panel {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .editor-card { height: 100%; }
-
-    /* Ridotto min-height della textarea per bilanciare l'altezza colonna SX */
-    textarea#voiceTranscription {
-        height: 100%; 
-        min-height: 350px; 
-    }
-}

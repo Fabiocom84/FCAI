@@ -8,113 +8,134 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    
+    <!-- Ordine Importante: Prima il globale, poi lo specifico -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="inserisci-dati.css">
 </head>
-<body>
 
-    <div class="page-wrapper">
-        <header class="page-header">
-            <div class="header-content-wrapper">
-                <a href="index.html" class="header-button">
-                    <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                    <span>Home</span>
-                </a>
-                <h1>Inserimento Dati</h1>
-                <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
-            </div>
-        </header>
+<!-- 1. CLASSE SPECIALE PER RESETTARE IL BODY -->
+<body class="internal-page">
 
-        <div class="insert-container">
-            <form id="insertDataForm">
-                
-                <div class="columns-wrapper">
-                    
-                    <!-- COLONNA SINISTRA -->
-                    <div class="left-panel">
-                        
-                        <!-- Box 1: Vocale -->
-                        <div class="card-section recording-section">
-                            <div class="section-header">
-                                <h3>🎤 Registrazione Vocale</h3>
-                            </div>
-                            <div class="recording-ui">
-                                <div id="visualizer" class="audio-visualizer">
-                                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                                    <div class="bar"></div><div class="bar"></div>
-                                </div>
-                                <p id="recordingStatus" class="status-text">Pronto per registrare</p>
-                                
-                                <div class="voice-controls-stacked">
-                                    <button type="button" id="startButton" class="record-btn">
-                                        Avvia Registrazione
-                                    </button>
-                                    <button type="button" id="stopButton" class="stop-btn" disabled>
-                                        Ferma & Trascrivi
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+    <!-- 2. IL GUSCIO (Shell) CHE CREA IL BORDO E L'EFFETTO FLOTTANTE -->
+    <div class="std-app-shell">
 
-                        <!-- Box 2: Allegati -->
-                        <div class="card-section attachment-section">
-                            <div class="section-header">
-                                <h3>📎 Allegati</h3>
-                            </div>
-                            <!-- name="fileUpload" è corretto per il backend -->
-                            <label for="fileUpload" class="file-drop-zone-expanded">
-                                <span class="drop-icon">📂</span>
-                                <div class="drop-text">
-                                    <strong>Carica un file</strong>
-                                    <span class="file-name">Nessun file selezionato</span>
-                                </div>
-                                <input type="file" id="fileUpload" name="fileUpload" hidden>
-                            </label>
-                        </div>
-
-                    </div> <!-- Fine Left Panel -->
-
-                    <!-- COLONNA DESTRA -->
-                    <div class="right-panel">
-                        <div class="card-section editor-card">
-                            
-                            <!-- Scelta Commessa (name="riferimento" come da backend) -->
-                            <div class="form-group styled-choices-container commessa-select-group">
-                                <label for="riferimentoDropdown">Riferimento Commessa</label>
-                                <select id="riferimentoDropdown" name="riferimento">
-                                    <option value="" selected>Nessuna associazione</option>
-                                </select>
-                            </div>
-
-                            <!-- Area di Testo (name="transcription" come da backend) -->
-                            <div class="form-group editor-group">
-                                <label for="voiceTranscription">Contenuto / Trascrizione</label>
-                                <textarea id="voiceTranscription" name="transcription" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
-                            </div>
-
-                            <!-- Pulsante Salva -->
-                            <div class="save-btn-container">
-                                <button type="submit" id="saveDataBtn" class="big-save-btn">
-                                    <img src="img/save.png" alt="Save">
-                                    SALVA DATI
-                                </button>
-                            </div>
-
-                        </div>
-                    </div> <!-- Fine Right Panel -->
-
-                </div> <!-- Fine Columns Wrapper -->
-
-            </form>
+        <!-- 3. HEADER UNIFICATO (Fisso in alto) -->
+        <div class="std-app-header">
+            <a href="index.html" class="header-button">
+                <!-- Mantengo la tua icona attuale -->
+                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <span>Home</span>
+            </a>
+            
+            <h1>INSERIMENTO DATI</h1>
+            
+            <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
         </div>
-    </div>
 
-    <!-- Modale Feedback -->
+        <!-- 4. AREA CONTENUTO (Qui avviene lo scroll) -->
+        <div class="std-app-content">
+            
+            <div class="insert-container">
+                <form id="insertDataForm">
+                    
+                    <div class="columns-wrapper">
+                        
+                        <!-- COLONNA SINISTRA -->
+                        <div class="left-panel">
+                            
+                            <!-- Box 1: Vocale -->
+                            <div class="card-section recording-section">
+                                <div class="section-header">
+                                    <h3>🎤 Registrazione Vocale</h3>
+                                </div>
+                                <div class="recording-ui">
+                                    <div id="visualizer" class="audio-visualizer">
+                                        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                        <div class="bar"></div><div class="bar"></div>
+                                    </div>
+                                    <p id="recordingStatus" class="status-text">Pronto per registrare</p>
+                                    
+                                    <div class="voice-controls-stacked">
+                                        <button type="button" id="startButton" class="record-btn">
+                                            Avvia Registrazione
+                                        </button>
+                                        <button type="button" id="stopButton" class="stop-btn" disabled>
+                                            Ferma & Trascrivi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Box 2: Allegati -->
+                            <div class="card-section attachment-section">
+                                <div class="section-header">
+                                    <h3>📎 Allegati</h3>
+                                </div>
+                                <label for="fileUpload" class="file-drop-zone-expanded">
+                                    <span class="drop-icon">📂</span>
+                                    <div class="drop-text">
+                                        <strong>Carica un file</strong>
+                                        <span class="file-name">Nessun file selezionato</span>
+                                    </div>
+                                    <input type="file" id="fileUpload" name="fileUpload" hidden>
+                                </label>
+                            </div>
+
+                        </div> <!-- Fine Left Panel -->
+
+                        <!-- COLONNA DESTRA -->
+                        <div class="right-panel">
+                            <div class="card-section editor-card">
+                                
+                                <!-- Scelta Commessa -->
+                                <div class="form-group styled-choices-container commessa-select-group">
+                                    <label for="riferimentoDropdown">Riferimento Commessa</label>
+                                    <select id="riferimentoDropdown" name="riferimento">
+                                        <option value="" selected>Nessuna associazione</option>
+                                    </select>
+                                </div>
+
+                                <!-- Area di Testo -->
+                                <div class="form-group editor-group">
+                                    <label for="voiceTranscription">Contenuto / Trascrizione</label>
+                                    <textarea id="voiceTranscription" name="transcription" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                                </div>
+
+                                <!-- Pulsante Salva -->
+                                <div class="save-btn-container">
+                                    <button type="submit" id="saveDataBtn" class="big-save-btn">
+                                        <img src="img/save.png" alt="Save">
+                                        SALVA DATI
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div> <!-- Fine Right Panel -->
+
+                    </div> <!-- Fine Columns Wrapper -->
+
+                </form>
+            </div> <!-- Fine insert-container -->
+
+        </div> <!-- Fine std-app-content -->
+
+    </div> <!-- Fine std-app-shell -->
+
+    <!-- Modale Feedback (Fuori dal guscio per stare sopra a tutto) -->
     <div id="success-feedback-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <div class="modal-header"><h2 id="feedback-modal-title"></h2><div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div></div>
-            <div class="modal-body feedback-body"><h3 id="feedback-modal-message"></h3><p id="feedback-modal-countdown"></p></div>
-            <div class="modal-footer"><button id="feedback-modal-close-btn" class="save-button">OK</button></div>
+            <div class="modal-header">
+                <h2 id="feedback-modal-title"></h2>
+                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div>
+            </div>
+            <div class="modal-body feedback-body">
+                <h3 id="feedback-modal-message"></h3>
+                <p id="feedback-modal-countdown"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="feedback-modal-close-btn" class="save-button">OK</button>
+            </div>
         </div>
     </div>
     <div id="modalOverlay" class="modal-overlay"></div>
