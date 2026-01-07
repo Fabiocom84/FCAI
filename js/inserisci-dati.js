@@ -1,52 +1,40 @@
 // js/inserisci-dati.js
 
-// 1. IMPORT CORRETTI
 import { apiFetch } from './api-client.js';
-import { API_BASE_URL } from './config.js'; // PRENDIAMO L'URL DALLA FONTE CORRETTA
+import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import Legend from './legend.js'; 
 
-// Variabili di stato
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
-let audioBlob = null;
-let recognition = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Inizializzazione Inserisci Dati...");
+    console.log("Inizializzazione Inserisci Dati - Modalità: Audio Effimero");
     new Legend();
     await loadCommesseDropdown();
     setupEventListeners();
 });
 
+// --- 1. SETUP UI E DROPDOWN (Invariato) ---
 async function loadCommesseDropdown() {
     const select = document.getElementById('riferimentoDropdown');
     if (!select) return;
 
     try {
-        // 1. CORREZIONE: Puntiamo all'endpoint esistente e corretto
         const response = await apiFetch('/api/get-etichette');
-
-        if (!response.ok) {
-            console.warn("API Etichette non raggiungibile, uso fallback vuoto.");
-            return;
-        }
+        if (!response.ok) return;
 
         const commesse = await response.json();
-
-        // Pulisce e rimette l'opzione di default
         select.innerHTML = '<option value="" selected>Nessuna associazione</option>';
 
-        // 2. CORREZIONE: Adattiamo il ciclo al formato { id, label } restituito da /api/get-etichette
         commesse.forEach(c => {
             const option = document.createElement('option');
-            option.value = c.id;      // Il backend restituisce "id"
-            option.textContent = c.label; // Il backend restituisce "label" già formattata
+            option.value = c.id;
+            option.textContent = c.label;
             select.appendChild(option);
         });
 
-        // Inizializza Choices.js
         if (window.Choices) {
             new Choices(select, { 
                 searchEnabled: true, 
@@ -56,9 +44,8 @@ async function loadCommesseDropdown() {
                 placeholderValue: 'Cerca commessa...'
             });
         }
-
     } catch (error) {
-        console.error("Errore caricamento dropdown:", error);
+        console.error("Errore dropdown:", error);
     }
 }
 
@@ -66,179 +53,223 @@ function setupEventListeners() {
     const form = document.getElementById('insertDataForm');
     if (form) form.addEventListener('submit', handleFormSubmit);
 
+    // Gestione bottoni audio
     const startBtn = document.getElementById('startButton');
     const stopBtn = document.getElementById('stopButton');
-
     if (startBtn && stopBtn) {
         startBtn.addEventListener('click', startRecording);
-        stopBtn.addEventListener('click', stopRecording);
+        stopBtn.addEventListener('click', stopRecordingAndTranscribe); // CAMBIATO: Stop & Transcribe
     }
 
+    // Gestione File Upload (Allegati)
     const fileInput = document.getElementById('fileUpload');
-    if (fileInput) {
-        fileInput.addEventListener('change', handleFileSelect);
-    }
+    if (fileInput) fileInput.addEventListener('change', handleFileSelect);
 
-    // Drag & Drop
-    const dropZone = document.querySelector('.file-drop-zone-expanded');
-    if (dropZone) {
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => 
-            dropZone.addEventListener(evt, preventDefaults, false)
-        );
-        ['dragenter', 'dragover'].forEach(evt => 
-            dropZone.addEventListener(evt, () => dropZone.classList.add('highlight'), false)
-        );
-        ['dragleave', 'drop'].forEach(evt => 
-            dropZone.addEventListener(evt, () => dropZone.classList.remove('highlight'), false)
-        );
-        dropZone.addEventListener('drop', handleDrop, false);
-    }
+    // Drag & Drop UI
+    setupDragAndDrop();
 }
 
-function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+// --- 2. GESTIONE AUDIO (NUOVA LOGICA: Registra -> Trascrivi -> Butta) ---
 
-function handleDrop(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    const fileInput = document.getElementById('fileUpload');
-    if (files && files.length > 0) {
-        fileInput.files = files; 
-        updateFileLabel(files[0].name);
-    }
-}
-
-function handleFileSelect(e) {
-    if (e.target.files.length > 0) updateFileLabel(e.target.files[0].name);
-}
-
-function updateFileLabel(filename) {
-    const fileNameSpan = document.querySelector('.file-name');
-    const dropIcon = document.querySelector('.drop-icon');
-    if (fileNameSpan) {
-        fileNameSpan.textContent = filename;
-        fileNameSpan.style.color = '#27ae60';
-        fileNameSpan.style.fontWeight = 'bold';
-    }
-    if (dropIcon) dropIcon.textContent = '✅'; 
-}
-
-// --- AUDIO ---
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+        
+        // Determina il mimeType supportato dal browser (importante per iOS vs Chrome)
+        let mimeType = 'audio/webm';
+        if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
+        else if (MediaRecorder.isTypeSupported('audio/aac')) mimeType = 'audio/aac';
+        
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
         audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => { audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); };
-        mediaRecorder.start();
-        
-        isRecording = true;
-        document.getElementById('startButton').disabled = true;
-        document.getElementById('stopButton').disabled = false;
-        document.getElementById('recordingStatus').innerText = "Registrazione in corso...";
-        document.getElementById('recordingStatus').style.color = "#e74c3c";
-        document.getElementById('visualizer').classList.add('active');
-        
-        setupSpeechRecognition();
-    } catch (err) {
-        console.error(err);
-        showModal({ title: "Errore", message: "Microfono non accessibile." });
-    }
-}
 
-function stopRecording() {
-    if (mediaRecorder) mediaRecorder.stop();
-    if (recognition) recognition.stop();
-    isRecording = false;
-    document.getElementById('startButton').disabled = false;
-    document.getElementById('stopButton').disabled = true;
-    document.getElementById('recordingStatus').innerText = "Registrazione completata.";
-    document.getElementById('recordingStatus').style.color = "#27ae60";
-    document.getElementById('visualizer').classList.remove('active');
-}
-
-function setupSpeechRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'it-IT';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.onresult = (event) => {
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-            }
-            const textArea = document.getElementById('voiceTranscription');
-            if (finalTranscript && textArea) textArea.value += (textArea.value ? ' ' : '') + finalTranscript;
+        mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) audioChunks.push(e.data);
         };
-        recognition.start();
+
+        mediaRecorder.start();
+        isRecording = true;
+        
+        // UI Updates
+        updateAudioUI(true);
+        
+    } catch (err) {
+        console.error("Errore Microfono:", err);
+        showModal({ title: "Errore Microfono", message: "Impossibile accedere al microfono. Verifica i permessi o usa HTTPS." });
     }
 }
 
-// --- INVIO DATI (Fix 500 Error + Content-Type) ---
+function stopRecordingAndTranscribe() {
+    if (!mediaRecorder) return;
+
+    // UI: Stato di elaborazione
+    const statusText = document.getElementById('recordingStatus');
+    statusText.innerText = "Elaborazione trascrizione...";
+    statusText.style.color = "#e67e22"; // Arancione
+    document.getElementById('stopButton').disabled = true;
+
+    mediaRecorder.onstop = async () => {
+        // 1. Crea il blob audio temporaneo
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
+        
+        // 2. Invia SUBITO al backend per trascrizione
+        await transcribeAudioFile(audioBlob, mimeType);
+        
+        // 3. Reset variabili (l'audio viene scartato lato frontend)
+        audioChunks = [];
+        isRecording = false;
+        
+        // Spegne tracce microfono
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        mediaRecorder = null;
+
+        updateAudioUI(false);
+    };
+
+    mediaRecorder.stop();
+}
+
+async function transcribeAudioFile(blob, mimeType) {
+    const textArea = document.getElementById('voiceTranscription');
+    const originalPlaceholder = textArea.placeholder;
+    textArea.placeholder = "⏳ L'AI sta trascrivendo il tuo audio...";
+    textArea.disabled = true;
+
+    try {
+        // Preparazione file estensione corretta
+        const ext = mimeType.includes('mp4') ? 'mp4' : (mimeType.includes('aac') ? 'aac' : 'webm');
+        const filename = `recording.${ext}`;
+
+        const formData = new FormData();
+        formData.append('audio', blob, filename);
+
+        // Chiamata all'endpoint AI
+        const response = await apiFetch('/api/transcribe-voice', {
+            method: 'POST',
+            body: formData,
+            // Nota: NON mettiamo headers Content-Type qui, lascia fare al browser per il multipart
+            headers: {} 
+        });
+
+        if (!response.ok) throw new Error("Errore durante la trascrizione server.");
+
+        const data = await response.json();
+        
+        // Inserimento testo nel campo
+        if (data.transcription) {
+            const currentText = textArea.value;
+            textArea.value = currentText ? currentText + " " + data.transcription : data.transcription;
+        }
+
+    } catch (error) {
+        console.error("Errore trascrizione:", error);
+        showModal({ title: "Errore", message: "Impossibile trascrivere l'audio. Riprova o scrivi manualmente." });
+    } finally {
+        textArea.disabled = false;
+        textArea.placeholder = originalPlaceholder;
+        document.getElementById('recordingStatus').innerText = "Pronto per registrare";
+        document.getElementById('recordingStatus').style.color = "#666";
+    }
+}
+
+function updateAudioUI(isRec) {
+    document.getElementById('startButton').disabled = isRec;
+    document.getElementById('stopButton').disabled = !isRec;
+    document.getElementById('visualizer').classList.toggle('active', isRec);
+    
+    const statusText = document.getElementById('recordingStatus');
+    if (isRec) {
+        statusText.innerText = "Registrazione in corso...";
+        statusText.style.color = "#dc3545"; // Rosso
+    }
+}
+
+// --- 3. SALVATAGGIO DATI (Niente Audio qui) ---
+
 async function handleFormSubmit(e) {
     e.preventDefault();
 
     const btn = document.getElementById('saveDataBtn');
     const originalBtnContent = btn.innerHTML;
     
+    // Controlli base
+    const text = document.getElementById('voiceTranscription').value.trim();
+    const fileInput = document.getElementById('fileUpload');
+    const hasFile = fileInput.files.length > 0;
+
+    if (!text && !hasFile) {
+        showModal({ title: "Attenzione", message: "Inserisci del testo o allega un file prima di salvare." });
+        return;
+    }
+
     btn.disabled = true;
     btn.innerHTML = '<span>⏳ Salvataggio...</span>';
 
     try {
-        // 1. Costruzione FormData
         const formData = new FormData();
-        const text = document.getElementById('voiceTranscription').value;
+        
+        // Inviamo solo TESTO e RIFERIMENTO
+        formData.append('transcription', text); 
+        
         const commessaId = document.getElementById('riferimentoDropdown').value;
-        const fileInput = document.getElementById('fileUpload');
+        if (commessaId) formData.append('riferimento', commessaId);
 
-        // Campi backend
-        formData.append('transcription', text || ""); 
-
-        if (commessaId && commessaId.trim() !== "") {
-            formData.append('riferimento', commessaId);
-        }
-
-        if (fileInput && fileInput.files[0]) {
+        // Se c'è un ALLEGATO (PDF/IMG), lo inviamo
+        if (hasFile) {
             formData.append('fileUpload', fileInput.files[0]);
-        } else if (audioBlob) {
-            formData.append('fileUpload', audioBlob, 'registrazione_vocale.webm');
         }
+        // NOTA: Non inviamo nessun audioBlob qui. L'audio è già morto.
 
-        // 2. Chiamata Fetch Nativa per bypassare header JSON di apiFetch
         const token = localStorage.getItem('session_token');
-        const url = `${API_BASE_URL}/api/registrazioni`; // URL Completo da Config
+        const url = `${API_BASE_URL}/api/registrazioni`;
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-                // Lasciamo che il browser gestisca il Content-Type (multipart/form-data + boundary)
-            },
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData
         });
 
-        if (!response.ok) {
-            // Tentiamo di leggere l'errore JSON, altrimenti testo
-            const errText = await response.text();
-            throw new Error(`Errore server ${response.status}: ${errText}`);
-        }
+        if (!response.ok) throw new Error(await response.text());
 
-        const result = await response.json();
-        console.log("Successo:", result);
-
-        showSuccessFeedbackModal("Dati Salvati!", "Reindirizzamento...", null);
+        showSuccessFeedbackModal("Dati Salvati!", "Il contenuto è stato archiviato.", null);
         
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 2000);
+        setTimeout(() => { window.location.href = "index.html"; }, 1500);
 
     } catch (error) {
         console.error("Errore salvataggio:", error);
-        showModal({ title: "Errore", message: "Impossibile salvare i dati.\n" + error.message });
-    } finally {
+        showModal({ title: "Errore", message: "Impossibile salvare: " + error.message });
         btn.disabled = false;
         btn.innerHTML = originalBtnContent;
+    }
+}
+
+// --- 4. UTILITY UI (Drag & Drop) ---
+function setupDragAndDrop() {
+    const dropZone = document.querySelector('.file-drop-zone-expanded');
+    if (!dropZone) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => dropZone.classList.add('highlight'));
+    ['dragleave', 'drop'].forEach(evt => dropZone.classList.remove('highlight'));
+
+    dropZone.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            document.getElementById('fileUpload').files = files;
+            handleFileSelect({ target: { files: files } });
+        }
+    });
+}
+
+function handleFileSelect(e) {
+    if (e.target.files.length > 0) {
+        const file = e.target.files[0];
+        document.querySelector('.file-name').textContent = file.name;
+        document.querySelector('.file-name').style.color = '#27ae60';
+        document.querySelector('.drop-icon').textContent = '📄';
     }
 }
