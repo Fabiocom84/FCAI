@@ -144,15 +144,24 @@ async function transcribeAudioFile(blob, mimeType) {
         const formData = new FormData();
         formData.append('audio', blob, filename);
 
-        // Chiamata all'endpoint AI
-        const response = await apiFetch('/api/transcribe-voice', {
+        // --- MODIFICA IMPORTANTE QUI SOTTO ---
+        // Usiamo fetch nativa invece di apiFetch per evitare che venga aggiunto 
+        // l'header 'Content-Type: application/json' che rompe l'invio del file.
+        const token = localStorage.getItem('session_token');
+        
+        const response = await fetch(`${API_BASE_URL}/api/transcribe-voice`, {
             method: 'POST',
-            body: formData,
-            // Nota: NON mettiamo headers Content-Type qui, lascia fare al browser per il multipart
-            headers: {} 
+            headers: {
+                'Authorization': `Bearer ${token}`
+                // NESSUN Content-Type qui! Il browser lo metterà automatico per il FormData
+            },
+            body: formData
         });
 
-        if (!response.ok) throw new Error("Errore durante la trascrizione server.");
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Errore server: ${errText}`);
+        }
 
         const data = await response.json();
         
@@ -164,7 +173,7 @@ async function transcribeAudioFile(blob, mimeType) {
 
     } catch (error) {
         console.error("Errore trascrizione:", error);
-        showModal({ title: "Errore", message: "Impossibile trascrivere l'audio. Riprova o scrivi manualmente." });
+        showModal({ title: "Errore", message: "Impossibile trascrivere l'audio.\n" + error.message });
     } finally {
         textArea.disabled = false;
         textArea.placeholder = originalPlaceholder;
