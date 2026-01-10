@@ -394,6 +394,9 @@ const App = {
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
                     </div>
 
+                    <!-- NOTE COMMESSA (Se presenti) -->
+                    ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid #f1c40f; font-size: 0.8em; color: #555;"><strong>Note:</strong> ${c.note}</div>` : ''}
+
                     <div class="phase-toggles-container">
                         <span class="info-label" style="display:block; margin-bottom:5px;">Fasi Attive</span>
                         <div class="phase-pills-wrapper">
@@ -404,7 +407,7 @@ const App = {
                     <div class="progress-container">
                         <div class="progress-labels">
                             <span>AVANZAMENTO</span>
-                            <span>${progressPct}%</span>
+                            <span class="progress-pct-text">${progressPct}%</span>
                         </div>
                         <div class="progress-track">
                             <div class="progress-fill" style="width:${progressPct}%;"></div>
@@ -446,6 +449,16 @@ const App = {
                     // Usa contains per determinare lo stato attuale nel DOM
                     const isCurrentlyActive = pill.classList.contains('active');
 
+                    // OMISITIC UI UPDATE
+                    if (isCurrentlyActive) {
+                        pill.classList.remove('active');
+                    } else {
+                        pill.classList.add('active');
+                    }
+
+                    // Ricalcola Progress Bar locale
+                    this.updateLocalProgressBar(card, c.status_commessa?.nome_status === 'Completato');
+
                     console.log(`Toggle Fase: Commessa ${commId}, Fase ${faseId}, SetActive: ${!isCurrentlyActive}`);
 
                     this.togglePhase(commId, faseId, !isCurrentlyActive);
@@ -471,6 +484,34 @@ const App = {
         });
 
         this.dom.grid.appendChild(fragment);
+    },
+
+    updateLocalProgressBar: function (cardElement, isCompleted) {
+        if (isCompleted) return; // Se completato, rimane 100%
+
+        const activePills = cardElement.querySelectorAll('.phase-pill.active');
+        let currentMax = 0;
+        const weights = {
+            'ufficio': 25,
+            'carpenteria': 50,
+            'assemblaggio': 50,
+            'preparazione': 75
+        };
+
+        activePills.forEach(pill => {
+            const txt = pill.textContent.toLowerCase();
+            const nameKey = Object.keys(weights).find(k => txt.includes(k));
+            if (nameKey) {
+                const w = weights[nameKey];
+                if (w > currentMax) currentMax = w;
+            }
+        });
+
+        const fill = cardElement.querySelector('.progress-fill');
+        const pctText = cardElement.querySelector('.progress-pct-text');
+
+        if (fill) fill.style.width = `${currentMax}%`;
+        if (pctText) pctText.textContent = `${currentMax}%`;
     },
 
     styleStatusSelect: function (select) {
@@ -528,7 +569,7 @@ const App = {
             });
 
             // Refresh UI (senza reset scroll)
-            this.fetchCommesse(false);
+            // this.fetchCommesse(false);
 
         } catch (e) {
             console.error("Errore toggle fase", e);
