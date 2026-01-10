@@ -220,7 +220,7 @@ const App = {
             // Costruzione Query Params
             const params = new URLSearchParams({
                 page: this.state.currentPage,
-                limit: 20, // Carica 20 alla volta
+                limit: 12, // User requested 12
                 status: this.state.activeStatus,
                 search: this.state.searchTerm,
                 deep_search: this.dom.deepSearchCheckbox?.checked || false,
@@ -248,7 +248,7 @@ const App = {
             this.renderCards(data.data);
 
             // Verifica se ci sono altre pagine
-            if (data.data.length < 20) {
+            if (data.data.length < 12) {
                 this.state.hasMore = false;
             } else {
                 this.state.currentPage++;
@@ -278,42 +278,30 @@ const App = {
             const card = document.createElement('div');
             card.className = 'commesse-card';
 
-            // Header Image (Codice rimosso come richiesto)
+            // Header Image
             const imgStyle = c.immagine ? `background-image: url('${c.immagine}')` : '';
             const imgContent = !c.immagine ? '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>' : '';
 
-            // --- 1. TOGGLE STATO RAPIDO (Select style badge) ---
-            // Genera le opzioni per la select stato basandosi su allStatuses
-            // Se allStatuses è vuoto, usa un fallback
+            // --- 1. TOGGLE STATO RAPIDO ---
             const statuses = this.state.allStatuses.length > 0 ? this.state.allStatuses : [
-                { id_status: 1, nome_status: 'Ufficio' },
-                { id_status: 2, nome_status: 'Carpenteria' },
-                { id_status: 3, nome_status: 'Assemblaggio' },
-                { id_status: 4, nome_status: 'Preparazione' }
+                { id_status: 1, nome_status: 'Preventivo' },
+                { id_status: 2, nome_status: 'In Lavorazione' },
+                { id_status: 3, nome_status: 'Completato' },
+                { id_status: 4, nome_status: 'Annullato' }
             ];
 
             const statusOptions = statuses.map(s =>
                 `<option value="${s.id_status}" ${c.id_status_fk == s.id_status ? 'selected' : ''}>${s.nome_status}</option>`
             ).join('');
 
-            // --- 2. FASI AVANZAMENTO (Toggle Pills) ---
-            // Le fasi richieste: Ufficio(1?), Carpenteria(2?), Assemblaggio(7?), Preparazione(4?)
-            // Cerchiamo di matchare i nomi se possibile, o usiamo gli ID se li conosciamo
-            // Mappatura ideale basata su nomi comuni, fallback su ID standard se non trovati.
-            // Filtriamo solo quelle di interesse per la card se la lista è lunga, o tutte.
-            // Lavoriamo con this.state.allPhases.
-
-            // Definiamo le fasi "Card" che vogliamo mostrare
+            // --- 2. FASI AVANZAMENTO ---
             const targetPhases = ['Ufficio', 'Carpenteria', 'Assemblaggio', 'Preparazione'];
             let displayPhases = [];
 
             if (this.state.allPhases.length > 0) {
-                // Trova quelle che matchano per nome (case insensitive parziale)
                 displayPhases = this.state.allPhases.filter(p => targetPhases.some(tp => p.nome_fase.toLowerCase().includes(tp.toLowerCase())));
-                // Se non trova nulla (es. nomi diversi), mostra le prime 4
                 if (displayPhases.length === 0) displayPhases = this.state.allPhases.slice(0, 4);
             } else {
-                // Fallback hardcoded se API fasi fallisce
                 displayPhases = [
                     { id_fase: 1, nome_fase: 'Ufficio' },
                     { id_fase: 2, nome_fase: 'Carpenteria' },
@@ -322,7 +310,6 @@ const App = {
                 ];
             }
 
-            // Ordiniamo le fasi visualizzate come richiesto dall'utente
             const sortOrder = ['Ufficio', 'Carpenteria', 'Assemblaggio', 'Preparazione'];
             displayPhases.sort((a, b) => {
                 const ia = sortOrder.findIndex(s => a.nome_fase.toLowerCase().includes(s.toLowerCase()));
@@ -330,36 +317,47 @@ const App = {
                 return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
             });
 
-            // Genera HTML Pills
             const activePhases = c.ids_fasi_attive || [];
+
+            // Generazione HTML Pills (rimuoviamo onclick inline per pulizia e usiamo addEventListener)
             const phasesHtml = displayPhases.map(phase => {
                 const isActive = activePhases.includes(phase.id_fase);
-                return `
-                    <div class="phase-pill ${isActive ? 'active' : ''}" 
-                         data-commessa="${c.id_commessa}" 
-                         data-fase="${phase.id_fase}"
-                         onclick="event.stopPropagation();">
-                         ${phase.nome_fase}
-                    </div>
-                `;
+                return `<div class="phase-pill ${isActive ? 'active' : ''}" data-commessa="${c.id_commessa}" data-fase="${phase.id_fase}">${phase.nome_fase}</div>`;
             }).join('');
 
-            // --- 3. BARRA AVANZAMENTO (Dinamica) ---
-            const totalPhases = displayPhases.length || 1;
-            // Conta quante delle fasi VISUALIZZATE sono attive
-            const activeCount = displayPhases.filter(p => activePhases.includes(p.id_fase)).length;
-
+            // --- 3. BARRA AVANZAMENTO (NUOVA LOGICA UTENTE) ---
+            // Ufficio 25%, Carpenteria 50%, Assemblaggio 50%, Preparazione 75%
+            // Se status == Completato -> 100%
             let progressPct = 0;
             if (c.status_commessa?.nome_status === 'Completato') {
                 progressPct = 100;
             } else {
-                progressPct = Math.round((activeCount / totalPhases) * 100);
+                // Calcola il massimo milestone raggiunto
+                let currentMax = 0;
+
+                // Mappa Pesi
+                const weights = {
+                    'ufficio': 25,
+                    'carpenteria': 50,
+                    'assemblaggio': 50,
+                    'preparazione': 75
+                };
+
+                displayPhases.forEach(p => {
+                    if (activePhases.includes(p.id_fase)) {
+                        // Cerca peso matchando nome
+                        const nameKey = Object.keys(weights).find(k => p.nome_fase.toLowerCase().includes(k));
+                        if (nameKey) {
+                            const w = weights[nameKey];
+                            if (w > currentMax) currentMax = w;
+                        }
+                    }
+                });
+                progressPct = currentMax;
             }
 
-            // --- 4. LINK REGISTRAZIONI (Nuova Logica) ---
-            // Conta registrazioni (assume che c.registrazioni sia popolato dalla view)
+            // Link Registrazioni
             const regCount = c.registrazioni ? c.registrazioni.length : 0;
-            // Link per Vista Agile filtrata
             const linkReg = `gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${c.id_commessa}`;
 
             // Azioni Admin
@@ -377,14 +375,12 @@ const App = {
             card.innerHTML = `
                 <div class="card-image" style="${imgStyle}">
                     ${imgContent}
-                    <!-- Codice rimosso -->
                 </div>
                 <div class="card-details">
                     <div class="card-header">
                         <div style="display:flex; justify-content:space-between; align-items:start;">
                             <h3>${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
-                            <!-- STATUS TOGGLE -->
-                            <select class="status-select-badge" data-commessa="${c.id_commessa}" onclick="event.stopPropagation()">
+                            <select class="status-select-badge" data-commessa="${c.id_commessa}">
                                 ${statusOptions}
                             </select>
                         </div>
@@ -398,7 +394,6 @@ const App = {
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
                     </div>
 
-                    <!-- FASI TOGGLES -->
                     <div class="phase-toggles-container">
                         <span class="info-label" style="display:block; margin-bottom:5px;">Fasi Attive</span>
                         <div class="phase-pills-wrapper">
@@ -408,7 +403,7 @@ const App = {
 
                     <div class="progress-container">
                         <div class="progress-labels">
-                            <span>AVANZAMENTO (${activeCount}/${totalPhases})</span>
+                            <span>AVANZAMENTO</span>
                             <span>${progressPct}%</span>
                         </div>
                         <div class="progress-track">
@@ -426,33 +421,50 @@ const App = {
                 </div>
             `;
 
-            // Bind eventi 
+            // --- BINDING EVENTI (Con stopPropagation per evitare click su card non voluti) ---
 
             // 1. Status Change
             const statusSelect = card.querySelector('.status-select-badge');
             if (statusSelect) {
+                // Previene click sulla card
+                statusSelect.addEventListener('click', (e) => e.stopPropagation());
                 statusSelect.addEventListener('change', (e) => {
+                    e.stopPropagation();
                     this.updateStatusCommesse(c.id_commessa, e.target.value);
                 });
-                // Colora in base allo stato
                 this.styleStatusSelect(statusSelect);
-                statusSelect.addEventListener('change', (e) => this.styleStatusSelect(e.target));
             }
 
             // 2. Phase Toggle
             card.querySelectorAll('.phase-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
+                pill.addEventListener('click', (e) => {
+                    e.stopPropagation(); // BLOCCA PROPAGAZIONE
+                    e.preventDefault();
+
                     const commId = pill.dataset.commessa;
                     const faseId = parseInt(pill.dataset.fase);
+                    // Usa contains per determinare lo stato attuale nel DOM
                     const isCurrentlyActive = pill.classList.contains('active');
+
+                    console.log(`Toggle Fase: Commessa ${commId}, Fase ${faseId}, SetActive: ${!isCurrentlyActive}`);
+
                     this.togglePhase(commId, faseId, !isCurrentlyActive);
                 });
             });
 
             // 3. Admin Buttons
             if (IsAdmin) {
-                card.querySelector('.edit-btn')?.addEventListener('click', () => this.handleEdit(c.id_commessa));
-                card.querySelector('.del-btn')?.addEventListener('click', () => this.handleDelete(c.id_commessa));
+                const edit = card.querySelector('.edit-btn');
+                const del = card.querySelector('.del-btn');
+
+                if (edit) edit.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleEdit(c.id_commessa);
+                });
+                if (del) del.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleDelete(c.id_commessa);
+                });
             }
 
             fragment.appendChild(card);
