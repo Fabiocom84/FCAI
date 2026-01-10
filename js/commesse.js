@@ -397,6 +397,12 @@ const App = {
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
                     </div>
 
+                    ${c.macro_categorie && c.macro_categorie.length ? `
+                    <div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
+                        ${c.macro_categorie.map(m => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${m.nome || m}</span>`).join('')}
+                    </div>
+                    ` : ''}
+
                     <!-- NOTE COMMESSA (Se presenti) -->
                     ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid #f1c40f; font-size: 0.8em; color: #555;"><strong>Note:</strong> ${c.note}</div>` : ''}
 
@@ -635,167 +641,171 @@ const App = {
             // Popola Select (Choices.js)
             // Timeout breve per assicurare che Choices sia pronto se necessario, ma qui è sincrono
             if (this.state.choicesInstances.cliente && data.id_cliente_fk) {
-                // Converte sempre in stringa o intero se necessario, setChoiceByValue gestisce entrambi di solito
-                // ma per sicurezza proviamo il valore raw
                 try {
-                    this.state.choicesInstances.cliente.setChoiceByValue(data.id_cliente_fk);
+                    const val = data.id_cliente_fk;
+                    this.state.choicesInstances.cliente.setChoiceByValue([val, String(val)]);
                 } catch (e) { console.warn("Errore set cliente", e); }
             }
 
             if (this.state.choicesInstances.modello && data.id_modello_fk) {
                 try {
-                    this.state.choicesInstances.modello.setChoiceByValue(data.id_modello_fk);
+                    const val = data.id_modello_fk;
+                    this.state.choicesInstances.modello.setChoiceByValue([val, String(val)]);
                 } catch (e) { console.warn("Errore set modello", e); }
             }
 
             // Popola Macro (Multipla)
             if (this.state.choicesInstances.macro && data.ids_macro_categorie_attive) {
                 try {
-                    this.state.choicesInstances.macro.setChoiceByValue(data.ids_macro_categorie_attive);
+                    const vals = Array.isArray(data.ids_macro_categorie_attive) ? data.ids_macro_categorie_attive : [data.ids_macro_categorie_attive];
+                    const expandedVals = vals.flatMap(v => [v, String(v)]);
+                    this.state.choicesInstances.macro.setChoiceByValue(expandedVals);
                 } catch (e) { console.warn("Errore set macro", e); }
             }
+        } catch (e) { console.warn("Errore set macro", e); }
+    }
 
             // Popola Immagine
-            if (data.immagine) {
-                // Non mostriamo preview IMG come da richiesta recente, ma mostriamo testo "file esistente" o simile?
-                // L'utente ha chiesto di vedere solo il nome. Se è una stringa base64 o URL, 
-                // mostriamo "Immagine caricata".
-                this.dom.uploadText.textContent = "Immagine presente (modifica per cambiare)";
-                this.dom.previewContainer.style.display = 'block';
+            if(data.immagine) {
+        // Non mostriamo preview IMG come da richiesta recente, ma mostriamo testo "file esistente" o simile?
+        // L'utente ha chiesto di vedere solo il nome. Se è una stringa base64 o URL, 
+        // mostriamo "Immagine caricata".
+        this.dom.uploadText.textContent = "Immagine presente (modifica per cambiare)";
+this.dom.previewContainer.style.display = 'block';
                 // NON impostiamo src preview
             }
 
         } catch (e) {
-            console.error("Errore fetch dettagli", e);
-            showModal({ title: "Attenzione", message: "Impossibile caricare i dati completi della commessa: " + e.message });
-            // NON chiudiamo il modale, così l'utente può vedere cosa manca o riprovare
-            // this.closeModal(); 
-        }
+    console.error("Errore fetch dettagli", e);
+    showModal({ title: "Attenzione", message: "Impossibile caricare i dati completi della commessa: " + e.message });
+    // NON chiudiamo il modale, così l'utente può vedere cosa manca o riprovare
+    // this.closeModal(); 
+}
     },
 
-    handleEdit: function (id) {
-        this.openModal(true, id);
-    },
+handleEdit: function (id) {
+    this.openModal(true, id);
+},
 
-    handleDelete: async function (id) {
-        const confirmDelete = await showModal({
-            title: "Elimina Commessa",
-            message: "Sei sicuro? L'operazione è irreversibile.",
-            confirmText: "ELIMINA",
-            cancelText: "Annulla"
-        });
+handleDelete: async function (id) {
+    const confirmDelete = await showModal({
+        title: "Elimina Commessa",
+        message: "Sei sicuro? L'operazione è irreversibile.",
+        confirmText: "ELIMINA",
+        cancelText: "Annulla"
+    });
 
-        if (!confirmDelete) return;
+    if (!confirmDelete) return;
 
-        try {
-            await apiFetch(`/api/commesse/${id}`, { method: 'DELETE' });
-            this.fetchCommesse(true);
-        } catch (e) {
-            showModal({ title: "Errore", message: "Impossibile eliminare: " + e.message });
-        }
-    },
-
-    handleFormSubmit: async function (e) {
-        e.preventDefault();
-        const id = document.getElementById('commessaId').value;
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/commesse/${id}` : '/api/commesse';
-
-        // Usa FormData per multipart (dati + file)
-        const formData = new FormData(this.dom.modalForm);
-
-        // GESTIONE SPECIALE MACRO:
-        // Choices.js non popola automaticamente l'input hidden per le select multiple in modo compatibile con FormData a volte.
-        // Estraiamo i valori manualmente e li passiamo come JSON string
-        if (this.state.choicesInstances.macro) {
-            const selectedMacros = this.state.choicesInstances.macro.getValue(true); // Ritorna array di value
-            // Appendiamo come stringa JSON che il backend parserà
-            formData.set('ids_macro_categorie_attive', JSON.stringify(selectedMacros));
-        }
-
-        const saveBtn = this.dom.modalForm.querySelector('.save-button');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = "Salvando...";
-
-        try {
-            const token = localStorage.getItem('session_token');
-            const baseUrl = 'https://segretario-ai-backend-service-460205196659.europe-west1.run.app'; // Importato da config idealmente
-
-            // Fetch nativa per gestire FormData senza header Content-Type manuale
-            const res = await fetch(baseUrl + url, {
-                method: method,
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            if (!res.ok) {
-                const errJson = await res.json();
-                throw new Error(errJson.error || "Errore salvataggio");
-            }
-
-            this.closeModal();
-            this.fetchCommesse(true); // Ricarica griglia
-
-        } catch (error) {
-            console.error(error);
-            showModal({ title: "Errore", message: error.message });
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
-        }
-    },
-
-    closeModal: function () {
-        this.dom.modal.classList.remove('active');
-    },
-
-    // Gestione Immagine (Solo Nome File)
-    handleImageSelect: function (e) {
-        const file = e.target.files[0];
-        this.processFile(file);
-    },
-
-    processFile: function (file) {
-        if (file) {
-            this.dom.uploadText.textContent = file.name;
-            // Mostra container rimuovi (senza img preview)
-            this.dom.previewContainer.style.display = 'block';
-        }
-    },
-
-    setupDragDrop: function () {
-        const widget = this.dom.uploadWidget;
-        if (!widget) return;
-
-        const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            widget.addEventListener(eventName, preventDefaults, false);
-        });
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            widget.addEventListener(eventName, () => widget.classList.add('drag-over'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            widget.addEventListener(eventName, () => widget.classList.remove('drag-over'), false);
-        });
-
-        widget.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            if (file && file.type.startsWith('image/')) {
-                this.dom.imageInput.files = dt.files;
-                this.processFile(file);
-            }
-        });
-    },
-
-    resetImage: function () {
-        this.dom.imageInput.value = '';
-        this.dom.uploadText.textContent = 'Trascina file o Clicca';
-        this.dom.previewContainer.style.display = 'none';
+    try {
+        await apiFetch(`/api/commesse/${id}`, { method: 'DELETE' });
+        this.fetchCommesse(true);
+    } catch (e) {
+        showModal({ title: "Errore", message: "Impossibile eliminare: " + e.message });
     }
+},
+
+handleFormSubmit: async function (e) {
+    e.preventDefault();
+    const id = document.getElementById('commessaId').value;
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `/api/commesse/${id}` : '/api/commesse';
+
+    // Usa FormData per multipart (dati + file)
+    const formData = new FormData(this.dom.modalForm);
+
+    // GESTIONE SPECIALE MACRO:
+    // Choices.js non popola automaticamente l'input hidden per le select multiple in modo compatibile con FormData a volte.
+    // Estraiamo i valori manualmente e li passiamo come JSON string
+    if (this.state.choicesInstances.macro) {
+        const selectedMacros = this.state.choicesInstances.macro.getValue(true); // Ritorna array di value
+        // Appendiamo come stringa JSON che il backend parserà
+        formData.set('ids_macro_categorie_attive', JSON.stringify(selectedMacros));
+    }
+
+    const saveBtn = this.dom.modalForm.querySelector('.save-button');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = "Salvando...";
+
+    try {
+        const token = localStorage.getItem('session_token');
+        const baseUrl = 'https://segretario-ai-backend-service-460205196659.europe-west1.run.app'; // Importato da config idealmente
+
+        // Fetch nativa per gestire FormData senza header Content-Type manuale
+        const res = await fetch(baseUrl + url, {
+            method: method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        if (!res.ok) {
+            const errJson = await res.json();
+            throw new Error(errJson.error || "Errore salvataggio");
+        }
+
+        this.closeModal();
+        this.fetchCommesse(true); // Ricarica griglia
+
+    } catch (error) {
+        console.error(error);
+        showModal({ title: "Errore", message: error.message });
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+    }
+},
+
+closeModal: function () {
+    this.dom.modal.classList.remove('active');
+},
+
+// Gestione Immagine (Solo Nome File)
+handleImageSelect: function (e) {
+    const file = e.target.files[0];
+    this.processFile(file);
+},
+
+processFile: function (file) {
+    if (file) {
+        this.dom.uploadText.textContent = file.name;
+        // Mostra container rimuovi (senza img preview)
+        this.dom.previewContainer.style.display = 'block';
+    }
+},
+
+setupDragDrop: function () {
+    const widget = this.dom.uploadWidget;
+    if (!widget) return;
+
+    const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        widget.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        widget.addEventListener(eventName, () => widget.classList.add('drag-over'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        widget.addEventListener(eventName, () => widget.classList.remove('drag-over'), false);
+    });
+
+    widget.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        if (file && file.type.startsWith('image/')) {
+            this.dom.imageInput.files = dt.files;
+            this.processFile(file);
+        }
+    });
+},
+
+resetImage: function () {
+    this.dom.imageInput.value = '';
+    this.dom.uploadText.textContent = 'Trascina file o Clicca';
+    this.dom.previewContainer.style.display = 'none';
+}
 };
 
 document.addEventListener('DOMContentLoaded', () => { App.init(); });
