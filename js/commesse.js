@@ -609,42 +609,67 @@ const App = {
     loadCommessaDetails: async function (id) {
         try {
             const res = await apiFetch(`/api/commesse/${id}`);
+            if (!res.ok) throw new Error("Errore nel recupero dati commessa");
+
             const data = await res.json();
 
             // Popola campi testuali
-            document.getElementById('commessaId').value = data.id_commessa;
-            document.getElementById('impianto').value = data.impianto || '';
-            document.getElementById('vo').value = data.vo || '';
-            document.getElementById('matricola').value = data.matricola || '';
-            document.getElementById('rif_tecnico').value = data.riferimento_tecnico || '';
-            document.getElementById('luogo').value = data.paese || '';
-            document.getElementById('provincia').value = data.provincia || '';
-            document.getElementById('anno').value = data.anno || '';
-            document.getElementById('note').value = data.note || '';
+            // Usa encadement opzionale per evitare crash su proprietà mancanti
+            if (this.dom.modalForm) {
+                const setValue = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val || '';
+                };
+
+                setValue('commessaId', data.id_commessa);
+                setValue('impianto', data.nome_commessa || data.impianto); // Gestione fallback nome
+                setValue('vo', data.vo || data.vo_offerta);
+                setValue('matricola', data.matricola);
+                setValue('rif_tecnico', data.riferimento_tecnico);
+                setValue('luogo', data.paese || data.luogo); // Fallback
+                setValue('provincia', data.provincia);
+                setValue('anno', data.anno);
+                setValue('note', data.note || data.descrizione);
+            }
 
             // Popola Select (Choices.js)
+            // Timeout breve per assicurare che Choices sia pronto se necessario, ma qui è sincrono
             if (this.state.choicesInstances.cliente && data.id_cliente_fk) {
-                this.state.choicesInstances.cliente.setChoiceByValue(data.id_cliente_fk);
+                // Converte sempre in stringa o intero se necessario, setChoiceByValue gestisce entrambi di solito
+                // ma per sicurezza proviamo il valore raw
+                try {
+                    this.state.choicesInstances.cliente.setChoiceByValue(data.id_cliente_fk);
+                } catch (e) { console.warn("Errore set cliente", e); }
             }
+
             if (this.state.choicesInstances.modello && data.id_modello_fk) {
-                this.state.choicesInstances.modello.setChoiceByValue(data.id_modello_fk);
+                try {
+                    this.state.choicesInstances.modello.setChoiceByValue(data.id_modello_fk);
+                } catch (e) { console.warn("Errore set modello", e); }
             }
+
             // Popola Macro (Multipla)
             if (this.state.choicesInstances.macro && data.ids_macro_categorie_attive) {
-                this.state.choicesInstances.macro.setChoiceByValue(data.ids_macro_categorie_attive);
+                try {
+                    this.state.choicesInstances.macro.setChoiceByValue(data.ids_macro_categorie_attive);
+                } catch (e) { console.warn("Errore set macro", e); }
             }
 
             // Popola Immagine
             if (data.immagine) {
-                this.dom.imagePreview.src = data.immagine;
+                // Non mostriamo preview IMG come da richiesta recente, ma mostriamo testo "file esistente" o simile?
+                // L'utente ha chiesto di vedere solo il nome. Se è una stringa base64 o URL, 
+                // mostriamo "Immagine caricata".
+                this.dom.uploadText.textContent = "Immagine presente (modifica per cambiare)";
                 this.dom.previewContainer.style.display = 'block';
-                this.dom.uploadText.textContent = "Immagine caricata";
+                // NON impostiamo src preview
             }
 
         } catch (e) {
             console.error("Errore fetch dettagli", e);
-            showModal({ title: "Errore", message: "Impossibile caricare i dati della commessa." });
-            this.closeModal();
+            showModal({ title: "Attenzione", message: "Impossibile caricare i dati completi della commessa: " + e.message });
+            // NON chiudiamo il modale, così l'utente può vedere cosa manca o riprovare
+            // this.closeModal(); 
         }
     },
 
