@@ -196,6 +196,9 @@ const App = {
             e.stopPropagation(); // Evita riapertura widget
             this.resetImage();
         });
+
+        // Drag & Drop
+        this.setupDragDrop();
     },
 
     // --- LOGICA DATI & SCROLL ---
@@ -722,25 +725,51 @@ const App = {
         this.dom.modal.classList.remove('active');
     },
 
-    // Gestione Immagine (Preview Locale)
+    // Gestione Immagine (Solo Nome File)
     handleImageSelect: function (e) {
         const file = e.target.files[0];
+        this.processFile(file);
+    },
+
+    processFile: function (file) {
         if (file) {
             this.dom.uploadText.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                this.dom.imagePreview.src = ev.target.result;
-                this.dom.previewContainer.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+            // Mostra container rimuovi (senza img preview)
+            this.dom.previewContainer.style.display = 'block';
         }
+    },
+
+    setupDragDrop: function () {
+        const widget = this.dom.uploadWidget;
+        if (!widget) return;
+
+        const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            widget.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            widget.addEventListener(eventName, () => widget.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            widget.addEventListener(eventName, () => widget.classList.remove('drag-over'), false);
+        });
+
+        widget.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            if (file && file.type.startsWith('image/')) {
+                this.dom.imageInput.files = dt.files;
+                this.processFile(file);
+            }
+        });
     },
 
     resetImage: function () {
         this.dom.imageInput.value = '';
-        this.dom.uploadText.textContent = 'Scegli file...';
+        this.dom.uploadText.textContent = 'Trascina file o Clicca';
         this.dom.previewContainer.style.display = 'none';
-        this.dom.imagePreview.src = '';
     }
 };
 
