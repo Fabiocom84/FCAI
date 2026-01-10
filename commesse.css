@@ -14,17 +14,17 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    
+
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 15px;
-    
+
     background-color: #ffffff;
     padding: 12px 20px;
     border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .filters-group {
@@ -51,7 +51,10 @@
     transition: all 0.2s;
 }
 
-.filter-btn:hover { background: #f0f0f0; }
+.filter-btn:hover {
+    background: #f0f0f0;
+}
+
 .filter-btn.active {
     background-color: #2c3e50;
     color: white;
@@ -75,7 +78,10 @@
     outline: none;
     transition: border-color 0.2s;
 }
-#search-input:focus { border-color: #3498db; }
+
+#search-input:focus {
+    border-color: #3498db;
+}
 
 #sort-select {
     width: 180px;
@@ -88,10 +94,10 @@
 }
 
 #deep-search-wrapper {
-    display: flex; 
-    align-items: center; 
-    gap: 5px; 
-    font-size: 0.85em; 
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85em;
     color: #666;
     cursor: pointer;
 }
@@ -103,16 +109,22 @@
         align-items: stretch;
         gap: 12px;
     }
+
     .filters-group {
         overflow-x: auto;
         white-space: nowrap;
         padding-bottom: 2px;
     }
+
     .search-group {
         flex-direction: column;
         align-items: stretch;
     }
-    #search-input, #sort-select { width: 100%; }
+
+    #search-input,
+    #sort-select {
+        width: 100%;
+    }
 }
 
 /* --- 2. GRIGLIA CARD --- */
@@ -125,7 +137,8 @@
 }
 
 /* LOADER STYLES */
-.loader, .scroll-loader {
+.loader,
+.scroll-loader {
     grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
@@ -140,7 +153,8 @@
     border: 4px solid #f3f3f3;
     border-top: 4px solid #3498db;
     border-radius: 50%;
-    width: 40px; height: 40px;
+    width: 40px;
+    height: 40px;
     animation: spin 1s linear infinite;
 }
 
@@ -148,40 +162,52 @@
     border: 3px solid #f3f3f3;
     border-top: 3px solid #3498db;
     border-radius: 50%;
-    width: 24px; height: 24px;
+    width: 24px;
+    height: 24px;
     animation: spin 1s linear infinite;
 }
 
 .scroll-loader {
-    display: none; /* Nascosto di default, mostrato da JS */
+    display: none;
+    /* Nascosto di default, mostrato da JS */
     padding: 10px;
     font-size: 0.9em;
 }
 
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 /* --- 3. CARD STYLES (MIGLIORATI) --- */
 .commesse-card {
     background-color: #fff;
     border-radius: 12px;
     /* Ombra più morbida */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border: 1px solid #edf2f7;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
-    min-height: 480px; /* Altezza minima consistente */
+    min-height: 480px;
+    /* Altezza minima consistente */
 }
 
 .commesse-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
 .card-image {
     width: 100%;
-    height: 200px; /* Più alta per vedere meglio la foto */
+    height: 200px;
+    /* Più alta per vedere meglio la foto */
     background-color: #f1f3f5;
     background-size: cover;
     background-position: center;
@@ -220,11 +246,13 @@
 
 .card-header h3 {
     margin: 0;
-    font-size: 1.25em; /* Titolo più grande */
+    font-size: 1.25em;
+    /* Titolo più grande */
     font-weight: 700;
     color: #2c3e50;
     line-height: 1.25;
 }
+
 .card-header span {
     font-size: 0.9em;
     color: #7f8c8d;
@@ -265,6 +293,7 @@
 .progress-container {
     margin-top: 5px;
 }
+
 .progress-labels {
     display: flex;
     justify-content: space-between;
@@ -273,6 +302,7 @@
     margin-bottom: 4px;
     font-weight: 600;
 }
+
 .progress-track {
     width: 100%;
     height: 6px;
@@ -280,6 +310,7 @@
     border-radius: 3px;
     overflow: hidden;
 }
+
 .progress-fill {
     height: 100%;
     background-color: #3498db;
@@ -313,6 +344,7 @@
     transition: all 0.2s;
     box-sizing: border-box;
 }
+
 .btn-registrazioni:hover {
     background-color: #e0efff;
     border-color: #bad9fc;
@@ -336,7 +368,7 @@
     height: 100vh !important;
     transform: none !important;
     z-index: 9999;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     display: none;
     justify-content: center;
     align-items: center;
@@ -349,11 +381,12 @@
 /* Contenuto Modale */
 .modal-content.large-modal {
     width: 95%;
-    max-width: 850px; /* Larghezza ottimale */
+    max-width: 850px;
+    /* Larghezza ottimale */
     max-height: 90vh;
     background-color: #fff;
     border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     margin: 0 !important;
@@ -363,8 +396,15 @@
 }
 
 @keyframes fadeInModal {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .modal-header {
@@ -376,7 +416,15 @@
     align-items: center;
     flex-shrink: 0;
 }
-.modal-header h2 { margin: 0; font-size: 1.1em; color: #2c3e50; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #2c3e50;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
 .modal-body {
     padding: 25px;
@@ -400,25 +448,43 @@
     border: 1px solid #f0f0f0;
     margin-bottom: 20px;
 }
-.form-section:last-child { margin-bottom: 0; }
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
 
 .form-section-header {
     margin-bottom: 15px;
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 8px;
 }
+
 .form-section-header h3 {
     margin: 0;
     font-size: 0.95em;
     font-weight: 700;
-    color: #2A76B8; /* Blu Segretario AI */
+    color: #2A76B8;
+    /* Blu Segretario AI */
     text-transform: uppercase;
 }
 
 /* Griglie Form */
-.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-.form-grid-media { display: flex; gap: 20px; }
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.form-grid-media {
+    display: flex;
+    gap: 20px;
+}
 
 /* Form Elements */
 .form-group label {
@@ -441,14 +507,19 @@
     font-family: inherit;
     transition: border-color 0.2s;
 }
-.modal-body input:focus, .modal-body textarea:focus {
+
+.modal-body input:focus,
+.modal-body textarea:focus {
     border-color: #3498db;
     outline: none;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* Choices.js Customization per Modale */
-.choices { margin-bottom: 0; }
+.choices {
+    margin-bottom: 0;
+}
+
 .choices__inner {
     background-color: #fcfcfc;
     min-height: 42px;
@@ -472,15 +543,31 @@
     box-sizing: border-box;
     font-size: 0.9em;
 }
-.custom-file-upload.compact:hover { border-color: #3498db; background: #f0f7ff; }
+
+.custom-file-upload.compact:hover {
+    border-color: #3498db;
+    background: #f0f7ff;
+}
 
 /* Pulsante Aggiungi (Header) */
 #add-commessa-btn {
-    background-color: #28a745; color: white; border: none; padding: 0 16px;
-    border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;
-    display: flex; align-items: center; gap: 6px; height: 36px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
 }
-#add-commessa-btn:hover { background-color: #218838; }
+
+#add-commessa-btn:hover {
+    background-color: #218838;
+}
 
 /* Pulsante Salva (Footer Modale) */
 .save-button {
@@ -493,12 +580,19 @@
     cursor: pointer;
     font-size: 1em;
     text-transform: uppercase;
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
-.save-button:hover { background-color: #218838; }
+
+.save-button:hover {
+    background-color: #218838;
+}
 
 /* Utility Alignment */
-.align-center { align-items: center; }
+.align-center {
+    align-items: center;
+}
 
 /* MEDIA QUERY MOBILE */
 @media (max-width: 768px) {
@@ -507,12 +601,134 @@
         align-items: stretch;
         gap: 10px;
     }
-    .filters-group { overflow-x: auto; padding-bottom: 5px; }
-    .search-group { flex-direction: row; flex-wrap: wrap; }
-    #search-input { width: 100%; flex: 1; }
-    #sort-select { width: auto; flex: 1; }
-    
-    .form-grid-2, .form-grid-3, .form-grid-media { grid-template-columns: 1fr; gap: 15px; }
-    .form-grid-media { flex-direction: column; }
-    .modal-content.large-modal { width: 100%; height: 100%; max-height: 100vh; border-radius: 0; }
+
+    .filters-group {
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .search-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    #search-input {
+        width: 100%;
+        flex: 1;
+    }
+
+    #sort-select {
+        width: auto;
+        flex: 1;
+    }
+
+    .form-grid-2,
+    .form-grid-3,
+    .form-grid-media {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .form-grid-media {
+        flex-direction: column;
+    }
+
+    .modal-content.large-modal {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* --- 6. NUOVI COMPONENTI (Status & Fasi) --- */
+
+/* Status Select Badge */
+.status-select-badge {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    background-color: #95a5a6;
+    /* Default gray */
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s, opacity 0.2s;
+    outline: none;
+}
+
+.status-select-badge:hover {
+    opacity: 0.9;
+}
+
+.status-select-badge:active {
+    transform: scale(0.95);
+}
+
+/* Varianti Colore Status */
+.status-select-badge.status-new {
+    background-color: #3498db;
+}
+
+/* Preventivo: Blu */
+.status-select-badge.status-wip {
+    background-color: #f39c12;
+}
+
+/* In Lavorazione: Arancio */
+.status-select-badge.status-done {
+    background-color: #27ae60;
+}
+
+/* Completato: Verde */
+.status-select-badge.status-cancel {
+    background-color: #c0392b;
+}
+
+/* Annullato: Rosso */
+
+/* Fasi Toggles */
+.phase-toggles-container {
+    margin-top: 10px;
+    padding: 8px;
+    background: #fafafa;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.phase-pills-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.phase-pill {
+    font-size: 0.75em;
+    padding: 3px 8px;
+    background-color: #fff;
+    border: 1px solid #dcdcdc;
+    color: #7f8c8d;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    font-weight: 500;
+}
+
+.phase-pill:hover {
+    border-color: #bdc3c7;
+    background-color: #f4f6f7;
+}
+
+.phase-pill.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #2980b9;
+    box-shadow: 0 1px 2px rgba(52, 152, 219, 0.3);
 }
