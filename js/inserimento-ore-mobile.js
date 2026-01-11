@@ -235,6 +235,10 @@ const MobileHoursApp = {
         this.state.currentDate = day.full_date;
         document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${day.month_str}`;
         this.dom.dayDetailModal.style.display = 'flex';
+
+        // RESET DATI STALE: Pulisci i dati del giorno precedente per evitare che checkOvertimeLogic usi vecchi totali
+        this.state.currentDayData = { registrazioni: [] };
+
         this.resetFormState();
         this.loadExistingWorks(day.full_date);
     },
@@ -407,6 +411,7 @@ const MobileHoursApp = {
             this.state.currentDayData.registrazioni = works;
 
             this.updateTotalBadge(total);
+            this.checkOvertimeLogic(); // <--- AGGIUNTO: Ricalcola visibilità straordinari con i nuovi dati
 
             if (this.dom.existingList) this.dom.existingList.style.display = 'block';
 
