@@ -2,6 +2,10 @@
 /* == GESTIONE ATTIVITÀ - LAYOUT KANBAN SPECIFICO == */
 /* ========================================================== */
 
+* {
+    box-sizing: border-box;
+}
+
 /* Nota: Per il Kanban vogliamo utilizzare tutto lo spazio disponibile (FULL SCREEN) */
 
 html,
@@ -77,11 +81,13 @@ body {
     flex: 1;
     height: 100%;
     overflow: hidden;
-    padding: 20px;
-    /* Portato a 20px per allinearsi con Header e altri layout */
-    gap: 15px;
-    /* Aumentato leggermente il gap tra colonne e inspector */
+    padding: 32px;
+    /* Margine ampio standard */
+    gap: 20px;
     background-color: #eef2f5;
+    width: 100%;
+    box-sizing: border-box;
+    /* Sicurezza extra */
 }
 
 .task-view-grid {
@@ -237,8 +243,8 @@ body {
     flex: 0 0 32px !important;
 }
 
-/* --- 5. LAYOUT MOBILE / WINDOWED (< 1366px) --- */
-@media (max-width: 1366px) {
+/* --- 5. LAYOUT MOBILE / WINDOWED (< 1200px) --- */
+@media (max-width: 1200px) {
 
     html,
     body {
