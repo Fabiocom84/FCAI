@@ -16,10 +16,23 @@ const App = {
         currentView: 'registrazioni', // Imposta 'registrazioni' come vista di default
         sortBy: 'data_creazione',     // Imposta la colonna di ordinamento di default
         sortOrder: 'desc',            // Imposta l'ordine di default (desc = dal più recente)
-        selectedRowId: null,
         editingRowId: null,
         isAddingNewRow: false,
-        allStatuses: []
+        allStatuses: [],
+        allDependencies: {} // Cache per dropdown unificati
+    },
+
+    // Carica tutte le liste per i dropdown in una sola chiamata
+    fetchAllDependencies: async function () {
+        try {
+            const res = await apiFetch('/api/gestione/init-data');
+            if (res.ok) {
+                this.state.allDependencies = await res.json();
+                console.log("Dipendenze caricate:", Object.keys(this.state.allDependencies));
+            }
+        } catch (e) {
+            console.error("Errore caricamento dipendenze:", e);
+        }
     },
     viewConfig: {
         'clienti': {
@@ -379,7 +392,7 @@ const App = {
     /**
     * Funzione di avvio: recupera gli elementi DOM e imposta gli eventi principali.
     */
-    init: function () {
+    init: async function () {
         // 1. Recupera elementi DOM
         this.dom = {
             gridWrapper: document.querySelector('.grid-container'),
@@ -421,6 +434,11 @@ const App = {
 
         // 4. Chiamiamo gli event listener e carichiamo i dati
         this.addStaticEventListeners();
+
+        // Carichiamo le dipendenze (dropdown) in background o bloccante? 
+        // Meglio quasi-bloccante o comunque prima di eventuali edit.
+        await this.fetchAllDependencies();
+
         this.renderToolbar();
         this.loadAndRenderData(true); // Questa chiamata ora userà i filtri!
     },
@@ -1334,12 +1352,10 @@ const App = {
             select.dataset.key = key;
             select.innerHTML = `<option value="">Caricamento...</option>`;
 
-            try {
-                const response = await apiFetch(columnConfig.options.apiEndpoint);
-                const optionsData = await response.json(); // <-- RIGA MANCANTE AGGIUNTA QUI
-
+            // Helper per popolare la select
+            const populateSelect = (data) => {
                 select.innerHTML = `<option value="" disabled selected>Seleziona un'opzione</option>`;
-                optionsData.forEach(opt => {
+                data.forEach(opt => {
                     const option = document.createElement('option');
                     option.value = opt[columnConfig.options.valueField];
                     option.textContent = opt[columnConfig.options.textField];
@@ -1348,8 +1364,39 @@ const App = {
                     }
                     select.appendChild(option);
                 });
-            } catch (error) {
-                select.innerHTML = `<option value="">Errore nel caricamento</option>`;
+            };
+
+            // Tenta di usare la cache locale se possibile
+            let loadedFromCache = false;
+            const ep = columnConfig.options.apiEndpoint;
+
+            // Mappatura Endpoint -> Chiave Cache
+            const cacheMap = {
+                '/api/simple/clienti': 'clienti',
+                '/api/simple/ruoli': 'ruoli',
+                '/api/simple/aziende': 'aziende',
+                '/api/simple/modelli': 'modelli',
+                '/api/simple/status_commessa': 'status_commessa', // o 'status'
+                '/api/commesse/fasi': 'fasi',
+                '/api/simple/articoli': 'articoli',
+                '/api/personale?limit=1000': 'personale' // Questo potrebbe non esserci nella cache "gestione" se non l'abbiamo aggiunto
+            };
+
+            const cacheKey = cacheMap[ep];
+            if (cacheKey && this.state.allDependencies[cacheKey]) {
+                populateSelect(this.state.allDependencies[cacheKey]);
+                loadedFromCache = true;
+            }
+
+            // Se non è in cache, fai la fetch network (Fallback)
+            if (!loadedFromCache) {
+                try {
+                    const response = await apiFetch(columnConfig.options.apiEndpoint);
+                    const optionsData = await response.json();
+                    populateSelect(optionsData);
+                } catch (error) {
+                    select.innerHTML = `<option value="">Errore nel caricamento</option>`;
+                }
             }
             return select;
         }

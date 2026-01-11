@@ -74,35 +74,59 @@ const App = {
         // 3. Event Listeners
         this.addEventListeners();
 
-        // 4. Caricamento Dati Iniziali (Metadata + Card)
+        // 4. Caricamento Dati Unificato (Metadata + Card)
         try {
-            await this.loadMetadata();
-            // Fasi per la barra di progresso
-            const phasesRes = await apiFetch('/api/commesse/fasi');
-            this.state.allPhases = await phasesRes.json();
+            await this.loadUnifiedData();
         } catch (e) {
-            console.warn("Errore caricamento metadati", e);
+            console.warn("Errore caricamento dati unificati", e);
         }
 
-        // Fetch iniziale delle commesse
-        this.fetchCommesse(true);
+        // Fetch iniziale gestita da loadUnifiedData
     },
 
-    loadMetadata: async function () {
-        // Chiama endpoint unificato per ottenere Clienti, Modelli, Macro
+    loadUnifiedData: async function () {
+        // Chiama endpoint unificato per ottenere Clienti, Modelli, Macro E le prime commesse
         try {
             const res = await apiFetch('/api/commesse/init-data');
             const data = await res.json();
 
+            // 1. Popola i Metadati
             this.state.allStatuses = data.status || [];
             this.state.allMacros = data.macros || [];
+            this.state.allPhases = data.fasi || [];
 
-            // Inizializza Choices.js SOLO se l'utente è Admin (altrimenti non può aprire il modale)
+            // Inizializza Choices.js SOLO se l'utente è Admin
             if (IsAdmin) {
-                this.initModalChoices(data.clienti, data.modelli, data.macros);
+                this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
             }
+
+            // 2. Popola la Griglia Commesse IMMEDIATAMENTE
+            if (data.commesse_data) {
+                this.state.totalCount = data.commesse_count || 0;
+
+                if (data.commesse_data.length === 0) {
+                    this.state.hasMore = false;
+                    this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Nessuna commessa trovata.</div>';
+                } else {
+                    // Renderizza le card
+                    this.renderCards(data.commesse_data);
+
+                    if (data.commesse_data.length < 12) {
+                        this.state.hasMore = false;
+                    } else {
+                        this.state.currentPage = 2;
+                    }
+                }
+
+                if (this.dom.loader) this.dom.loader.style.display = 'none';
+            } else {
+                this.fetchCommesse(true);
+            }
+
         } catch (e) {
-            console.error("Errore metadata:", e);
+            console.error("Errore fetch unified data:", e);
+            // Fallback
+            this.fetchCommesse(true);
         }
     },
 
