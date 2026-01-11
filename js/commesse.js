@@ -397,11 +397,24 @@ const App = {
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
                     </div>
 
-                    ${c.macro_categorie && c.macro_categorie.length ? `
-                    <div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
-                        ${c.macro_categorie.map(m => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${m.nome || m}</span>`).join('')}
-                    </div>
-                    ` : ''}
+                    ${(() => {
+                    let macrosToDisplay = [];
+                    if (c.macro_categorie && c.macro_categorie.length) {
+                        macrosToDisplay = c.macro_categorie.map(m => m.nome || m.nome_macro || m);
+                    } else if (c.ids_macro_categorie_attive && this.state.allMacros && this.state.allMacros.length) {
+                        macrosToDisplay = (Array.isArray(c.ids_macro_categorie_attive) ? c.ids_macro_categorie_attive : [c.ids_macro_categorie_attive]).map(id => {
+                            const match = this.state.allMacros.find(m => m.id_macro_categoria == id);
+                            return match ? (match.nome || match.nome_macro) : id;
+                        });
+                    }
+
+                    if (macrosToDisplay.length === 0) return '';
+
+                    return `
+                        <div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
+                            ${macrosToDisplay.map(name => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${name}</span>`).join('')}
+                        </div>`;
+                })()}
 
                     <!-- NOTE COMMESSA (Se presenti) -->
                     ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid #f1c40f; font-size: 0.8em; color: #555;"><strong>Note:</strong> ${c.note}</div>` : ''}
