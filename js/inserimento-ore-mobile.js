@@ -377,6 +377,16 @@ const MobileHoursApp = {
 
     // --- CARDS LIST & TOTALE (MODIFICATA PER IL LUCCHETTO) ---
     loadExistingWorks: async function (dateStr) {
+        // FAILSAFE: Se il riferimento DOM è perso, cercalo di nuovo
+        if (!this.dom.existingList) {
+            this.dom.existingList = document.getElementById('existingList');
+        }
+
+        if (!this.dom.existingList) {
+            console.error("❌ ERRORE CRITICO: Impossibile trovare #existingList nel DOM!");
+            return;
+        }
+
         this.dom.existingList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Caricamento...</div>';
         try {
             let url = `/api/ore/day/${dateStr}`;
