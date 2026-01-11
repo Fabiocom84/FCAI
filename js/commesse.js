@@ -435,12 +435,12 @@ const App = {
                     <div class="progress-container">
                     <div class="progress-labels">
                         <span>AVANZAMENTO</span>
-                        <div style="display:flex; gap:10px;">
+                        <div class="hours-container">
                             ${(() => {
                     // Calcolo Ore Totali da Registrazioni (User Timesheets)
                     // Supportiamo 'ore_lavorate' (da registrazioni_ore) o 'ore' (fallback)
                     const totalHours = c.registrazioni ? c.registrazioni.reduce((acc, r) => acc + (parseFloat(r.ore_lavorate || r.ore) || 0), 0) : 0;
-                    return totalHours > 0 ? `<span style="font-weight:600; color:#2c3e50;">⏱️ ${totalHours.toFixed(1)}h</span>` : '';
+                    return totalHours > 0 ? `<span class="hours-badge">⏱️ ${totalHours.toFixed(1)}h</span>` : '';
                 })()}
                             <span class="progress-pct-text">${progressPct}%</span>
                         </div>

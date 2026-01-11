@@ -900,3 +900,33 @@
 }
 
 /* CUSTOM MODAL STYLES HAVE BEEN MOVED TO STYLE-V2.CSS (as .std-modal) */
+
+/* Progress Bar Labels & Hours Badge */
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 0.85em;
+    color: #555;
+    font-weight: 600;
+}
+
+.hours-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hours-badge {
+    font-weight: 600;
+    color: #2c3e50;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #eef2f3;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid #dcdcdc;
+    font-size: 0.9em;
+}
