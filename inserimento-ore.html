@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,48 +13,65 @@
 </head>
 
 <body>
-    
-    <!-- CONTENITORE PRINCIPALE CENTRATO -->
-    <div class="page-wrapper">
-        
-        <!-- HEADER (Ora dentro il wrapper, non fixed full width) -->
-        <header class="mobile-nav-header">
+
+    <!-- STANDARD APP SHELL -->
+    <div class="std-app-shell">
+
+        <!-- HEADER STANDARD -->
+        <header class="std-app-header">
             <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 14px;">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 14px;">
                 <span>Home</span>
             </a>
-            
-            <div class="title-container">
+
+            <div class="header-title-container">
                 <h1>LE TUE ORE</h1>
-                <span id="headerUserName" class="header-username">Caricamento...</span>
+                <span id="headerUserName" class="header-subtitle">Caricamento...</span>
             </div>
+
+            <div style="width: 80px;"></div> <!-- Spacer per bilanciare layout -->
         </header>
 
-        <!-- CONTENUTO PRINCIPALE -->
-        <div id="mobileTimelineContainer" class="mobile-content-wrapper">
-            <div class="loader-placeholder">Caricamento timeline...</div>
+        <!-- CONTENT -->
+        <div class="std-app-content no-padding">
+            <div id="mobileTimelineContainer" class="mobile-content-wrapper">
+                <div class="loader-placeholder">Caricamento timeline...</div>
+            </div>
+
+            <!-- FOOTER FISSO (Manteniamo ID per compatibilità JS) -->
+            <!-- Nota: Inseriamo il footer DENTRO o FUORI content? Spesso fuori per essere fixed. 
+                 Ma js/inserimento-ore-mobile.js usa .mobile-footer-actions fixed. 
+                 Lasciamo qui, gestito dal CSS specifico -->
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="mobile-footer-actions">
+            <button type="button" id="cancelEditBtn" class="cancel-button" style="display: none;">Annulla</button>
+            <button type="button" id="saveHoursBtn" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
         </div>
 
     </div>
 
     <!-- MODALE DETTAGLIO GIORNO (VISTA FULL SCREEN) -->
+    <!-- Manteniamo ID 'dayDetailModal' per JS, ma usiamo classi standard se possibile o lasciamo custom se complesso -->
     <div id="dayDetailModal" class="full-screen-page" style="display: none;">
-        
-        <header class="mobile-nav-header fixed-top">
+
+        <header class="std-app-header" style="border-radius:0;">
             <button id="closeDetailBtn" class="header-button">
-                <img src="img/log-out.png" style="width:14px; filter: brightness(0) invert(1); transform: rotate(180deg);"> 
+                <img src="img/log-out.png"
+                    style="width:14px; filter: brightness(0) invert(1); transform: rotate(180deg);">
                 <span>Indietro</span>
             </button>
-            <div class="title-container">
+            <div class="header-title-container">
                 <h1 id="selectedDayTitle">DATA</h1>
-                <span id="detailUserName" class="header-username">Utente</span>
+                <span id="detailUserName" class="header-subtitle">Utente</span>
             </div>
+            <div style="width: 80px;"></div>
         </header>
 
         <!-- CORPO SCROLLABILE -->
         <div class="mobile-content-wrapper full-screen-body">
-            
-            <!-- ... Header ... -->
 
             <!-- SEZIONE 1: LISTA CARD + TOTALE -->
             <div id="existingWorksSection">
@@ -62,7 +80,7 @@
                     <!-- NUOVO: Badge Totale -->
                     <div id="dayTotalBadge" class="day-total-badge">Totale: 0h</div>
                 </div>
-                
+
                 <div id="existingWorksList" class="cards-container"></div>
             </div>
 
@@ -81,7 +99,7 @@
                 </div>
 
                 <form id="mobileHoursForm">
-                    
+
                     <!-- 1. SELEZIONE COMMESSA (Visibile solo per Produzione) -->
                     <div class="form-group mobile-group" id="group-commessa">
                         <label>Commessa / Impianto</label>
@@ -93,14 +111,18 @@
                         <div id="production-fields">
                             <div class="form-group mobile-group">
                                 <label>Reparto / Macro *</label>
-                                <select id="mobileMacroSelect"><option value="" disabled selected>-- Seleziona Commessa --</option></select>
+                                <select id="mobileMacroSelect">
+                                    <option value="" disabled selected>-- Seleziona Commessa --</option>
+                                </select>
                             </div>
                             <div class="form-group mobile-group">
                                 <label>Lavorazione *</label>
-                                <select id="mobileComponentSelect"><option value="" disabled selected>-- Seleziona Reparto --</option></select>
+                                <select id="mobileComponentSelect">
+                                    <option value="" disabled selected>-- Seleziona Reparto --</option>
+                                </select>
                             </div>
                         </div>
-                        
+
                         <!-- 3. CAMPI ASSENZA (Tipo + Orari) -->
                         <div id="absence-fields" style="display: none;">
                             <div class="absence-box">
@@ -111,7 +133,8 @@
 
                                 <div class="form-group mobile-group">
                                     <label style="color:#1e88e5;">Motivo *</label>
-                                    <select id="mobileAbsenceType" style="border-color:#90caf9; color:#0d47a1; font-weight:600;">
+                                    <select id="mobileAbsenceType"
+                                        style="border-color:#90caf9; color:#0d47a1; font-weight:600;">
                                         <option value="Ferie">Ferie (Giornata)</option>
                                         <option value="Permesso">Permesso (Ore)</option>
                                         <option value="Malattia">Malattia</option>
@@ -119,19 +142,32 @@
                                     </select>
                                 </div>
 
-                                <p class="section-subtitle" style="color:#1976d2;">Orario Assenza (Mattina / Pomeriggio)</p>
-                                
+                                <p class="section-subtitle" style="color:#1976d2;">Orario Assenza (Mattina / Pomeriggio)
+                                </p>
+
                                 <div class="time-range-row">
                                     <div class="label-col text-mattina" style="color:#1565c0;">MAT</div>
-                                    <div class="select-col"><select id="absMattinaStart" class="mobile-time-select abs-select"><option value="">--:--</option></select></div>
+                                    <div class="select-col"><select id="absMattinaStart"
+                                            class="mobile-time-select abs-select">
+                                            <option value="">--:--</option>
+                                        </select></div>
                                     <div class="arrow-col">➜</div>
-                                    <div class="select-col"><select id="absMattinaEnd" class="mobile-time-select abs-select"><option value="">--:--</option></select></div>
+                                    <div class="select-col"><select id="absMattinaEnd"
+                                            class="mobile-time-select abs-select">
+                                            <option value="">--:--</option>
+                                        </select></div>
                                 </div>
                                 <div class="time-range-row">
                                     <div class="label-col text-pomeriggio" style="color:#1565c0;">POM</div>
-                                    <div class="select-col"><select id="absPomStart" class="mobile-time-select abs-select"><option value="">--:--</option></select></div>
+                                    <div class="select-col"><select id="absPomStart"
+                                            class="mobile-time-select abs-select">
+                                            <option value="">--:--</option>
+                                        </select></div>
                                     <div class="arrow-col">➜</div>
-                                    <div class="select-col"><select id="absPomEnd" class="mobile-time-select abs-select"><option value="">--:--</option></select></div>
+                                    <div class="select-col"><select id="absPomEnd"
+                                            class="mobile-time-select abs-select">
+                                            <option value="">--:--</option>
+                                        </select></div>
                                 </div>
                             </div>
                         </div>
@@ -144,15 +180,17 @@
                                 <span style="font-size:1.2rem;">🚗</span>
                                 <label style="color:#6a1b9a; font-weight:bold; margin:0;">Ore Viaggio</label>
                             </div>
-                            
+
                             <div style="display:flex; gap:15px;">
                                 <div style="flex:1;">
                                     <label class="travel-label">Andata ➡️</label>
-                                    <input type="number" id="travelAndataInput" step="0.5" placeholder="0" class="travel-input">
+                                    <input type="number" id="travelAndataInput" step="0.5" placeholder="0"
+                                        class="travel-input">
                                 </div>
                                 <div style="flex:1;">
                                     <label class="travel-label">⬅️ Ritorno</label>
-                                    <input type="number" id="travelRitornoInput" step="0.5" placeholder="0" class="travel-input">
+                                    <input type="number" id="travelRitornoInput" step="0.5" placeholder="0"
+                                        class="travel-input">
                                 </div>
                             </div>
                         </div>
@@ -161,7 +199,8 @@
                     <!-- 5. ORE LAVORO PRINCIPALI -->
                     <div class="simple-hours-group">
                         <label id="dynamicHoursLabel">Ore Lavoro *</label>
-                        <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24" placeholder="0.0" required>
+                        <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24" placeholder="0.0"
+                            required>
                     </div>
 
                     <!-- 6. CAMPI STRAORDINARIO (Produzione > 8h) -->
@@ -169,24 +208,36 @@
                         <div class="overtime-box">
                             <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                                 <span style="font-size:1.2rem;">⚡</span>
-                                <p style="color:#c53030; font-size:0.9rem; margin:0; font-weight:bold;">Dettaglio Straordinari</p>
+                                <p style="color:#c53030; font-size:0.9rem; margin:0; font-weight:bold;">Dettaglio
+                                    Straordinari</p>
                             </div>
-                            <p class="section-subtitle" style="color:#e53e3e;">Specifica quando hai fatto le ore extra.</p>
+                            <p class="section-subtitle" style="color:#e53e3e;">Specifica quando hai fatto le ore extra.
+                            </p>
 
                             <!-- Straordinario Mattina -->
                             <div class="time-range-row">
                                 <div class="label-col text-mattina">MAT</div> <!-- Testo al posto dell'icona -->
-                                <div class="select-col"><select id="strMattinaStart" class="mobile-time-select str-select"><option value="">--:--</option></select></div>
+                                <div class="select-col"><select id="strMattinaStart"
+                                        class="mobile-time-select str-select">
+                                        <option value="">--:--</option>
+                                    </select></div>
                                 <div class="arrow-col">➜</div>
-                                <div class="select-col"><select id="strMattinaEnd" class="mobile-time-select str-select"><option value="">--:--</option></select></div>
+                                <div class="select-col"><select id="strMattinaEnd"
+                                        class="mobile-time-select str-select">
+                                        <option value="">--:--</option>
+                                    </select></div>
                             </div>
-                            
+
                             <!-- Straordinario Pomeriggio -->
                             <div class="time-range-row">
                                 <div class="label-col text-pomeriggio">POM</div> <!-- Testo al posto dell'icona -->
-                                <div class="select-col"><select id="strPomStart" class="mobile-time-select str-select"><option value="">--:--</option></select></div>
+                                <div class="select-col"><select id="strPomStart" class="mobile-time-select str-select">
+                                        <option value="">--:--</option>
+                                    </select></div>
                                 <div class="arrow-col">➜</div>
-                                <div class="select-col"><select id="strPomEnd" class="mobile-time-select str-select"><option value="">--:--</option></select></div>
+                                <div class="select-col"><select id="strPomEnd" class="mobile-time-select str-select">
+                                        <option value="">--:--</option>
+                                    </select></div>
                             </div>
                         </div>
                     </div>
@@ -200,19 +251,21 @@
                 </form>
             </div>
         </div>
-
-        <!-- FOOTER FISSO -->
-        <div class="mobile-footer-actions">
-            <button type="button" id="cancelEditBtn" class="cancel-button" style="display: none;">Annulla</button>
-            <button type="button" id="saveHoursBtn" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
-        </div>
     </div>
 
-    <div id="custom-modal-overlay" class="modal-overlay" style="display: none;">
-        <div id="custom-modal" class="custom-modal">
-            <h2 id="custom-modal-title"></h2>
-            <p id="custom-modal-message"></p>
-            <div id="custom-modal-buttons" class="custom-modal-buttons"></div>
+    <!-- UNIVERSAL MODAL (Sostituisce custom-modal) -->
+    <div id="universal-modal" class="universal-modal-overlay" style="display: none;">
+        <div class="universal-modal-content">
+            <div class="universal-modal-header">
+                <h2 id="universal-modal-title">Titolo</h2>
+                <button class="universal-modal-close" id="universal-modal-close">&times;</button>
+            </div>
+            <div class="universal-modal-body" id="universal-modal-body">
+                <!-- Contenuto dinamico -->
+            </div>
+            <div class="universal-modal-footer" id="universal-modal-footer">
+                <!-- Bottoni dinamici -->
+            </div>
         </div>
     </div>
 
@@ -223,4 +276,5 @@
     <script type="module" src="js/shared-ui.js"></script>
     <script type="module" src="js/inserimento-ore-mobile.js"></script>
 </body>
+
 </html>
