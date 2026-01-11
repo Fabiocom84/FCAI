@@ -1653,7 +1653,9 @@ body.internal-page {
 /* Contenuto standard interno shell */
 .std-app-content {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    /* Abilita lo scroll verticale per default */
+    overflow-x: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -1661,4 +1663,6 @@ body.internal-page {
 
 .std-app-content.no-padding {
     padding: 0;
+    overflow: hidden;
+    /* Per layout complessi (es. split view) che gestiscono lo scroll internamente */
 }
