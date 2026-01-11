@@ -19,18 +19,21 @@
 
         <!-- HEADER STANDARD -->
         <header class="std-app-header">
-            <a href="index.html" class="header-button">
+            <a href="index.html" class="header-button" style="width: 80px;">
                 <img src="img/log-out.png" alt="Home"
                     style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 14px;">
                 <span>Home</span>
             </a>
 
-            <div class="header-title-container">
-                <h1>LE TUE ORE</h1>
-                <span id="headerUserName" class="header-subtitle">Caricamento...</span>
+            <div class="header-title-container"
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
+                <h1 style="margin: 0; line-height: 1.2;">LE TUE ORE</h1>
+                <span id="headerUserName" class="header-subtitle"
+                    style="font-size: 0.9rem; font-weight: 500; color: #ffffff; margin-top: 2px;">Caricamento...</span>
             </div>
 
-            <div style="width: 80px;"></div> <!-- Spacer per bilanciare layout -->
+            <!-- Spacer per bilanciamento -->
+            <div style="width: 80px;"></div>
         </header>
 
         <!-- CONTENT -->
