@@ -749,8 +749,11 @@ input:focus {
 }
 
 .mobile-insert-form.cantiere-mode .simple-hours-group {
-    margin-top: -45px !important;
-    /* TRIPLICATO: Margine negativo massiccio */
+    margin-top: -100px !important;
+    /* QUINTUPLICATO: Richiesta utente brutale */
+    position: relative;
+    z-index: 10;
+    /* Provo a portarlo sopra eventuali elementi fantasma */
 }
 
 /* Nascondi anche commessa per sicurezza */
