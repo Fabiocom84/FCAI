@@ -16,7 +16,8 @@ body {
 
 /* Override della Shell Standard per occupare tutta la finestra */
 .std-app-shell {
-    width: 100vw !important;
+    width: 100% !important;
+    /* Usa % per evitare overflow scrollbar */
     height: 100vh !important;
     max-width: none !important;
     border-radius: 0 !important;
