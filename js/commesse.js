@@ -61,9 +61,11 @@ const App = {
             removeImageBtn: document.getElementById('removeImageBtn')
         };
 
-        // 2. Controllo Permessi Admin (Nascondi tasto aggiungi)
+        // 2. Controllo Permessi Admin (Nascondi tasto aggiungi e altre opzioni)
         if (!IsAdmin) {
             if (this.dom.addBtn) this.dom.addBtn.style.display = 'none';
+            const deepWrapper = document.getElementById('deep-search-wrapper');
+            if (deepWrapper) deepWrapper.style.display = 'none';
         }
 
         // 3. Event Listeners
@@ -419,12 +421,13 @@ const App = {
                     <!-- NOTE COMMESSA (Se presenti) -->
                     ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid #f1c40f; font-size: 0.8em; color: #555;"><strong>Note:</strong> ${c.note}</div>` : ''}
 
+                    ${IsAdmin ? `
                     <div class="phase-toggles-container">
                         <span class="info-label" style="display:block; margin-bottom:5px;">Fasi Attive</span>
                         <div class="phase-pills-wrapper">
                             ${phasesHtml}
                         </div>
-                    </div>
+                    </div>` : ''}
 
                     <div class="progress-container">
                         <div class="progress-labels">
@@ -437,10 +440,11 @@ const App = {
                     </div>
 
                     <div class="card-footer-actions">
+                        ${IsAdmin ? `
                         <a href="${linkReg}" class="btn-registrazioni">
                             <img src="img/table.png" style="width:16px; opacity:0.8;">
                             Vedi ${regCount > 0 ? regCount : ''} Registrazioni
-                        </a>
+                        </a>` : ''}
                         ${adminActions}
                     </div>
                 </div>
