@@ -242,7 +242,8 @@
     background: #e2e8f0;
     border-radius: 10px;
     padding: 4px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    /* RIDOTTO DA 20px a 10px */
 }
 
 .entry-type-selector input {
