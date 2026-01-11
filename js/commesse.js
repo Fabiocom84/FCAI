@@ -61,9 +61,11 @@ const App = {
             removeImageBtn: document.getElementById('removeImageBtn')
         };
 
-        // 2. Controllo Permessi Admin (Nascondi tasto aggiungi e altre opzioni)
-        if (!IsAdmin) {
-            if (this.dom.addBtn) this.dom.addBtn.style.display = 'none';
+        // 2. Controllo Permessi Admin (Mostra tasto aggiungi solo se Admin)
+        if (IsAdmin) {
+            if (this.dom.addBtn) this.dom.addBtn.style.display = 'flex'; // Mostra il bottone (nascosto di default)
+        } else {
+            // Se NON è admin, nascondi opzioni avanzate (già nascoste o da nascondere)
             const deepWrapper = document.getElementById('deep-search-wrapper');
             if (deepWrapper) deepWrapper.style.display = 'none';
         }
