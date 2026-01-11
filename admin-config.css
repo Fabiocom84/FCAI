@@ -1,79 +1,6 @@
-/* admin-config.css - FILE COMPLETO RIPRISTINATO */
+/* admin-config.css - LAYOUT CLEANUP (Delegato a style-v2.css) */
 
-/* --- Layout Generale --- */
-.admin-page {
-    background-color: #f4f7f9;
-    font-family: 'Roboto', sans-serif;
-    min-height: 100vh;
-    overflow-y: auto; 
-}
-
-/* --- Contenitore Principale --- */
-.page-wrapper {
-    width: 100%;
-    min-height: 100vh;
-    box-sizing: border-box;
-    padding-bottom: 40px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- HEADER --- */
-.page-header {
-    width: 95%;
-    max-width: 1800px;
-    margin: 0 auto 20px auto;
-    padding: 15px 20px;
-    box-sizing: border-box;
-    display: flex; 
-    justify-content: center;
-    background-color: transparent;
-}
-
-.header-content-wrapper {
-    width: 100%;
-    background-color: #4a5568; 
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
-    flex-grow: 1;
-}
-
-/* MODIFICA: Pulsante Home Blu */
-.header-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    color: white;
-    background-color: #007bff; /* BLU STANDARD */
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: background 0.2s;
-    font-weight: 500;
-    font-size: 0.95rem;
-    height: 40px;
-    box-sizing: border-box;
-}
-.header-button:hover {
-    background-color: #0056b3; /* BLU SCURO HOVER */
-}
-.header-button img { width: 20px; height: 20px; }
-
-.header-spacer { width: 90px; }
+/* Note: Il layout generale è gestito da .std-app-shell in style-v2.css */
 
 /* --- Tabs --- */
 .config-tabs-container {
@@ -83,7 +10,7 @@
     display: flex;
     background: #fff;
     border-radius: 8px 8px 0 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -101,7 +28,11 @@
     transition: all 0.2s;
     text-align: center;
 }
-.config-tab:last-child { border-right: none; }
+
+.config-tab:last-child {
+    border-right: none;
+}
+
 .config-tab.active {
     background-color: #fff;
     color: #2A76B8;
@@ -117,14 +48,20 @@
     background: #fff;
     padding: 30px;
     border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     min-height: 400px;
     box-sizing: border-box;
-    overflow: visible; 
+    overflow: visible;
 }
 
-.tab-pane { display: none; }
-.tab-pane.active { display: block; animation: fadeIn 0.3s ease-in; }
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
 
 /* --- Input Panels --- */
 .input-panel {
@@ -140,6 +77,7 @@
     gap: 15px;
     align-items: center;
 }
+
 .input-group input {
     flex-grow: 1;
     padding: 0 12px;
@@ -155,7 +93,7 @@
     min-height: 42px !important;
     max-height: 42px !important;
     display: inline-flex !important;
-    flex-direction: row !important; 
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 0 25px !important;
@@ -173,20 +111,24 @@
     box-shadow: none !important;
 }
 
-.input-group .button:hover { 
-    background-color: #218838 !important; 
-    transform: none !important; 
+.input-group .button:hover {
+    background-color: #218838 !important;
+    transform: none !important;
 }
 
 /* --- Tabelle --- */
 .table-responsive {
-    overflow-x: visible; 
+    overflow-x: visible;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     min-height: 400px;
 }
 
-.config-table { width: 100%; border-collapse: collapse; }
+.config-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
 .config-table th {
     background-color: #e9ecef;
     color: #495057;
@@ -196,10 +138,11 @@
     padding: 15px;
     text-align: left;
     border-bottom: 2px solid #dee2e6;
-    position: sticky; 
-    top: 0; 
+    position: sticky;
+    top: 0;
     z-index: 10;
 }
+
 .config-table td {
     padding: 12px 15px;
     border-bottom: 1px solid #eee;
@@ -207,7 +150,10 @@
 }
 
 /* Choices.js fix in tabella */
-.config-table td .choices { overflow: visible; }
+.config-table td .choices {
+    overflow: visible;
+}
+
 .choices__list--dropdown {
     z-index: 1000 !important;
     width: max-content !important;
@@ -216,16 +162,32 @@
 
 /* Bottoni Azione */
 .action-btn {
-    background: #fff; border: 1px solid #ced4da; border-radius: 4px;
-    cursor: pointer; width: 36px; height: 36px;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
     font-size: 1.2em;
-    display: inline-flex; align-items: center; justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
-.action-btn:hover { background-color: #e2e6ea; }
+
+.action-btn:hover {
+    background-color: #e2e6ea;
+}
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ========================================= */
@@ -238,11 +200,12 @@
     margin-bottom: 25px;
     overflow: hidden;
     background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .exploded-macro-header {
-    background-color: #34495e; /* Grigio/Blu scuro per distinguere la Macro */
+    background-color: #34495e;
+    /* Grigio/Blu scuro per distinguere la Macro */
     color: white;
     padding: 12px 20px;
     font-size: 1.1em;
@@ -271,7 +234,8 @@
 }
 
 .phase-header {
-    background-color: #e3f2fd; /* Azzurro chiaro per le Fasi */
+    background-color: #e3f2fd;
+    /* Azzurro chiaro per le Fasi */
     color: #0d47a1;
     padding: 8px 12px;
     font-weight: 700;
@@ -285,7 +249,10 @@
     padding: 10px 12px;
     border-bottom: 1px dashed #eee;
 }
-.role-block:last-child { border-bottom: none; }
+
+.role-block:last-child {
+    border-bottom: none;
+}
 
 .role-title {
     font-size: 0.85em;
@@ -296,20 +263,29 @@
     align-items: center;
     gap: 5px;
 }
+
 /* Pallino colorato per il ruolo */
-.role-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #28a745; display: inline-block; }
+.role-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #28a745;
+    display: inline-block;
+}
 
 .comp-list-mini {
     margin: 0;
     padding-left: 15px;
     list-style-type: disc;
 }
+
 .comp-list-mini li {
     font-size: 0.9em;
     color: #333;
     line-height: 1.4;
     margin-bottom: 2px;
 }
+
 .comp-code-tag {
     font-size: 0.75em;
     color: #888;
@@ -318,6 +294,7 @@
     border-radius: 3px;
     margin-left: 5px;
 }
+
 .empty-msg {
     padding: 10px;
     color: #aaa;
