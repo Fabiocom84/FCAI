@@ -403,8 +403,9 @@ const MobileHoursApp = {
                     <div style="text-align: center; padding: 15px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
                         Nessuna attività registrata.
                     </div>`;
-                return;
             }
+            return;
+
 
             works.forEach(w => {
                 // --- CHECK STATO ---
