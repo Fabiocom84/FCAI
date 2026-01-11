@@ -741,3 +741,18 @@ input:focus {
     color: #cbd5e0;
     font-size: 0.8rem;
 }
+
+/* --- FIX SPAZIATURA CANTIERE --- */
+/* Nascondi completamente il container "vuoto" in modalità cantiere per evitare spazi fantasma */
+.mobile-insert-form.cantiere-mode #dynamic-fields-container {
+    display: none !important;
+}
+
+.mobile-insert-form.cantiere-mode .simple-hours-group {
+    margin-top: 0 !important;
+    /* Rimuove ogni margine superiore */
+}
+
+.mobile-insert-form.cantiere-mode #mobileHoursForm {
+    margin-top: 0 !important;
+}
