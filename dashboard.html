@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <title>Dashboard Analisi - Segretario AI</title>
@@ -9,22 +10,28 @@
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
 
-    <div class="main-dashboard-container">
-        
-        <!-- HEADER -->
-        <header class="page-header">
-            <a href="index.html" class="header-button">
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+    <div class="std-app-shell">
+
+        <!-- HEADER STANDARD -->
+        <header class="std-app-header">
+            <!-- SX: Home -->
+            <a href="index.html" class="header-button" style="width: 80px;">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 14px;">
                 <span>Home</span>
             </a>
-            
-            <div class="header-center-title">
-                <h1>DASHBOARD ANALISI</h1>
+
+            <!-- CN: Titolo -->
+            <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                <h1 style="margin: 0; font-size: 1.2rem; color: #ffffff; text-transform: uppercase;">DASHBOARD ANALISI
+                </h1>
             </div>
-            
-            <div class="header-right-controls">
+
+            <!-- DX: Switch Mode -->
+            <div style="width: 80px; display: flex; justify-content: flex-end;">
                 <div class="mode-switch">
                     <button class="mode-btn active" id="btnModeInbox" data-value="0">DA VALIDARE</button>
                     <button class="mode-btn" id="btnModeArchive" data-value="1">ARCHIVIO</button>
@@ -32,186 +39,196 @@
             </div>
         </header>
 
-        <div class="dashboard-body-wrapper">
+        <!-- MAIN CONTENT (Senza Padding, gestito internamente) -->
+        <main class="std-app-content no-padding">
+            <div class="dashboard-body-wrapper">
 
-            <!-- SIDEBAR -->
-            <aside class="control-sidebar">
-                
-                <!-- DATE -->
-                <div class="sidebar-section" id="dateFilterSection">
-                    <h3>Periodo</h3>
-                    <div class="date-filter-container">
-                        <div class="date-inputs-col">
-                            <input type="date" id="dateStart" class="sidebar-input-compact" title="Data Inizio (Vuoto = Tutto)">
-                            <input type="date" id="dateEnd" class="sidebar-input-compact" title="Data Fine (Vuoto = Tutto)">
-                        </div>
-                        <button id="btnRefresh" class="btn-icon-refresh" title="Aggiorna Dati">🔄</button>
-                    </div>
-                </div>
+                <!-- SIDEBAR -->
+                <aside class="control-sidebar">
 
-                <!-- FILTRI RAPIDI -->
-                <div class="sidebar-section grow-section">
-                    <h3>Filtri Rapidi</h3>
-                    <div class="filter-accordion">
-                        <div class="filter-box" id="boxCommesse"></div>
-                        <div class="filter-box" id="boxMacro"></div>
-                        <div class="filter-box" id="boxLavorazioni"></div>
-                        <div class="filter-box" id="boxDipendenti"></div>
-                    </div>
-                </div>
-
-                <div class="sidebar-footer">
-                    <button id="btnContabilizza" class="btn-primary-large">✅ CONTABILIZZA</button>
-                </div>
-            </aside>
-
-            <!-- MAIN CONTENT -->
-            <main class="main-content">
-                
-                <!-- TOP BAR -->
-                <div class="view-tabs-container">
-                    <div class="tabs-left">
-                        <!-- VISTA DETTAGLIO ATTIVA DI DEFAULT -->
-                        <button class="tab-btn" data-target="view-summary">📊 VISTA SINTESI</button>
-                        <button class="tab-btn active" data-target="view-detail">📋 VISTA DETTAGLIO</button>
-                    </div>
-                    
-                    <div class="grouping-controls">
-                        <span class="grouping-label">Raggruppa Per:</span>
-                        <select id="groupingSelect" class="grouping-select">
-                            <option value="commessa" selected>📂 Commessa</option>
-                            <option value="macro">🏗️ Macrocategoria</option>
-                            <option value="lavorazione">🔧 Lavorazione</option>
-                            <option value="dipendente">👤 Dipendente</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- dashboard.html (Parte VISTA SINTESI aggiornata) -->
-
-                <!-- VISTA SINTESI (Nascosta) -->
-                <div id="view-summary" class="view-panel">
-                    
-                    <!-- KPI CARDS -->
-                    <div class="kpi-row">
-                        <div class="kpi-card blue"><h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span></div>
-                        <div class="kpi-card orange"><h3>Da Contabilizzare</h3><span id="kpiPending">0</span></div>
-                        <div class="kpi-card green"><h3>Contabilizzate</h3><span id="kpiDone">0</span></div>
-                    </div>
-
-                    <!-- RIGA 1: COMMESSE + TEMPO -->
-                    <div class="analysis-row">
-                        <div class="chart-box">
-                            <h4>Distribuzione per Commessa</h4>
-                            <div class="chart-wrapper"><canvas id="chartCommessaPie"></canvas></div>
-                        </div>
-                        <div class="chart-box">
-                            <h4>Andamento Temporale (Ore/Mese)</h4>
-                            <div class="chart-wrapper"><canvas id="chartTimeBar"></canvas></div>
+                    <!-- DATE -->
+                    <div class="sidebar-section" id="dateFilterSection">
+                        <h3>Periodo</h3>
+                        <div class="date-filter-container">
+                            <div class="date-inputs-col">
+                                <input type="date" id="dateStart" class="sidebar-input-compact"
+                                    title="Data Inizio (Vuoto = Tutto)">
+                                <input type="date" id="dateEnd" class="sidebar-input-compact"
+                                    title="Data Fine (Vuoto = Tutto)">
+                            </div>
+                            <button id="btnRefresh" class="btn-icon-refresh" title="Aggiorna Dati">🔄</button>
                         </div>
                     </div>
 
-                    <!-- RIGA 2: LAVORAZIONI -->
-                    <div class="analysis-row">
-                        <div class="chart-box">
-                            <h4>Distribuzione per Lavorazione</h4>
-                            <div class="chart-wrapper"><canvas id="chartLavPie"></canvas></div>
-                        </div>
-                        <div class="chart-box">
-                            <h4>Top 8 Lavorazioni (Ore)</h4>
-                            <div class="chart-wrapper"><canvas id="chartLavBar"></canvas></div>
-                        </div>
-                    </div>
-
-                    <!-- RIGA 3: MACROCATEGORIE -->
-                    <div class="analysis-row">
-                        <div class="chart-box">
-                            <h4>Distribuzione per Macrocategoria</h4>
-                            <div class="chart-wrapper"><canvas id="chartMacroPie"></canvas></div>
-                        </div>
-                        <div class="chart-box">
-                            <h4>Top 8 Macrocategorie (Ore)</h4>
-                            <div class="chart-wrapper"><canvas id="chartMacroBar"></canvas></div>
+                    <!-- FILTRI RAPIDI -->
+                    <div class="sidebar-section grow-section">
+                        <h3>Filtri Rapidi</h3>
+                        <div class="filter-accordion">
+                            <div class="filter-box" id="boxCommesse"></div>
+                            <div class="filter-box" id="boxMacro"></div>
+                            <div class="filter-box" id="boxLavorazioni"></div>
+                            <div class="filter-box" id="boxDipendenti"></div>
                         </div>
                     </div>
 
-                    <!-- RIGA 4: DIPENDENTI -->
-                    <div class="analysis-row">
-                        <div class="chart-box">
-                            <h4>Distribuzione per Dipendente</h4>
-                            <div class="chart-wrapper"><canvas id="chartUserPie"></canvas></div>
-                        </div>
-                        <div class="chart-box">
-                            <h4>Top 8 Dipendenti (Ore)</h4>
-                            <div class="chart-wrapper"><canvas id="chartUserBar"></canvas></div>
-                        </div>
+                    <div class="sidebar-footer">
+                        <button id="btnContabilizza" class="btn-primary-large">✅ CONTABILIZZA</button>
                     </div>
+                </aside>
 
-                    <!-- RIGA 5: CROSS DATA (Lavorazioni x Dipendente) -->
-                    <div class="analysis-row full-width">
-                        <div class="chart-box">
-                            <h4>Top 8 Lavorazioni per Dipendente (Stacked)</h4>
-                            <div class="chart-wrapper large"><canvas id="chartCrossLavUser"></canvas></div>
+                <!-- MAIN CONTENT -->
+                <div class="main-content">
+
+                    <!-- TOP BAR -->
+                    <div class="view-tabs-container">
+                        <div class="tabs-left">
+                            <!-- VISTA DETTAGLIO ATTIVA DI DEFAULT -->
+                            <button class="tab-btn" data-target="view-summary">📊 VISTA SINTESI</button>
+                            <button class="tab-btn active" data-target="view-detail">📋 VISTA DETTAGLIO</button>
                         </div>
-                    </div>
 
-                    <!-- RIGA 6: CROSS DATA (Macro x Dipendente) -->
-                    <div class="analysis-row full-width">
-                        <div class="chart-box">
-                            <h4>Top 8 Macrocategorie per Dipendente (Stacked)</h4>
-                            <div class="chart-wrapper large"><canvas id="chartCrossMacroUser"></canvas></div>
-                        </div>
-                    </div>
-
-                    <!-- RIGA 7: ANALISI ECONOMICA (Stima 45€/h) -->
-                    <div class="analysis-row full-width">
-                        <div class="chart-box">
-                            <h4>💰 Costificazione Commesse (Basata su Costo Orario Ruolo)</h4>
-                            <div class="chart-wrapper large"><canvas id="chartCostCommessa"></canvas></div>
+                        <div class="grouping-controls">
+                            <span class="grouping-label">Raggruppa Per:</span>
+                            <select id="groupingSelect" class="grouping-select">
+                                <option value="commessa" selected>📂 Commessa</option>
+                                <option value="macro">🏗️ Macrocategoria</option>
+                                <option value="lavorazione">🔧 Lavorazione</option>
+                                <option value="dipendente">👤 Dipendente</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- RIGA 8: ANALISI HR (ASSENZE & PERMESSI) -->
-                    <div class="analysis-row">
-                        <div class="chart-box">
-                            <h4>🏖️ Assenze per Dipendente (Ferie/Permessi/Malattia)</h4>
-                            <div class="chart-wrapper"><canvas id="chartAbsenceUser"></canvas></div>
+                    <!-- dashboard.html (Parte VISTA SINTESI aggiornata) -->
+
+                    <!-- VISTA SINTESI (Nascosta) -->
+                    <div id="view-summary" class="view-panel">
+
+                        <!-- KPI CARDS -->
+                        <div class="kpi-row">
+                            <div class="kpi-card blue">
+                                <h3>Ore Totali</h3><span id="kpiTotalHours">0.0</span>
+                            </div>
+                            <div class="kpi-card orange">
+                                <h3>Da Contabilizzare</h3><span id="kpiPending">0</span>
+                            </div>
+                            <div class="kpi-card green">
+                                <h3>Contabilizzate</h3><span id="kpiDone">0</span>
+                            </div>
                         </div>
-                        <div class="chart-box">
-                            <h4>📅 Trend Assenze (Ore per Mese)</h4>
-                            <div class="chart-wrapper"><canvas id="chartAbsenceTrend"></canvas></div>
+
+                        <!-- RIGA 1: COMMESSE + TEMPO -->
+                        <div class="analysis-row">
+                            <div class="chart-box">
+                                <h4>Distribuzione per Commessa</h4>
+                                <div class="chart-wrapper"><canvas id="chartCommessaPie"></canvas></div>
+                            </div>
+                            <div class="chart-box">
+                                <h4>Andamento Temporale (Ore/Mese)</h4>
+                                <div class="chart-wrapper"><canvas id="chartTimeBar"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 2: LAVORAZIONI -->
+                        <div class="analysis-row">
+                            <div class="chart-box">
+                                <h4>Distribuzione per Lavorazione</h4>
+                                <div class="chart-wrapper"><canvas id="chartLavPie"></canvas></div>
+                            </div>
+                            <div class="chart-box">
+                                <h4>Top 8 Lavorazioni (Ore)</h4>
+                                <div class="chart-wrapper"><canvas id="chartLavBar"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 3: MACROCATEGORIE -->
+                        <div class="analysis-row">
+                            <div class="chart-box">
+                                <h4>Distribuzione per Macrocategoria</h4>
+                                <div class="chart-wrapper"><canvas id="chartMacroPie"></canvas></div>
+                            </div>
+                            <div class="chart-box">
+                                <h4>Top 8 Macrocategorie (Ore)</h4>
+                                <div class="chart-wrapper"><canvas id="chartMacroBar"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 4: DIPENDENTI -->
+                        <div class="analysis-row">
+                            <div class="chart-box">
+                                <h4>Distribuzione per Dipendente</h4>
+                                <div class="chart-wrapper"><canvas id="chartUserPie"></canvas></div>
+                            </div>
+                            <div class="chart-box">
+                                <h4>Top 8 Dipendenti (Ore)</h4>
+                                <div class="chart-wrapper"><canvas id="chartUserBar"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 5: CROSS DATA (Lavorazioni x Dipendente) -->
+                        <div class="analysis-row full-width">
+                            <div class="chart-box">
+                                <h4>Top 8 Lavorazioni per Dipendente (Stacked)</h4>
+                                <div class="chart-wrapper large"><canvas id="chartCrossLavUser"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 6: CROSS DATA (Macro x Dipendente) -->
+                        <div class="analysis-row full-width">
+                            <div class="chart-box">
+                                <h4>Top 8 Macrocategorie per Dipendente (Stacked)</h4>
+                                <div class="chart-wrapper large"><canvas id="chartCrossMacroUser"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 7: ANALISI ECONOMICA (Stima 45€/h) -->
+                        <div class="analysis-row full-width">
+                            <div class="chart-box">
+                                <h4>💰 Costificazione Commesse (Basata su Costo Orario Ruolo)</h4>
+                                <div class="chart-wrapper large"><canvas id="chartCostCommessa"></canvas></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGA 8: ANALISI HR (ASSENZE & PERMESSI) -->
+                        <div class="analysis-row">
+                            <div class="chart-box">
+                                <h4>🏖️ Assenze per Dipendente (Ferie/Permessi/Malattia)</h4>
+                                <div class="chart-wrapper"><canvas id="chartAbsenceUser"></canvas></div>
+                            </div>
+                            <div class="chart-box">
+                                <h4>📅 Trend Assenze (Ore per Mese)</h4>
+                                <div class="chart-wrapper"><canvas id="chartAbsenceTrend"></canvas></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- VISTA DETTAGLIO (Attiva) -->
+                    <div id="view-detail" class="view-panel active">
+                        <div class="detail-toolbar">
+                            <input type="text" id="detailSearch" placeholder="🔍 Cerca veloce..." class="search-input">
+                            <div class="toolbar-actions">
+                                <button class="btn-small" id="btnExpandAll">Espandi Tutto</button>
+                                <button class="btn-small" id="btnCollapseAll">Chiudi Tutto</button>
+                            </div>
+                        </div>
+                        <div class="data-grid-container" id="dataGridContainer">
+                            <div class="placeholder-msg">Caricamento dati in corso...</div>
                         </div>
                     </div>
 
-                </div>
-
-                <!-- VISTA DETTAGLIO (Attiva) -->
-                <div id="view-detail" class="view-panel active">
-                    <div class="detail-toolbar">
-                        <input type="text" id="detailSearch" placeholder="🔍 Cerca veloce..." class="search-input">
-                        <div class="toolbar-actions">
-                            <button class="btn-small" id="btnExpandAll">Espandi Tutto</button>
-                            <button class="btn-small" id="btnCollapseAll">Chiudi Tutto</button>
+                    <!-- FOOTER -->
+                    <div class="main-footer-status">
+                        <div class="status-left"><span id="statusMsg">Pronto</span></div>
+                        <div class="status-right">
+                            <span class="status-item">Righe: <b id="selCount">0</b></span>
+                            <span class="status-item">Totale Ore Selezionate: <b id="selHours">0.0</b> h</span>
                         </div>
                     </div>
-                    <div class="data-grid-container" id="dataGridContainer">
-                        <div class="placeholder-msg">Caricamento dati in corso...</div>
-                    </div>
-                </div>
 
-                <!-- FOOTER -->
-                <div class="main-footer-status">
-                    <div class="status-left"><span id="statusMsg">Pronto</span></div>
-                    <div class="status-right">
-                        <span class="status-item">Righe: <b id="selCount">0</b></span>
-                        <span class="status-item">Totale Ore Selezionate: <b id="selHours">0.0</b> h</span>
-                    </div>
-                </div>
-
-            </main>
-        </div>
+        </main>
     </div>
-    
+    </div>
+
     <!-- MODALE CONFERMA (Classe Custom per evitare conflitti) -->
     <div id="confirmModal" class="custom-dashboard-modal" style="display: none;">
         <div class="cdm-content">
@@ -223,9 +240,11 @@
                 <p>Stai per contabilizzare e bloccare le seguenti registrazioni:</p>
                 <div class="confirm-summary-box">
                     <div class="summary-row"><span>Righe selezionate:</span><strong id="confCount">0</strong></div>
-                    <div class="summary-row"><span>Totale Ore:</span><strong id="confHours" style="color:#2980b9;">0.0</strong></div>
+                    <div class="summary-row"><span>Totale Ore:</span><strong id="confHours"
+                            style="color:#2980b9;">0.0</strong></div>
                 </div>
-                <p class="warning-text">⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in "Archivio" e non saranno più modificabili da questa vista.</p>
+                <p class="warning-text">⚠️ <strong>Attenzione:</strong> Una volta contabilizzate, le righe passeranno in
+                    "Archivio" e non saranno più modificabili da questa vista.</p>
             </div>
             <div class="cdm-footer">
                 <button id="btnCancelConfirm" class="btn-secondary">Annulla</button>
@@ -250,4 +269,5 @@
     <script type="module" src="js/dashboard.js"></script>
 
 </body>
+
 </html>
