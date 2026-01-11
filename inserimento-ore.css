@@ -444,10 +444,27 @@ input:focus {
 
 /* Rimuoviamo il padding bottom esagerato perché il footer non è più fixed sopra */
 .full-screen-body {
-    padding: 20px !important;
+    padding: 10px 20px !important;
+    /* RIDOTTO PADDING SUPERIORE DA 20px A 10px */
     padding-bottom: 20px !important;
     flex: 1;
     /* Estendi per coprire l'altezza */
+}
+
+/* Ridurre spazio tra lista vuota e form */
+#existingList:empty,
+#existingList div:only-child {
+    margin-bottom: 5px;
+    /* Meno spazio se vuoto */
+}
+
+.mobile-insert-form {
+    margin-top: 5px;
+    /* Avvicinato al contenuto sopra */
+    background: white;
+    /* Assicuriamoci che i bordi non siano tagliati */
+    position: relative;
+    z-index: 5;
 }
 
 .save-button {
