@@ -4,7 +4,7 @@ import { API_BASE_URL } from './config.js';
 
 export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('session_token');
-    
+
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers
@@ -21,28 +21,48 @@ export async function apiFetch(endpoint, options = {}) {
 
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-    try {
-        const response = await fetch(url, config);
+    // --- RETRY LOGIC (NUOVO) ---
+    // Tentiamo la richiesta fino a 3 volte se fallisce per problemi di rete (non 4xx o 500 applicativi)
+    // O se ritorna 502/503/504 (errori gateway/timeout)
+    const MAX_RETRIES = 3;
+    let attempt = 0;
 
-        // --- GESTIONE DISCONNESSIONE FORZATA ---
-        // Se riceviamo 403 (Forbidden), significa che il backend ha rilevato 
-        // che l'account è disabilitato (o il token è scaduto/invalido).
-        if (response.status === 401 || response.status === 403) {
-            console.warn("Sessione non valida o accesso revocato. Eseguo Logout.");
-            
-            localStorage.clear();
-            window.location.replace('login.html');
-            
-            // Blocca l'esecuzione lanciando un errore silenzioso
-            throw new Error("Accesso revocato");
-        }
+    while (attempt < MAX_RETRIES) {
+        attempt++;
+        try {
+            const response = await fetch(url, config);
 
-        return response;
-    } catch (error) {
-        if (error.message === "Accesso revocato") {
-            return new Promise(() => {}); // Promise pendente per bloccare la catena
+            // --- GESTIONE DISCONNESSIONE FORZATA ---
+            if (response.status === 401 || response.status === 403) {
+                console.warn("Sessione non valida o accesso revocato. Eseguo Logout.");
+                localStorage.clear();
+                window.location.replace('login.html');
+                throw new Error("Accesso revocato");
+            }
+
+            // Se è un errore server temporaneo (502, 503, 504), lanciamo eccezione per fare retry
+            if ([502, 503, 504].includes(response.status)) {
+                throw new Error(`Server Error ${response.status}`);
+            }
+
+            return response; // Successo o altri codici (es. 404, 500 app logic)
+
+        } catch (error) {
+            if (error.message === "Accesso revocato") {
+                return new Promise(() => { });
+            }
+
+            // Se abbiamo raggiunto i tentativi massimi, rilanciamo l'errore
+            if (attempt >= MAX_RETRIES) {
+                console.error(`API Fetch failed after ${MAX_RETRIES} attempts:`, error);
+                throw error;
+            }
+
+            // Backoff esponenziale: aspetta 500ms, 1000ms, ...
+            const waitTime = 500 * Math.pow(2, attempt - 1);
+            console.warn(`Tentativo ${attempt} fallito. Riprovo tra ${waitTime}ms...`);
+            await new Promise(r => setTimeout(r, waitTime));
         }
-        throw error;
     }
 }
 
