@@ -1517,9 +1517,9 @@ body.internal-page {
 }
 
 /* ==========================================================================
-   SHARED CUSTOM MODAL STYLES (Moved from commesse.css)
+   SHARED STANDARD MODAL STYLES (Ex custom-modal)
    ========================================================================== */
-.custom-modal-overlay {
+.std-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -1532,7 +1532,7 @@ body.internal-page {
     align-items: center;
 }
 
-.custom-modal {
+.std-modal {
     background: white;
     padding: 25px;
     border-radius: 8px;
@@ -1543,25 +1543,25 @@ body.internal-page {
     animation: fadeIn 0.2s ease-out;
 }
 
-.custom-modal h3,
-.custom-modal h2 {
+.std-modal h3,
+.std-modal h2 {
     margin-top: 0;
     margin-bottom: 15px;
     color: #333;
 }
 
-.custom-modal p {
+.std-modal p {
     color: #666;
     margin-bottom: 25px;
 }
 
-.custom-modal-buttons {
+.std-modal-buttons {
     display: flex;
     justify-content: center;
     gap: 15px;
 }
 
-.custom-modal .button {
+.std-modal .button {
     padding: 8px 20px;
     border: none;
     border-radius: 4px;
@@ -1571,10 +1571,10 @@ body.internal-page {
     font-size: 1em;
 }
 
-.custom-modal .button.button--secondary {
+.std-modal .button.button--secondary {
     background: #95a5a6;
 }
 
-.custom-modal .button:hover {
+.std-modal .button:hover {
     opacity: 0.9;
 }

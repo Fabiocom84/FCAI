@@ -7,11 +7,11 @@
  */
 export function showModal(options) {
     return new Promise(resolve => {
-        const modal = document.getElementById('custom-modal');
-        const overlay = document.getElementById('custom-modal-overlay');
-        const titleEl = document.getElementById('custom-modal-title');
-        const messageEl = document.getElementById('custom-modal-message');
-        const buttonsEl = document.getElementById('custom-modal-buttons');
+        const modal = document.getElementById('std-modal');
+        const overlay = document.getElementById('std-modal-overlay');
+        const titleEl = document.getElementById('std-modal-title');
+        const messageEl = document.getElementById('std-modal-message');
+        const buttonsEl = document.getElementById('std-modal-buttons');
         const headerEl = modal.querySelector('.modal-header') || titleEl.parentElement; // Fallback
 
         if (!modal || !overlay) {
