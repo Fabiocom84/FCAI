@@ -243,8 +243,8 @@
     background: #e2e8f0;
     border-radius: 10px;
     padding: 4px;
-    margin-bottom: 5px !important;
-    /* RIDOTTO AL MINIMO */
+    margin-bottom: 2px !important;
+    /* ULTRA COMPATTO */
 }
 
 .entry-type-selector input {

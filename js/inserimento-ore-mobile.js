@@ -398,9 +398,11 @@ const MobileHoursApp = {
 
             this.updateTotalBadge(total);
 
+            if (this.dom.existingList) this.dom.existingList.style.display = 'block';
+
             if (this.state.currentDayData.registrazioni.length === 0) {
                 this.dom.existingList.innerHTML = `
-                    <div style="text-align: center; padding: 15px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
+                    <div style="text-align: center; padding: 5px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
                         Nessuna attività registrata.
                     </div>`;
                 return;
