@@ -7,6 +7,62 @@
     <title>Gestione Dati - Vista Agile</title>
     <link rel="stylesheet" href="style-v2.css?v=3">
     <link rel="stylesheet" href="gestione.css">
+    <style>
+        /* CRITICAL INLINE STYLES TO FIX MODAL */
+        .std-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .std-modal {
+            display: block !important;
+            background: white !important;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            border: 1px solid #e0e0e0;
+        }
+
+        .std-modal h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .std-modal p {
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .std-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .std-modal .button,
+        .std-modal .std-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+    </style>
 </head>
 
 <body class="internal-page">
