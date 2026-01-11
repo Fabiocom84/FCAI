@@ -13,25 +13,12 @@
 */
 
 /* Adattamenti specifici per il contenuto mobile */
+/* Adattamenti specifici per il contenuto mobile */
 .mobile-content-wrapper {
     height: 100%;
     overflow-y: auto;
     padding: 5px;
     scrollbar-width: none;
-}
-
-/* Fix Padding per la modale di dettaglio */
-.full-screen-body {
-    padding: 20px !important;
-    /* Laterale e Superiore come richiesto */
-    padding-bottom: 100px !important;
-    /* Spazio per il footer fisso */
-}
-
-height: calc(100vh - 140px);
-overflow-y: auto;
-padding: 5px;
-scrollbar-width: none;
 }
 
 .mobile-content-wrapper::-webkit-scrollbar {
@@ -446,10 +433,12 @@ input:focus {
 /* Rimuoviamo il padding bottom esagerato perché il footer non è più fixed sopra */
 .full-screen-body {
     padding: 10px 20px !important;
-    /* RIDOTTO PADDING SUPERIORE DA 20px A 10px */
+    /* RIDOTTO PADDING */
     padding-bottom: 20px !important;
     flex: 1;
-    /* Estendi per coprire l'altezza */
+    display: flex;
+    /* Aggiunto flex per gestire meglio il contenuto */
+    flex-direction: column;
 }
 
 /* Ridurre spazio tra lista vuota e form */
@@ -459,13 +448,27 @@ input:focus {
     /* Meno spazio se vuoto */
 }
 
+/* TITOLO DEL GIORNO */
+.section-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #8898aa;
+    margin: 10px 0 5px 0 !important;
+    /* Forzato margine ridotto */
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+    font-weight: 700;
+}
+
 .mobile-insert-form {
-    margin-top: 5px;
-    /* Avvicinato al contenuto sopra */
+    margin-top: 5px !important;
+    /* Forzato margine ridotto */
     background: white;
     /* Assicuriamoci che i bordi non siano tagliati */
     position: relative;
     z-index: 5;
+    /* Rimuoviamo eventuali margini ereditati */
+    box-shadow: none;
 }
 
 .save-button {
