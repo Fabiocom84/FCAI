@@ -410,10 +410,8 @@ input:focus {
 }
 
 /* --- FOOTER FISSO --- */
+/* Modificato per stare dentro il flusso Flex della Shell */
 .mobile-footer-actions {
-    position: fixed;
-    bottom: 0;
-    left: 0;
     width: 100%;
     background: white;
     padding: 15px 20px;
@@ -421,12 +419,35 @@ input:focus {
     display: flex;
     gap: 10px;
     box-sizing: border-box;
-    z-index: 500;
+    z-index: 50;
+    /* Z-Index locale */
+    border-top: 1px solid #eee;
 }
 
-/* FIX: Se il footer è dentro la modale full-screen (z-index 2000), deve stare sopra */
-.full-screen-page .mobile-footer-actions {
-    z-index: 2010;
+/* FIX: Layout Flex per il modale full-screen */
+.full-screen-page .std-app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    /* Evita scroll esterno */
+}
+
+.full-screen-page .std-app-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    /* Gestito dal wrapper interno */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Rimuoviamo il padding bottom esagerato perché il footer non è più fixed sopra */
+.full-screen-body {
+    padding: 20px !important;
+    padding-bottom: 20px !important;
+    flex: 1;
+    /* Estendi per coprire l'altezza */
 }
 
 .save-button {
