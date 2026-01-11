@@ -8,6 +8,14 @@
 
 /* NOTA: Layout gestito da style-v2.css (.std-app-shell) */
 
+/* OVERRIDE GLOBALE: In questa pagina vogliamo larghezza piena, niente limiti */
+.main-content-wrapper {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
 .presenze-controls {
     display: flex;
     justify-content: space-between;
