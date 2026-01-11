@@ -355,7 +355,10 @@ body {
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: row !important;
-    background-color: #eef2f5 !important;
+    background-color: #ffe6e6 !important;
+    /* DEBUG: Rosino */
+    border: 5px solid red !important;
+    /* DEBUG: Bordo Rosso */
 }
 
 /* Force Hidden Media Query effects on Desktop */
