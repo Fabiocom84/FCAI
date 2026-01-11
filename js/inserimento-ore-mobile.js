@@ -591,6 +591,7 @@ const MobileHoursApp = {
             let commessaVal = null;
             if (this.state.choicesInstance) {
                 const rawVal = this.state.choicesInstance.getValue();
+                console.log("DEBUG SAVE - Commessa rawVal:", rawVal); // DEBUG
                 if (rawVal) {
                     const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
                     commessaVal = item ? item.value : null;
@@ -601,6 +602,7 @@ const MobileHoursApp = {
             let macroVal = null;
             if (this.state.choicesMacro) {
                 const rawVal = this.state.choicesMacro.getValue();
+                console.log("DEBUG SAVE - Macro rawVal:", rawVal); // DEBUG
                 if (rawVal) { const item = Array.isArray(rawVal) ? rawVal[0] : rawVal; macroVal = item ? item.value : null; }
             } else { macroVal = this.dom.macroSelect.value; }
 
@@ -608,8 +610,11 @@ const MobileHoursApp = {
             let compVal = null;
             if (this.state.choicesComponent) {
                 const rawVal = this.state.choicesComponent.getValue();
+                console.log("DEBUG SAVE - Component rawVal:", rawVal); // DEBUG
                 if (rawVal) { const item = Array.isArray(rawVal) ? rawVal[0] : rawVal; compVal = item ? item.value : null; }
             } else { compVal = this.dom.componentSelect.value; }
+
+            console.log(`DEBUG SAVE - Extracted: Commessa=${commessaVal}, Macro=${macroVal}, Comp=${compVal}`); // DEBUG
 
             if (!commessaVal) return alert("Selezionare una Commessa.");
             if (!macroVal) return alert("Selezionare un Reparto/Macro.");
@@ -684,11 +689,21 @@ const MobileHoursApp = {
 
         try {
             if (this.state.editingId) {
-                await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
+                // ADDED: Check DELETE success
+                const delRes = await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
+                if (!delRes.ok) {
+                    const errJson = await delRes.json();
+                    throw new Error("Errore eliminazione vecchio record: " + (errJson.error || delRes.statusText));
+                }
             }
 
             console.log("Inviando payload:", payload);
-            await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+            const postRes = await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+
+            if (!postRes.ok) {
+                const errJson = await postRes.json();
+                throw new Error("Errore salvataggio nuovo record: " + (errJson.error || postRes.statusText));
+            }
 
             this.loadExistingWorks(this.state.currentDate);
             this.resetFormState();
@@ -805,7 +820,7 @@ const MobileHoursApp = {
         if (this.state.choicesMacro) { this.state.choicesMacro.clearStore(); this.state.choicesMacro.setChoices([{ value: '', label: '-- Seleziona Commessa prima --', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesMacro.disable(); }
         if (this.state.choicesComponent) { this.state.choicesComponent.clearStore(); this.state.choicesComponent.setChoices([{ value: '', label: '--', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesComponent.disable(); }
 
-        this.dom.saveBtn.textContent = "AGGIUNGI ORE";
+        this.dom.saveBtn.textContent = "AGGIUNGI ORE (V2)";
         this.dom.saveBtn.style.backgroundColor = "";
         this.dom.cancelEditBtn.style.display = 'none';
 
