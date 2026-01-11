@@ -3,6 +3,7 @@
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
+import { supabase } from './supabase-client.js';
 
 const App = {
     state: {
@@ -436,12 +437,8 @@ const App = {
                     <div class="progress-labels">
                         <span>AVANZAMENTO</span>
                         <div class="hours-container">
-                            ${(() => {
-                    // Calcolo Ore Totali da Registrazioni (User Timesheets)
-                    // Supportiamo 'ore_lavorate' (da registrazioni_ore) o 'ore' (fallback)
-                    const totalHours = c.registrazioni ? c.registrazioni.reduce((acc, r) => acc + (parseFloat(r.ore_lavorate || r.ore) || 0), 0) : 0;
-                    return totalHours > 0 ? `<span class="hours-badge">⏱️ ${totalHours.toFixed(1)}h</span>` : '';
-                })()}
+                            <!-- Placeholder per l'enrichment asincrono -->
+                            <span class="hours-badge commessa-hours-badge" data-commessa="${c.id_commessa}" style="display:none;">⏱️ --</span>
                             <span class="progress-pct-text">${progressPct}%</span>
                         </div>
                     </div>
@@ -530,6 +527,49 @@ const App = {
         });
 
         this.dom.grid.appendChild(fragment);
+
+        // Arricchimento Asincrono con Ore da Supabase (se ci sono card)
+        if (commesse.length > 0) {
+            this.enrichWithHours(commesse.map(c => c.id_commessa));
+        }
+    },
+
+    enrichWithHours: async function (commesseIds) {
+        if (!commesseIds || commesseIds.length === 0) return;
+
+        try {
+            // CHIAMATA AL BACKEND PADRE (Python) invece che fetch massivo su Supabase
+            // Questo sposta il carico di download/aggregazione sul server
+            const response = await apiFetch('/api/commesse/ore-totali-batch', {
+                method: 'POST',
+                body: JSON.stringify({ ids: commesseIds })
+            });
+
+            if (!response.ok) {
+                console.warn("Errore API ore-totali-batch");
+                return;
+            }
+
+            const hoursMap = await response.json();
+
+            // Aggiornamento DOM
+            commesseIds.forEach(id => {
+                const badge = this.dom.grid.querySelector(`.commessa-hours-badge[data-commessa="${id}"]`);
+                if (badge) {
+                    // Nota: L'oggetto hoursMap ha chiavi stringa, id è numero/stringa
+                    const total = hoursMap[id] || 0;
+                    if (total > 0) {
+                        badge.textContent = `⏱️ ${total.toFixed(1)}h`;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            });
+
+        } catch (e) {
+            console.error("Errore enrichWithHours:", e);
+        }
     },
 
     updateLocalProgressBar: function (cardElement, isCompleted) {
