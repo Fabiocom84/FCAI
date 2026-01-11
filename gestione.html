@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Dati - Vista Agile</title>
-    <link rel="stylesheet" href="style-v2.css?v=5">
+    <link rel="stylesheet" href="style-v2.css?v=7">
     <link rel="stylesheet" href="gestione.css">
     <style>
         /* CRITICAL INLINE STYLES TO FIX MODAL */
-        .universal-modal-overlay {
+        #universal-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -23,7 +23,7 @@
             backdrop-filter: blur(2px);
         }
 
-        .universal-modal {
+        #universal-modal {
             display: block !important;
             background: white !important;
             padding: 30px;
@@ -38,7 +38,7 @@
             /* Safety */
         }
 
-        .universal-modal h2 {
+        #universal-modal h2 {
             margin-top: 0;
             color: #2c3e50;
             font-size: 1.5rem;
@@ -46,7 +46,7 @@
             width: 100%;
         }
 
-        .universal-modal p {
+        #universal-modal p {
             color: #555;
             font-size: 1.1rem;
             display: block;
@@ -54,15 +54,15 @@
             margin: 15px 0 25px 0;
         }
 
-        .universal-modal-buttons {
+        #universal-modal-buttons {
             display: flex;
             justify-content: center;
             gap: 15px;
             width: 100%;
         }
 
-        .universal-modal .button,
-        .universal-modal .std-btn {
+        #universal-modal .button,
+        #universal-modal .std-btn {
             padding: 10px 24px;
             border: none;
             border-radius: 6px;
@@ -76,10 +76,6 @@
 <body class="internal-page">
 
     <!-- GUSCIO (Shell) -->
-    <div
-        style="background: red; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; width: 100%; z-index: 999999;">
-        DEBUG: VERSIONE 6 - UNIVERSAL MODAL
-    </div>
     <div class="std-app-shell">
 
         <!-- HEADER -->
@@ -164,8 +160,8 @@
     <script type="module" src="js/supabase-client.js"></script>
     <script type="module" src="js/api-client.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
-    <script type="module" src="js/shared-ui.js?v=6"></script>
-    <script type="module" src="js/gestione.js?v=6"></script>
+    <script type="module" src="js/shared-ui.js?v=7"></script>
+    <script type="module" src="js/gestione.js?v=7"></script>
 </body>
 
 </html>

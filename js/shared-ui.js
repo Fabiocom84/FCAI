@@ -20,7 +20,12 @@ export function showModal(options) {
         }
 
         // 1. Reset Stili Base
-        headerEl.className = 'modal-header';
+        if (headerEl !== modal) {
+            headerEl.className = 'modal-header';
+        } else {
+            // Se header == modal, non toccare la classe, rimuovi solo eventuali classi extra aggiunte in precedenza
+            headerEl.classList.remove('error-header');
+        }
         titleEl.textContent = options.title || 'Attenzione';
         messageEl.textContent = options.message || '';
         buttonsEl.innerHTML = '';
