@@ -587,10 +587,9 @@ const MobileHoursApp = {
 
         // LOGICA DI COSTRUZIONE PAYLOAD ROBUSTA
         if (type === 'produzione') {
-            // Estrazione sicura del valore da Choices.js
+            // Estrazione sicura del valore da Choices.js (Commessa)
             let commessaVal = null;
             if (this.state.choicesInstance) {
-                // getValue(true) a volte è instabile, prendiamo l'oggetto e leggiamo .value
                 const rawVal = this.state.choicesInstance.getValue();
                 if (rawVal) {
                     const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
@@ -598,266 +597,344 @@ const MobileHoursApp = {
                 }
             }
 
-            if (!commessaVal) {
-                return alert("Seleziona una commessa valida.");
-            }
+            // Estrazione sicura Macro
+            let macroVal = null;
+            if (this.state.choicesMacro) {
+                const rawVal = this.state.choicesMacro.getValue();
+                if (rawVal) { const item = Array.isArray(rawVal) ? rawVal[0] : rawVal; macroVal = item ? item.value : null; }
+            } else { macroVal = this.dom.macroSelect.value; }
 
-            payload.id_commessa = commessaVal;
-            payload.id_componente = this.dom.componentSelect.value;
+            // Estrazione sicura Componente
+            let compVal = null;
+            if (this.state.choicesComponent) {
+                const rawVal = this.state.choicesComponent.getValue();
+                if (rawVal) { const item = Array.isArray(rawVal) ? rawVal[0] : rawVal; compVal = item ? item.value : null; }
+            } else { compVal = this.dom.componentSelect.value; }
 
-            // Controllo stringa vuota
-            if (!payload.id_componente || payload.id_componente === "") {
-                return alert("Seleziona una Lavorazione (Componente).");
-            }
+            if (!commessaVal) return alert("Selezionare una Commessa.");
+            if (!macroVal) return alert("Selezionare un Reparto/Macro.");
+            if (!compVal) return alert("Selezionare una Lavorazione.");
+
+            payload.id_commessa_fk = parseInt(commessaVal);
+            payload.id_componente_fk = parseInt(compVal);
         }
-        else if (type === 'cantiere') {
-            let commessaVal = null;
-            if (this.state.choicesInstance) {
-                const rawVal = this.state.choicesInstance.getValue();
-                if (rawVal) {
-                    const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
-                    commessaVal = item ? item.value : null;
-                }
-            }
-            payload.id_commessa = commessaVal;
 
-            if (!payload.note.toUpperCase().includes('[CANTIERE]')) {
-                payload.note = `[CANTIERE] ${payload.note}`;
-            }
+        if (!commessaVal) {
+            return alert("Seleziona una commessa valida.");
+        }
+
+        payload.id_commessa = commessaVal;
+        payload.id_componente = this.dom.componentSelect.value;
+
+        // Controllo stringa vuota
+        if (!payload.id_componente || payload.id_componente === "") {
+            return alert("Seleziona una Lavorazione (Componente).");
+        }
+    }
+        else if(type === 'cantiere') {
+        let commessaVal = null;
+if (this.state.choicesInstance) {
+    const rawVal = this.state.choicesInstance.getValue();
+    if (rawVal) {
+        const item = Array.isArray(rawVal) ? rawVal[0] : rawVal;
+        commessaVal = item ? item.value : null;
+    }
+}
+payload.id_commessa = commessaVal;
+
+if (!payload.note.toUpperCase().includes('[CANTIERE]')) {
+    payload.note = `[CANTIERE] ${payload.note}`;
+}
         }
         else if (type === 'assenza') {
-            // 1. COMMESSA: Logica identica al Cantiere (Lookup automatico o Fallback)
-            // Cerchiamo la commessa "GESTIONE PERSONALE" (SYS-JOB-ABS / ID 68)
-            let absCommessaId = null;
-            if (this.state.choicesInstance) {
-                // Cerchiamo tra le opzioni caricate nella select
-                const choices = this.state.choicesInstance.config.choices;
-                const found = choices.find(c => {
-                    const lbl = (c.label || '').toUpperCase();
-                    return lbl.includes('GESTIONE PERSONALE') || lbl.includes('SYS-JOB-ABS');
-                });
-                if (found) absCommessaId = found.value;
-            }
-
-            // Assegnazione ID Commessa (Automatico o Fallback su 68)
-            payload.id_commessa = absCommessaId ? parseInt(absCommessaId) : 68;
-
-            // 2. COMPONENTE (Lavorazione): Logica differenziata per tipo
-            // Mappatura: Tipo Assenza -> ID Componente (tabella componenti)
-            const absType = this.dom.absType.value; // Valore dalla select (Ferie, Permesso...)
-            let componentId = 101; // Default Ferie (SYS-FER)
-
-            switch (absType) {
-                case 'Ferie':
-                    componentId = 101; // SYS-FER
-                    break;
-                case 'Permesso':
-                    componentId = 102; // SYS-PER
-                    break;
-                case 'Malattia':
-                    componentId = 103; // SYS-MAL
-                    break;
-                case 'L104':
-                    componentId = 104; // SYS-104
-                    break;
-                default:
-                    componentId = 101; // Fallback
-            }
-
-            payload.id_componente = componentId;
-
-            // 3. NOTE: Aggiunta prefisso per chiarezza nel database
-            payload.note = `[${absType.toUpperCase()}] ${payload.note}`;
-        }
-
-        btn.disabled = true;
-        const originalText = btn.textContent;
-        btn.textContent = "Salvando...";
-
-        try {
-            if (this.state.editingId) {
-                await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
-            }
-
-            console.log("Inviando payload:", payload);
-            await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
-
-            this.loadExistingWorks(this.state.currentDate);
-            this.resetFormState();
-
-        } catch (err) {
-            console.error("Errore salvataggio:", err);
-            alert("Errore salvataggio: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
-    },
-
-    // --- START EDIT (CON FIX COMMESSA MANCANTE) ---
-    startEdit: async function (work) {
-        if (work.stato === 1) {
-            alert("Record contabilizzato. Impossibile modificare.");
-            return;
-        }
-        this.state.editingId = work.id_registrazione;
-        this.state.editingOriginalHours = work.ore || 0;
-        this.state.editingStato = work.stato;
-
-        this.dom.saveBtn.textContent = "AGGIORNA";
-        this.dom.saveBtn.style.backgroundColor = "#e67e22";
-        this.dom.cancelEditBtn.style.display = 'block';
-        document.querySelector('.mobile-insert-form').scrollIntoView({ behavior: 'smooth' });
-
-        let type = 'produzione';
-        const noteUpper = (work.note || '').toUpperCase();
-        if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]')) type = 'assenza';
-        else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) type = 'cantiere';
-
-        const radio = document.querySelector(`input[value="${type}"]`);
-        if (radio) { radio.checked = true; this.handleTypeChange(type); }
-
-        this.dom.hoursInput.value = work.ore;
-        this.dom.noteInput.value = work.note || '';
-        if (work.ore_viaggio_andata) this.dom.travelAndata.value = work.ore_viaggio_andata;
-        if (work.ore_viaggio_ritorno) this.dom.travelRitorno.value = work.ore_viaggio_ritorno;
-        if (work.str_mattina_dalle) this.dom.strMattinaStart.value = work.str_mattina_dalle;
-        if (work.str_mattina_alle) this.dom.strMattinaEnd.value = work.str_mattina_alle;
-        if (work.str_pomeriggio_dalle) this.dom.strPomStart.value = work.str_pomeriggio_dalle;
-        if (work.str_pomeriggio_alle) this.dom.strPomEnd.value = work.str_pomeriggio_alle;
-
-        if (type === 'assenza') {
-            if (work.assenza_mattina_dalle) this.dom.absMattinaStart.value = work.assenza_mattina_dalle;
-            if (work.assenza_mattina_alle) this.dom.absMattinaEnd.value = work.assenza_mattina_alle;
-            if (work.assenza_pomeriggio_dalle) this.dom.absPomStart.value = work.assenza_pomeriggio_dalle;
-            if (work.assenza_pomeriggio_alle) this.dom.absPomEnd.value = work.assenza_pomeriggio_alle;
-            if (noteUpper.includes('FERIE')) this.dom.absType.value = 'Ferie';
-            else if (noteUpper.includes('PERMESSO')) this.dom.absType.value = 'Permesso';
-            else if (noteUpper.includes('MALATTIA')) this.dom.absType.value = 'Malattia';
-        }
-
-        // --- FIX CARICAMENTO COMMESSA ---
-        if (type === 'produzione' && work.id_commessa_fk) {
-            const cId = work.id_commessa_fk;
-            const cVal = String(cId);
-
-            // 1. Tenta di impostare il valore
-            this.state.choicesInstance.setChoiceByValue(cVal);
-
-            // 2. Controlla se è stato impostato davvero
-            const selected = this.state.choicesInstance.getValue(true);
-
-            // 3. Se non è stato trovato (es. commessa chiusa non in lista), aggiungilo manualmente
-            if (!selected || String(selected) !== cVal) {
-                if (work.commesse) {
-                    let label = work.commesse.impianto || 'Commessa ???';
-                    if (work.commesse.codice_commessa) label += ` (${work.commesse.codice_commessa})`;
-                    // Aggiungiamo l'opzione "fantasma"
-                    this.state.choicesInstance.setChoices(
-                        [{ value: cVal, label: label, selected: true }],
-                        'value',
-                        'label',
-                        false
-                    );
-                }
-            }
-
-            // 4. Carica Macro e Componenti
-            await this.loadSmartOptions(cId);
-
-            if (work.id_componente_fk) {
-                const tree = this.state.currentOptionsTree || [];
-                let foundMacroId = null;
-                for (const macro of tree) {
-                    if (macro.componenti.some(comp => comp.id == work.id_componente_fk)) { foundMacroId = macro.id_macro; break; }
-                }
-                if (foundMacroId) {
-                    this.dom.macroSelect.value = foundMacroId;
-                    this.renderComponentOptions(foundMacroId);
-                    this.dom.componentSelect.value = work.id_componente_fk;
-                }
-            }
-        }
-        this.checkOvertimeLogic();
-    },
-
-    resetFormState: function () {
-        this.state.editingId = null;
-        this.state.editingOriginalHours = 0;
-        this.state.editingStato = 0;
-        this.dom.form.reset();
-        this.state.choicesInstance.removeActiveItems();
-
-        this.dom.macroSelect.innerHTML = '<option disabled selected>--</option>';
-        this.dom.componentSelect.innerHTML = '<option disabled selected>--</option>';
-
-        this.dom.saveBtn.textContent = "AGGIUNGI ORE";
-        this.dom.saveBtn.style.backgroundColor = "";
-        this.dom.cancelEditBtn.style.display = 'none';
-
-        document.querySelector('input[value="produzione"]').checked = true;
-        this.handleTypeChange('produzione');
-    },
-
-    deleteWork: async function (id) {
-        if (!confirm("Eliminare questa registrazione?")) return;
-        try {
-            await apiFetch(`/api/ore/${id}`, { method: 'DELETE' });
-            this.loadExistingWorks(this.state.currentDate);
-        } catch (e) { alert("Errore: " + e.message); }
-    },
-
-    // --- CHOICES & OPTIONS ---
-    initChoices: async function () {
-        if (this.state.choicesInstance) this.state.choicesInstance.destroy();
-
-        this.state.choicesInstance = new Choices(this.dom.commessaSelect, {
-            searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Commessa...',
-            shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
+    // 1. COMMESSA: Logica identica al Cantiere (Lookup automatico o Fallback)
+    // Cerchiamo la commessa "GESTIONE PERSONALE" (SYS-JOB-ABS / ID 68)
+    let absCommessaId = null;
+    if (this.state.choicesInstance) {
+        // Cerchiamo tra le opzioni caricate nella select
+        const choices = this.state.choicesInstance.config.choices;
+        const found = choices.find(c => {
+            const lbl = (c.label || '').toUpperCase();
+            return lbl.includes('GESTIONE PERSONALE') || lbl.includes('SYS-JOB-ABS');
         });
-
-        try {
-            const res = await apiFetch('/api/get-etichette');
-            const data = await res.json();
-            this.state.commesseMap = {};
-            const choicesData = data.map(c => {
-                this.state.commesseMap[c.id] = c.label;
-                return { value: c.id, label: c.label };
-            });
-            this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
-        } catch (e) { console.error(e); }
-
-        this.dom.commessaSelect.addEventListener('change', (e) => {
-            if (e.target.value) this.loadSmartOptions(e.target.value);
-        });
-    },
-
-    loadSmartOptions: async function (commessaId) {
-        this.dom.macroSelect.innerHTML = '<option>Caricamento...</option>';
-        this.dom.macroSelect.disabled = true;
-        this.dom.componentSelect.innerHTML = '<option disabled selected>--</option>';
-        this.dom.componentSelect.disabled = true;
-
-        try {
-            const res = await apiFetch(`/api/ore/options?id_commessa=${commessaId}`);
-            const tree = await res.json();
-            this.state.currentOptionsTree = tree;
-
-            let html = '<option value="" disabled selected>Seleziona Reparto...</option>';
-            tree.forEach(m => { html += `<option value="${m.id_macro}">${m.icona || ''} ${m.nome_macro}</option>`; });
-            this.dom.macroSelect.innerHTML = html;
-            this.dom.macroSelect.disabled = false;
-        } catch (e) { this.dom.macroSelect.innerHTML = '<option disabled>Errore</option>'; }
-    },
-
-    renderComponentOptions: function (macroId) {
-        const macro = this.state.currentOptionsTree.find(m => m.id_macro == macroId);
-        if (!macro) return;
-        let html = '<option value="" disabled selected>Seleziona Lavorazione...</option>';
-        macro.componenti.forEach(c => { html += `<option value="${c.id}">${c.nome} ${c.codice ? `(${c.codice})` : ''}</option>`; });
-        this.dom.componentSelect.innerHTML = html;
-        this.dom.componentSelect.disabled = false;
+        if (found) absCommessaId = found.value;
     }
+
+    // Assegnazione ID Commessa (Automatico o Fallback su 68)
+    payload.id_commessa = absCommessaId ? parseInt(absCommessaId) : 68;
+
+    // 2. COMPONENTE (Lavorazione): Logica differenziata per tipo
+    // Mappatura: Tipo Assenza -> ID Componente (tabella componenti)
+    const absType = this.dom.absType.value; // Valore dalla select (Ferie, Permesso...)
+    let componentId = 101; // Default Ferie (SYS-FER)
+
+    switch (absType) {
+        case 'Ferie':
+            componentId = 101; // SYS-FER
+            break;
+        case 'Permesso':
+            componentId = 102; // SYS-PER
+            break;
+        case 'Malattia':
+            componentId = 103; // SYS-MAL
+            break;
+        case 'L104':
+            componentId = 104; // SYS-104
+            break;
+        default:
+            componentId = 101; // Fallback
+    }
+
+    payload.id_componente = componentId;
+
+    // 3. NOTE: Aggiunta prefisso per chiarezza nel database
+    payload.note = `[${absType.toUpperCase()}] ${payload.note}`;
+}
+
+btn.disabled = true;
+const originalText = btn.textContent;
+btn.textContent = "Salvando...";
+
+try {
+    if (this.state.editingId) {
+        await apiFetch(`/api/ore/${this.state.editingId}`, { method: 'DELETE' });
+    }
+
+    console.log("Inviando payload:", payload);
+    await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+
+    this.loadExistingWorks(this.state.currentDate);
+    this.resetFormState();
+
+} catch (err) {
+    console.error("Errore salvataggio:", err);
+    alert("Errore salvataggio: " + err.message);
+} finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+}
+    },
+
+// --- START EDIT (CON FIX COMMESSA MANCANTE) ---
+startEdit: async function (work) {
+    if (work.stato === 1) {
+        alert("Record contabilizzato. Impossibile modificare.");
+        return;
+    }
+    this.state.editingId = work.id_registrazione;
+    this.state.editingOriginalHours = work.ore || 0;
+    this.state.editingStato = work.stato;
+
+    this.dom.saveBtn.textContent = "AGGIORNA";
+    this.dom.saveBtn.style.backgroundColor = "#e67e22";
+    this.dom.cancelEditBtn.style.display = 'block';
+    document.querySelector('.mobile-insert-form').scrollIntoView({ behavior: 'smooth' });
+
+    let type = 'produzione';
+    const noteUpper = (work.note || '').toUpperCase();
+    if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]')) type = 'assenza';
+    else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) type = 'cantiere';
+
+    const radio = document.querySelector(`input[value="${type}"]`);
+    if (radio) { radio.checked = true; this.handleTypeChange(type); }
+
+    this.dom.hoursInput.value = work.ore;
+    this.dom.noteInput.value = work.note || '';
+    if (work.ore_viaggio_andata) this.dom.travelAndata.value = work.ore_viaggio_andata;
+    if (work.ore_viaggio_ritorno) this.dom.travelRitorno.value = work.ore_viaggio_ritorno;
+    if (work.str_mattina_dalle) this.dom.strMattinaStart.value = work.str_mattina_dalle;
+    if (work.str_mattina_alle) this.dom.strMattinaEnd.value = work.str_mattina_alle;
+    if (work.str_pomeriggio_dalle) this.dom.strPomStart.value = work.str_pomeriggio_dalle;
+    if (work.str_pomeriggio_alle) this.dom.strPomEnd.value = work.str_pomeriggio_alle;
+
+    if (type === 'assenza') {
+        if (work.assenza_mattina_dalle) this.dom.absMattinaStart.value = work.assenza_mattina_dalle;
+        if (work.assenza_mattina_alle) this.dom.absMattinaEnd.value = work.assenza_mattina_alle;
+        if (work.assenza_pomeriggio_dalle) this.dom.absPomStart.value = work.assenza_pomeriggio_dalle;
+        if (work.assenza_pomeriggio_alle) this.dom.absPomEnd.value = work.assenza_pomeriggio_alle;
+        if (noteUpper.includes('FERIE')) this.dom.absType.value = 'Ferie';
+        else if (noteUpper.includes('PERMESSO')) this.dom.absType.value = 'Permesso';
+        else if (noteUpper.includes('MALATTIA')) this.dom.absType.value = 'Malattia';
+    }
+
+    // --- FIX CARICAMENTO COMMESSA ---
+    if (type === 'produzione' && work.id_commessa_fk) {
+        const cId = work.id_commessa_fk;
+        const cVal = String(cId);
+
+        // 1. Tenta di impostare il valore
+        this.state.choicesInstance.setChoiceByValue(cVal);
+
+        // 2. Controlla se è stato impostato davvero
+        const selected = this.state.choicesInstance.getValue(true);
+
+        // 3. Se non è stato trovato (es. commessa chiusa non in lista), aggiungilo manualmente
+        if (!selected || String(selected) !== cVal) {
+            if (work.commesse) {
+                let label = work.commesse.impianto || 'Commessa ???';
+                if (work.commesse.codice_commessa) label += ` (${work.commesse.codice_commessa})`;
+                // Aggiungiamo l'opzione "fantasma"
+                this.state.choicesInstance.setChoices(
+                    [{ value: cVal, label: label, selected: true }],
+                    'value',
+                    'label',
+                    false
+                );
+            }
+        }
+
+        // 4. Carica Macro e Componenti
+        await this.loadSmartOptions(cId);
+
+        if (work.id_componente_fk) {
+            const tree = this.state.currentOptionsTree || [];
+            let foundMacroId = null;
+            for (const macro of tree) {
+                if (macro.componenti.some(comp => comp.id == work.id_componente_fk)) { foundMacroId = macro.id_macro; break; }
+            }
+            if (foundMacroId) {
+                // Imposta Macro
+                if (this.state.choicesMacro) this.state.choicesMacro.setChoiceByValue(String(foundMacroId));
+                else this.dom.macroSelect.value = foundMacroId;
+
+                // Renderizza Componenti per quella Macro
+                this.renderComponentOptions(foundMacroId);
+
+                // Imposta Componente
+                if (this.state.choicesComponent) this.state.choicesComponent.setChoiceByValue(String(work.id_componente_fk));
+                else this.dom.componentSelect.value = work.id_componente_fk;
+            }
+        }
+    }
+    this.checkOvertimeLogic();
+},
+
+resetFormState: function () {
+    this.state.editingId = null;
+    this.state.editingOriginalHours = 0;
+    this.state.editingStato = 0;
+    this.dom.form.reset();
+    if (this.state.choicesInstance) this.state.choicesInstance.removeActiveItems();
+    if (this.state.choicesMacro) { this.state.choicesMacro.clearStore(); this.state.choicesMacro.setChoices([{ value: '', label: '-- Seleziona Commessa prima --', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesMacro.disable(); }
+    if (this.state.choicesComponent) { this.state.choicesComponent.clearStore(); this.state.choicesComponent.setChoices([{ value: '', label: '--', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesComponent.disable(); }
+
+    this.dom.saveBtn.textContent = "AGGIUNGI ORE";
+    this.dom.saveBtn.style.backgroundColor = "";
+    this.dom.cancelEditBtn.style.display = 'none';
+
+    document.querySelector('input[value="produzione"]').checked = true;
+    this.handleTypeChange('produzione');
+},
+
+deleteWork: async function (id) {
+    if (!confirm("Eliminare questa registrazione?")) return;
+    try {
+        await apiFetch(`/api/ore/${id}`, { method: 'DELETE' });
+        this.loadExistingWorks(this.state.currentDate);
+    } catch (e) { alert("Errore: " + e.message); }
+},
+
+// --- CHOICES & OPTIONS ---
+initChoices: async function () {
+    // 1. COMMESSA
+    if (this.state.choicesInstance) this.state.choicesInstance.destroy();
+    this.state.choicesInstance = new Choices(this.dom.commessaSelect, {
+        searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Commessa...',
+        shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
+    });
+
+    // 2. MACRO (Nuovo)
+    if (this.state.choicesMacro) this.state.choicesMacro.destroy();
+    this.state.choicesMacro = new Choices(this.dom.macroSelect, {
+        searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Reparto...',
+        shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
+    });
+
+    // 3. COMPONENTE/LAVORAZIONE (Nuovo)
+    if (this.state.choicesComponent) this.state.choicesComponent.destroy();
+    this.state.choicesComponent = new Choices(this.dom.componentSelect, {
+        searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Lavorazione...',
+        shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
+    });
+
+    // Caricamento Dati Iniziali Commessa
+    try {
+        const res = await apiFetch('/api/get-etichette');
+        const data = await res.json();
+        this.state.commesseMap = {};
+        const choicesData = data.map(c => {
+            this.state.commesseMap[c.id] = c.label;
+            return { value: c.id, label: c.label };
+        });
+        this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
+    } catch (e) { console.error(e); }
+
+    // Listener Commessa -> Carica Macro
+    this.dom.commessaSelect.addEventListener('change', (e) => {
+        if (e.target.value) this.loadSmartOptions(e.target.value);
+    });
+
+    // Listener Macro -> Filtra Componenti
+    this.dom.macroSelect.addEventListener('change', (e) => {
+        // Choices a volte spara eventi vuoti o multipli.
+        // Se usiamo this.state.choicesMacro.getValue(), è più sicuro.
+        const val = this.state.choicesMacro.getValue(true);
+        if (val) this.renderComponentOptions(val);
+    });
+},
+
+loadSmartOptions: async function (commessaId) {
+    // Reset scelta Macro e Componente
+    if (this.state.choicesMacro) {
+        this.state.choicesMacro.clearStore();
+        this.state.choicesMacro.setChoices([{ value: '', label: 'Caricamento...', disabled: true, selected: true }], 'value', 'label', true);
+        this.state.choicesMacro.disable();
+    }
+    if (this.state.choicesComponent) {
+        this.state.choicesComponent.clearStore();
+        this.state.choicesComponent.disable();
+    }
+
+    try {
+        const res = await apiFetch(`/api/ore/options?id_commessa=${commessaId}`);
+        const tree = await res.json();
+        this.state.currentOptionsTree = tree;
+
+        const macroChoices = [{ value: '', label: 'Seleziona Reparto...', disabled: true, selected: true }];
+        tree.forEach(m => {
+            macroChoices.push({ value: String(m.id_macro), label: `${m.icona || ''} ${m.nome_macro}`.trim() });
+        });
+
+        if (this.state.choicesMacro) {
+            this.state.choicesMacro.clearStore();
+            this.state.choicesMacro.setChoices(macroChoices, 'value', 'label', true);
+            this.state.choicesMacro.enable();
+        }
+    } catch (e) { console.error(e); }
+},
+
+renderComponentOptions: function (macroId) {
+    if (!this.state.currentOptionsTree) return;
+    const macro = this.state.currentOptionsTree.find(m => m.id_macro == macroId);
+
+    // Reset Componente
+    if (this.state.choicesComponent) {
+        this.state.choicesComponent.clearStore();
+        this.state.choicesComponent.enable(); // Abilita per poter popolare
+    }
+
+    if (!macro) return;
+
+    const compChoices = [{ value: '', label: 'Seleziona Lavorazione...', disabled: true, selected: true }];
+    macro.componenti.forEach(c => {
+        compChoices.push({ value: String(c.id), label: `${c.nome} ${c.codice ? `(${c.codice})` : ''}`.trim() });
+    });
+
+    if (this.state.choicesComponent) {
+        this.state.choicesComponent.setChoices(compChoices, 'value', 'label', true);
+    }
+}
 };
 
 document.addEventListener('DOMContentLoaded', () => { MobileHoursApp.init(); });
+```
