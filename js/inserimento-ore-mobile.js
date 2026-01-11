@@ -209,15 +209,25 @@ const MobileHoursApp = {
         }
     },
 
+    // Helper per abbreviazioni mesi
+    getShortMonth: function (monthStr) {
+        if (!monthStr) return "";
+        // Mappa statica sicura o slice (se i dati sono già puliti)
+        // Prendiamo le prime 3 lettere e le mettiamo in Uppercase
+        return monthStr.substring(0, 3).toUpperCase();
+    },
+
     createDayRow: function (day, todayStr) {
         const div = document.createElement('div');
         div.className = `timeline-row ${day.full_date === todayStr ? 'is-today' : ''}`;
+        const shortMonth = this.getShortMonth(day.month_str);
+
         div.innerHTML = `
             <div class="timeline-status-bar status-${day.status}"></div>
             <div class="timeline-content">
                 <div class="date-info">
                     <div class="day-text">${day.weekday}</div>
-                    <div class="day-number">${day.day_num} ${day.month_str}</div>
+                    <div class="day-number">${day.day_num} ${shortMonth}</div>
                 </div>
                 <div class="timeline-hours">${day.total_hours}h</div>
             </div>
@@ -233,7 +243,8 @@ const MobileHoursApp = {
 
     openDayDetail: function (day) {
         this.state.currentDate = day.full_date;
-        document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${day.month_str}`;
+        const shortMonth = this.getShortMonth(day.month_str);
+        document.getElementById('selectedDayTitle').textContent = `${day.weekday} ${day.day_num} ${shortMonth}`;
         this.dom.dayDetailModal.style.display = 'flex';
 
         // RESET DATI STALE: Pulisci i dati del giorno precedente per evitare che checkOvertimeLogic usi vecchi totali
