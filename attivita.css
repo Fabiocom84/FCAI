@@ -2,7 +2,37 @@
 /* == GESTIONE ATTIVITÀ - LAYOUT KANBAN SPECIFICO == */
 /* ========================================================== */
 
-/* Nota: Il layout generale a guscio è gestito da .std-app-shell in style-v2.css */
+/* Nota: Per il Kanban vogliamo utilizzare tutto lo spazio disponibile (FULL SCREEN) */
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    /* Nessuno scroll sul body */
+    margin: 0;
+    padding: 0;
+}
+
+/* Override della Shell Standard per occupare tutta la finestra */
+.std-app-shell {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Assicuriamo che il contenuto si espanda */
+.std-app-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden !important;
+    /* Scroll gestito dalle colonne interne */
+}
 
 /* Box Filtro Utente (Specifico per header attività) */
 .header-filter-wrapper {
