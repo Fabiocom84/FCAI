@@ -1519,7 +1519,7 @@ body.internal-page {
 /* ==========================================================================
    SHARED STANDARD MODAL STYLES (Ex custom-modal)
    ========================================================================== */
-.std-modal-overlay {
+.universal-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -1535,7 +1535,7 @@ body.internal-page {
     /* Modern touch */
 }
 
-.std-modal {
+.universal-modal {
     display: block !important;
     /* Forces block layout */
     background: white !important;
@@ -1550,8 +1550,8 @@ body.internal-page {
     border: 1px solid #e0e0e0;
 }
 
-.std-modal h3,
-.std-modal h2 {
+.universal-modal h3,
+.universal-modal h2 {
     display: block;
     margin-top: 0;
     margin-bottom: 20px;
@@ -1560,7 +1560,7 @@ body.internal-page {
     font-weight: 600;
 }
 
-.std-modal p {
+.universal-modal p {
     display: block;
     color: #555;
     margin-bottom: 30px;
@@ -1568,15 +1568,15 @@ body.internal-page {
     line-height: 1.5;
 }
 
-.std-modal-buttons {
+.universal-modal-buttons {
     display: flex;
     justify-content: center;
     gap: 15px;
     width: 100%;
 }
 
-.std-modal .button,
-.std-modal .std-btn {
+.universal-modal .button,
+.universal-modal .std-btn {
     /* Support both classes */
     padding: 10px 24px;
     border: none;
@@ -1587,7 +1587,7 @@ body.internal-page {
     transition: transform 0.1s ease;
 }
 
-.std-modal .button:active,
-.std-modal .std-btn:active {
+.universal-modal .button:active,
+.universal-modal .std-btn:active {
     transform: scale(0.98);
 }
