@@ -433,11 +433,19 @@ const App = {
                     </div>` : ''}
 
                     <div class="progress-container">
-                        <div class="progress-labels">
-                            <span>AVANZAMENTO</span>
+                    <div class="progress-labels">
+                        <span>AVANZAMENTO</span>
+                        <div style="display:flex; gap:10px;">
+                            ${(() => {
+                    // Calcolo Ore Totali da Registrazioni (User Timesheets)
+                    // Supportiamo 'ore_lavorate' (da registrazioni_ore) o 'ore' (fallback)
+                    const totalHours = c.registrazioni ? c.registrazioni.reduce((acc, r) => acc + (parseFloat(r.ore_lavorate || r.ore) || 0), 0) : 0;
+                    return totalHours > 0 ? `<span style="font-weight:600; color:#2c3e50;">⏱️ ${totalHours.toFixed(1)}h</span>` : '';
+                })()}
                             <span class="progress-pct-text">${progressPct}%</span>
                         </div>
-                        <div class="progress-track">
+                    </div>
+                    <div class="progress-track">
                             <div class="progress-fill" style="width:${progressPct}%;"></div>
                         </div>
                     </div>
