@@ -749,7 +749,7 @@ input:focus {
 }
 
 .mobile-insert-form.cantiere-mode .simple-hours-group {
-    margin-top: -90px !important;
+    margin-top: -95px !important;
     /* QUASI PERFETTO: Regolazione finale utente */
     position: relative;
     z-index: 10;
