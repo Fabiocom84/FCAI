@@ -749,8 +749,8 @@ input:focus {
 }
 
 .mobile-insert-form.cantiere-mode .simple-hours-group {
-    margin-top: -15px !important;
-    /* Margine negativo come richiesto per annullare lo spazio fantasma */
+    margin-top: -45px !important;
+    /* TRIPLICATO: Margine negativo massiccio */
 }
 
 /* Nascondi anche commessa per sicurezza */
