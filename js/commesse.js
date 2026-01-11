@@ -779,8 +779,8 @@ const App = {
         // Estraiamo i valori manualmente e li passiamo come JSON string
         if (this.state.choicesInstances.macro) {
             const selectedMacros = this.state.choicesInstances.macro.getValue(true); // Ritorna array di value
-            // Appendiamo come stringa JSON che il backend parserà
-            formData.set('ids_macro_categorie_attive', JSON.stringify(selectedMacros));
+            // Inviamo come stringa separata da virgola per attivare il parsing fallback del backend (che fa cast a int)
+            formData.set('ids_macro_categorie_attive', selectedMacros.join(','));
         }
 
         const saveBtn = this.dom.modalForm.querySelector('.save-button');
