@@ -620,8 +620,8 @@ const MobileHoursApp = {
             if (!macroVal) return alert("Selezionare un Reparto/Macro.");
             if (!compVal) return alert("Selezionare una Lavorazione.");
 
-            payload.id_commessa_fk = parseInt(commessaVal);
-            payload.id_componente_fk = parseInt(compVal);
+            payload.id_commessa = parseInt(commessaVal);
+            payload.id_componente = parseInt(compVal);
         }
         else if (type === 'cantiere') {
             let commessaVal = null;
