@@ -27,7 +27,7 @@ const apiClient = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    
+
     // 2. BLOCCO DI SICUREZZA
     if (!IsAdmin) {
         window.location.replace('index.html');
@@ -39,23 +39,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     let typesById = {};
     let shortcutMap = {};
     let personnelData = [];
-    let loadedDataMap = {}; 
-    
+    let loadedDataMap = {};
+
     let currentStartDate = new Date();
-    let currentEndDate = new Date();   
+    let currentEndDate = new Date();
     let isLoading = false;
-    let lastUpdatedMonth = ""; 
+    let lastUpdatedMonth = "";
 
     let activePopup = null;
-    let activeHeaderDate = null; 
-    
+    let activeHeaderDate = null;
+
     let detailCurrentPerson = null;
     let detailCurrentDate = new Date();
 
-    const LOAD_BATCH_DAYS = 30;
-    const PRE_LOAD_DAYS = 15;
-    const POST_LOAD_DAYS = 45;
-    const COLUMN_WIDTH = 95;
+    const LOAD_BATCH_DAYS = 15; // Richiesto 15gg su scroll
+    const PRE_LOAD_DAYS = 7;    // Richiesto 7gg indietro
+    const POST_LOAD_DAYS = 7;   // Richiesto 7gg avanti
+    const COLUMN_WIDTH = 75;    // Aggiornato per coerenza con CSS
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const container = document.querySelector('.timeline-container');
     const currentMonthDisplay = document.getElementById('current-month-display');
     const searchInput = document.getElementById('search-notes');
-    
+
     const detailModal = document.getElementById('personnelDetailModal');
     const detailTitle = document.getElementById('personnelDetailTitle');
     const detailMonthLabel = document.getElementById('detailMonthLabel');
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function updateVisibleMonthHeader() {
-        const checkPoint = container.scrollLeft + 180 + 20; 
+        const checkPoint = container.scrollLeft + 180 + 20;
         const headers = headerRow.querySelectorAll('th[data-date]');
         let targetDate = null;
         for (const th of headers) {
@@ -160,11 +160,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderBaseGridRows() {
         timelineBody.innerHTML = '';
         const fragment = document.createDocumentFragment();
-        
+
         personnelData.forEach(person => {
             const tr = document.createElement('tr');
             tr.dataset.personId = person.id_personale;
-            
+
             const th = document.createElement('th');
             th.style.display = 'flex';
             th.style.justifyContent = 'space-between';
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             nameSpan.style.textOverflow = 'ellipsis';
             nameSpan.style.flexGrow = '1';
             nameSpan.addEventListener('click', () => openPersonnelDetail(person));
-            
+
             // 2. Contenitore Icone (Matita + Stampante)
             const actionsDiv = document.createElement('div');
             actionsDiv.style.display = 'flex';
@@ -211,10 +211,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             th.appendChild(nameSpan);
             th.appendChild(actionsDiv);
             tr.appendChild(th);
-            
+
             fragment.appendChild(tr);
         });
-        
+
         timelineBody.appendChild(fragment);
     }
 
@@ -232,12 +232,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function prependColumns(start, end) {
         const datesToAdd = generateDateRange(start, end);
         const todayStr = formatDateISO(new Date());
-        const addedWidth = datesToAdd.length * COLUMN_WIDTH; 
+        const addedWidth = datesToAdd.length * COLUMN_WIDTH;
         const currentScroll = container.scrollLeft;
-        const firstDayHeader = headerRow.children[1]; 
-        
+        const firstDayHeader = headerRow.children[1];
+
         datesToAdd.forEach(d => headerRow.insertBefore(createHeaderCell(d, todayStr), firstDayHeader));
-        
+
         const rows = Array.from(timelineBody.querySelectorAll('tr'));
         rows.forEach(tr => {
             const pid = parseInt(tr.dataset.personId);
@@ -265,9 +265,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         th.dataset.date = dateStr;
         if (isWeekend) th.classList.add('weekend-column');
         if (isToday) th.classList.add('is-today');
-        
+
         th.addEventListener('click', (e) => openColorPicker(e, dateStr));
-        
+
         return th;
     }
 
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (realWorkHours >= 8) return 'status-ok';
         else if (realWorkHours > 0) return 'status-warning';
         else if (!isWeekend) return 'status-missing';
-        return null; 
+        return null;
     }
 
     function createBodyCell(d, pid) {
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const td = document.createElement('td');
         td.dataset.date = dateStr;
         td.dataset.personId = pid;
-        
+
         if (isWeekend) {
             td.dataset.isWeekend = "true";
             td.classList.add('weekend-column');
@@ -298,17 +298,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const record = loadedDataMap[`${pid}_${dateStr}`];
 
         if (record) renderCellContent(td, record);
-        
+
         const statusClass = calculateStatusClass(record, isWeekend);
         if (statusClass) {
             const indicator = document.createElement('div');
             indicator.className = `status-indicator ${statusClass}`;
             td.appendChild(indicator);
         }
-        
+
         td.addEventListener('click', (e) => handleQuickEdit(e, td));
         td.addEventListener('contextmenu', (e) => { e.preventDefault(); handleVisualEdit(e, td); });
-        
+
         return td;
     }
 
@@ -319,15 +319,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const containerCenter = container.clientWidth / 2;
             const headerLeft = todayHeader.offsetLeft;
             const headerWidth = todayHeader.offsetWidth;
-            container.scrollLeft = headerLeft - containerCenter + (headerWidth / 2) - 180; 
+            container.scrollLeft = headerLeft - containerCenter + (headerWidth / 2) - 180;
         }
     }
 
     // ... (Resto delle funzioni: openColorPicker, DetailModal, VisualEdit, QuickEdit, etc. rimangono invariate) ...
-    
+
     function openColorPicker(e, dateStr) {
         e.stopPropagation();
-        activeHeaderDate = dateStr; 
+        activeHeaderDate = dateStr;
         colorPickerPopup.style.left = `${e.pageX}px`;
         colorPickerPopup.style.top = `${e.pageY + 10}px`;
         colorPickerPopup.style.display = 'block';
@@ -337,16 +337,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiClient.post('/presenze/colore-colonna', { data: dateStr, colore: color });
             alert("Colore aggiornato. La pagina verrà ricaricata.");
-            location.reload(); 
-        } catch(e) { console.error(e); alert("Errore aggiornamento colonna."); }
+            location.reload();
+        } catch (e) { console.error(e); alert("Errore aggiornamento colonna."); }
     }
 
     function openPersonnelDetail(person) {
         detailCurrentPerson = person;
-        detailCurrentDate = new Date(); 
-        detailCurrentDate.setDate(1); 
+        detailCurrentDate = new Date();
+        detailCurrentDate.setDate(1);
         detailTitle.textContent = person.nome_cognome;
-        updateDetailModal(); 
+        updateDetailModal();
         detailModal.style.display = 'block';
         modalOverlay.style.display = 'block';
     }
@@ -378,14 +378,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             let leftRowsHtml = ''; let rightRowsHtml = '';
             for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
                 const dayNum = d.getDate();
-                const dateStr = formatDateISO(d); 
+                const dateStr = formatDateISO(d);
                 const dayName = d.toLocaleString('it-IT', { weekday: 'short' });
                 const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
                 const rec = recordMap[dateStr] || {};
                 let rowClass = '';
                 if (rec.colore && rec.colore !== 'none') rowClass = `detail-row-${rec.colore}`;
                 else if (isWeekend) rowClass = 'detail-row-weekend';
-                
+
                 let tipoHtml = '';
                 if (rec.id_tipo_presenza_fk && typesById[rec.id_tipo_presenza_fk]) {
                     const t = typesById[rec.id_tipo_presenza_fk];
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.style.left = `${leftPos}px`;
 
         let gridHtml = `<div class="type-option-btn ${!record.id_tipo_presenza_fk ? 'selected' : ''}" data-id=""><span class="type-option-icon">⬜</span><span class="type-option-label">Standard</span></div>`;
-        Object.values(typesById).sort((a,b)=>(a.etichetta||'').localeCompare(b.etichetta||'')).forEach(t => {
+        Object.values(typesById).sort((a, b) => (a.etichetta || '').localeCompare(b.etichetta || '')).forEach(t => {
             const isSel = (record.id_tipo_presenza_fk === t.id_tipo);
             const icon = t.icona || '❓';
             gridHtml += `<div class="type-option-btn ${isSel ? 'selected' : ''}" data-id="${t.id_tipo}" title="${t.nome_tipo}"><span class="type-option-icon">${icon}</span><span class="type-option-label">${t.etichetta}</span></div>`;
@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let colorHtml = '';
         ['none', 'red', 'yellow', 'green', 'blue'].forEach(c => {
-            const sel = (record.colore === c || (!record.colore && c==='none')) ? 'selected' : '';
+            const sel = (record.colore === c || (!record.colore && c === 'none')) ? 'selected' : '';
             colorHtml += `<div class="color-dot-sm ${sel}" data-color="${c}"></div>`;
         });
 
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const payload = { id_personale_fk: parseInt(pid), data: date, numero_ore: p.ore, id_tipo_presenza_fk: p.idTipo, note: p.note, colore: record.colore };
             await saveData(payload, td);
         };
-        input.onkeydown = (ev) => { if(ev.key === 'Enter') input.blur(); };
+        input.onkeydown = (ev) => { if (ev.key === 'Enter') input.blur(); };
         input.onclick = (ev) => ev.stopPropagation();
         td.appendChild(input);
         input.focus();
@@ -491,25 +491,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await apiClient.post('/presenze', payload);
             loadedDataMap[`${payload.id_personale_fk}_${payload.data}`] = res;
             updateCellVisuals(td, res);
-        } catch (err) { 
-            console.error(err); 
-            alert("Errore salvataggio"); 
-            const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`]; 
-            if(old) updateCellVisuals(td, old); else td.innerHTML=''; 
+        } catch (err) {
+            console.error(err);
+            alert("Errore salvataggio");
+            const old = loadedDataMap[`${payload.id_personale_fk}_${payload.data}`];
+            if (old) updateCellVisuals(td, old); else td.innerHTML = '';
         }
     }
 
     function renderCellContent(td, record) {
-        if(record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
-        const wrapper = document.createElement('div'); 
+        if (record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
+        const wrapper = document.createElement('div');
         wrapper.className = 'cell-content-wrapper';
         if (record.id_tipo_presenza_fk && typesById[record.id_tipo_presenza_fk]) {
             const t = typesById[record.id_tipo_presenza_fk];
             if (t.etichetta) {
-                const badge = document.createElement('span'); 
-                badge.className = 'chip'; 
+                const badge = document.createElement('span');
+                badge.className = 'chip';
                 badge.textContent = t.etichetta;
-                if(t.colore_hex) badge.style.backgroundColor = t.colore_hex; else badge.style.backgroundColor = '#ccc';
+                if (t.colore_hex) badge.style.backgroundColor = t.colore_hex; else badge.style.backgroundColor = '#ccc';
                 wrapper.appendChild(badge);
             }
         }
@@ -517,10 +517,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         td.appendChild(wrapper);
         if (record.note) { const ind = document.createElement('div'); ind.className = 'note-indicator'; ind.title = record.note; td.appendChild(ind); }
     }
-    
+
     function updateCellVisuals(td, record) {
         td.innerHTML = '';
-        td.className = ''; 
+        td.className = '';
         if (td.dataset.isWeekend === "true") td.classList.add('weekend-column');
         if (record) renderCellContent(td, record);
         const statusClass = calculateStatusClass(record, td.dataset.isWeekend === "true");
@@ -530,12 +530,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadTypes() {
         try {
             const res = await apiClient.get('/presenze/tipi');
-            (res || []).forEach(t => { typesById[t.id_tipo] = t; if(t.shortcut_key) shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo; });
-        } catch(e){ console.error(e); }
+            (res || []).forEach(t => { typesById[t.id_tipo] = t; if (t.shortcut_key) shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo; });
+        } catch (e) { console.error(e); }
     }
 
     function sortPersonnel(list) {
-        list.sort((a,b) => {
+        list.sort((a, b) => {
             const pA = ROLE_PRIORITY[a.ruoli?.nome_ruolo?.toLowerCase()] || 99;
             const pB = ROLE_PRIORITY[b.ruoli?.nome_ruolo?.toLowerCase()] || 99;
             return pA - pB || a.nome_cognome.localeCompare(b.nome_cognome);
@@ -543,15 +543,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function parseQuickCommand(text) {
-        let ore=null, idTipo=null, note=null;
-        if(!text) return {ore,idTipo,note};
+        let ore = null, idTipo = null, note = null;
+        if (!text) return { ore, idTipo, note };
         const noteM = text.match(/\+(.*)/);
-        if(noteM) { note=noteM[1].trim(); text=text.replace(noteM[0],''); }
+        if (noteM) { note = noteM[1].trim(); text = text.replace(noteM[0], ''); }
         const cmdM = text.match(/\\([a-zA-Z0-9])/);
-        if(cmdM) { const code = cmdM[1].toLowerCase(); if(shortcutMap[code]) idTipo=shortcutMap[code]; text=text.replace(cmdM[0],''); }
+        if (cmdM) { const code = cmdM[1].toLowerCase(); if (shortcutMap[code]) idTipo = shortcutMap[code]; text = text.replace(cmdM[0], ''); }
         const numM = text.match(/(\d+(\.\d+)?)/);
-        if(numM) ore=parseFloat(numM[0]);
-        return {ore,idTipo,note};
+        if (numM) ore = parseFloat(numM[0]);
+        return { ore, idTipo, note };
     }
 
     function formatDateISO(d) {
@@ -562,8 +562,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initGlobalEvents() {
-        document.querySelectorAll('.close-button, .modal-overlay').forEach(el=>{ el.addEventListener('click', ()=>{ detailModal.style.display='none'; modalOverlay.style.display='none'; if(colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
-        if(document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
+        document.querySelectorAll('.close-button, .modal-overlay').forEach(el => { el.addEventListener('click', () => { detailModal.style.display = 'none'; modalOverlay.style.display = 'none'; if (colorPickerPopup) colorPickerPopup.style.display = 'none'; }); });
+        if (document.getElementById('closeColorPicker')) document.getElementById('closeColorPicker').addEventListener('click', () => { colorPickerPopup.style.display = 'none'; });
         document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', async (e) => { const color = e.target.dataset.color; if (activeHeaderDate) { await applyColumnColor(activeHeaderDate, color); } colorPickerPopup.style.display = 'none'; }); });
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
