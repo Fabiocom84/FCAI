@@ -109,22 +109,23 @@
 
     <div class="std-app-shell">
 
-        <!-- HEADER STANDARD (Copied structure from gestione.html) -->
+        <!-- HEADER STANDARD (Centered) -->
         <div class="std-app-header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="index.html" class="header-button">
-                    <img src="img/log-out.png" alt="Home"
-                        style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 16px; height: 16px;">
-                    <span>Home</span>
-                </a>
-                <div style="display: flex; flex-direction: column; line-height: 1.2;">
-                    <h1 style="margin: 0; font-size: 1.2rem;">Importazione Ordini</h1>
-                    <span style="font-size: 0.8rem; opacity: 0.8;">Produzione</span>
-                </div>
+            <!-- Left: Home Button -->
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 16px; height: 16px;">
+                <span>Home</span>
+            </a>
+
+            <!-- Center: Title -->
+            <div style="text-align: center; flex-grow: 1;">
+                <h1 style="margin: 0; font-size: 1.2rem;">Importazione Ordini</h1>
+                <span style="font-size: 0.8rem; opacity: 0.8;">Produzione</span>
             </div>
 
-            <!-- Lato Destro (Vuoto o Azioni) -->
-            <div></div>
+            <!-- Right: Placeholder for balance (width matches Home button roughly) -->
+            <div style="width: 80px;"></div>
         </div>
 
         <!-- CONTENUTO PRINCIPALE -->

@@ -80,16 +80,17 @@
 
         <!-- HEADER -->
         <div class="std-app-header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="index.html" class="header-button">
-                    <img src="img/log-out.png" alt="Home"
-                        style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                    <span>Home</span>
-                </a>
-                <h1>Gestione Dati</h1>
-            </div>
+            <!-- Left: Home Button -->
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <span>Home</span>
+            </a>
 
-            <!-- View Selector integrated in Header -->
+            <!-- Center: Title -->
+            <h1 style="flex-grow: 1; text-align: center; margin: 0;">Gestione Dati</h1>
+
+            <!-- View Selector integrated in Header (Right Side) -->
             <div class="view-selector-container" style="display: flex; align-items: center; gap: 10px;">
                 <label for="tableViewSelector" style="color: white; font-weight: 500;">VISTA:</label>
                 <select id="tableViewSelector" class="styled-select"
