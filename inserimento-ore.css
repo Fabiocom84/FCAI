@@ -416,6 +416,11 @@ input:focus {
     z-index: 500;
 }
 
+/* FIX: Se il footer è dentro la modale full-screen (z-index 2000), deve stare sopra */
+.full-screen-page .mobile-footer-actions {
+    z-index: 2010;
+}
+
 .save-button {
     flex: 1;
     background: #27ae60;

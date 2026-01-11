@@ -38,18 +38,10 @@
             <div id="mobileTimelineContainer" class="mobile-content-wrapper">
                 <div class="loader-placeholder">Caricamento timeline...</div>
             </div>
-
-            <!-- FOOTER FISSO (Manteniamo ID per compatibilità JS) -->
-            <!-- Nota: Inseriamo il footer DENTRO o FUORI content? Spesso fuori per essere fixed. 
-                 Ma js/inserimento-ore-mobile.js usa .mobile-footer-actions fixed. 
-                 Lasciamo qui, gestito dal CSS specifico -->
         </div>
 
-        <!-- FOOTER ACTIONS -->
-        <div class="mobile-footer-actions">
-            <button type="button" id="cancelEditBtn" class="cancel-button" style="display: none;">Annulla</button>
-            <button type="button" id="saveHoursBtn" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
-        </div>
+        <!-- REMOVED MAIN FOOTER ACTIONS: Duplicate IDs causing issues. 
+             If a Quick Add is needed, it should open the modal. -->
 
     </div>
 
