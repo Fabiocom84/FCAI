@@ -321,6 +321,8 @@ const MobileHoursApp = {
     },
 
     checkOvertimeLogic: function () {
+        console.log("🔍 CheckOvertime logic triggerato");
+
         // 1. Calcola ore inserite attualmente
         let currentInputHours = parseFloat(this.dom.hoursInput.value) || 0;
 
@@ -335,7 +337,8 @@ const MobileHoursApp = {
         if (this.state.currentDayData && this.state.currentDayData.registrazioni) {
             existingTotal = this.state.currentDayData.registrazioni.reduce((sum, r) => {
                 // Se siamo in edit mode, ignoriamo il record che stiamo modificando
-                if (this.state.editMode && r.id_registrazione === this.state.editingId) return sum;
+                // IMPORTANTE: check loose equality (==) per id stringa/numero
+                if (this.state.editMode && r.id_registrazione == this.state.editingId) return sum;
                 return sum + (parseFloat(r.ore) || 0) + (parseFloat(r.ore_viaggio_andata) || 0) + (parseFloat(r.ore_viaggio_ritorno) || 0);
             }, 0);
         }
@@ -343,6 +346,8 @@ const MobileHoursApp = {
         // 3. Totale complessivo stimato
         const grandTotal = existingTotal + currentInputHours;
         const isProdOrSite = (document.querySelector('input[name="entryType"]:checked').value !== 'assenza');
+
+        console.log(`📊 Overtime Debug: Existing=${existingTotal}, Input=${currentInputHours}, GrandTotal=${grandTotal}, Visible=${grandTotal > 8 && isProdOrSite}`);
 
         // 4. Mostra/Nascondi Overtime se superiamo le 8 ore TOTALI
         if (grandTotal > 8 && isProdOrSite) {
@@ -387,6 +392,10 @@ const MobileHoursApp = {
                 total += (w.ore || 0) + (w.ore_viaggio_andata || 0) + (w.ore_viaggio_ritorno || 0);
             });
             this.state.currentDayTotal = total;
+            // FIX CRITICO: Aggiorniamo anche lo stato dati corrente, altrimenti checkOvertimeLogic usa dati vecchi
+            if (!this.state.currentDayData) this.state.currentDayData = {};
+            this.state.currentDayData.registrazioni = works;
+
             this.updateTotalBadge(total);
 
             if (works.length === 0) {
