@@ -346,11 +346,10 @@ input:focus {
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     margin-top: 5px;
-    max-height: 250px;
-    /* RIDOTTO per mobile da 300px */
+    max-height: 400px;
+    /* 10 voci (ca. 40px l'una) */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    /* Scroll fluido su iOS */
     z-index: 5000;
     /* Z-Index altissimo per stare sopra tutto */
 }
@@ -441,8 +440,8 @@ input:focus {
 .full-screen-body {
     padding: 10px 20px !important;
     /* RIDOTTO PADDING */
-    padding-bottom: 250px !important;
-    /* AUMENTATO per spazio dropdown mobile  */
+    padding-bottom: 400px !important;
+    /* Spazio per dropdown 10 voci */
     flex: 1;
     display: flex;
     /* Aggiunto flex per gestire meglio il contenuto */
