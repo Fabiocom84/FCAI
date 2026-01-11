@@ -212,9 +212,19 @@ const MobileHoursApp = {
     // Helper per abbreviazioni mesi
     getShortMonth: function (monthStr) {
         if (!monthStr) return "";
-        // Mappa statica sicura o slice (se i dati sono già puliti)
-        // Prendiamo le prime 3 lettere e le mettiamo in Uppercase
-        return monthStr.substring(0, 3).toUpperCase();
+
+        // Mappatura Inglese/Backend -> Italiano 3 lettere
+        const map = {
+            'JANUARY': 'GEN', 'FEBRUARY': 'FEB', 'MARCH': 'MAR', 'APRIL': 'APR', 'MAY': 'MAG', 'JUNE': 'GIU',
+            'JULY': 'LUG', 'AUGUST': 'AGO', 'SEPTEMBER': 'SET', 'OCTOBER': 'OTT', 'NOVEMBER': 'NOV', 'DECEMBER': 'DIC',
+            // Fallback per già italiano o misto
+            'GENNAIO': 'GEN', 'FEBBRAIO': 'FEB', 'MARZO': 'MAR', 'APRILE': 'APR', 'MAGGIO': 'MAG', 'GIUGNO': 'GIU',
+            'LUGLIO': 'LUG', 'AGOSTO': 'AGO', 'SETTEMBRE': 'SET', 'OTTOBRE': 'OTT', 'NOVEMBRE': 'NOV', 'DICEMBRE': 'DIC'
+        };
+
+        const upper = monthStr.toUpperCase();
+        // Se c'è match esatto bene, altrimenti prova substring 3 char e spera, oppure usa slice se non matcha
+        return map[upper] || upper.substring(0, 3);
     },
 
     createDayRow: function (day, todayStr) {
