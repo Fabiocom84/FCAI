@@ -321,20 +321,31 @@ const MobileHoursApp = {
     },
 
     checkOvertimeLogic: function () {
-        // Leggi valori numerici
-        const hWork = parseFloat(this.dom.hoursInput.value) || 0;
-        const hAndata = parseFloat(this.dom.travelAndata.value) || 0;
-        const hRitorno = parseFloat(this.dom.travelRitorno.value) || 0;
+        // 1. Calcola ore inserite attualmente
+        let currentInputHours = parseFloat(this.dom.hoursInput.value) || 0;
 
-        // Calcola totale "impegno" di questo inserimento
-        const inputTotal = hWork + hAndata + hRitorno;
+        // Aggiungi ore viaggio se visibili
+        if (this.dom.travelFields.style.display !== 'none') {
+            currentInputHours += (parseFloat(this.dom.travelAndata.value) || 0);
+            currentInputHours += (parseFloat(this.dom.travelRitorno.value) || 0);
+        }
 
-        // Totale Giornaliero Previsto (TotaleDB - VecchieOre + NuoveOre)
-        const potentialTotal = (this.state.currentDayTotal - this.state.editingOriginalHours) + inputTotal;
-        const type = document.querySelector('input[name="entryType"]:checked').value;
+        // 2. Calcola somma ore GIA' presenti nel giorno (escludendo quella in modifica)
+        let existingTotal = 0;
+        if (this.state.currentDayData && this.state.currentDayData.registrazioni) {
+            existingTotal = this.state.currentDayData.registrazioni.reduce((sum, r) => {
+                // Se siamo in edit mode, ignoriamo il record che stiamo modificando
+                if (this.state.editMode && r.id_registrazione === this.state.editingId) return sum;
+                return sum + (parseFloat(r.ore) || 0) + (parseFloat(r.ore_viaggio_andata) || 0) + (parseFloat(r.ore_viaggio_ritorno) || 0);
+            }, 0);
+        }
 
-        // VISIBILITÀ STRAORDINARI (Solo Produzione e > 8h)
-        if (type === 'produzione' && inputTotal > 8) {
+        // 3. Totale complessivo stimato
+        const grandTotal = existingTotal + currentInputHours;
+        const isProdOrSite = (document.querySelector('input[name="entryType"]:checked').value !== 'assenza');
+
+        // 4. Mostra/Nascondi Overtime se superiamo le 8 ore TOTALI
+        if (grandTotal > 8 && isProdOrSite) {
             this.dom.overtimeFields.style.display = 'block';
         } else {
             this.dom.overtimeFields.style.display = 'none';
