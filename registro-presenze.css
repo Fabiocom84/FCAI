@@ -12,12 +12,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* Rimosso margin-top negativo hack */
-    margin-bottom: 5px;
-    padding: 5px 15px;
+    /* APPITTIMENTO TOTALE: Rimuovo margini, bordi arrotondati e ombre per stile "flat" full-width */
+    margin: 0;
+    padding: 10px 15px;
+    /* Un po' di padding interno ok */
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #dee2e6;
+    /* Solo separatore sotto */
+
+    /* Reset stili box */
+    border-radius: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+    /* Non si schiaccia */
 }
 
 .month-navigation {
@@ -45,8 +52,9 @@
 .timeline-container {
     width: 100%;
     /* overflow-x: auto;  <-- Spostato o mantenuto se serve scroll orizzontale */
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
+    /* Rimuovo bordi esterni e radius per massimizzare spazio */
+    border: none;
+    border-radius: 0;
     background-color: #fff;
 
     /* MODIFICA FLEX: Riempie lo spazio rimanente invece di altezza fissa */
