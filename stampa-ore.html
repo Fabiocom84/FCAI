@@ -32,15 +32,19 @@
 
         <!-- HEADER -->
         <header class="std-app-header">
-            <a href="index.html" class="header-button">
+            <a href="index.html" class="header-button" style="width: 80px;">
                 <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg);">
                 <span>Home</span>
             </a>
-            <h1>REPORT MENSILE</h1>
-            <div style="display: flex; align-items: center; gap: 10px;">
+
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <h1 style="margin: 0; line-height: 1.2;">REPORT MENSILE</h1>
                 <span id="headerUserName" class="header-username"
-                    style="font-size: 0.85rem; opacity: 0.9;">Caricamento...</span>
+                    style="font-size: 0.8rem; font-weight: normal; opacity: 0.8;">Caricamento...</span>
             </div>
+
+            <!-- Spacer per bilanciare il bottone a sinistra e centrare il titolo -->
+            <div style="width: 80px;"></div>
         </header>
 
         <div class="std-app-content mobile-content-wrapper report-body">
