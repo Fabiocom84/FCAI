@@ -49,206 +49,221 @@
     <!-- Manteniamo ID 'dayDetailModal' per JS, ma usiamo classi standard se possibile o lasciamo custom se complesso -->
     <div id="dayDetailModal" class="full-screen-page" style="display: none;">
 
-        <header class="std-app-header" style="border-radius:0;">
-            <button id="closeDetailBtn" class="header-button">
-                <img src="img/log-out.png"
-                    style="width:14px; filter: brightness(0) invert(1); transform: rotate(180deg);">
-                <span>Indietro</span>
-            </button>
-            <div class="header-title-container">
-                <h1 id="selectedDayTitle">DATA</h1>
-                <span id="detailUserName" class="header-subtitle">Utente</span>
-            </div>
-            <div style="width: 80px;"></div>
-        </header>
+        <!-- WRAPPER STANDARD per dare margini e stile coerente -->
+        <div class="std-app-shell" style="height: 100%; box-sizing: border-box;">
 
-        <!-- CORPO SCROLLABILE -->
-        <div class="mobile-content-wrapper full-screen-body">
-
-            <!-- SEZIONE 1: LISTA CARD + TOTALE -->
-            <div id="existingWorksSection">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h4 class="section-title" style="margin:0;">Attività del Giorno</h4>
-                    <!-- NUOVO: Badge Totale -->
-                    <div id="dayTotalBadge" class="day-total-badge">Totale: 0h</div>
+            <header class="std-app-header">
+                <button id="closeDetailBtn" class="header-button">
+                    <img src="img/log-out.png"
+                        style="width:14px; filter: brightness(0) invert(1); transform: rotate(180deg);">
+                    <span>Indietro</span>
+                </button>
+                <div class="header-title-container">
+                    <h1 id="selectedDayTitle">DATA</h1>
+                    <span id="detailUserName" class="header-subtitle">Utente</span>
                 </div>
+                <div style="width: 80px;"></div>
+            </header>
 
-                <div id="existingWorksList" class="cards-container"></div>
-            </div>
+            <!-- CORPO SCROLLABILE -->
+            <!-- Nota: std-app-content gestisce già overflow, ma manteniamo classi specifiche per compatibilità JS/CSS esistente -->
+            <div class="std-app-content no-padding">
+                <div class="mobile-content-wrapper full-screen-body">
 
-            <div class="divider-line"></div>
+                    <!-- SEZIONE 1: LISTA CARD + TOTALE -->
+                    <div id="existingWorksSection">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h4 class="section-title" style="margin:0;">Attività del Giorno</h4>
+                            <!-- NUOVO: Badge Totale -->
+                            <div id="dayTotalBadge" class="day-total-badge">Totale: 0h</div>
+                        </div>
 
-            <!-- SEZIONE 2: FORM -->
-            <div class="mobile-insert-form">
-                <!-- Toggle Tipo (Invariato) -->
-                <div class="entry-type-selector">
-                    <input type="radio" name="entryType" id="type-prod" value="produzione" checked>
-                    <label for="type-prod">🏭 Produzione</label>
-                    <input type="radio" name="entryType" id="type-site" value="cantiere">
-                    <label for="type-site">🚧 Cantiere</label>
-                    <input type="radio" name="entryType" id="type-abs" value="assenza">
-                    <label for="type-abs">🏖️ Assenza</label>
+                        <div id="existingWorksList" class="cards-container"></div>
+                    </div>
+
+                    <div class="divider-line"></div>
+
+                    <!-- SEZIONE 2: FORM -->
+                    <div class="mobile-insert-form">
+                        <!-- Toggle Tipo (Invariato) -->
+                        <div class="entry-type-selector">
+                            <input type="radio" name="entryType" id="type-prod" value="produzione" checked>
+                            <label for="type-prod">🏭 Produzione</label>
+                            <input type="radio" name="entryType" id="type-site" value="cantiere">
+                            <label for="type-site">🚧 Cantiere</label>
+                            <input type="radio" name="entryType" id="type-abs" value="assenza">
+                            <label for="type-abs">🏖️ Assenza</label>
+                        </div>
+
+                        <form id="mobileHoursForm">
+
+                            <!-- 1. SELEZIONE COMMESSA (Visibile solo per Produzione) -->
+                            <div class="form-group mobile-group" id="group-commessa">
+                                <label>Commessa / Impianto</label>
+                                <select id="mobileCommessaSelect"></select>
+                            </div>
+
+                            <div id="dynamic-fields-container">
+                                <!-- 2. CAMPI PRODUZIONE (Macro/Componente) -->
+                                <div id="production-fields">
+                                    <div class="form-group mobile-group">
+                                        <label>Reparto / Macro *</label>
+                                        <select id="mobileMacroSelect">
+                                            <option value="" disabled selected>-- Seleziona Commessa --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group mobile-group">
+                                        <label>Lavorazione *</label>
+                                        <select id="mobileComponentSelect">
+                                            <option value="" disabled selected>-- Seleziona Reparto --</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- 3. CAMPI ASSENZA (Tipo + Orari) -->
+                                <div id="absence-fields" style="display: none;">
+                                    <div class="absence-box">
+                                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+                                            <span style="font-size:1.2rem;">🏖️</span>
+                                            <label style="color:#1565c0; font-weight:bold; margin:0;">Dettagli
+                                                Assenza</label>
+                                        </div>
+
+                                        <div class="form-group mobile-group">
+                                            <label style="color:#1e88e5;">Motivo *</label>
+                                            <select id="mobileAbsenceType"
+                                                style="border-color:#90caf9; color:#0d47a1; font-weight:600;">
+                                                <option value="Ferie">Ferie (Giornata)</option>
+                                                <option value="Permesso">Permesso (Ore)</option>
+                                                <option value="Malattia">Malattia</option>
+                                                <option value="L104">Legge 104</option>
+                                            </select>
+                                        </div>
+
+                                        <p class="section-subtitle" style="color:#1976d2;">Orario Assenza (Mattina /
+                                            Pomeriggio)</p>
+
+                                        <div class="time-range-row">
+                                            <div class="label-col text-mattina" style="color:#1565c0;">MAT</div>
+                                            <div class="select-col"><select id="absMattinaStart"
+                                                    class="mobile-time-select abs-select">
+                                                    <option value="">--:--</option>
+                                                </select></div>
+                                            <div class="arrow-col">➜</div>
+                                            <div class="select-col"><select id="absMattinaEnd"
+                                                    class="mobile-time-select abs-select">
+                                                    <option value="">--:--</option>
+                                                </select></div>
+                                        </div>
+                                        <div class="time-range-row">
+                                            <div class="label-col text-pomeriggio" style="color:#1565c0;">POM</div>
+                                            <div class="select-col"><select id="absPomStart"
+                                                    class="mobile-time-select abs-select">
+                                                    <option value="">--:--</option>
+                                                </select></div>
+                                            <div class="arrow-col">➜</div>
+                                            <div class="select-col"><select id="absPomEnd"
+                                                    class="mobile-time-select abs-select">
+                                                    <option value="">--:--</option>
+                                                </select></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. CAMPI VIAGGIO (Visibile solo per Cantiere) -->
+                            <div id="travel-fields" style="display: none;">
+                                <div class="travel-box">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                                        <span style="font-size:1.2rem;">🚗</span>
+                                        <label style="color:#6a1b9a; font-weight:bold; margin:0;">Ore Viaggio</label>
+                                    </div>
+
+                                    <div style="display:flex; gap:15px;">
+                                        <div style="flex:1;">
+                                            <label class="travel-label">Andata ➡️</label>
+                                            <input type="number" id="travelAndataInput" step="0.5" placeholder="0"
+                                                class="travel-input">
+                                        </div>
+                                        <div style="flex:1;">
+                                            <label class="travel-label">⬅️ Ritorno</label>
+                                            <input type="number" id="travelRitornoInput" step="0.5" placeholder="0"
+                                                class="travel-input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. ORE LAVORO PRINCIPALI -->
+                            <div class="simple-hours-group">
+                                <label id="dynamicHoursLabel">Ore Lavoro *</label>
+                                <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24"
+                                    placeholder="0.0" required>
+                            </div>
+
+                            <!-- 6. CAMPI STRAORDINARIO (Produzione > 8h) -->
+                            <div id="overtime-fields" style="display:none;">
+                                <div class="overtime-box">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                        <span style="font-size:1.2rem;">⚡</span>
+                                        <p style="color:#c53030; font-size:0.9rem; margin:0; font-weight:bold;">
+                                            Dettaglio Straordinari</p>
+                                    </div>
+                                    <p class="section-subtitle" style="color:#e53e3e;">Specifica quando hai fatto le ore
+                                        extra.</p>
+
+                                    <!-- Straordinario Mattina -->
+                                    <div class="time-range-row">
+                                        <div class="label-col text-mattina">MAT</div> <!-- Testo al posto dell'icona -->
+                                        <div class="select-col"><select id="strMattinaStart"
+                                                class="mobile-time-select str-select">
+                                                <option value="">--:--</option>
+                                            </select></div>
+                                        <div class="arrow-col">➜</div>
+                                        <div class="select-col"><select id="strMattinaEnd"
+                                                class="mobile-time-select str-select">
+                                                <option value="">--:--</option>
+                                            </select></div>
+                                    </div>
+
+                                    <!-- Straordinario Pomeriggio -->
+                                    <div class="time-range-row">
+                                        <div class="label-col text-pomeriggio">POM</div>
+                                        <!-- Testo al posto dell'icona -->
+                                        <div class="select-col"><select id="strPomStart"
+                                                class="mobile-time-select str-select">
+                                                <option value="">--:--</option>
+                                            </select></div>
+                                        <div class="arrow-col">➜</div>
+                                        <div class="select-col"><select id="strPomEnd"
+                                                class="mobile-time-select str-select">
+                                                <option value="">--:--</option>
+                                            </select></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mobile-group" id="group-note">
+                                <label>Note aggiuntive</label>
+                                <textarea id="mobileNoteInput" rows="2" placeholder="Dettagli..."></textarea>
+                            </div>
+
+                            <div style="height: 100px;"></div>
+                        </form>
+                    </div>
                 </div>
-
-                <form id="mobileHoursForm">
-
-                    <!-- 1. SELEZIONE COMMESSA (Visibile solo per Produzione) -->
-                    <div class="form-group mobile-group" id="group-commessa">
-                        <label>Commessa / Impianto</label>
-                        <select id="mobileCommessaSelect"></select>
-                    </div>
-
-                    <div id="dynamic-fields-container">
-                        <!-- 2. CAMPI PRODUZIONE (Macro/Componente) -->
-                        <div id="production-fields">
-                            <div class="form-group mobile-group">
-                                <label>Reparto / Macro *</label>
-                                <select id="mobileMacroSelect">
-                                    <option value="" disabled selected>-- Seleziona Commessa --</option>
-                                </select>
-                            </div>
-                            <div class="form-group mobile-group">
-                                <label>Lavorazione *</label>
-                                <select id="mobileComponentSelect">
-                                    <option value="" disabled selected>-- Seleziona Reparto --</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- 3. CAMPI ASSENZA (Tipo + Orari) -->
-                        <div id="absence-fields" style="display: none;">
-                            <div class="absence-box">
-                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
-                                    <span style="font-size:1.2rem;">🏖️</span>
-                                    <label style="color:#1565c0; font-weight:bold; margin:0;">Dettagli Assenza</label>
-                                </div>
-
-                                <div class="form-group mobile-group">
-                                    <label style="color:#1e88e5;">Motivo *</label>
-                                    <select id="mobileAbsenceType"
-                                        style="border-color:#90caf9; color:#0d47a1; font-weight:600;">
-                                        <option value="Ferie">Ferie (Giornata)</option>
-                                        <option value="Permesso">Permesso (Ore)</option>
-                                        <option value="Malattia">Malattia</option>
-                                        <option value="L104">Legge 104</option>
-                                    </select>
-                                </div>
-
-                                <p class="section-subtitle" style="color:#1976d2;">Orario Assenza (Mattina / Pomeriggio)
-                                </p>
-
-                                <div class="time-range-row">
-                                    <div class="label-col text-mattina" style="color:#1565c0;">MAT</div>
-                                    <div class="select-col"><select id="absMattinaStart"
-                                            class="mobile-time-select abs-select">
-                                            <option value="">--:--</option>
-                                        </select></div>
-                                    <div class="arrow-col">➜</div>
-                                    <div class="select-col"><select id="absMattinaEnd"
-                                            class="mobile-time-select abs-select">
-                                            <option value="">--:--</option>
-                                        </select></div>
-                                </div>
-                                <div class="time-range-row">
-                                    <div class="label-col text-pomeriggio" style="color:#1565c0;">POM</div>
-                                    <div class="select-col"><select id="absPomStart"
-                                            class="mobile-time-select abs-select">
-                                            <option value="">--:--</option>
-                                        </select></div>
-                                    <div class="arrow-col">➜</div>
-                                    <div class="select-col"><select id="absPomEnd"
-                                            class="mobile-time-select abs-select">
-                                            <option value="">--:--</option>
-                                        </select></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4. CAMPI VIAGGIO (Visibile solo per Cantiere) -->
-                    <div id="travel-fields" style="display: none;">
-                        <div class="travel-box">
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                                <span style="font-size:1.2rem;">🚗</span>
-                                <label style="color:#6a1b9a; font-weight:bold; margin:0;">Ore Viaggio</label>
-                            </div>
-
-                            <div style="display:flex; gap:15px;">
-                                <div style="flex:1;">
-                                    <label class="travel-label">Andata ➡️</label>
-                                    <input type="number" id="travelAndataInput" step="0.5" placeholder="0"
-                                        class="travel-input">
-                                </div>
-                                <div style="flex:1;">
-                                    <label class="travel-label">⬅️ Ritorno</label>
-                                    <input type="number" id="travelRitornoInput" step="0.5" placeholder="0"
-                                        class="travel-input">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 5. ORE LAVORO PRINCIPALI -->
-                    <div class="simple-hours-group">
-                        <label id="dynamicHoursLabel">Ore Lavoro *</label>
-                        <input type="number" id="mobileHoursInput" step="0.5" min="0.5" max="24" placeholder="0.0"
-                            required>
-                    </div>
-
-                    <!-- 6. CAMPI STRAORDINARIO (Produzione > 8h) -->
-                    <div id="overtime-fields" style="display:none;">
-                        <div class="overtime-box">
-                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                                <span style="font-size:1.2rem;">⚡</span>
-                                <p style="color:#c53030; font-size:0.9rem; margin:0; font-weight:bold;">Dettaglio
-                                    Straordinari</p>
-                            </div>
-                            <p class="section-subtitle" style="color:#e53e3e;">Specifica quando hai fatto le ore extra.
-                            </p>
-
-                            <!-- Straordinario Mattina -->
-                            <div class="time-range-row">
-                                <div class="label-col text-mattina">MAT</div> <!-- Testo al posto dell'icona -->
-                                <div class="select-col"><select id="strMattinaStart"
-                                        class="mobile-time-select str-select">
-                                        <option value="">--:--</option>
-                                    </select></div>
-                                <div class="arrow-col">➜</div>
-                                <div class="select-col"><select id="strMattinaEnd"
-                                        class="mobile-time-select str-select">
-                                        <option value="">--:--</option>
-                                    </select></div>
-                            </div>
-
-                            <!-- Straordinario Pomeriggio -->
-                            <div class="time-range-row">
-                                <div class="label-col text-pomeriggio">POM</div> <!-- Testo al posto dell'icona -->
-                                <div class="select-col"><select id="strPomStart" class="mobile-time-select str-select">
-                                        <option value="">--:--</option>
-                                    </select></div>
-                                <div class="arrow-col">➜</div>
-                                <div class="select-col"><select id="strPomEnd" class="mobile-time-select str-select">
-                                        <option value="">--:--</option>
-                                    </select></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group mobile-group" id="group-note">
-                        <label>Note aggiuntive</label>
-                        <textarea id="mobileNoteInput" rows="2" placeholder="Dettagli..."></textarea>
-                    </div>
-
-                    <div style="height: 100px;"></div>
-                </form>
             </div>
-        </div>
 
-        <!-- FOOTER ACTIONS (Dentro il Modale Full Screen) -->
-        <div class="mobile-footer-actions">
-            <button type="button" id="cancelEditBtn" class="cancel-button" style="display: none;">Annulla</button>
-            <button type="button" id="saveHoursBtn" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
-        </div>
+            <!-- FOOTER ACTIONS (Dentro il Modale -> Dentro la Shell) -->
+            <!-- NOTA: Se dentro shell, segue la larghezza shell -->
+            <div class="mobile-footer-actions">
+                <button type="button" id="cancelEditBtn" class="cancel-button" style="display: none;">Annulla</button>
+                <button type="button" id="saveHoursBtn" class="save-button mobile-save-btn">AGGIUNGI ORE</button>
+            </div>
+
+        </div> <!-- End Shell -->
+
     </div>
 
     <!-- UNIVERSAL MODAL (Sostituisce custom-modal) -->
