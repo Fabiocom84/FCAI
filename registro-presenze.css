@@ -94,9 +94,11 @@
     position: relative !important;
     /* Necessario per semaforo e note */
     overflow: hidden;
-    width: 95px;
-    min-width: 95px;
-    max-width: 95px;
+
+    /* MODIFICA WIDTH: Ridotto spazio ore (es. 60px) */
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
 }
 
 /* Intestazione Giorni */
@@ -113,13 +115,28 @@
     border-bottom: 2px solid #ced4da;
     line-height: 1.2;
     /* Larghezza identica ai TD */
-    width: 95px;
-    min-width: 95px;
-    max-width: 95px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
 }
 
 .timeline-table thead th:hover {
     background-color: #e2e6ea;
+}
+
+/* FIX SPECIFICO PRIMA COLONNA HEADER (OPERATORE) */
+.timeline-table thead th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    /* Molto alto per coprire lo scroll */
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    background-color: #f8f9fa !important;
+    /* Sfondo opaco per nascondere scroll */
+    border-right: 3px solid #ced4da;
+    /* Separatore visivo */
 }
 
 /* Colonna Nomi (Sticky a sinistra) */
