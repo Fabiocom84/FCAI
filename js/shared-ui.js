@@ -12,29 +12,46 @@ export function showModal(options) {
         const titleEl = document.getElementById('custom-modal-title');
         const messageEl = document.getElementById('custom-modal-message');
         const buttonsEl = document.getElementById('custom-modal-buttons');
+        const headerEl = modal.querySelector('.modal-header') || titleEl.parentElement; // Fallback
 
         if (!modal || !overlay) {
             console.error("Elementi del modale custom non trovati.");
             return resolve(false);
         }
 
+        // 1. Reset Stili Base
+        headerEl.className = 'modal-header';
         titleEl.textContent = options.title || 'Attenzione';
         messageEl.textContent = options.message || '';
-        buttonsEl.innerHTML = ''; // Pulisci i pulsanti precedenti
+        buttonsEl.innerHTML = '';
 
+        // 2. Gestione Tipo (Successo, Errore, Warning)
+        let confirmBtnClass = 'std-btn std-btn--primary'; // Default Verde (Successo/Azione)
+        if (options.type === 'error') {
+            confirmBtnClass = 'std-btn std-btn--danger'; // Rosso
+            headerEl.classList.add('error-header'); // Opzionale per CSS futuro
+        } else if (options.type === 'warning') {
+            confirmBtnClass = 'std-btn std-btn--warning'; // Giallo
+        }
+
+        // Sovrascrittura manuale classe
+        if (options.confirmClass) confirmBtnClass = options.confirmClass;
+
+        // 3. Creazione Pulsante Conferma
         const confirmBtn = document.createElement('button');
         confirmBtn.textContent = options.confirmText || 'OK';
-        confirmBtn.className = 'button';
+        confirmBtn.className = confirmBtnClass;
         confirmBtn.onclick = () => {
             overlay.style.display = 'none';
             resolve(true);
         };
         buttonsEl.appendChild(confirmBtn);
 
+        // 4. Creazione Pulsante Annulla (se richiesto)
         if (options.cancelText) {
             const cancelBtn = document.createElement('button');
             cancelBtn.textContent = options.cancelText;
-            cancelBtn.className = 'button button--secondary';
+            cancelBtn.className = 'std-btn std-btn--ghost'; // Grigio/Bianco
             cancelBtn.onclick = () => {
                 overlay.style.display = 'none';
                 resolve(false);
@@ -66,7 +83,7 @@ export function showSuccessFeedbackModal(title, message, parentModalId) {
     feedbackModal.style.display = 'block';
     if (modalOverlay) modalOverlay.style.display = 'block';
 
-    let seconds = 2; 
+    let seconds = 2;
     const countdownElement = feedbackModal.querySelector('#feedback-modal-countdown');
     countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
 
@@ -90,13 +107,13 @@ export function closeSuccessFeedbackModal() {
 
     const modalOverlay = document.getElementById('modalOverlay');
     const parentModalCloseFunction = parentModalToClose ? window[`close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`] : null;
-    
+
     if (parentModalCloseFunction) {
         parentModalCloseFunction();
     } else if (parentModalToClose) {
         parentModalToClose.style.display = 'none';
-        if(modalOverlay) modalOverlay.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
     } else {
-        if(modalOverlay) modalOverlay.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
     }
 }
