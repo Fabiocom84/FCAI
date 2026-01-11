@@ -284,8 +284,9 @@ const App = {
             card.className = 'commesse-card';
 
             // Header Image
-            const imgStyle = c.immagine ? `background-image: url('${c.immagine}')` : '';
-            const imgContent = !c.immagine ? '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>' : '';
+            const imgStyle = c.immagine ? `background-image: url('${c.immagine}'); cursor: pointer;` : '';
+            const imgContent = !c.immagine ? '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>' :
+                `<div style="width:100%;height:100%;" data-full-img="${c.immagine}"></div>`;
 
             // --- 1. TOGGLE STATO RAPIDO ---
             const statuses = this.state.allStatuses.length > 0 ? this.state.allStatuses : [
@@ -491,7 +492,16 @@ const App = {
                 });
             });
 
-            // 3. Admin Buttons
+            // 3. Image Lightbox Trigger
+            const cardImg = card.querySelector('.card-image');
+            if (cardImg && c.immagine) {
+                cardImg.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openImageModal(c.immagine);
+                });
+            }
+
+            // 4. Admin Buttons
             if (IsAdmin) {
                 const edit = card.querySelector('.edit-btn');
                 const del = card.querySelector('.del-btn');
@@ -599,6 +609,40 @@ const App = {
 
         } catch (e) {
             console.error("Errore toggle fase", e);
+        }
+    },
+
+    // --- LIGHTBOX METHODS ---
+    initImageModal: function () {
+        this.dom.imageModal = document.getElementById('imageViewerModal');
+        this.dom.fullImage = document.getElementById('fullImage');
+        const closeBtn = document.querySelector('.close-viewer');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeImageModal());
+        }
+        if (this.dom.imageModal) {
+            this.dom.imageModal.addEventListener('click', (e) => {
+                if (e.target === this.dom.imageModal) this.closeImageModal();
+            });
+        }
+    },
+
+    openImageModal: function (src) {
+        if (!this.dom.imageModal || !this.dom.fullImage) {
+            // Lazy binding if not called
+            this.initImageModal();
+        }
+        if (this.dom.imageModal && this.dom.fullImage) {
+            this.dom.fullImage.src = src;
+            this.dom.imageModal.style.display = "flex";
+        }
+    },
+
+    closeImageModal: function () {
+        if (this.dom.imageModal) {
+            this.dom.imageModal.style.display = "none";
+            this.dom.fullImage.src = "";
         }
     },
 
