@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let detailCurrentPerson = null;
     let detailCurrentDate = new Date();
 
-    const LOAD_BATCH_DAYS = 15; // Richiesto 15gg su scroll
-    const PRE_LOAD_DAYS = 7;    // Richiesto 7gg indietro
-    const POST_LOAD_DAYS = 7;   // Richiesto 7gg avanti
-    const COLUMN_WIDTH = 75;    // Aggiornato per coerenza con CSS
+    const LOAD_BATCH_DAYS = 15; // Richiesto 15gg su scroll (invariato)
+    const PRE_LOAD_DAYS = 10;   // Richiesto 10gg indietro
+    const POST_LOAD_DAYS = 10;  // Richiesto 10gg avanti
+    const COLUMN_WIDTH = 85;    // Aggiornato per coerenza con CSS
 
     const ROLE_PRIORITY = {
         "addetto taglio": 1, "carpentiere": 2, "saldatore": 3, "tornitore": 4,

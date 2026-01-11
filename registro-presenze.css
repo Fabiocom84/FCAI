@@ -95,10 +95,10 @@
     /* Necessario per semaforo e note */
     overflow: hidden;
 
-    /* MODIFICA WIDTH: Aumentato leggermente per evitare tagli (75px) */
-    width: 75px;
-    min-width: 75px;
-    max-width: 75px;
+    /* MODIFICA WIDTH: Aumentato a 85px per leggibilità */
+    width: 85px;
+    min-width: 85px;
+    max-width: 85px;
 }
 
 /* Intestazione Giorni */
@@ -115,9 +115,9 @@
     border-bottom: 2px solid #ced4da;
     line-height: 1.2;
     /* Larghezza identica ai TD */
-    width: 75px;
-    min-width: 75px;
-    max-width: 75px;
+    width: 85px;
+    min-width: 85px;
+    max-width: 85px;
 }
 
 .timeline-table thead th:hover {
