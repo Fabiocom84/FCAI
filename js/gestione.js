@@ -654,7 +654,7 @@ const App = {
         });
 
         if (Object.values(newObject).every(val => !val)) {
-            return showModal({ title: 'Attenzione', message: 'Compilare almeno un campo per salvare.', confirmText: 'OK' });
+            return showModal({ title: 'Attenzione', message: 'Compilare almeno un campo per salvare.', confirmText: 'OK', type: 'warning' });
         }
 
         try {
@@ -673,7 +673,7 @@ const App = {
 
             // Questo codice viene eseguito solo se response.ok è true
             this.state.isAddingNewRow = false;
-            await showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK' });
+            await showModal({ title: 'Successo', message: 'Nuovo elemento creato con successo.', confirmText: 'OK', type: 'success' });
 
             this.state.activeFilters = {};
             this.state.searchTerm = '';
@@ -684,7 +684,7 @@ const App = {
 
         } catch (error) {
             // Ora l'errore del backend verrà catturato e mostrato qui
-            showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK' });
+            showModal({ title: 'Errore', message: `Errore nella creazione: ${error.message}`, confirmText: 'OK', type: 'error' });
         }
     },
 
@@ -728,7 +728,7 @@ const App = {
     */
     async handleDeleteRow() {
         if (!this.state.lastSelectedRadio) {
-            showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK' });
+            showModal({ title: 'Attenzione', message: 'Nessuna riga selezionata.', confirmText: 'OK', type: 'warning' });
             return;
         }
         const id = this.state.lastSelectedRadio.value;
@@ -739,7 +739,8 @@ const App = {
             title: 'Conferma Eliminazione',
             message: `Sei sicuro di voler eliminare "${rowName}"? L'azione è irreversibile.`,
             confirmText: 'Elimina',
-            cancelText: 'Annulla'
+            cancelText: 'Annulla',
+            type: 'warning'
         });
 
         if (isConfirmed) {
@@ -747,7 +748,7 @@ const App = {
             const endpoint = `${config.apiEndpoint}/${id}`;
             try {
                 await apiFetch(endpoint, { method: 'DELETE' });
-                showModal({ title: 'Successo', message: 'Elemento eliminato con successo.', confirmText: 'OK' });
+                showModal({ title: 'Successo', message: 'Elemento eliminato con successo.', confirmText: 'OK', type: 'success' });
                 this.handleViewChange();
             } catch (error) {
                 showModal({ title: 'Errore', message: `Errore durante l'eliminazione: ${error.message}`, confirmText: 'OK' });
@@ -860,7 +861,7 @@ const App = {
             // Chiama la nuova funzione per aggiornare l'interfaccia e uscire dalla modalità modifica
             this.exitEditMode(rowId, resultData);
 
-            await showModal({ title: 'Successo', message: 'Modifiche salvate con successo.', confirmText: 'OK' });
+            await showModal({ title: 'Successo', message: 'Modifiche salvate con successo.', confirmText: 'OK', type: 'success' });
 
         } catch (error) {
             showModal({ title: 'Errore', message: `Impossibile salvare le modifiche: ${error.message}`, confirmText: 'OK' });
