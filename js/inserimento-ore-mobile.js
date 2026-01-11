@@ -215,8 +215,14 @@ const MobileHoursApp = {
 
         // Mappatura Inglese/Backend -> Italiano 3 lettere
         const map = {
+            // Full names English
             'JANUARY': 'GEN', 'FEBRUARY': 'FEB', 'MARCH': 'MAR', 'APRIL': 'APR', 'MAY': 'MAG', 'JUNE': 'GIU',
             'JULY': 'LUG', 'AUGUST': 'AGO', 'SEPTEMBER': 'SET', 'OCTOBER': 'OTT', 'NOVEMBER': 'NOV', 'DECEMBER': 'DIC',
+
+            // Short names English (spesso arrivano così dal backend)
+            'JAN': 'GEN', 'FEB': 'FEB', 'MAR': 'MAR', 'APR': 'APR', 'MAY': 'MAG', 'JUN': 'GIU',
+            'JUL': 'LUG', 'AUG': 'AGO', 'SEP': 'SET', 'OCT': 'OTT', 'NOV': 'NOV', 'DEC': 'DIC',
+
             // Fallback per già italiano o misto
             'GENNAIO': 'GEN', 'FEBBRAIO': 'FEB', 'MARZO': 'MAR', 'APRILE': 'APR', 'MAGGIO': 'MAG', 'GIUGNO': 'GIU',
             'LUGLIO': 'LUG', 'AGOSTO': 'AGO', 'SETTEMBRE': 'SET', 'OTTOBRE': 'OTT', 'NOVEMBRE': 'NOV', 'DICEMBRE': 'DIC'
