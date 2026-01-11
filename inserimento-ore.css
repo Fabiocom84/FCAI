@@ -20,6 +20,14 @@
     scrollbar-width: none;
 }
 
+/* Fix Padding per la modale di dettaglio */
+.full-screen-body {
+    padding: 20px !important;
+    /* Laterale e Superiore come richiesto */
+    padding-bottom: 100px !important;
+    /* Spazio per il footer fisso */
+}
+
 height: calc(100vh - 140px);
 overflow-y: auto;
 padding: 5px;
