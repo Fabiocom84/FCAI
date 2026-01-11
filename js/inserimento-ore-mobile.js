@@ -67,6 +67,57 @@ const MobileHoursApp = {
         this.loadTimelineBatch();
     },
 
+    initDOM: function () {
+        this.dom = {
+            timelineContainer: document.getElementById('mobileTimelineContainer'),
+            dayDetailModal: document.getElementById('dayDetailModal'),
+            existingList: document.getElementById('existingWorksList'),
+            form: document.getElementById('mobileHoursForm'),
+            typeRadios: document.querySelectorAll('input[name="entryType"]'),
+            saveBtn: document.getElementById('saveHoursBtn'),
+            cancelEditBtn: document.getElementById('cancelEditBtn'),
+            closeDetailBtn: document.getElementById('closeDetailBtn'),
+            dayTotalBadge: document.getElementById('dayTotalBadge'),
+            commessaSelect: document.getElementById('mobileCommessaSelect'),
+            macroSelect: document.getElementById('mobileMacroSelect'),
+            componentSelect: document.getElementById('mobileComponentSelect'),
+            hoursInput: document.getElementById('mobileHoursInput'),
+            noteInput: document.getElementById('mobileNoteInput'),
+            hoursLabel: document.getElementById('dynamicHoursLabel'),
+            groupCommessa: document.getElementById('group-commessa'),
+            prodFields: document.getElementById('production-fields'),
+            absFields: document.getElementById('absence-fields'),
+            absType: document.getElementById('mobileAbsenceType'),
+            absMattinaStart: document.getElementById('absMattinaStart'),
+            absMattinaEnd: document.getElementById('absMattinaEnd'),
+            absPomStart: document.getElementById('absPomStart'),
+            absPomEnd: document.getElementById('absPomEnd'),
+            travelFields: document.getElementById('travel-fields'),
+            travelAndata: document.getElementById('travelAndataInput'),
+            travelRitorno: document.getElementById('travelRitornoInput'),
+            overtimeFields: document.getElementById('overtime-fields'),
+            strMattinaStart: document.getElementById('strMattinaStart'),
+            strMattinaEnd: document.getElementById('strMattinaEnd'),
+            strPomStart: document.getElementById('strPomStart'),
+            strPomEnd: document.getElementById('strPomEnd')
+        };
+    },
+
+    attachListeners: function () {
+        if (this.dom.timelineContainer) this.dom.timelineContainer.addEventListener('scroll', () => this.handleScroll());
+        if (this.dom.closeDetailBtn) this.dom.closeDetailBtn.addEventListener('click', () => this.closeDetail());
+        if (this.dom.typeRadios) this.dom.typeRadios.forEach(r => r.addEventListener('change', (e) => this.handleTypeChange(e.target.value)));
+        if (this.dom.macroSelect) this.dom.macroSelect.addEventListener('change', (e) => this.renderComponentOptions(e.target.value));
+
+        if (this.dom.saveBtn) this.dom.saveBtn.addEventListener('click', (e) => this.handleSave(e));
+        if (this.dom.cancelEditBtn) this.dom.cancelEditBtn.addEventListener('click', () => this.resetFormState());
+
+        if (this.dom.hoursInput) this.dom.hoursInput.addEventListener('input', () => this.checkOvertimeLogic());
+        if (this.dom.travelAndata) this.dom.travelAndata.addEventListener('input', () => this.checkOvertimeLogic());
+        if (this.dom.travelRitorno) this.dom.travelRitorno.addEventListener('input', () => this.checkOvertimeLogic());
+        if (this.dom.absType) this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
+    },
+
     setupAdminUI: function () {
         // 1. Cambia Header
         const headerEl = document.getElementById('headerUserName');
