@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Dati - Vista Agile</title>
-    <link rel="stylesheet" href="style-v2.css?v=3">
+    <link rel="stylesheet" href="style-v2.css?v=5">
     <link rel="stylesheet" href="gestione.css">
     <style>
         /* CRITICAL INLINE STYLES TO FIX MODAL */
@@ -40,17 +40,20 @@
             margin-top: 0;
             color: #2c3e50;
             font-size: 1.5rem;
+            display: block;
         }
 
         .std-modal p {
             color: #555;
             font-size: 1.1rem;
+            display: block;
         }
 
         .std-modal-buttons {
             display: flex;
             justify-content: center;
             gap: 15px;
+            width: 100%;
         }
 
         .std-modal .button,
@@ -124,7 +127,7 @@
     <div id="std-modal-overlay" class="std-modal-overlay" style="display: none;">
         <div id="std-modal" class="std-modal">
             <h2 id="std-modal-title"></h2>
-            <p id="std-modal-message"></p>
+            <p id="std-modal-message">Messaggio...</p>
             <div id="std-modal-buttons" class="std-modal-buttons"></div>
         </div>
     </div>
