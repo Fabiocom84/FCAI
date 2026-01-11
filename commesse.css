@@ -128,12 +128,23 @@
 }
 
 /* --- 2. GRIGLIA CARD --- */
+/* --- 2. GRIGLIA CARD --- */
 .commesse-grid {
     display: grid;
-    /* Card più larghe: minimo 350px per migliore leggibilità */
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    /* Adatta a schermi più piccoli, ma mantieni leggibilità */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 25px;
     padding: 25px;
+}
+
+@media (max-width: 480px) {
+    .commesse-grid {
+        grid-template-columns: 1fr;
+        /* Una colonna piena su mobile */
+        padding: 15px;
+        /* Meno padding laterale */
+        gap: 15px;
+    }
 }
 
 /* LOADER STYLES */
