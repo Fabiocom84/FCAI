@@ -77,8 +77,10 @@ body {
     flex: 1;
     height: 100%;
     overflow: hidden;
-    padding: 10px;
-    gap: 10px;
+    padding: 20px;
+    /* Portato a 20px per allinearsi con Header e altri layout */
+    gap: 15px;
+    /* Aumentato leggermente il gap tra colonne e inspector */
     background-color: #eef2f5;
 }
 
