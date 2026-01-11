@@ -20,14 +20,19 @@ body {
 
 /* Override della Shell Standard per occupare tutta la finestra */
 .std-app-shell {
+    position: fixed !important;
+    top: 0;
+    left: 0;
     width: 100% !important;
     /* Usa % per evitare overflow scrollbar */
-    height: 100vh !important;
+    height: 100% !important;
     max-width: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    z-index: 10;
+    /* Assicura che stia sopra a tutto */
 }
 
 /* Assicuriamo che il contenuto si espanda */
@@ -35,8 +40,11 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
     overflow: hidden !important;
     /* Scroll gestito dalle colonne interne */
+    padding: 0 !important;
+    /* Reset padding container */
 }
 
 /* Box Filtro Utente (Specifico per header attività) */
@@ -81,12 +89,13 @@ body {
     flex: 1;
     height: 100%;
     overflow: hidden;
-    padding: 32px;
+    padding: 20px 20px 20px 20px;
+    /* Padding uniforme */
     /* Margine ampio standard */
     gap: 20px;
     background-color: #eef2f5;
     width: 100%;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     /* Sicurezza extra */
 }
 
