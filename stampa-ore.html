@@ -56,7 +56,7 @@
 
                 <!-- STEP 1: Selezione -->
                 <div id="stepSelect">
-                    <div class="pdf-controls compact-row" style="margin-bottom: 15px;">
+                    <div class="pdf-controls compact-row pdf-date-container" style="margin-bottom: 15px;">
                         <select id="pdfMonth" class="pdf-select"></select>
                         <select id="pdfYear" class="pdf-select"></select>
                     </div>
@@ -186,11 +186,68 @@
             </section>
 
             <section class="preview-section">
-                <div class="view-controls" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <h4 style="margin:0;">Dettagli</h4>
-                        <input type="text" id="tableSearchInput" placeholder="🔍 Cerca nelle attività..." 
-                               style="padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:0.9em; width:220px;">
+
+                <style>
+                    /* Mobile Adjustments */
+                    @media (max-width: 480px) {
+
+                        /* 1. Date Selectors & Button Side-by-Side */
+                        #stepSelect .pdf-controls.compact-row {
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+
+                        #stepSelect select {
+                            width: 100%;
+                        }
+
+                        /* Button next to it - wait, user said "spostare pulsante a fianco" but stacking menus makes them full width. 
+                           Maybe 2 columns for dates? */
+                        .pdf-date-row-mobile {
+                            display: flex;
+                            gap: 10px;
+                        }
+
+                        .pdf-date-row-mobile select {
+                            flex: 1;
+                        }
+
+                        /* 2. Search & View Buttons */
+                        .view-controls {
+                            flex-direction: column;
+                            align-items: stretch !important;
+                            /* Override flex align */
+                            gap: 10px;
+                        }
+
+                        .view-controls>div:first-child {
+                            flex-direction: column;
+                            align-items: stretch !important;
+                            width: 100%;
+                        }
+
+                        #tableSearchInput {
+                            width: 100% !important;
+                            /* Full width search */
+                        }
+
+                        .toggle-view {
+                            display: flex;
+                            width: 100%;
+                        }
+
+                        .toggle-view button {
+                            flex: 1;
+                            /* Equal width buttons */
+                        }
+                    }
+                </style>
+
+                <div class="view-controls">
+                    <div class="search-container-mobile">
+                        <h4 class="details-title-mobile">Dettagli</h4>
+                        <input type="text" id="tableSearchInput" placeholder="🔍 Cerca nelle attività..."
+                            class="search-input-mobile">
                     </div>
                     <div class="toggle-view">
                         <button class="view-btn active" data-view="list">📅 Data</button>
