@@ -40,8 +40,8 @@ export async function apiFetch(endpoint, options = {}) {
                 throw new Error("Accesso revocato");
             }
 
-            // Se è un errore server temporaneo (502, 503, 504), lanciamo eccezione per fare retry
-            if ([502, 503, 504].includes(response.status)) {
+            // Se è un errore server temporaneo (500, 502, 503, 504), lanciamo eccezione per fare retry
+            if ([500, 502, 503, 504].includes(response.status)) {
                 throw new Error(`Server Error ${response.status}`);
             }
 

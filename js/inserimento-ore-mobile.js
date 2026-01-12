@@ -29,7 +29,10 @@ const MobileHoursApp = {
 
         adminMode: false,
         targetUserId: null,
-        targetUserName: null
+        targetUserName: null,
+
+        // Sequential Request Control
+        currentRequestController: null
     },
 
     dom: {}, // Popolato in initDOM()
@@ -406,9 +409,9 @@ const MobileHoursApp = {
         }
     },
 
-    // --- CARDS LIST & TOTALE (MODIFICATA PER IL LUCCHETTO) ---
+    // --- CARDS LIST & TOTALE (ROBUSTNESS UPDATE) ---
     loadExistingWorks: async function (dateStr) {
-        // FAILSAFE: Se il riferimento DOM è perso, cercalo di nuovo
+        // 1. FAILSAFE: Se il riferimento DOM è perso, cercalo di nuovo
         if (!this.dom.existingList) {
             this.dom.existingList = document.getElementById('existingList');
         }
@@ -418,44 +421,63 @@ const MobileHoursApp = {
             return;
         }
 
-        this.dom.existingList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Caricamento...</div>';
+        // 2. SEQUENTIAL FLOW: Annulla richiesta precedente se pendente
+        if (this.state.currentRequestController) {
+            this.state.currentRequestController.abort();
+        }
+        this.state.currentRequestController = new AbortController();
+        const signal = this.state.currentRequestController.signal;
+
+        // 3. UI LOADING
+        this.dom.existingList.innerHTML = `
+            <div style="text-align:center; padding:30px; color:#64748b;">
+                <div class="spinner" style="margin-bottom:10px;"></div>
+                <div>Caricamento attività...</div>
+            </div>`;
+        this.dom.existingList.style.display = 'block';
+
         try {
             let url = `/api/ore/day/${dateStr}`;
             if (this.state.adminMode) url += `?userId=${this.state.targetUserId}`;
 
-            const res = await apiFetch(url);
+            // Passiamo il signal alla fetch (sfruttando il fatto che apiFetch passa options alla fetch nativa)
+            const res = await apiFetch(url, { signal });
+
+            if (!res.ok) {
+                // Se apiFetch non ha lanciato (es. status non catturato dal retry o retry falliti)
+                throw new Error(`Errore Server ${res.status}`);
+            }
+
             const works = await res.json();
 
             this.dom.existingList.innerHTML = '';
+            this.state.currentRequestController = null; // Reset
 
             let total = 0;
             works.forEach(w => {
                 total += (w.ore || 0) + (w.ore_viaggio_andata || 0) + (w.ore_viaggio_ritorno || 0);
             });
             this.state.currentDayTotal = total;
-            // FIX CRITICO: Aggiorniamo anche lo stato dati corrente, altrimenti checkOvertimeLogic usa dati vecchi
+
+            // Aggiorna stato locale per checkOvertimeLogic
             if (!this.state.currentDayData) this.state.currentDayData = {};
             this.state.currentDayData.registrazioni = works;
 
             this.updateTotalBadge(total);
-            this.checkOvertimeLogic(); // <--- AGGIUNTO: Ricalcola visibilità straordinari con i nuovi dati
+            this.checkOvertimeLogic();
 
-            if (this.dom.existingList) this.dom.existingList.style.display = 'block';
-
-            if (this.state.currentDayData.registrazioni.length === 0) {
+            // RENDER CARDS
+            if (works.length === 0) {
                 this.dom.existingList.innerHTML = `
-                    <div style="text-align: center; padding: 5px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
+                    <div style="text-align: center; padding: 20px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
                         Nessuna attività registrata.
                     </div>`;
                 return;
             }
 
-
             works.forEach(w => {
-                // --- CHECK STATO ---
+                // --- PROCESSO DI RENDER (INVARIATO) ---
                 const isLocked = (w.stato === 1);
-                // -------------------
-
                 let cardClass = 'card-prod';
                 let title = 'N/D';
 
@@ -469,21 +491,14 @@ const MobileHoursApp = {
 
                 if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia') || sub.toLowerCase().includes('104')) {
                     cardClass = 'card-abs';
-
-                    // FIX: Se il titolo è ancora generico o vuoto, forziamo "GESTIONE PERSONALE".
-                    // Altrimenti lasciamo quello che arriva dal DB (che ora sarà corretto grazie al salvataggio su ID 68).
                     if (title === 'N/D' || title === 'Assenza') {
                         title = 'GESTIONE PERSONALE (SYS-JOB-ABS)';
                     }
-                    // NOTA: Non sovrascriviamo più 'title' con la parola fissa 'Assenza'.
                 }
-                // 2. Caso CANTIERE
                 else if (title.toLowerCase().includes('cantiere') || sub.toLowerCase().includes('cantiere') || w.ore_viaggio_andata > 0) {
                     cardClass = 'card-site';
-                    // Qui il titolo è già corretto (ATTIVITÀ DI CANTIERE...) perché viene dalla commessa
                 }
 
-                // Opacità se bloccato
                 if (isLocked) cardClass += ' card-locked';
 
                 let extras = [];
@@ -496,13 +511,10 @@ const MobileHoursApp = {
 
                 const extraHtml = extras.length > 0 ? `<div style="font-size:0.75rem; color:#555; margin-top:4px; background:#f0f0f0; padding:2px 5px; border-radius:4px; display:inline-block;">${extras.join(' | ')}</div>` : '';
 
-                // --- AZIONI ---
                 let actionsHtml = '';
                 if (isLocked) {
-                    // SE BLOCCATO: Mostra lucchetto
                     actionsHtml = `<div style="color:#aaa; font-size:1.2rem;" title="Contabilizzato">🔒</div>`;
                 } else {
-                    // SE LIBERO: Mostra pulsanti
                     actionsHtml = `
                         <div class="card-actions">
                             <button class="action-icon btn-edit">✏️</button>
@@ -525,7 +537,6 @@ const MobileHoursApp = {
                     </div>
                 `;
 
-                // Attacca listener SOLO se non è bloccato
                 if (!isLocked) {
                     card.querySelector('.btn-edit').addEventListener('click', () => this.startEdit(w));
                     card.querySelector('.btn-delete').addEventListener('click', () => this.deleteWork(w.id_registrazione));
@@ -534,7 +545,32 @@ const MobileHoursApp = {
                 this.dom.existingList.appendChild(card);
             });
 
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            // 4. ERROR HANDLING ROBUSTO
+            if (e.name === 'AbortError') {
+                console.log(`✋ Richiesta annullata per ${dateStr}`);
+                return;
+            }
+
+            console.error("❌ Errore loadExistingWorks:", e);
+
+            // Visualizza errore con bottone Riprova
+            this.dom.existingList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #e53e3e;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                    <p style="font-weight: bold; margin-bottom: 5px;">Errore caricamento</p>
+                    <p style="font-size: 0.85rem; margin-bottom: 15px;">${e.message}</p>
+                    <button id="retryLoadBtn" class="save-button" style="background-color:#34495e; padding:8px 15px; width:auto; font-size:0.9rem;">
+                        🔄 Riprova
+                    </button>
+                </div>
+            `;
+
+            // Listener sul bottone dinamico
+            document.getElementById('retryLoadBtn').addEventListener('click', () => {
+                this.loadExistingWorks(dateStr);
+            });
+        }
     },
 
     updateTotalBadge: function (total) {

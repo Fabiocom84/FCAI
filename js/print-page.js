@@ -11,10 +11,10 @@ const PrintPage = {
         filteredData: [],
         choicesCommesse: null,
         choicesComponenti: null,
-        currentView: 'list', 
+        currentView: 'list',
         templateBytes: null,
         currentUser: null,
-        
+
         currentPdfBlob: null,
         currentPdfMonth: null,
         currentPdfYear: null,
@@ -42,11 +42,11 @@ const PrintPage = {
         kpiTravel: document.getElementById('kpiTravelHours'),
         kpiAbsence: document.getElementById('kpiAbsenceHours'),
         kpiTotal: document.getElementById('kpiTotalHours'),
-        
+
         stepSelect: document.getElementById('stepSelect'),
         stepPreview: document.getElementById('stepPreview'),
         stepFinalActions: document.getElementById('stepFinalActions'),
-        
+
         pdfMonth: document.getElementById('pdfMonth'),
         pdfYear: document.getElementById('pdfYear'),
 
@@ -57,30 +57,30 @@ const PrintPage = {
         btnQuickDownload: document.getElementById('btnQuickDownload'),
         btnQuickWhatsapp: document.getElementById('btnQuickWhatsapp'),
         btnForceRegenerate: document.getElementById('btnForceRegenerate'),
-        
+
         btnGenerate: document.getElementById('btnGeneratePDF'),
         pdfPreviewImage: document.getElementById('pdfPreviewImage'),
         btnCancelPreview: document.getElementById('btnCancelPreview'),
         btnConfirmSave: document.getElementById('btnConfirmSave'),
-        
+
         btnDownload: document.getElementById('btnDownload'),
         btnWhatsapp: document.getElementById('btnWhatsapp'),
         btnReset: document.getElementById('btnReset'),
         pdfStatus: document.getElementById('pdfStatus'),
-        
+
         userName: document.getElementById('headerUserName')
     },
 
-    init: async function() {
+    init: async function () {
         console.log("📊 Analytics Page Init - Admin Fixed");
-        
+
         // 1. GESTIONE ADMIN MODE (Lettura URL)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
             this.state.adminMode = true;
             this.state.targetUserId = parseInt(urlParams.get('targetUserId'));
             this.state.targetUserName = decodeURIComponent(urlParams.get('targetUserName') || 'Utente');
-            
+
             console.log("🔒 Admin Mode Active for User:", this.state.targetUserId);
             this.setupAdminUI();
         }
@@ -88,14 +88,14 @@ const PrintPage = {
         this.loadUserInfo();
         this.setupDates();
         this.initChoices();
-        this.loadTemplate(); 
+        this.loadTemplate();
 
         // Listeners Tabelle
         this.dom.btnLoad.addEventListener('click', () => this.loadAnalysisData());
         this.dom.accordionBtn.addEventListener('click', () => this.toggleAccordion());
         this.dom.btnApplyFilters.addEventListener('click', () => this.applyFilters());
         this.dom.btnResetFilters.addEventListener('click', () => this.resetFilters());
-        
+
         this.dom.viewBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.dom.viewBtns.forEach(b => b.classList.remove('active'));
@@ -110,8 +110,8 @@ const PrintPage = {
         this.dom.btnCancelPreview.addEventListener('click', () => this.resetPdfWorkflow());
         this.dom.btnConfirmSave.addEventListener('click', () => this.uploadPdf());
         this.dom.btnReset.addEventListener('click', () => this.resetPdfWorkflow());
-        
-        if(this.dom.btnForceRegenerate) {
+
+        if (this.dom.btnForceRegenerate) {
             this.dom.btnForceRegenerate.addEventListener('click', () => {
                 this.dom.existingReportAlert.style.display = 'none';
                 this.generatePreview();
@@ -122,32 +122,32 @@ const PrintPage = {
         this.dom.pdfMonth.addEventListener('change', () => this.checkExistingReport());
         this.dom.pdfYear.addEventListener('change', () => this.checkExistingReport());
 
-        this.loadAnalysisData(); 
+        this.loadAnalysisData();
         this.checkExistingReport();
     },
 
-    setupAdminUI: function() {
+    setupAdminUI: function () {
         // 1. Uniformiamo il Titolo
         const titleEl = document.querySelector('.title-container h1');
-        if(titleEl) titleEl.textContent = "REPORT ADMIN";
+        if (titleEl) titleEl.textContent = "REPORT ADMIN";
 
         // 2. Stile Header (Grigio scuro + Bordo Giallo)
         const header = document.querySelector('.mobile-nav-header');
-        if(header) {
-            header.style.backgroundColor = "#34495e"; 
-            header.style.borderBottom = "4px solid #f1c40f"; 
+        if (header) {
+            header.style.backgroundColor = "#34495e";
+            header.style.borderBottom = "4px solid #f1c40f";
         }
-        
+
         // 3. Tasto Chiudi
         const homeBtn = document.querySelector('.header-button');
-        if(homeBtn) {
+        if (homeBtn) {
             homeBtn.innerHTML = '<span>❌ Chiudi</span>';
             homeBtn.href = "#";
             homeBtn.onclick = (e) => { e.preventDefault(); window.close(); };
         }
     },
 
-    loadUserInfo: function() {
+    loadUserInfo: function () {
         if (this.state.adminMode) {
             // In Admin Mode, l'utente "corrente" per la pagina è il dipendente target
             this.state.currentUser = {
@@ -161,46 +161,46 @@ const PrintPage = {
             try {
                 const p = JSON.parse(localStorage.getItem('user_profile') || '{}');
                 this.state.currentUser = p;
-                if(p.nome_cognome) this.dom.userName.textContent = p.nome_cognome;
-            } catch(e) {}
+                if (p.nome_cognome) this.dom.userName.textContent = p.nome_cognome;
+            } catch (e) { }
         }
     },
 
-    setupDates: function() {
+    setupDates: function () {
         const today = new Date();
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        
+
         const formatDate = (date) => {
             const offset = date.getTimezoneOffset();
             const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
             return adjustedDate.toISOString().split('T')[0];
         };
-        
+
         this.dom.dateEnd.value = formatDate(today);
         this.dom.dateStart.value = formatDate(firstDayOfMonth);
 
-        const months = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+        const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
         months.forEach((m, i) => {
             const opt = document.createElement('option');
             opt.value = i + 1;
             opt.textContent = m;
             this.dom.pdfMonth.appendChild(opt);
         });
-        
+
         const curYear = today.getFullYear();
         for (let y = curYear - 1; y <= curYear + 1; y++) {
             const opt = document.createElement('option');
             opt.value = y;
             opt.textContent = y;
-            if(y === curYear) opt.selected = true;
+            if (y === curYear) opt.selected = true;
             this.dom.pdfYear.appendChild(opt);
         }
         this.dom.pdfMonth.value = today.getMonth() + 1;
     },
 
-    initChoices: function() {
-        if(typeof Choices === 'undefined') return console.error("Choices.js non caricato!");
-        
+    initChoices: function () {
+        if (typeof Choices === 'undefined') return console.error("Choices.js non caricato!");
+
         const config = {
             removeItemButton: true,
             searchEnabled: true,
@@ -212,22 +212,22 @@ const PrintPage = {
         this.state.choicesComponenti = new Choices(this.dom.selComponenti, config);
     },
 
-    toggleAccordion: function() {
+    toggleAccordion: function () {
         const content = this.dom.accordionContent;
         const arrow = this.dom.accordionBtn.querySelector('.arrow');
         content.classList.toggle('open');
         arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
     },
 
-    resetFilters: function() {
-        if(this.state.choicesCommesse) this.state.choicesCommesse.removeActiveItems();
-        if(this.state.choicesComponenti) this.state.choicesComponenti.removeActiveItems();
+    resetFilters: function () {
+        if (this.state.choicesCommesse) this.state.choicesCommesse.removeActiveItems();
+        if (this.state.choicesComponenti) this.state.choicesComponenti.removeActiveItems();
         this.state.filteredData = [...this.state.rawData];
         this.calculateKPI();
         this.renderTable();
     },
 
-    loadAnalysisData: async function() {
+    loadAnalysisData: async function () {
         const start = this.dom.dateStart.value;
         const end = this.dom.dateEnd.value;
         this.dom.btnLoad.disabled = true;
@@ -243,6 +243,11 @@ const PrintPage = {
             // ------------------------------------------
 
             const res = await apiFetch(url);
+
+            if (!res.ok) {
+                throw new Error(`Errore Server ${res.status}`);
+            }
+
             const payload = await res.json();
             this.state.rawData = payload.data || [];
             this.state.filteredData = [...this.state.rawData];
@@ -250,14 +255,20 @@ const PrintPage = {
             this.applyFilters();
         } catch (e) {
             console.error(e);
-            alert("Errore caricamento dati: " + e.message);
+            this.dom.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align:center; padding:20px; color:#e53e3e;">
+                        <strong>Errore caricamento dati</strong><br>
+                        ${e.message}
+                    </td>
+                </tr>`;
         } finally {
             this.dom.btnLoad.disabled = false;
             this.dom.btnLoad.textContent = "🔄 Carica Dati";
         }
     },
 
-    populateFilterOptions: function() {
+    populateFilterOptions: function () {
         const commesseMap = new Map();
         const compMap = new Map();
         this.state.rawData.forEach(row => {
@@ -270,7 +281,7 @@ const PrintPage = {
         this.state.choicesComponenti.setChoices(compChoices, 'value', 'label', true);
     },
 
-    applyFilters: function() {
+    applyFilters: function () {
         const selectedCommesse = this.state.choicesCommesse.getValue(true);
         const selectedComp = this.state.choicesComponenti.getValue(true);
         this.state.filteredData = this.state.rawData.filter(row => {
@@ -282,7 +293,7 @@ const PrintPage = {
         this.renderTable();
     },
 
-    calculateKPI: function() {
+    calculateKPI: function () {
         let work = 0, travel = 0, abs = 0;
         this.state.filteredData.forEach(row => {
             travel += row.viaggio;
@@ -295,7 +306,7 @@ const PrintPage = {
         this.dom.kpiTotal.textContent = (work + travel + abs).toFixed(1);
     },
 
-    renderTable: function() {
+    renderTable: function () {
         const view = this.state.currentView;
         const tbody = this.dom.tableBody;
         const thead = this.dom.tableHead;
@@ -334,7 +345,7 @@ const PrintPage = {
                 groups[key].travel += row.viaggio;
                 groups[key].count++;
             });
-            Object.keys(groups).sort((a,b) => groups[b].hours - groups[a].hours).forEach(k => {
+            Object.keys(groups).sort((a, b) => groups[b].hours - groups[a].hours).forEach(k => {
                 const g = groups[k];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -346,7 +357,7 @@ const PrintPage = {
         }
     },
 
-    loadTemplate: async function() {
+    loadTemplate: async function () {
         try {
             const templateUrl = "https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf";
             const res = await fetch(templateUrl);
@@ -356,10 +367,10 @@ const PrintPage = {
     },
 
 
-    convertPdfToImgBlob: async function(pdfUrl) {
+    convertPdfToImgBlob: async function (pdfUrl) {
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf = await loadingTask.promise;
-        const page = await pdf.getPage(1); 
+        const page = await pdf.getPage(1);
         const viewport = page.getViewport({ scale: 2.0 });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -369,10 +380,10 @@ const PrintPage = {
         return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     },
 
-    checkExistingReport: async function() {
+    checkExistingReport: async function () {
         const month = this.dom.pdfMonth.value;
         const year = this.dom.pdfYear.value;
-        
+
         this.dom.existingReportAlert.style.display = 'none';
         this.dom.newReportControls.style.display = 'block';
 
@@ -391,24 +402,24 @@ const PrintPage = {
                 this.dom.newReportControls.style.display = 'none';
                 this.dom.existingReportAlert.style.display = 'block';
                 this.dom.foundVersion.textContent = data.version;
-                
+
                 // Configura i bottoni "Rapidi"
                 this.configureQuickButtons(data.url, data.version, year, month);
-            } 
+            }
         } catch (e) { console.error("Errore check:", e); }
     },
 
-    configureQuickButtons: function(url, version, year, month) {
+    configureQuickButtons: function (url, version, year, month) {
         const btnView = document.getElementById('btnQuickPreview');
         const btnDown = document.getElementById('btnQuickDownload');
         const btnWa = document.getElementById('btnQuickWhatsapp');
-        
+
         // Nome File Univoco: Report_2025_12_Mario_Rossi_v1.jpg
         const safeName = this.state.currentUser.nome_cognome.replace(/\s+/g, '_');
         const fileName = `Report_${year}_${month}_${safeName}_v${version}.jpg`;
 
-        btnView.onclick = async () => window.open(url, '_blank'); 
-        
+        btnView.onclick = async () => window.open(url, '_blank');
+
         btnDown.onclick = async () => {
             const oldText = btnDown.textContent;
             btnDown.textContent = "Scarico...";
@@ -422,7 +433,7 @@ const PrintPage = {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            } catch(e) { alert("Errore download"); }
+            } catch (e) { alert("Errore download"); }
             finally { btnDown.textContent = oldText; }
         };
 
@@ -433,23 +444,23 @@ const PrintPage = {
     // =========================================================
     // GENERAZIONE PDF
     // =========================================================
-    generatePreview: async function() {
+    generatePreview: async function () {
         if (!this.state.templateBytes) return alert("Modello PDF non caricato.");
-        
+
         const month = parseInt(this.dom.pdfMonth.value);
         const year = parseInt(this.dom.pdfYear.value);
         this.state.currentPdfMonth = month;
         this.state.currentPdfYear = year;
-        
+
         const btn = this.dom.btnGenerate;
         btn.textContent = "Elaborazione...";
         btn.disabled = true;
 
         try {
             // A. Recupero Dati
-            const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+            const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
-            
+
             // --- FIX ADMIN MODE ---
             let url = `/api/report/analyze?start=${startDate}&end=${endDate}`;
             if (this.state.adminMode) {
@@ -466,9 +477,9 @@ const PrintPage = {
             const page = pdfDoc.getPages()[0];
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
             const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-            const mNames = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO","LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"];
+            const mNames = ["GENNAIO", "FEBBRAIO", "MARZO", "APRILE", "MAGGIO", "GIUGNO", "LUGLIO", "AGOSTO", "SETTEMBRE", "OTTOBRE", "NOVEMBRE", "DICEMBRE"];
 
-            const HEADER_Y = 712; 
+            const HEADER_Y = 712;
             page.drawText(this.state.currentUser.nome_cognome.toUpperCase(), { x: 115, y: HEADER_Y, size: 10, font: fontBold });
             page.drawText(mNames[month - 1], { x: 405, y: HEADER_Y, size: 10, font: fontBold });
             page.drawText(year.toString(), { x: 548, y: HEADER_Y, size: 10, font: fontBold });
@@ -479,28 +490,28 @@ const PrintPage = {
 
             const startY = 670;
             const rowH = 15.77;
-            
+
             // COORDINATE
             const CX = {
-                Col_M_In: 96,   Col_M_Out: 127,
-                Col_P_In: 159,  Col_P_Out: 191,
+                Col_M_In: 96, Col_M_Out: 127,
+                Col_P_In: 159, Col_P_Out: 191,
                 Ore: 230, Straord: 261, Perm: 300,
-                Tipo: 342, 
+                Tipo: 342,
                 Desc: 370, // Posizione Descrizione
-                VA: 513, VR: 551 
+                VA: 513, VR: 551
             };
 
-            const fs = 10; 
+            const fs = 10;
 
             for (let day = 1; day <= 31; day++) {
                 const items = rowsByDay[day];
-                
+
                 if (items.length > 0) {
                     // --- Separazione contatori ---
                     let totLavoro = 0;
                     let totAssenza = 0;
                     let totViaggio = 0;
-                    
+
                     let labels = [], types = new Set();
                     let timeM_In = "", timeM_Out = "", timeP_In = "", timeP_Out = "";
 
@@ -517,7 +528,7 @@ const PrintPage = {
                         } else if (it.is_assenza) {
                             descText = it.note || "";
                         } else {
-                            descText = ""; 
+                            descText = "";
                         }
 
                         if (descText) labels.push(descText);
@@ -543,7 +554,7 @@ const PrintPage = {
                     }
 
                     if (totAssenza > 0) {
-                         page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
+                        page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     }
 
                     const finalType = types.has('T') ? 'T' : 'O';
@@ -554,8 +565,8 @@ const PrintPage = {
                     page.drawText(fullDesc, { x: CX.Desc, y: Y, size: fs, font });
 
                     if (totViaggio > 0) {
-                        const v_andata = (totViaggio / 2); 
-                        const v_ritorno = (totViaggio / 2); 
+                        const v_andata = (totViaggio / 2);
+                        const v_ritorno = (totViaggio / 2);
                         page.drawText(v_andata.toFixed(1), { x: CX.VA, y: Y, size: fs, font });
                         page.drawText(v_ritorno.toFixed(1), { x: CX.VR, y: Y, size: fs, font });
                     }
@@ -565,15 +576,15 @@ const PrintPage = {
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
-            const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
+            const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
             const pdf = await loadingTask.promise;
             const pdfPage = await pdf.getPage(1);
-            const viewport = pdfPage.getViewport({scale: 2.0});
+            const viewport = pdfPage.getViewport({ scale: 2.0 });
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            await pdfPage.render({canvasContext: context, viewport: viewport}).promise;
+            await pdfPage.render({ canvasContext: context, viewport: viewport }).promise;
             this.dom.pdfPreviewImage.src = canvas.toDataURL('image/jpeg', 0.85);
 
             this.dom.stepSelect.style.display = 'none';
@@ -588,7 +599,7 @@ const PrintPage = {
         }
     },
 
-    uploadPdf: async function() {
+    uploadPdf: async function () {
         const btn = this.dom.btnConfirmSave;
         btn.disabled = true;
         btn.textContent = "Caricamento...";
@@ -610,11 +621,11 @@ const PrintPage = {
 
             this.dom.stepPreview.style.display = 'none';
             this.dom.stepFinalActions.style.display = 'block';
-            
+
             // FIX: Versione sicura
             const ver = result.version || 1;
             this.dom.pdfStatus.textContent = `Documento v${ver} salvato correttamente!`;
-            
+
             // Configura Download Finale con NOME SIGNIFICATIVO
             this.dom.btnDownload.textContent = "Scarica Immagine";
             this.dom.btnDownload.onclick = async (e) => {
@@ -622,7 +633,7 @@ const PrintPage = {
                 try {
                     const blob = await this.convertPdfToImgBlob(result.url);
                     const imgUrl = URL.createObjectURL(blob);
-                    
+
                     const safeName = this.state.currentUser.nome_cognome.replace(/\s+/g, '_');
                     const fName = `Report_${this.state.currentPdfYear}_${this.state.currentPdfMonth}_${safeName}_v${ver}.jpg`;
 
@@ -632,9 +643,9 @@ const PrintPage = {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                } catch(err) { alert("Errore download img: " + err.message); }
+                } catch (err) { alert("Errore download img: " + err.message); }
             };
-            
+
             // Configura WhatsApp
             const waMsg = `Report ${this.state.currentUser.nome_cognome}: ${result.url}`;
             this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
@@ -648,16 +659,16 @@ const PrintPage = {
         }
     },
 
-    resetPdfWorkflow: function() {
+    resetPdfWorkflow: function () {
         this.dom.stepPreview.style.display = 'none';
         this.dom.stepFinalActions.style.display = 'none';
         this.dom.stepSelect.style.display = 'block';
-        
-        this.dom.pdfPreviewImage.src = ''; 
+
+        this.dom.pdfPreviewImage.src = '';
         this.state.currentPdfBlob = null;
         this.dom.btnConfirmSave.disabled = false;
         this.dom.btnConfirmSave.textContent = "💾 Salva e Archivia";
-        
+
         this.checkExistingReport();
     }
 };
