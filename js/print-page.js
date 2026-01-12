@@ -68,7 +68,8 @@ const PrintPage = {
         btnReset: document.getElementById('btnReset'),
         pdfStatus: document.getElementById('pdfStatus'),
 
-        userName: document.getElementById('headerUserName')
+        userName: document.getElementById('headerUserName'),
+        searchInput: document.getElementById('tableSearchInput')
     },
 
     init: async function () {
@@ -104,6 +105,11 @@ const PrintPage = {
                 this.renderTable();
             });
         });
+
+        // Search Listener
+        if (this.dom.searchInput) {
+            this.dom.searchInput.addEventListener('input', () => this.applyFilters());
+        }
 
         // Listeners Workflow PDF
         this.dom.btnGenerate.addEventListener('click', () => this.generatePreview());
@@ -284,9 +290,25 @@ const PrintPage = {
     applyFilters: function () {
         const selectedCommesse = this.state.choicesCommesse.getValue(true);
         const selectedComp = this.state.choicesComponenti.getValue(true);
+        const searchText = (this.dom.searchInput ? this.dom.searchInput.value : '').toLowerCase().trim();
+
         this.state.filteredData = this.state.rawData.filter(row => {
+            // 1. Filtri Select
             if (selectedCommesse.length > 0 && !selectedCommesse.includes(row.id_commessa)) return false;
             if (selectedComp.length > 0 && !selectedComp.includes(row.id_componente)) return false;
+
+            // 2. Filtro Testuale (Search)
+            if (searchText) {
+                const searchableText = [
+                    row.label_commessa,
+                    row.label_componente,
+                    row.note,
+                    row.data // Opzionale: cerca anche nella data
+                ].map(s => (s || '').toLowerCase()).join(' ');
+
+                if (!searchableText.includes(searchText)) return false;
+            }
+
             return true;
         });
         this.calculateKPI();

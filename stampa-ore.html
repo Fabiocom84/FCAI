@@ -186,8 +186,12 @@
             </section>
 
             <section class="preview-section">
-                <div class="view-controls">
-                    <h4>Dettagli</h4>
+                <div class="view-controls" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <h4 style="margin:0;">Dettagli</h4>
+                        <input type="text" id="tableSearchInput" placeholder="🔍 Cerca nelle attività..." 
+                               style="padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:0.9em; width:220px;">
+                    </div>
                     <div class="toggle-view">
                         <button class="view-btn active" data-view="list">📅 Data</button>
                         <button class="view-btn" data-view="group">📁 Commessa</button>
