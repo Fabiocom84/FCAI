@@ -936,6 +936,10 @@ const MobileHoursApp = {
         try {
             const res = await apiFetch(`/api/ore/options?id_commessa=${commessaId}`);
             const tree = await res.json();
+
+            // ORDINAMENTO ALFABETICO MACRO
+            tree.sort((a, b) => (a.nome_macro || '').localeCompare(b.nome_macro || ''));
+
             this.state.currentOptionsTree = tree;
 
             const macroChoices = [{ value: '', label: 'Seleziona Reparto...', disabled: true, selected: true }];
@@ -962,6 +966,11 @@ const MobileHoursApp = {
         }
 
         if (!macro) return;
+
+        // ORDINAMENTO ALFABETICO COMPONENTI
+        if (macro.componenti) {
+            macro.componenti.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        }
 
         const compChoices = [{ value: '', label: 'Seleziona Lavorazione...', disabled: true, selected: true }];
         macro.componenti.forEach(c => {
