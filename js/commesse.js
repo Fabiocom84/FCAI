@@ -421,7 +421,8 @@ const App = {
                     </div>
                     
                     <div class="card-info-grid">
-                        <div class="info-item"><span class="info-label">Modello</span><span class="info-value">${c.modelli?.nome_modello || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Modello macchina</span><span class="info-value">${c.modelli?.nome_modello || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Rif. Tecnico</span><span class="info-value">${c.riferimento_tecnico || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Ordine (VO)</span><span class="info-value">${c.vo || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Matricola</span><span class="info-value">${c.matricola || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
