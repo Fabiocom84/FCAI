@@ -73,5 +73,34 @@ export async function publicApiFetch(endpoint, options = {}) {
     };
     const config = { ...options, headers };
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    return fetch(url, config);
+
+    // --- RETRY LOGIC (COPIATA DA apiFetch) ---
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+
+    while (attempt < MAX_RETRIES) {
+        attempt++;
+        try {
+            const response = await fetch(url, config);
+
+            // Se è un errore server temporaneo (500, 502, 503, 504), lanciamo eccezione per fare retry
+            if ([500, 502, 503, 504].includes(response.status)) {
+                throw new Error(`Server Error ${response.status}`);
+            }
+
+            return response;
+
+        } catch (error) {
+            // Se abbiamo raggiunto i tentativi massimi, rilanciamo l'errore
+            if (attempt >= MAX_RETRIES) {
+                console.error(`Public API Fetch failed after ${MAX_RETRIES} attempts:`, error);
+                throw error;
+            }
+
+            // Backoff esponenziale: aspetta 500ms, 1000ms, ...
+            const waitTime = 500 * Math.pow(2, attempt - 1);
+            console.warn(`Public API Tentativo ${attempt} fallito. Riprovo tra ${waitTime}ms...`);
+            await new Promise(r => setTimeout(r, waitTime));
+        }
+    }
 }
