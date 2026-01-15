@@ -533,7 +533,17 @@ const MobileHoursApp = {
 
                 // [NEW] Visualizzazione Macro | Lavorazione
                 const macName = w.macro_categorie?.nome;
-                const formattedSub = macName ? `<span style="color:#2c3e50; font-weight:600;">${macName}</span> <span style="color:#95a5a6;">|</span> ${sub}` : sub;
+                let formattedSub = sub;
+
+                if (macName) {
+                    const normMac = macName.toLowerCase().trim();
+                    const normSub = sub.toLowerCase().trim();
+
+                    // Evita duplicati se il nome componente inizia già con il nome macro
+                    if (!normSub.startsWith(normMac)) {
+                        formattedSub = `<span style="color:#2c3e50; font-weight:600;">${macName}</span> <span style="color:#95a5a6;">|</span> ${sub}`;
+                    }
+                }
 
                 card.innerHTML = `
                     <div class="card-info">
