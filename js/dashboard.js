@@ -20,6 +20,7 @@ const Dashboard = {
             stato: 0
         },
 
+        availableFilters: null,
         chartInstances: {},
         editingRow: null,
         pendingIds: []
@@ -167,7 +168,14 @@ const Dashboard = {
             if (!res.ok) throw new Error("Errore API");
 
             const data = await res.json();
-            this.state.analyticsData = data; // Store full response
+            this.state.analyticsData = data;
+
+            // Cache filters on "clean" load (e.g. only date changed) so options don't disappear when filtering
+            const f = this.state.filters;
+            const isClean = !f.id_commessa && !f.id_personale && !f.id_macro && !f.id_componente;
+            if (isClean || !this.state.availableFilters) {
+                this.state.availableFilters = data.charts;
+            }
 
             this.renderAll();
             if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Caricati " + data.row_count_limited + " record (Anteprima)";
@@ -186,6 +194,7 @@ const Dashboard = {
         this.updateKPIs(this.state.analyticsData.kpis);
         this.renderCharts(this.state.analyticsData.charts);
         this.renderGrid(this.state.analyticsData.rows);
+        this.renderSidebarFilters();
     },
 
     updateKPIs: function (kpis) {
@@ -277,6 +286,54 @@ const Dashboard = {
                 plugins: { legend: { display: false } }
             }
         });
+    },
+
+    // --- SIDEBAR FILTERS ---
+    renderSidebarFilters: function () {
+        const source = this.state.availableFilters || this.state.analyticsData.charts;
+        if (!source) return;
+
+        this.renderFilterList(this.dom.boxCommesse, source.by_commessa, 'id_commessa');
+        this.renderFilterList(this.dom.boxDipendenti, source.by_user, 'id_personale');
+        this.renderFilterList(this.dom.boxMacro, source.by_macro, 'id_macro');
+        this.renderFilterList(this.dom.boxLavorazioni, source.by_lavorazione, 'id_componente');
+    },
+
+    renderFilterList: function (container, data, filterKey) {
+        if (!container || !data) return;
+        container.innerHTML = '';
+
+        // Header / Clear
+        const clearDiv = document.createElement('div');
+        clearDiv.className = 'filter-item';
+        clearDiv.innerHTML = '<label style="font-weight:bold; color:var(--primary-color); cursor:pointer;">' +
+            '<input type="radio" name="filter_' + filterKey + '" value=""> <span>Tutti</span></label>';
+        clearDiv.querySelector('input').checked = !this.state.filters[filterKey];
+        clearDiv.querySelector('input').onchange = () => this.handleFilterChange(filterKey, null);
+        container.appendChild(clearDiv);
+
+        data.forEach(item => {
+            if (!item.id && !item.label) return;
+            const val = item.id || item.label; // Fallback if id missing (old SQL)
+
+            const div = document.createElement('div');
+            div.className = 'filter-item';
+
+            // Use concatenation
+            div.innerHTML = '<label><input type="radio" name="filter_' + filterKey + '" value="' + val + '">' +
+                ' <span>' + item.label + ' (' + Number(item.value).toFixed(0) + 'h)</span></label>';
+
+            const inp = div.querySelector('input');
+            if (this.state.filters[filterKey] == val) inp.checked = true;
+            inp.onchange = () => this.handleFilterChange(filterKey, val);
+
+            container.appendChild(div);
+        });
+    },
+
+    handleFilterChange: function (key, value) {
+        this.state.filters[key] = value ? parseInt(value) : null;
+        this.fetchData();
     },
 
     // --- GRID ---
