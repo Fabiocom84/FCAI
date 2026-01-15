@@ -530,10 +530,15 @@ const MobileHoursApp = {
 
                 const card = document.createElement('div');
                 card.className = `activity-card ${cardClass}`;
+
+                // [NEW] Visualizzazione Macro | Lavorazione
+                const macName = w.macro_categorie?.nome;
+                const formattedSub = macName ? `<span style="color:#2c3e50; font-weight:600;">${macName}</span> <span style="color:#95a5a6;">|</span> ${sub}` : sub;
+
                 card.innerHTML = `
                     <div class="card-info">
                         <h5>${title}</h5>
-                        <p>${sub} ${w.componenti?.codice_componente ? `(${w.componenti.codice_componente})` : ''}</p>
+                        <p>${formattedSub} ${w.componenti?.codice_componente ? `<span style="font-size:0.75rem; color:#95a5a6;">(${w.componenti.codice_componente})</span>` : ''}</p>
                         ${w.note ? `<span class="card-meta">📝 ${w.note}</span>` : ''}
                         ${extraHtml}
                     </div>
