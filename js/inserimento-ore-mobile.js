@@ -487,7 +487,13 @@ const MobileHoursApp = {
                     title = `${w.commesse.impianto} (${w.commesse.codice_commessa || ''})`;
                 }
 
-                let sub = w.componenti?.nome_componente || 'Attività generica';
+                // [MODIFIED] Display Macro / Component
+                let sub = '';
+                if (w.macro_categorie && w.macro_categorie.nome) {
+                    sub = `${w.macro_categorie.nome} / ${w.componenti?.nome_componente || 'Attività generica'}`;
+                } else {
+                    sub = w.componenti?.nome_componente || 'Attività generica';
+                }
 
                 if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia') || sub.toLowerCase().includes('104')) {
                     cardClass = 'card-abs';
@@ -658,6 +664,7 @@ const MobileHoursApp = {
 
             payload.id_commessa = parseInt(commessaVal);
             payload.id_componente = parseInt(compVal);
+            payload.id_macro_categoria = parseInt(macroVal); // [NEW]
         }
         else if (type === 'cantiere') {
             let commessaVal = null;
@@ -824,26 +831,31 @@ const MobileHoursApp = {
             // 4. Carica Macro e Componenti
             await this.loadSmartOptions(cId);
 
-            if (work.id_componente_fk) {
+            // [MODIFIED] Logic to set Macro choice
+            // Priority: Explicit DB FK > Inferred from Component
+            let foundMacroId = work.id_macro_categoria_fk;
+
+            if (!foundMacroId && work.id_componente_fk) {
                 const tree = this.state.currentOptionsTree || [];
-                let foundMacroId = null;
                 for (const macro of tree) {
                     if (macro.componenti.some(comp => comp.id == work.id_componente_fk)) { foundMacroId = macro.id_macro; break; }
                 }
-                if (foundMacroId) {
-                    // Imposta Macro
-                    if (this.state.choicesMacro) this.state.choicesMacro.setChoiceByValue(String(foundMacroId));
-                    else this.dom.macroSelect.value = foundMacroId;
+            }
 
-                    // Renderizza Componenti per quella Macro
-                    this.renderComponentOptions(foundMacroId);
+            if (foundMacroId) {
+                // Imposta Macro
+                if (this.state.choicesMacro) this.state.choicesMacro.setChoiceByValue(String(foundMacroId));
+                else this.dom.macroSelect.value = foundMacroId;
 
-                    // Imposta Componente
-                    if (this.state.choicesComponent) this.state.choicesComponent.setChoiceByValue(String(work.id_componente_fk));
-                    else this.dom.componentSelect.value = work.id_componente_fk;
-                }
+                // Renderizza Componenti per quella Macro
+                this.renderComponentOptions(foundMacroId);
+
+                // Imposta Componente
+                if (this.state.choicesComponent) this.state.choicesComponent.setChoiceByValue(String(work.id_componente_fk));
+                else this.dom.componentSelect.value = work.id_componente_fk;
             }
         }
+
         this.checkOvertimeLogic();
     },
 
