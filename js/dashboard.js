@@ -199,8 +199,9 @@ const Dashboard = {
             this.renderCharts(data.charts);
             if (!this.state.availableFilters) { // Init once
                 this.state.availableFilters = data.charts;
-                this.renderSidebarFilters();
             }
+            // Always render to update checkbox states
+            this.renderSidebarFilters();
 
             // 2. Fetch Groups (Headers)
             await this.fetchGroups();
