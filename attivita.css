@@ -392,6 +392,8 @@ body {
         overflow: visible !important;
         flex: none !important;
         display: block !important;
+        position: relative !important;
+        /* UN-FIX the fixed position */
     }
 }
 
