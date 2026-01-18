@@ -364,6 +364,10 @@ const Dashboard = {
         this.createStackedChart('chartCrossLavUser', charts.cross_lav_user, 'user', 'category');
 
         this.createHorizontalBarChart('chartCostCommessa', mapData(charts.costi_commessa), '#f39c12');
+
+        // HR Charts
+        this.createPieChart('chartAbsenceUser', mapData(charts.absence_by_user));
+        this.createBarChart('chartAbsenceTrend', mapData(charts.absence_trend), '#e74c3c');
     },
 
     // Helper for Stacked Bar (Pivoting Data)
