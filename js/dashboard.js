@@ -111,14 +111,7 @@ const Dashboard = {
         };
 
         if (this.dom.btnInbox) this.dom.btnInbox.onclick = () => toggleState(0, this.dom.btnInbox);
-        if (this.dom.btnArchive) this.dom.btnArchive.onclick = () => {
-            // Toggle Logic for Mode Buttons (They are now independent toggles)
-            // But we can stick to simple logic: Click -> Toggle selection in filter array
-            // If stato is [0,1], both active. 
-            // Better: update logic to just set specific state.
-            this.dom.btnArchive.classList.toggle('active');
-            this.updateStateFilterFromButtons();
-        };
+        if (this.dom.btnArchive) this.dom.btnArchive.onclick = () => toggleState(1, this.dom.btnArchive);
 
         // View Tabs
         this.dom.viewTabs.forEach(btn => {
