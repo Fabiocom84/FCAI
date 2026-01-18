@@ -537,13 +537,17 @@ body {
     background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
     display: none;
+    /* JS toggles this to flex */
+    /* FLEXBOX CENTERING */
+    justify-content: center;
+    align-items: center;
 }
 
 #archiveModal .modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
+    /* Changed from absolute */
+    /* Removed top/left/transform */
+    /* top: 50%; left: 50%; transform: translate(-50%, -50%); */
     width: 600px;
     max-width: 90%;
     max-height: 85vh;

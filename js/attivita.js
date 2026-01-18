@@ -909,7 +909,7 @@ const TaskApp = {
 
     openArchive: async function () {
         const container = document.getElementById('archiveTasksContainer');
-        document.getElementById('archiveModal').style.display = 'block';
+        document.getElementById('archiveModal').style.display = 'flex';
         document.getElementById('modalOverlay').style.display = 'block';
         container.innerHTML = 'Caricamento...';
         try {
