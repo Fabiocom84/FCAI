@@ -368,7 +368,7 @@ body {
 }
 
 /* Force Hidden Media Query effects on Desktop */
-@media (min-width: 1000px) {
+@media (min-width: 1201px) {
     .task-view-wrapper {
         flex-direction: row !important;
         overflow: hidden !important;
