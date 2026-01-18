@@ -42,6 +42,12 @@ export async function apiFetch(endpoint, options = {}) {
 
             // Se è un errore server temporaneo (500, 502, 503, 504), lanciamo eccezione per fare retry
             if ([500, 502, 503, 504].includes(response.status)) {
+                try {
+                    const errText = await response.clone().text();
+                    console.error("🔥 Server Error Details (apiFetch):", errText);
+                } catch (e) {
+                    console.error("Could not read error body", e);
+                }
                 throw new Error(`Server Error ${response.status}`);
             }
 
@@ -85,6 +91,12 @@ export async function publicApiFetch(endpoint, options = {}) {
 
             // Se è un errore server temporaneo (500, 502, 503, 504), lanciamo eccezione per fare retry
             if ([500, 502, 503, 504].includes(response.status)) {
+                try {
+                    const errText = await response.clone().text();
+                    console.error("🔥 Server Error Details (publicApiFetch):", errText);
+                } catch (e) {
+                    console.error("Could not read error body", e);
+                }
                 throw new Error(`Server Error ${response.status}`);
             }
 
