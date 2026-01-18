@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Attività</title>
-    
+
     <!-- Fonts e Librerie -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Stili Proprietari -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="attivita.css">
 </head>
 <!-- AGGIUNTO: classe internal-page per attivare il layout full screen -->
+
 <body class="internal-page">
 
     <!-- GUSCIO STANDARD -->
@@ -29,9 +31,9 @@
                     <i class="fas fa-home"></i> Home
                 </a>
             </div>
-                    
+
             <h1>GESTIONE ATTIVITÀ</h1>
-                    
+
             <div class="header-right">
                 <!-- Il filtro admin eredita lo stile flex -->
                 <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
@@ -42,11 +44,11 @@
         </header>
 
         <!-- CONTENUTO SCROLLABILE (ma qui usiamo flex interno per la Kanban) -->
-        <div class="std-app-content" style="display:flex; flex-direction:column; overflow:hidden;">
-            
+        <div class="std-app-content">
+
             <!-- WRAPPER SPECIFICO ATTIVITÀ -->
             <div class="task-view-wrapper">
-                
+
                 <!-- COLONNE 1-4: KANBAN BOARD -->
                 <main id="taskView" class="task-view-grid">
                     <div class="loader-container">
@@ -57,14 +59,15 @@
 
                 <!-- COLONNA 5: ISPETTORE FISSO -->
                 <aside id="taskInspector" class="task-inspector-fixed">
-                    
+
                     <!-- TOOLBAR NELL'HTML -->
                     <div class="inspector-header-toolbar">
                         <button id="addTaskBtn" class="toolbar-btn btn-new" title="Nuovo Task">
                             <i class="fas fa-plus"></i> Nuovo
                         </button>
                         <div class="divider-vertical"></div>
-                        <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri" disabled>
+                        <button id="inspectorCompleteBtn" class="toolbar-btn btn-complete" title="Chiudi / Riapri"
+                            disabled>
                             <i class="fas fa-check"></i> Chiudi
                         </button>
                         <button id="inspectorTransferBtn" class="toolbar-btn btn-transfer" title="Trasferisci" disabled>
@@ -80,7 +83,7 @@
                             <i class="fas fa-bell"></i>
                         </button>
                     </div>
-                    
+
                     <!-- CORPO DINAMICO -->
                     <div class="inspector-body" id="inspectorBody">
                         <div class="empty-state">
@@ -117,4 +120,5 @@
     <script type="module" src="js/shared-ui.js"></script>
     <script type="module" src="js/attivita.js"></script>
 </body>
+
 </html>
