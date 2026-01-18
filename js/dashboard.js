@@ -160,57 +160,40 @@ const Dashboard = {
 
     // --- MAIN DATA FETCHING ---
     fetchData: async function (opts = {}) {
-        const resetPage = opts.resetPage || false;
-        const append = opts.append || false;
-
-        if (resetPage) this.state.pagination.page = 1;
+        const append = opts.append || false; // Used for Analytics (Grid) Load More - DEPRECATED in V2 Group Mode?
+        // With Group Mode, "Load More" applies to rows INSIDE a group.
+        // The global "Pagination" might apply to Groups themselves? 
+        // For now, let's assume we load ALL Groups (headers) or reasonable amount.
+        // User asked for "data grouped... not download all data".
 
         const btn = this.dom.btnRefresh;
         const icon = btn.innerHTML; btn.innerHTML = "⏳"; btn.disabled = true;
         if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Caricamento...";
 
         try {
-            const f = this.state.filters;
-            const p = this.state.pagination;
+            // 1. Fetch KPI & Charts (Analytics Mode)
+            const params = this.buildFilterParams();
+            // Note: analytics mode might return rows too, we can ignore them or use them for "Synthesis View".
+            // If current view is Detail, we focus on Groups.
 
-            const params = new URLSearchParams();
-            params.append('page', p.page);
-            params.append('pageSize', p.pageSize);
-
-            // Scalar Filters
-            if (this.dom.dateStart.value) params.append('start', this.dom.dateStart.value);
-            if (this.dom.dateEnd.value) params.append('end', this.dom.dateEnd.value);
-
-            // Array Filters
-            f.stato.forEach(v => params.append('stato', v));
-            f.id_commessa.forEach(v => params.append('id_commessa', v));
-            f.id_personale.forEach(v => params.append('id_personale', v));
-            f.id_macro.forEach(v => params.append('id_macro', v));
-            f.id_componente.forEach(v => params.append('id_componente', v));
-
-            console.log("Fetch V2:", params.toString());
+            console.log("Fetch Analytics:", params.toString());
             const res = await apiFetch('/api/dashboard/stats?' + params.toString());
-            if (!res.ok) throw new Error("Errore API");
+            if (!res.ok) throw new Error("Errore API Analytics");
+            const data = await res.json();
+            this.state.analyticsData = data;
 
-            const data = await res.json(); // Expected: { rows, kpis, charts, total_count }
-
-            // Merge Logic
-            if (append) {
-                this.state.analyticsData.rows = [...this.state.analyticsData.rows, ...data.rows];
-                this.state.analyticsData.kpis = data.kpis; // Update KPIs (global)
-                // Charts might need recalc or just take new ones? Usually charts reflect total current filtered set, which backend returns.
-                this.state.analyticsData.charts = data.charts;
-            } else {
-                this.state.analyticsData = data;
+            // Render KPIs & Charts
+            this.updateKPIs(data.kpis);
+            this.renderCharts(data.charts);
+            if (!this.state.availableFilters) { // Init once
+                this.state.availableFilters = data.charts;
+                this.renderSidebarFilters();
             }
 
-            this.state.pagination.total = data.total_count || 0;
-            this.state.pagination.hasMore = (p.page * p.pageSize) < this.state.pagination.total;
+            // 2. Fetch Groups (Headers)
+            await this.fetchGroups();
 
-            this.renderAll(append);
-
-            const loaded = this.state.analyticsData.rows.length;
-            if (this.dom.statusMsg) this.dom.statusMsg.innerHTML = `Visualizzati <b>${loaded}</b> di <b>${this.state.pagination.total}</b>`;
+            if (this.dom.statusMsg) this.dom.statusMsg.innerHTML = `Dati aggiornati.`;
 
         } catch (e) {
             console.error(e);
@@ -220,23 +203,79 @@ const Dashboard = {
         }
     },
 
+    buildFilterParams: function () {
+        const f = this.state.filters;
+        const params = new URLSearchParams();
+        // Scalar Filters
+        if (this.dom.dateStart.value) params.append('start', this.dom.dateStart.value);
+        if (this.dom.dateEnd.value) params.append('end', this.dom.dateEnd.value);
+        // Array Filters
+        f.stato.forEach(v => params.append('stato', v));
+        f.id_commessa.forEach(v => params.append('id_commessa', v));
+        f.id_personale.forEach(v => params.append('id_personale', v));
+        f.id_macro.forEach(v => params.append('id_macro', v));
+        f.id_componente.forEach(v => params.append('id_componente', v));
+        return params;
+    },
+
+    fetchGroups: async function () {
+        const params = this.buildFilterParams();
+        params.append('mode', 'groups');
+
+        // Grouping Key
+        const groupKey = this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa';
+        params.append('groupBy', groupKey);
+
+        console.log("Fetch Groups:", params.toString());
+        const res = await apiFetch('/api/dashboard/stats?' + params.toString());
+        if (!res.ok) throw new Error("Errore Fetch Groups");
+        const data = await res.json();
+
+        this.state.groups = data.groups || [];
+        this.renderGrid();
+    },
+
+    fetchGroupDetails: async function (group, groupId, groupBody) {
+        // Validation to avoid multiple fetches
+        if (group.detailsLoaded || group.loading) return;
+
+        group.loading = true;
+        groupBody.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Caricamento dettagli...</div>';
+
+        try {
+            const params = this.buildFilterParams();
+            params.append('mode', 'details');
+            params.append('groupBy', this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa');
+            params.append('groupId', groupId);
+
+            console.log("Fetch Details:", params.toString());
+            const res = await apiFetch('/api/dashboard/stats?' + params.toString());
+            if (!res.ok) throw new Error("Errore Dettagli");
+            const data = await res.json();
+
+            group.rows = data.rows || [];
+            group.detailsLoaded = true;
+
+            // Render Rows
+            this.renderGroupRows(group, groupBody);
+
+        } catch (e) {
+            console.error(e);
+            groupBody.innerHTML = `<div style="color:red; padding:10px;">Errore: ${e.message}</div>`;
+        } finally {
+            group.loading = false;
+        }
+    },
+
     loadMore: function () {
-        if (!this.state.pagination.hasMore) return;
-        this.state.pagination.page++;
-        this.fetchData({ append: true });
+        // Deprecated/Changed in Group Mode? 
+        // If we want global pagination of groups, we'd need page/pageSize for fetchGroups.
+        // User requirement: "all that match filter... load titles first".
+        // So presumably we load all headers.
     },
 
     renderAll: function (append) {
-        if (!this.state.analyticsData) return;
-
-        this.updateKPIs(this.state.analyticsData.kpis);
-        if (!append) {
-            // Only re-render charts and filters on full reload to avoid jumpiness/loss of context? 
-            // Actually filters should probably reflect available data in the global filtered set.
-            this.renderCharts(this.state.analyticsData.charts);
-            this.renderSidebarFilters();
-        }
-        this.renderGrid(); // Handles grouping internally
+        // Replaced by specific calls in fetchData
     },
 
     updateKPIs: function (kpis) {
@@ -253,13 +292,14 @@ const Dashboard = {
         this.state.chartInstances = {};
         if (!charts) return;
 
+        // ... (Charts logic remains same)
         const mapData = (list) => ({
             labels: list ? list.map(i => i.label) : [],
             values: list ? list.map(i => i.value) : []
         });
 
-        // Basic implementations
         this.createPieChart('chartCommessaPie', mapData(charts.by_commessa));
+        // ... restore other charts ...
         this.createBarChart('chartTimeBar', mapData(charts.time_trend));
         this.createPieChart('chartLavPie', mapData(charts.by_lavorazione));
         this.createHorizontalBarChart('chartLavBar', mapData(charts.by_lavorazione));
@@ -269,6 +309,63 @@ const Dashboard = {
         this.createHorizontalBarChart('chartUserBar', mapData(charts.by_user));
         this.createHorizontalBarChart('chartCostCommessa', mapData(charts.costi_commessa), '#f39c12');
     },
+
+    renderSidebarFilters: function () {
+        // ... existing filter render logic ...
+        const charts = this.state.availableFilters;
+        if (!charts) return;
+        this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa');
+        this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale');
+        this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro');
+        this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente');
+    },
+
+    // --- GRID with GROUPING ---
+    renderGrid: function () {
+        const container = this.dom.gridContainer;
+        if (!container) return;
+        container.innerHTML = '';
+
+        const groups = this.state.groups || [];
+        if (!groups.length) {
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Nessun dato trovato.</div>';
+            return;
+        }
+
+        // Loop Groups (Headers Only First)
+        groups.forEach((g, index) => {
+            const groupId = `group-container-${index}`;
+
+            // Header
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'grid-group-header collapsed';
+            groupHeader.style.cursor = 'pointer';
+
+            // Pass the group object 'g' to the toggle function
+            groupHeader.onclick = () => this.toggleGroup(g, groupId, groupHeader);
+
+            groupHeader.innerHTML = `
+                <div class="g-title">
+                    <span class="toggle-icon">▶</span> ${g.group_label}
+                </div>
+                <div class="g-stats">
+                    <span class="badge-count">${g.row_count} righe</span>
+                    <span class="badge-hours">${Number(g.total_hours).toFixed(1)} ore</span>
+                </div>
+            `;
+            container.appendChild(groupHeader);
+
+            // Body
+            const groupBody = document.createElement('div');
+            groupBody.id = groupId;
+            groupBody.className = 'grid-group-body';
+            groupBody.style.display = 'none';
+            container.appendChild(groupBody);
+        });
+
+        this.updateSelectionSummary();
+    },
+
 
     createPieChart: function (id, d) {
         const el = document.getElementById(id);
@@ -512,46 +609,107 @@ const Dashboard = {
         this.updateSelectionSummary();
     },
 
-    // Toggle Single Group
-    toggleGroup: function (id, headerEl) {
-        const body = document.getElementById(id);
+    // --- ACTIONS ---
+
+    toggleGroup: async function (group, groupId, headerEl) {
+        const body = document.getElementById(groupId);
         const icon = headerEl.querySelector('.toggle-icon');
 
         if (body.style.display === 'none') {
-            body.style.display = 'block';
+            // EXPAND
             headerEl.classList.remove('collapsed');
             if (icon) icon.innerText = '▼';
+            body.style.display = 'block';
+
+            // Lazy Load if needed
+            if (!group.detailsLoaded) {
+                await this.fetchGroupDetails(group, group.group_id, body);
+            }
         } else {
+            // COLLAPSE
             body.style.display = 'none';
             headerEl.classList.add('collapsed');
             if (icon) icon.innerText = '▶';
         }
     },
 
-    // Toggle All Groups
-    toggleAllGroups: function (expand) {
-        const headers = document.querySelectorAll('.grid-group-header');
-        const bodies = document.querySelectorAll('.grid-group-body');
+    toggleAllGroups: async function (expand) {
+        // Warning: Expanding all might trigger many requests if not loaded.
+        // We could show a specific loader or just do it.
+        const groups = this.state.groups || [];
 
-        headers.forEach(h => {
-            const icon = h.querySelector('.toggle-icon');
+        // We need to map UI elements to groups. 
+        // Logic: Iterate state.groups, find DOM elements, trigger toggle if needed.
+
+        for (let i = 0; i < groups.length; i++) {
+            const g = groups[i];
+            const groupId = `group-container-${i}`;
+            const body = document.getElementById(groupId);
+            const header = body.previousElementSibling; // Header is right before body in renderGrid
+
             if (expand) {
-                h.classList.remove('collapsed');
-                if (icon) icon.innerText = '▼';
+                if (body.style.display === 'none') {
+                    // Trigger expand
+                    // We simply call toggleGroup? Or manual? 
+                    // Manual is safer to control flow/await.
+                    header.classList.remove('collapsed');
+                    const icon = header.querySelector('.toggle-icon');
+                    if (icon) icon.innerText = '▼';
+                    body.style.display = 'block';
+
+                    if (!g.detailsLoaded && !g.loading) {
+                        // Sequential fetch to avoid flooding? Or parallel?
+                        // Parallel 50 requests is bad. Sequential is slow.
+                        // Let's do sequential for safety.
+                        await this.fetchGroupDetails(g, g.group_id, body);
+                    }
+                }
             } else {
-                h.classList.add('collapsed');
+                // Collapse
+                body.style.display = 'none';
+                header.classList.add('collapsed');
+                const icon = header.querySelector('.toggle-icon');
                 if (icon) icon.innerText = '▶';
             }
-        });
-
-        bodies.forEach(b => {
-            b.style.display = expand ? 'block' : 'none';
-        });
+        }
     },
 
-    getHeaderHTML: function () {
-        // ... unused now ...
-        return '';
+    renderGroupRows: function (group, container) {
+        container.innerHTML = ''; // Clear loader
+
+        if (!group.rows || !group.rows.length) {
+            container.innerHTML = '<div style="padding:10px; font-style:italic; color:#999;">Nessuna riga.</div>';
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'dashboard-grid';
+
+        // We can add a Header per group if we want column titles again?
+        // User didn't strictly ask, but it helps readability.
+        // Let's add it only if it's the first group? Or always?
+        // Let's add it always for clarity inside the "accordion".
+
+        table.innerHTML = `
+            <thead><tr>
+                <th width="40"></th>
+                <th width="90">Data</th>
+                <th width="140">Utente</th>
+                <th width="150">Commessa</th>
+                <th>Macro / Lav.</th>
+                <th width="50">Ore</th>
+                <th width="150">Note</th>
+                <th width="50">Act</th>
+            </tr></thead>
+            <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector('tbody');
+        group.rows.forEach(r => {
+            tbody.appendChild(this.createRow(r));
+        });
+
+        container.appendChild(table);
     },
 
     createRow: function (r) {
