@@ -942,3 +942,119 @@
         gap: 15px;
     }
 }
+
+/* ==========================================================================
+   FIX TABELLA GRID (Layout Fisso per Colonne)
+   ========================================================================== */
+
+.dashboard-grid {
+    width: 100%;
+    table-layout: fixed; /* Fondamentale per rispettare le larghezze */
+    border-collapse: collapse;
+    background: white;
+}
+
+.dashboard-grid th {
+    background: #f8f9fa;
+    color: #7f8c8d;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-bottom: 2px solid #e9ecef;
+    text-align: left;
+}
+
+.dashboard-grid td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 0.9rem;
+    color: #333;
+    vertical-align: middle;
+}
+
+.dashboard-grid tr:hover td {
+    background-color: #f8fbff;
+}
+
+/* --- DEFINIZIONE LARGHEZZE COLONNE --- */
+
+/* 1. Checkbox (Piccola e centrata) */
+.dashboard-grid th:nth-child(1),
+.dashboard-grid td:nth-child(1) {
+    width: 40px;
+    text-align: center;
+}
+
+/* 2. Data (Fissa) */
+.dashboard-grid th:nth-child(2),
+.dashboard-grid td:nth-child(2) {
+    width: 90px;
+}
+
+/* 3. Utente (Media) */
+.dashboard-grid th:nth-child(3),
+.dashboard-grid td:nth-child(3) {
+    width: 140px;
+}
+
+/* 4. Commessa (Larga ma non troppo) */
+.dashboard-grid th:nth-child(4),
+.dashboard-grid td:nth-child(4) {
+    width: 150px;
+}
+
+/* 5. Macro / Lavorazione (Flessibile - Prende tutto lo spazio rimanente) */
+.dashboard-grid th:nth-child(5),
+.dashboard-grid td:nth-child(5) {
+    width: auto; 
+}
+
+/* 6. Ore (Piccola e centrata/grassetto) */
+.dashboard-grid th:nth-child(6),
+.dashboard-grid td:nth-child(6) {
+    width: 50px;
+    text-align: right;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* 7. Note (Fissa ma troncata) */
+.dashboard-grid th:nth-child(7),
+.dashboard-grid td:nth-child(7) {
+    width: 150px;
+    color: #777;
+    font-style: italic;
+}
+
+/* 8. Action (Piccola) */
+.dashboard-grid th:nth-child(8),
+.dashboard-grid td:nth-child(8) {
+    width: 50px;
+    text-align: center;
+}
+
+/* Helpers per testo troncato nelle celle */
+.dashboard-grid td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Stili interni alle celle per doppia riga (es. Macro sopra, Componente sotto) */
+.cell-primary {
+    font-weight: 600;
+    color: #34495e;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cell-secondary {
+    font-size: 0.75rem;
+    color: #95a5a6;
+    margin-top: 2px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
