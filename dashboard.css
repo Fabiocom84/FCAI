@@ -252,6 +252,26 @@
     transform: translateY(-1px);
 }
 
+.btn-reset-filters {
+    width: 100%;
+    padding: 8px;
+    background: #fff;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-reset-filters:hover {
+    background: #e74c3c;
+    color: white;
+}
+
 /* --- MAIN CONTENT --- */
 .main-content {
     flex: 1;

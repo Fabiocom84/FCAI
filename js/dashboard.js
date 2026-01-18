@@ -114,6 +114,39 @@ const Dashboard = {
         if (this.dom.btnInbox) this.dom.btnInbox.onclick = () => toggleState(0, this.dom.btnInbox);
         if (this.dom.btnArchive) this.dom.btnArchive.onclick = () => toggleState(1, this.dom.btnArchive);
 
+        // Reset Filters Button
+        const btnResetFn = document.getElementById('btnResetFilters');
+        if (btnResetFn) {
+            btnResetFn.onclick = () => {
+                // 1. Reset Dates
+                this.dom.dateStart.value = '';
+                this.dom.dateEnd.value = '';
+                this.state.filters.dateStart = '';
+                this.state.filters.dateEnd = '';
+
+                // 2. Reset Status to Default (Da Validare)
+                this.state.filters.stato = [0];
+                this.updateStateButtons();
+
+                // 3. Reset Quick Filters (Empty = All)
+                this.state.filters.id_commessa = [];
+                this.state.filters.id_personale = [];
+                this.state.filters.id_macro = [];
+                this.state.filters.id_componente = [];
+
+                // 4. Reset Search
+                this.state.searchTerm = '';
+                if (this.dom.detailSearch) this.dom.detailSearch.value = '';
+
+                // 5. Reset Selection
+                this.state.selectedIds = [];
+                this.updateSelectionSummary();
+
+                // 6. Refresh
+                this.fetchData({ resetPage: true });
+            };
+        }
+
         // View Tabs
         this.dom.viewTabs.forEach(btn => {
             btn.addEventListener('click', (e) => {
