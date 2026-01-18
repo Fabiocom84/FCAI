@@ -437,19 +437,31 @@ const Dashboard = {
         Object.values(groups).forEach(g => {
             const groupHeader = document.createElement('div');
             groupHeader.className = 'grid-group-header';
+
+            // New Layout: Title (Left) - Stats (Right)
             groupHeader.innerHTML = `
                 <div class="g-title">${g.label}</div>
-                <div class="g-meta">${g.rows.length} righe, ${g.hours.toFixed(1)} ore</div>
+                <div class="g-stats">
+                    <span class="badge-count">${g.rows.length} righe</span>
+                    <span class="badge-hours">${g.hours.toFixed(1)} ore</span>
+                </div>
             `;
             container.appendChild(groupHeader);
 
             // Table
             const table = document.createElement('table');
             table.className = 'dashboard-grid';
-            table.innerHTML = Object.values(groups).length === 1 && g.label === 'Altro' ? this.getHeaderHTML() : '';
-            // If grouped, maybe we don't need header for every group? Or yes? 
-            // Let's put header only once at top? Grouping usually implies headers inside or just headers at top.
-            // Let's do simple rows inside.
+
+            // Header only for first group or always? 
+            // Better always to support scrolling context per group if needed, or just once.
+            // Current design: just simple rows. Rows align with global fixed layout.
+            // Adding a hidden header to enforce width? No, 'table-layout: fixed' needs connection to TH.
+            // Let's create a single global header outside the loop? 
+            // Actually, if we break into multiple tables, columns might misalign if data varies length (even with fixed layout sometimes).
+            // Best practice: One table, with headers as TRs with colspan.
+            // BUT here we separate into DIVs + Tables.
+            // Let's try to keep it simple. If alignment is issue, we fix later.
+            // For now, adhere to User Request: "evidenziare meglio il titolo... unica riga".
 
             const tbody = document.createElement('tbody');
             g.rows.forEach(r => {
@@ -473,14 +485,14 @@ const Dashboard = {
 
     getHeaderHTML: function () {
         return `<thead><tr>
-            <th width="30"></th>
-            <th>Data</th>
-            <th>Utente</th>
-            <th>Commessa</th>
+            <th width="40"></th>
+            <th width="90">Data</th>
+            <th width="140">Utente</th>
+            <th width="150">Commessa</th>
             <th>Macro / Lav.</th>
-            <th>Ore</th>
-            <th>Note</th>
-            <th>Act</th>
+            <th width="50">Ore</th>
+            <th width="150">Note</th>
+            <th width="50">Act</th>
         </tr></thead>`;
     },
 
@@ -496,7 +508,7 @@ const Dashboard = {
                 <div class="cell-primary">${r.macro_label}</div>
                 <div class="cell-secondary">${r.componente_label}</div>
             </td>
-            <td style="font-weight:bold;">${r.ore}</td>
+            <td style="font-weight:bold; text-align:right;">${r.ore}</td>
             <td><small>${r.note || ''}</small></td>
             <td><button class="btn-icon">✏️</button></td>
         `;

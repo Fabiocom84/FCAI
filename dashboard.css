@@ -949,7 +949,8 @@
 
 .dashboard-grid {
     width: 100%;
-    table-layout: fixed; /* Fondamentale per rispettare le larghezze */
+    table-layout: fixed;
+    /* Fondamentale per rispettare le larghezze */
     border-collapse: collapse;
     background: white;
 }
@@ -1007,7 +1008,7 @@
 /* 5. Macro / Lavorazione (Flessibile - Prende tutto lo spazio rimanente) */
 .dashboard-grid th:nth-child(5),
 .dashboard-grid td:nth-child(5) {
-    width: auto; 
+    width: auto;
 }
 
 /* 6. Ore (Piccola e centrata/grassetto) */
@@ -1057,4 +1058,52 @@
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* =========================================
+   NEW GROUP HEADER STYLING
+   ========================================= */
+
+.grid-group-header {
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    padding: 12px 15px;
+    border: 1px solid #e9ecef;
+    border-left: 5px solid #3498db;
+    /* Blue accent */
+    border-radius: 4px;
+    margin-top: 20px;
+    margin-bottom: 5px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.g-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.g-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+}
+
+.badge-count {
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+.badge-hours {
+    background: #eaffea;
+    color: #27ae60;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: 1px solid #d4efdf;
 }
