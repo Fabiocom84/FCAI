@@ -367,11 +367,31 @@ body {
     }
 }
 
-/* Force Hidden Media Query effects on Desktop */
-@media (min-width: 1201px) {
-    .task-view-wrapper {
-        flex-direction: row !important;
-        overflow: hidden !important;
+
+
+/* ========================================================== */
+/* == EMERGENCY MOBILE SCROLL RESTORE == */
+/* ========================================================== */
+@media (max-width: 1200px) {
+
+    html,
+    body {
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-y: scroll !important;
+        /* Force scrollbar */
+        overflow-x: hidden !important;
+        position: static !important;
+    }
+
+    .std-app-shell,
+    .std-app-content,
+    .task-view-wrapper,
+    .task-view-grid {
+        height: auto !important;
+        overflow: visible !important;
+        flex: none !important;
+        display: block !important;
     }
 }
 
