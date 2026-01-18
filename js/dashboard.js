@@ -137,7 +137,7 @@ const Dashboard = {
 
         // Grouping
         if (this.dom.groupingSelect) {
-            this.dom.groupingSelect.addEventListener('change', () => this.renderGrid());
+            this.dom.groupingSelect.addEventListener('change', () => this.fetchData({ resetPage: true }));
         }
 
         // Search (Server Side)
