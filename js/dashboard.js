@@ -444,8 +444,23 @@ const Dashboard = {
             groups[k].hours += r.ore;
         });
 
+        // Create Array from Groups Object and Sort Keys Alphabetically
+        const sortedGroups = Object.values(groups).sort((a, b) => {
+            if (a.label === 'Altro') return 1; // 'Altro' at the end
+            if (b.label === 'Altro') return -1;
+            return a.label.localeCompare(b.label);
+        });
+
         // Loop Groups
-        Object.values(groups).forEach((g, index) => {
+        sortedGroups.forEach((g, index) => {
+            // Sort rows by date desc (and id desc) just to be sure
+            g.rows.sort((a, b) => {
+                const dateA = new Date(a.data_lavoro).getTime();
+                const dateB = new Date(b.data_lavoro).getTime();
+                if (dateB !== dateA) return dateB - dateA;
+                return b.id_registrazione - a.id_registrazione;
+            });
+
             const groupId = `group-${index}`;
 
             // Header
