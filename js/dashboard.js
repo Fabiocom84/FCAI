@@ -48,6 +48,8 @@ const Dashboard = {
         boxLavorazioni: document.getElementById('boxLavorazioni'),
 
         // --- ACTIONS ---
+        btnExpandAll: document.getElementById('btnExpandAll'),
+        btnCollapseAll: document.getElementById('btnCollapseAll'),
         btnContabilizza: document.getElementById('btnContabilizza'),
         selCount: document.getElementById('selCount'),
         selHours: document.getElementById('selHours'),
