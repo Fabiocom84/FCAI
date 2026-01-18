@@ -571,11 +571,79 @@ body {
     flex: 1;
 }
 
+/* --- ARCHIVE MODAL PREMIUM STYLES --- */
+#archiveModal .modal-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#archiveModal .modal-header h2 {
+    color: white;
+    /* Override default dark color */
+    margin: 0;
+    font-size: 1.1em;
+}
+
+#archiveModal .close-button {
+    background: transparent;
+    color: white;
+    font-size: 1.8em;
+    width: auto;
+    height: auto;
+}
+
+#archiveModal .close-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
+}
+
 .archive-task-item {
-    padding: 12px 15px;
+    padding: 15px;
     border-bottom: 1px solid #eee;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
+    display: flex;
+    /* Changed from grid to flex for better alignment */
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+}
+
+.archive-task-item:hover {
+    background-color: #f9f9f9;
+}
+
+.archive-task-item:last-child {
+    border-bottom: none;
+}
+
+.archive-task-title {
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.archive-task-date {
+    font-size: 0.85em;
+    color: #888;
+    background: #f1f1f1;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.empty-archive {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 /* --- 8. STILI CONTENUTO ISPETTORE --- */

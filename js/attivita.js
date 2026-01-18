@@ -916,9 +916,24 @@ const TaskApp = {
             const res = await apiFetch(`/api/tasks/completed?page=1`);
             const tasks = await res.json();
             container.innerHTML = tasks.length
-                ? tasks.map(t => `<div class="archive-task-item"><span>${t.titolo}</span><span>${new Date(t.data_ultima_modifica).toLocaleDateString()}</span></div>`).join('')
-                : 'Nessun task.';
-        } catch (e) { container.innerHTML = 'Errore caricamento.'; }
+                ? tasks.map(t => `
+                    <div class="archive-task-item">
+                        <div class="archive-task-title">
+                            <i class="fas fa-check-circle" style="color:#2ecc71;"></i> 
+                            ${t.titolo}
+                        </div>
+                        <div class="archive-task-date">
+                            <i class="far fa-calendar-alt"></i> 
+                            ${new Date(t.data_ultima_modifica).toLocaleDateString()}
+                        </div>
+                    </div>`).join('')
+                : `
+                    <div class="empty-archive">
+                        <i class="fas fa-folder-open fa-3x"></i>
+                        <p>Nessun task completato in archivio.</p>
+                        <small>I task completati appariranno qui.</small>
+                    </div>`;
+        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi.</div>'; }
     }
 };
 
