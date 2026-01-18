@@ -301,10 +301,13 @@ body {
     .task-inspector-fixed {
         width: 100%;
         flex: none;
-        height: 600px;
-        order: -1;
+        height: auto;
+        min-height: 500px;
+        order: 2;
+        margin-top: 25px;
         margin-bottom: 25px;
-        border-left: 1px solid #ddd;
+        border-left: none;
+        border-top: 2px solid #ddd;
     }
 
     .page-header h1 {
