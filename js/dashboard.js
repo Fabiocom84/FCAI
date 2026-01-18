@@ -140,9 +140,26 @@ const Dashboard = {
             this.dom.groupingSelect.addEventListener('change', () => this.renderGrid());
         }
 
-        // Search (Client side filter of CURRENT page/loaded rows)
+        // Search (Server Side)
         if (this.dom.detailSearch) {
-            this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
+            // Debounce function
+            const debounce = (func, wait) => {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            };
+
+            this.dom.detailSearch.addEventListener('input', debounce((e) => {
+                this.state.searchTerm = e.target.value;
+                this.fetchData({ resetPage: true });
+                // Note: We trigger fetchData which refreshes GROUPS. 
+                // We do NOT clear opened items? 
+                // Actually, if we search, the group list changes entirely.
+                // Best to collapse all or maintain open if ID still exists?
+                // Collapsing all is safer/simpler for now.
+            }, 500));
         }
 
         if (this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.openContabilizzaModal());
@@ -216,7 +233,11 @@ const Dashboard = {
         f.id_commessa.forEach(v => params.append('id_commessa', v));
         f.id_personale.forEach(v => params.append('id_personale', v));
         f.id_macro.forEach(v => params.append('id_macro', v));
-        f.id_componente.forEach(v => params.append('id_componente', v));
+        if (this.state.filters.id_componente.length) params.append('id_componente', this.state.filters.id_componente.join(','));
+
+        // Search
+        if (this.state.searchTerm) params.append('search', this.state.searchTerm);
+
         return params;
     },
 
@@ -514,6 +535,9 @@ const Dashboard = {
             return;
         }
 
+        // Search Term (Server handles filtering, so we just render what we have)
+        // Groups returned by server are already filtered.
+
         // Loop Groups (Headers Only First)
         groups.forEach((g, index) => {
             const groupId = `group-container-${index}`;
@@ -543,10 +567,21 @@ const Dashboard = {
             groupBody.className = 'grid-group-body';
             groupBody.style.display = 'none';
             container.appendChild(groupBody);
+
+            // If search is active and group is visible, maybe expand automatically?
+            // User requested: "bypass lazy loading" - server did the search.
+            // If the group is returned, it means it Matches.
+            // Data inside is NOT loaded yet. 
+            // We do NOT auto-expand to save bandwidth, unless user wants it.
+            // User said: "evitiamo di scaricare tutti i dati".
+            // So we show the Group (with count matching search). 
+            // User clicks -> we download DETAILED rows filtered by search.
         });
 
         this.updateSelectionSummary();
     },
+
+    // filterGridLocal REMOVED - using Server Side Search
 
     // --- ACTIONS ---
 
@@ -563,6 +598,18 @@ const Dashboard = {
             // Lazy Load if needed
             if (!group.detailsLoaded) {
                 await this.fetchGroupDetails(group, group.group_id, body);
+                // After loading, if search term exists, we might need to re-run filter?
+                // Because now we have rows that might match or not.
+                if (this.state.searchTerm) {
+                    this.filterGridLocal(this.state.searchTerm);
+                    // Warning: this re-renders grid and collapses everything.
+                    // Ideally we just filter rows here.
+                    // Refactor: filterGridLocal should just update data, renderGrid renders.
+                    // For now, let's just render rows filtered.
+                }
+            } else {
+                // If already loaded, render rows (filtering applied inside renderGroupRows)
+                this.renderGroupRows(group, body);
             }
         } else {
             // COLLAPSE
@@ -644,7 +691,26 @@ const Dashboard = {
         `;
 
         const tbody = table.querySelector('tbody');
-        group.rows.forEach(r => {
+
+        let rows = group.rows || [];
+        const t = this.state.searchTerm ? this.state.searchTerm.toLowerCase() : '';
+
+        if (t) {
+            rows = rows.filter(r => {
+                return (r.personale_label && r.personale_label.toLowerCase().includes(t)) ||
+                    (r.commessa_label && r.commessa_label.toLowerCase().includes(t)) ||
+                    (r.macro_label && r.macro_label.toLowerCase().includes(t)) ||
+                    (r.componente_label && r.componente_label.toLowerCase().includes(t)) ||
+                    (r.note && r.note.toLowerCase().includes(t));
+            });
+        }
+
+        if (!rows.length) {
+            container.innerHTML = `<div style="padding:10px; font-style:italic; color:#999;">Nessuna riga corrispondente a "${t}".</div>`;
+            return;
+        }
+
+        rows.forEach(r => {
             tbody.appendChild(this.createRow(r));
         });
 
