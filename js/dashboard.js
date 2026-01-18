@@ -572,6 +572,7 @@ const Dashboard = {
 
             groupHeader.innerHTML = `
                 <div class="g-title">
+                     <input type="checkbox" class="group-select-checkbox" title="Seleziona/Deseleziona tutto il gruppo">
                     <span class="toggle-icon">▶</span> ${g.group_label}
                 </div>
                 <div class="g-stats">
@@ -579,6 +580,14 @@ const Dashboard = {
                     <span class="badge-hours">${Number(g.total_hours).toFixed(1)} ore</span>
                 </div>
             `;
+
+            // Fix Checkbox click bubbling
+            const checkbox = groupHeader.querySelector('.group-select-checkbox');
+            checkbox.onclick = (e) => {
+                e.stopPropagation(); // Stop expansion
+                this.toggleGroupSelection(g, e.target.checked, groupId);
+            };
+
             container.appendChild(groupHeader);
 
             // Body
@@ -636,7 +645,57 @@ const Dashboard = {
             body.style.display = 'none';
             headerEl.classList.add('collapsed');
             if (icon) icon.innerText = '▶';
+            this.renderGroupRows(group, body);
         }
+    },
+
+    toggleGroupSelection: async function (group, isChecked, groupId) {
+        // 1. If checking and data missing -> Load it
+        if (isChecked && !group.detailsLoaded) {
+            // Show loading state?
+            if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Caricamento per selezione...";
+            await this.fetchGroupDetails(group);
+            // Also Expand visibly if not open? User might want to see what they selected.
+            // Let's expand it.
+            const groupBody = document.getElementById(groupId);
+            const groupHeader = document.querySelector(`[onclick*="${groupId}"]`) || document.getElementById(groupId)?.previousElementSibling;
+
+            if (groupBody && groupBody.style.display === 'none') {
+                groupBody.style.display = 'block';
+                if (groupHeader) groupHeader.classList.remove('collapsed');
+                // Also rotate icon? handled by class 'collapsed' usually CSS
+                const icon = groupHeader.querySelector('.toggle-icon');
+                if (icon) icon.textContent = '▼';
+            }
+            if (groupBody) this.renderGroupRows(group, groupBody);
+
+            if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Dati aggiornati.";
+        }
+
+        // 2. Select/Deselect IDs
+        const rows = group.rows || [];
+        // Filter rows based on current search too? 
+        // fetchGroupDetails ALREADY uses search term. So group.rows are filtered.
+        // We select ALL visible rows.
+
+        rows.forEach(r => {
+            const id = r.id_registrazione;
+            if (isChecked) {
+                if (!this.state.selectedIds.includes(id)) this.state.selectedIds.push(id);
+            } else {
+                this.state.selectedIds = this.state.selectedIds.filter(x => x !== id);
+            }
+        });
+
+        // 3. Update UI
+        // Update all row checkboxes in this group
+        const groupBody = document.getElementById(groupId);
+        if (groupBody) {
+            const checkboxes = groupBody.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = isChecked);
+        }
+
+        this.updateSelectionSummary();
     },
 
     toggleAllGroups: async function (expand) {
