@@ -506,105 +506,42 @@ const Dashboard = {
         if (!container) return;
         container.innerHTML = '';
 
-        const rows = this.state.analyticsData ? this.state.analyticsData.rows : [];
-        if (!rows.length) {
-            container.innerHTML = '<div style="padding:20px; text-align:center;">Nessun dato.</div>';
+        const groups = this.state.groups || [];
+        if (!groups.length) {
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Nessun dato trovato.</div>';
             return;
         }
 
-        // Apply Client-Side Search (Filter)
-        const searchTerm = this.dom.detailSearch ? this.dom.detailSearch.value.toLowerCase() : '';
-        const filteredRows = rows.filter(r => {
-            if (!searchTerm) return true;
-            return (r.personale_label && r.personale_label.toLowerCase().includes(searchTerm)) ||
-                (r.commessa_label && r.commessa_label.toLowerCase().includes(searchTerm)) ||
-                (r.macro_label && r.macro_label.toLowerCase().includes(searchTerm)) ||
-                (r.componente_label && r.componente_label.toLowerCase().includes(searchTerm));
-        });
-
-        // Grouping
-        const groupKey = this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa';
-        const groups = {};
-
-        filteredRows.forEach(r => {
-            let k = 'Altro';
-            let label = 'Altro';
-
-            if (groupKey === 'commessa') { k = r.id_commessa; label = r.commessa_label; }
-            else if (groupKey === 'macro') { k = r.id_macro_categoria; label = r.macro_label; }
-            else if (groupKey === 'lavorazione') { k = r.id_componente; label = r.componente_label; }
-            else if (groupKey === 'dipendente') { k = r.id_personale; label = r.personale_label; }
-
-            k = k || 'null';
-            if (!groups[k]) groups[k] = { label, rows: [], hours: 0 };
-            groups[k].rows.push(r);
-            groups[k].hours += r.ore;
-        });
-
-        // Create Array from Groups Object and Sort Keys Alphabetically
-        const sortedGroups = Object.values(groups).sort((a, b) => {
-            if (a.label === 'Altro') return 1; // 'Altro' at the end
-            if (b.label === 'Altro') return -1;
-            return a.label.localeCompare(b.label);
-        });
-
-        // Loop Groups
-        sortedGroups.forEach((g, index) => {
-            // Sort rows by date desc (and id desc) just to be sure
-            g.rows.sort((a, b) => {
-                const dateA = new Date(a.data_lavoro).getTime();
-                const dateB = new Date(b.data_lavoro).getTime();
-                if (dateB !== dateA) return dateB - dateA;
-                return b.id_registrazione - a.id_registrazione;
-            });
-
-            const groupId = `group-${index}`;
+        // Loop Groups (Headers Only First)
+        groups.forEach((g, index) => {
+            const groupId = `group-container-${index}`;
 
             // Header
             const groupHeader = document.createElement('div');
-            groupHeader.className = 'grid-group-header collapsed'; // Closed by default
+            groupHeader.className = 'grid-group-header collapsed';
             groupHeader.style.cursor = 'pointer';
-            groupHeader.onclick = () => this.toggleGroup(groupId, groupHeader);
+
+            // Pass the group object 'g' to the toggle function
+            groupHeader.onclick = () => this.toggleGroup(g, groupId, groupHeader);
 
             groupHeader.innerHTML = `
                 <div class="g-title">
-                    <span class="toggle-icon">▶</span> ${g.label}
+                    <span class="toggle-icon">▶</span> ${g.group_label}
                 </div>
                 <div class="g-stats">
-                    <span class="badge-count">${g.rows.length} righe</span>
-                    <span class="badge-hours">${g.hours.toFixed(1)} ore</span>
+                    <span class="badge-count">${g.row_count} righe</span>
+                    <span class="badge-hours">${Number(g.total_hours).toFixed(1)} ore</span>
                 </div>
             `;
             container.appendChild(groupHeader);
 
-            // Container for Table (Hidden by default)
+            // Body
             const groupBody = document.createElement('div');
             groupBody.id = groupId;
             groupBody.className = 'grid-group-body';
             groupBody.style.display = 'none';
-
-            // Table
-            const table = document.createElement('table');
-            table.className = 'dashboard-grid';
-
-            const tbody = document.createElement('tbody');
-            g.rows.forEach(r => {
-                tbody.appendChild(this.createRow(r));
-            });
-            table.appendChild(tbody);
-
-            groupBody.appendChild(table);
             container.appendChild(groupBody);
         });
-
-        // Load More Button
-        if (this.state.pagination.hasMore) {
-            const btn = document.createElement('button');
-            btn.className = 'btn-load-more';
-            btn.innerText = `Carica altri... (Totale ${this.state.pagination.total})`;
-            btn.onclick = () => this.loadMore();
-            container.appendChild(btn);
-        }
 
         this.updateSelectionSummary();
     },
