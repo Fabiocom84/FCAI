@@ -28,7 +28,8 @@ const Dashboard = {
         },
 
         chartInstances: {},
-        pendingIds: []
+        pendingIds: [],
+        selectedIds: []
     },
 
     dom: {
