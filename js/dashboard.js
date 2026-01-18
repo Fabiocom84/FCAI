@@ -420,93 +420,119 @@ const Dashboard = {
 
     // --- FILTERS V2 (Bio-Directional, Multi-Select) ---
     renderSidebarFilters: function () {
-        const charts = this.state.analyticsData.charts;
+        const charts = this.state.availableFilters || this.state.analyticsData.charts;
         if (!charts) return;
 
-        this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa');
-        this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale');
-        this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro');
-        this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente');
+        // Pass Title and Key
+        this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa', 'COMMESSE');
+        this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale', 'DIPENDENTI');
+        this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro', 'MACROCATEGORIE');
+        this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente', 'LAVORAZIONI');
     },
 
-    renderCheckList: function (container, items, filterKey) {
+    renderCheckList: function (container, items, filterKey, title) {
         if (!container) return;
         container.innerHTML = '';
 
-        // Select All / Deselect All
-        const controls = document.createElement('div');
-        controls.className = 'filter-controls';
-        controls.innerHTML = `
-            <small onclick="Dashboard.toggleAllFilter('${filterKey}', true, this)" style="cursor:pointer; color:var(--primary-color);">Tutti</small> | 
-            <small onclick="Dashboard.toggleAllFilter('${filterKey}', false, this)" style="cursor:pointer; color:var(--primary-color);">Nessuno</small>
+        // --- HEADER (Title + Controls) ---
+        const header = document.createElement('div');
+        header.className = 'filter-header';
+        header.innerHTML = `
+            <span class="filter-title">${title}</span>
+            <div class="filter-actions">
+                <span title="Seleziona Tutto" onclick="Dashboard.toggleAllFilter('${filterKey}', true, this)">☑️</span>
+                <span title="Deseleziona Tutto" onclick="Dashboard.toggleAllFilter('${filterKey}', false, this)">⬜</span>
+            </div>
         `;
-        container.appendChild(controls);
+        container.appendChild(header);
+
+        // Current Filter State
+        // [] -> ALL Selected (Visual: All Checked)
+        // [-1] -> NONE Selected (Visual: None Checked)
+        // [1, 2] -> Some Selected
+        const currentIds = this.state.filters[filterKey];
+        const isAllSelected = currentIds.length === 0;
+        const isNoneSelected = currentIds.includes(-1);
+
+        const listContainer = document.createElement('div');
+        listContainer.className = 'filter-list';
 
         items.forEach(item => {
             if (!item.id && !item.label) return;
-            const val = item.id || item.label;
-            const isChecked = this.state.filters[filterKey].includes(parseInt(val));
+            const val = parseInt(item.id || item.value /* value might be id in charts? usually id */);
+            // In charts data: { id: 1, label: 'Name', value: 100 }
+
+            // Check Logic
+            let isChecked = false;
+            if (isAllSelected) {
+                isChecked = true;
+            } else if (isNoneSelected) {
+                isChecked = false;
+            } else {
+                isChecked = currentIds.includes(val);
+            }
 
             const div = document.createElement('div');
             div.className = 'filter-item';
             div.innerHTML = `
                 <label>
                     <input type="checkbox" value="${val}" ${isChecked ? 'checked' : ''}>
-                    <span>${item.label} (${Number(item.value).toFixed(0)})</span>
+                    <span>${item.label} <small>(${Number(item.value).toFixed(0)})</small></span>
                 </label>
             `;
 
             div.querySelector('input').addEventListener('change', (e) => {
                 const v = parseInt(e.target.value);
-                if (e.target.checked) {
-                    this.state.filters[filterKey].push(v);
+                const checked = e.target.checked;
+
+                // Transition Logic
+                if (isAllSelected) {
+                    // We were "All". User Unchecked one.
+                    // New state: ALL IDs except v.
+                    if (!checked) {
+                        const allIds = items.map(i => parseInt(i.id || i.value));
+                        this.state.filters[filterKey] = allIds.filter(id => id !== v);
+                    }
+                } else if (isNoneSelected) {
+                    // We were "None". User Checked one.
+                    if (checked) {
+                        this.state.filters[filterKey] = [v];
+                    }
                 } else {
-                    this.state.filters[filterKey] = this.state.filters[filterKey].filter(x => x !== v);
+                    // Normal behavior
+                    if (checked) {
+                        this.state.filters[filterKey].push(v);
+                    } else {
+                        this.state.filters[filterKey] = this.state.filters[filterKey].filter(x => x !== v);
+                    }
                 }
+
+                // If now Empty logic? 
+                // If I uncheck everything manually -> It becomes empty -> Which means ALL?
+                // NO. User expectation: modify explicitly. 
+                // If array becomes empty manually, we should probably set it to [-1] (None)?
+                // Or user wants to "Reset"?
+                // Usually: Manual uncheck last one -> None.
+                if (this.state.filters[filterKey].length === 0) {
+                    this.state.filters[filterKey] = [-1];
+                }
+
                 this.fetchData({ resetPage: true });
             });
 
-            container.appendChild(div);
+            listContainer.appendChild(div);
         });
+
+        container.appendChild(listContainer);
     },
 
-    toggleAllFilter: function (key, selectAll, el) {
-        // Logic: If selectAll, we don't actually need to push ALL IDs (which might represent thousands?)
-        // Backend treats empty list as "ALL".
-        // BUT logic "Select All" usually means "Select all visible options".
-        // Better: "Reset" -> Empty Array -> "All".
-
+    toggleAllFilter: function (key, selectAll) {
         if (selectAll) {
-            // In this context, "Tutti" for a filter basically means "Remove Filter" (Show everything).
-            // If user consciously wants to select specific 5 items, they check them.
-            // If they click "Tutti", they typically mean "Reset selection".
+            // Select All -> Empty Array (Backend treats as All)
             this.state.filters[key] = [];
         } else {
-            // "Nessuno" makes no sense in additive filter context unless it means deselect everything (same as Tutti/Reset?).
-            // If user wants to EXCLUDE, that's negative filtering.
-            // Let's assume "Tutti" = Reset/Empty = All. "Nessuno" = ??
-            // User requirement: "Option option seleziona o deseleziona tutto".
-            // If I check 50 items, I send 50 IDs. 
-
-            // Implementation: "Seleziona Tutto" -> Check visual boxes & push IDs. 
-            // "Deseleziona Tutto" -> Uncheck & clear IDs.
-
-            if (!selectAll) {
-                this.state.filters[key] = [];
-            } else {
-                // Determine IDs from container context? Or from current Chart data?
-                // We don't have easy ref here. 
-                // Let's rely on the "reset" meaning.
-                // Re-read user request: "checkbox multiselezionabili separate... opzione seleziona o deseleziona tutto"
-
-                // If I select "Select All", I expect all checkboxes checked.
-                // But sending ALL IDs is inefficient if list is huge.
-                // Let's stick to: "Deselect All" = Clear Filter.
-
-                // Let's implement Deselect All as clearing. Select All... maybe just select current top items?
-                // For now, let's map "Tutti" to Clear (which implies All).
-                this.state.filters[key] = [];
-            }
+            // Deselect All -> [-1] (Backend treats as None)
+            this.state.filters[key] = [-1];
         }
         this.fetchData({ resetPage: true });
     },
