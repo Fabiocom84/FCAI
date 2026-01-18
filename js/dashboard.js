@@ -800,8 +800,9 @@ const Dashboard = {
     createRow: function (r) {
         const tr = document.createElement('tr');
         const date = r.data_lavoro ? r.data_lavoro.split('T')[0] : '-';
+        const isChecked = this.state.selectedIds.includes(r.id_registrazione);
         tr.innerHTML = `
-            <td><input type="checkbox" class="row-check" value="${r.id_registrazione}"></td>
+            <td><input type="checkbox" class="row-checkbox" value="${r.id_registrazione}" ${isChecked ? 'checked' : ''}></td>
             <td>${date}</td>
             <td><div class="cell-primary">${r.personale_label}</div></td>
             <td><div class="cell-secondary">${r.commessa_label}</div></td>
@@ -816,24 +817,30 @@ const Dashboard = {
         tr.querySelector('.btn-icon').onclick = () => alert("Modifica non implementata in questa vista.");
 
         // Row check listener
-        tr.querySelector('.row-check').addEventListener('change', () => this.updateSelectionSummary());
+        tr.querySelector('.row-checkbox').addEventListener('change', (e) => {
+            const id = parseInt(e.target.value);
+            if (e.target.checked) {
+                if (!this.state.selectedIds.includes(id)) this.state.selectedIds.push(id);
+            } else {
+                this.state.selectedIds = this.state.selectedIds.filter(x => x !== id);
+            }
+            this.updateSelectionSummary();
+        });
         return tr;
     },
 
     updateSelectionSummary: function () {
-        const checked = document.querySelectorAll('.row-check:checked');
-        if (this.dom.selCount) this.dom.selCount.textContent = checked.length;
+        // Count from state, not DOM (DOM only has visible rows)
+        // Actually, user wants to see what's selected globally? Or just visible?
+        // Usually global. But toggleGroupSelection updates global state.
 
-        // Sum hours (needs lookup or data attr)
-        // Hard to get hours from DOM efficiently if not stored. 
-        // We can just count rows for now, or traverse DOM.
-        // Let's leave hours sum as 0 or fix later if critical.
+        // Let's use state.selectedIds.length
+        if (this.dom.selCount) this.dom.selCount.textContent = this.state.selectedIds.length;
     },
 
     openContabilizzaModal: function () {
-        const checked = document.querySelectorAll('.row-check:checked');
-        if (checked.length === 0) return alert("Seleziona almeno una riga.");
-        const ids = Array.from(checked).map(cb => parseInt(cb.value));
+        const ids = this.state.selectedIds;
+        if (ids.length === 0) return alert("Seleziona almeno una riga.");
         this.state.pendingIds = ids;
         this.dom.confCount.textContent = ids.length;
         this.dom.confirmModal.style.display = 'flex';
