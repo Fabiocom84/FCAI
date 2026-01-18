@@ -79,11 +79,12 @@
         <div class="button-container">
             <!-- RIGA 1: INPUT DATI & CHAT -->
             <!-- Aggiunto id="btn-inserisci-dati" -->
-            <a href="inserisci-dati.html" class="button insert-data-button" id="btn-inserisci-dati">
+            <!-- Aggiunto id="btn-inserisci-dati" -->
+            <a href="inserisci-dati.html" class="button insert-data-button admin-only" id="btn-inserisci-dati">
                 <img src="img/plus.png" alt="Inserisci">
                 <span>Inserisci Dati</span>
             </a>
-            <a href="chat.html" class="button chat-ai-button" id="btn-chat-ai">
+            <a href="chat.html" class="button chat-ai-button admin-only" id="btn-chat-ai">
                 <img src="img/chat.png" alt="Chat">
                 <span>Chat AI</span>
             </a>
@@ -94,17 +95,19 @@
                 <img src="img/view-orders.png" alt="Commesse">
                 <span>Commesse</span>
             </a>
-            <a href="gestione.html" class="button agile-view-button" id="openDataGridBtn">
+            <a href="gestione.html" class="button agile-view-button admin-only" id="openDataGridBtn">
                 <img src="img/table.png" alt="Gestione Dati">
                 <span>Vista Agile</span>
             </a>
 
             <!-- RIGA 3: ORDINI PRODUZIONE -->
-            <a href="inserimento-ordini.html" class="button insert-orders-button" id="btn-inserimento-ordini">
+            <a href="inserimento-ordini.html" class="button insert-orders-button admin-only"
+                id="btn-inserimento-ordini">
                 <img src="img/production-order.png" alt="Inserimento Ordini">
                 <span>Inserimento Ordini</span>
             </a>
-            <a href="registro-ordini.html" class="button orders-view-button" id="openViewProductionOrdersBtn">
+            <a href="registro-ordini.html" class="button orders-view-button admin-only"
+                id="openViewProductionOrdersBtn">
                 <img src="img/view-orders.png" alt="Registro Ordini">
                 <span>Registro Ordini</span>
             </a>
@@ -121,29 +124,29 @@
             </a>
 
             <!-- RIGA 5: DASHBOARD & PRESENZE -->
-            <a href="dashboard.html" class="button dashboard-button" id="btn-dashboard-link">
+            <a href="dashboard.html" class="button dashboard-button admin-only" id="btn-dashboard-link">
                 <img src="img/dashboard.png" alt="Dashboard">
                 <span>Dashboard Analisi</span>
             </a>
             <!-- Aggiunto id="btn-registro-presenze" -->
-            <a href="registro-presenze.html" class="button attendance-button" id="btn-registro-presenze">
+            <a href="registro-presenze.html" class="button attendance-button admin-only" id="btn-registro-presenze">
                 <img src="img/attendance.png" alt="Registro Presenze">
                 <span>Registro Presenze</span>
             </a>
 
             <!-- RIGA 6: CONFIGURAZIONE & TASK -->
-            <a href="admin-config.html" class="button config-button" id="openConfigBtn">
+            <a href="admin-config.html" class="button config-button admin-only" id="openConfigBtn">
                 <img src="img/settings.png" alt="Config">
                 <span>Configurazione Logica</span>
             </a>
             <!-- Aggiunto id="btn-attivita" -->
-            <a href="attivita.html" class="button task-button" id="btn-attivita">
+            <a href="attivita.html" class="button task-button employee-access" id="btn-attivita">
                 <img src="img/tasks.png" alt="Attività">
                 <span>Gestione Attività</span>
             </a>
 
             <!-- RIGA 7: ADDESTRAMENTO -->
-            <a href="#" class="training-button" id="openTrainingModalBtn">
+            <a href="#" class="training-button admin-only" id="openTrainingModalBtn">
                 <img src="img/brain.png" alt="Addestramento">
                 <span>Addestramento</span>
             </a>

@@ -1666,3 +1666,10 @@ body.internal-page {
     overflow: hidden;
     /* Per layout complessi (es. split view) che gestiscono lo scroll internamente */
 }
+
+/* --- SECURITY: DEFAULT DENY VISIBILITY --- */
+/* Elements hidden by default, revealed by JS only after auth check */
+.admin-only,
+.employee-access {
+    display: none !important;
+}

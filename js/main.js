@@ -76,71 +76,56 @@ function setupUI() {
         greetingEl.innerHTML = `Ciao, <strong>${CurrentUser.nome_cognome}</strong>`;
     }
 
-    // 2. GESTIONE VISIBILITÀ BOTTONI
+    // 2. GESTIONE VISIBILITÀ BOTTONI (DEFAULT DENY LOGIC)
+
+    // Logic: Buttons are hidden by default via CSS (.admin-only, .employee-access)
+    // We reveal them based on role.
+
+    // A. DETERMINE ROLES
+    let isImpiegato = false;
+
     if (!IsAdmin) {
-
-        // --- CONTROLLO RUOLO ROBUSTO & CASE-INSENSITIVE ---
-        let isImpiegato = false;
         let roleNameFound = "Nessuno";
-
         if (CurrentUser.ruoli) {
-            // CASO A: Array
-            if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) {
-                roleNameFound = CurrentUser.ruoli[0].nome_ruolo;
-            }
-            // CASO B: Oggetto
-            else if (typeof CurrentUser.ruoli === 'object') {
-                roleNameFound = CurrentUser.ruoli.nome_ruolo;
-            }
+            if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) roleNameFound = CurrentUser.ruoli[0].nome_ruolo;
+            else if (typeof CurrentUser.ruoli === 'object') roleNameFound = CurrentUser.ruoli.nome_ruolo;
         }
+        if ((!roleNameFound || roleNameFound === "Nessuno") && CurrentUser.ruolo) roleNameFound = CurrentUser.ruolo;
 
-        // CASO C: Fallback colonna diretta
-        if (!roleNameFound || roleNameFound === "Nessuno") {
-            if (CurrentUser.ruolo) roleNameFound = CurrentUser.ruolo;
-        }
-
-        // --- FIX MAIUSCOLE/MINUSCOLE ---
-        // Convertiamo tutto in minuscolo prima di confrontare
         if (roleNameFound && roleNameFound.trim().toLowerCase() === 'impiegato') {
             isImpiegato = true;
         }
+        console.log("🔍 DEBUG RUOLO -> IsImpiegato:", isImpiegato);
+    }
 
-        console.log("🔍 DEBUG RUOLO -> Trovato:", roleNameFound, "| IsImpiegato:", isImpiegato);
+    // B. REVEAL LOGIC
+    const adminElements = document.querySelectorAll('.admin-only');
+    const employeeElements = document.querySelectorAll('.employee-access');
 
-        // ELENCO BOTTONI DA NASCONDERE
-        const buttonsToHide = [
-            'btn-inserisci-dati',
-            'openChatModalBtn',
-            'openDataGridBtn',
-            'btn-inserimento-ordini',
-            'openViewProductionOrdersBtn',
-            'btn-dashboard-link',
-            'btn-registro-presenze',
-            'btn-dashboard-link',
-            'btn-registro-presenze',
-            'openConfigBtn',
-            'openTrainingModalBtn',
-            'btn-chat-ai'  // Added: Hide Chat AI button for non-admin
-        ];
-
-        // Se NON è Impiegato, nascondi anche il bottone Attività
-        if (!isImpiegato) {
-            buttonsToHide.push('btn-attivita');
-        }
-
-        buttonsToHide.forEach(id => {
-            const btn = document.getElementById(id);
-            if (btn) btn.style.display = 'none';
+    if (IsAdmin) {
+        // ADMIN: Show EVERYTHING
+        adminElements.forEach(el => {
+            el.classList.remove('admin-only');
+            el.style.display = 'flex'; // Ensure flex layout for buttons
         });
+        employeeElements.forEach(el => {
+            el.classList.remove('employee-access');
+            el.style.display = 'flex';
+        });
+    } else {
+        // NON-ADMIN
 
+        // Hide Legend Items (keep existing logic)
         hideLegendItemsForNonAdmin();
 
-    } else {
-        // Admin vede tutto
-        ['openConfigBtn', 'openTrainingModalBtn', 'openDataGridBtn', 'btn-attivita'].forEach(id => {
-            const btn = document.getElementById(id);
-            if (btn) btn.style.display = 'flex';
-        });
+        if (isImpiegato) {
+            // IMPIEGATO: Show only Employee access items
+            employeeElements.forEach(el => {
+                el.classList.remove('employee-access');
+                el.style.display = 'flex';
+            });
+        }
+        // GUEST: Sees only what is not hidden by default (Basic buttons)
     }
 
     // CHIAMATA CHECK NOTIFICHE
