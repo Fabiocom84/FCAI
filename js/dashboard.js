@@ -358,7 +358,47 @@ const Dashboard = {
         this.createHorizontalBarChart('chartMacroBar', mapData(charts.by_macro));
         this.createPieChart('chartUserPie', mapData(charts.by_user));
         this.createHorizontalBarChart('chartUserBar', mapData(charts.by_user));
+
+        // Stacked Charts (Cross Data)
+        this.createStackedChart('chartCrossMacroUser', charts.cross_macro_user, 'user', 'category');
+        this.createStackedChart('chartCrossLavUser', charts.cross_lav_user, 'user', 'category');
+
         this.createHorizontalBarChart('chartCostCommessa', mapData(charts.costi_commessa), '#f39c12');
+    },
+
+    // Helper for Stacked Bar (Pivoting Data)
+    createStackedChart: function (id, rawData, xKey, stackKey) {
+        const el = document.getElementById(id);
+        if (!el || !rawData || !rawData.length) return;
+
+        // 1. Get Unique X Labels (Users)
+        const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
+
+        // 2. Get Unique Stacks (Categories)
+        const categories = [...new Set(rawData.map(d => d[stackKey]))];
+
+        // 3. Build Datasets
+        const datasets = categories.map((cat, i) => {
+            return {
+                label: cat,
+                data: labels.map(label => {
+                    const item = rawData.find(d => d[xKey] === label && d[stackKey] === cat);
+                    return item ? item.value : 0;
+                }),
+                backgroundColor: this.getColors(categories.length)[i]
+            };
+        });
+
+        this.state.chartInstances[id] = new Chart(el, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true } },
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
+            }
+        });
     },
 
     renderSidebarFilters: function () {
