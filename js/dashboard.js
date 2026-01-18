@@ -653,12 +653,18 @@ const Dashboard = {
     toggleGroupSelection: async function (group, isChecked, groupId) {
         // 1. If checking and data missing -> Load it
         if (isChecked && !group.detailsLoaded) {
-            // Show loading state?
-            if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Caricamento per selezione...";
-            await this.fetchGroupDetails(group);
+            const groupBody = document.getElementById(groupId);
+            if (groupBody) {
+                // Show loading state?
+                if (this.dom.statusMsg) this.dom.statusMsg.textContent = "Caricamento per selezione...";
+                await this.fetchGroupDetails(group, group.group_id, groupBody);
+            } else {
+                console.error("Group body not found for", groupId);
+                return; // Cannot load if no container
+            }
+
             // Also Expand visibly if not open? User might want to see what they selected.
             // Let's expand it.
-            const groupBody = document.getElementById(groupId);
             const groupHeader = document.querySelector(`[onclick*="${groupId}"]`) || document.getElementById(groupId)?.previousElementSibling;
 
             if (groupBody && groupBody.style.display === 'none') {
