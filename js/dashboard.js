@@ -836,12 +836,26 @@ const Dashboard = {
     },
 
     updateSelectionSummary: function () {
-        // Count from state, not DOM (DOM only has visible rows)
-        // Actually, user wants to see what's selected globally? Or just visible?
-        // Usually global. But toggleGroupSelection updates global state.
+        const selectedIds = this.state.selectedIds;
+        const count = selectedIds.length;
 
-        // Let's use state.selectedIds.length
-        if (this.dom.selCount) this.dom.selCount.textContent = this.state.selectedIds.length;
+        if (this.dom.selCount) this.dom.selCount.textContent = count;
+
+        // Calculate total hours for selected items
+        let totalHours = 0;
+        const groups = this.state.groups || [];
+
+        groups.forEach(g => {
+            if (g.rows && g.rows.length) {
+                g.rows.forEach(r => {
+                    if (selectedIds.includes(r.id_registrazione)) {
+                        totalHours += parseFloat(r.ore || 0);
+                    }
+                });
+            }
+        });
+
+        if (this.dom.selHours) this.dom.selHours.textContent = totalHours.toFixed(1) + ' h';
     },
 
     openContabilizzaModal: function () {
