@@ -109,7 +109,14 @@ const Dashboard = {
         };
 
         if (this.dom.btnInbox) this.dom.btnInbox.onclick = () => toggleState(0, this.dom.btnInbox);
-        if (this.dom.btnArchive) this.dom.btnArchive.onclick = () => toggleState(1, this.dom.btnArchive);
+        if (this.dom.btnArchive) this.dom.btnArchive.onclick = () => {
+            // Toggle Logic for Mode Buttons (They are now independent toggles)
+            // But we can stick to simple logic: Click -> Toggle selection in filter array
+            // If stato is [0,1], both active. 
+            // Better: update logic to just set specific state.
+            this.dom.btnArchive.classList.toggle('active');
+            this.updateStateFilterFromButtons();
+        };
 
         // View Tabs
         this.dom.viewTabs.forEach(btn => {
@@ -122,6 +129,10 @@ const Dashboard = {
             });
         });
 
+        // Client-side grouping buttons - RE-ENABLED
+        if (this.dom.btnExpandAll) this.dom.btnExpandAll.onclick = () => this.toggleAllGroups(true);
+        if (this.dom.btnCollapseAll) this.dom.btnCollapseAll.onclick = () => this.toggleAllGroups(false);
+
         // Grouping
         if (this.dom.groupingSelect) {
             this.dom.groupingSelect.addEventListener('change', () => this.renderGrid());
@@ -129,7 +140,7 @@ const Dashboard = {
 
         // Search (Client side filter of CURRENT page/loaded rows)
         if (this.dom.detailSearch) {
-            this.dom.detailSearch.addEventListener('input', () => this.renderGrid());
+            this.dom.detailSearch.addEventListener('input', (e) => this.filterGridLocal(e.target.value));
         }
 
         if (this.dom.btnContabilizza) this.dom.btnContabilizza.addEventListener('click', () => this.openContabilizzaModal());
@@ -434,13 +445,19 @@ const Dashboard = {
         });
 
         // Loop Groups
-        Object.values(groups).forEach(g => {
-            const groupHeader = document.createElement('div');
-            groupHeader.className = 'grid-group-header';
+        Object.values(groups).forEach((g, index) => {
+            const groupId = `group-${index}`;
 
-            // New Layout: Title (Left) - Stats (Right)
+            // Header
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'grid-group-header collapsed'; // Closed by default
+            groupHeader.style.cursor = 'pointer';
+            groupHeader.onclick = () => this.toggleGroup(groupId, groupHeader);
+
             groupHeader.innerHTML = `
-                <div class="g-title">${g.label}</div>
+                <div class="g-title">
+                    <span class="toggle-icon">▶</span> ${g.label}
+                </div>
                 <div class="g-stats">
                     <span class="badge-count">${g.rows.length} righe</span>
                     <span class="badge-hours">${g.hours.toFixed(1)} ore</span>
@@ -448,27 +465,24 @@ const Dashboard = {
             `;
             container.appendChild(groupHeader);
 
+            // Container for Table (Hidden by default)
+            const groupBody = document.createElement('div');
+            groupBody.id = groupId;
+            groupBody.className = 'grid-group-body';
+            groupBody.style.display = 'none';
+
             // Table
             const table = document.createElement('table');
             table.className = 'dashboard-grid';
-
-            // Header only for first group or always? 
-            // Better always to support scrolling context per group if needed, or just once.
-            // Current design: just simple rows. Rows align with global fixed layout.
-            // Adding a hidden header to enforce width? No, 'table-layout: fixed' needs connection to TH.
-            // Let's create a single global header outside the loop? 
-            // Actually, if we break into multiple tables, columns might misalign if data varies length (even with fixed layout sometimes).
-            // Best practice: One table, with headers as TRs with colspan.
-            // BUT here we separate into DIVs + Tables.
-            // Let's try to keep it simple. If alignment is issue, we fix later.
-            // For now, adhere to User Request: "evidenziare meglio il titolo... unica riga".
 
             const tbody = document.createElement('tbody');
             g.rows.forEach(r => {
                 tbody.appendChild(this.createRow(r));
             });
             table.appendChild(tbody);
-            container.appendChild(table);
+
+            groupBody.appendChild(table);
+            container.appendChild(groupBody);
         });
 
         // Load More Button
@@ -483,17 +497,46 @@ const Dashboard = {
         this.updateSelectionSummary();
     },
 
+    // Toggle Single Group
+    toggleGroup: function (id, headerEl) {
+        const body = document.getElementById(id);
+        const icon = headerEl.querySelector('.toggle-icon');
+
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            headerEl.classList.remove('collapsed');
+            if (icon) icon.innerText = '▼';
+        } else {
+            body.style.display = 'none';
+            headerEl.classList.add('collapsed');
+            if (icon) icon.innerText = '▶';
+        }
+    },
+
+    // Toggle All Groups
+    toggleAllGroups: function (expand) {
+        const headers = document.querySelectorAll('.grid-group-header');
+        const bodies = document.querySelectorAll('.grid-group-body');
+
+        headers.forEach(h => {
+            const icon = h.querySelector('.toggle-icon');
+            if (expand) {
+                h.classList.remove('collapsed');
+                if (icon) icon.innerText = '▼';
+            } else {
+                h.classList.add('collapsed');
+                if (icon) icon.innerText = '▶';
+            }
+        });
+
+        bodies.forEach(b => {
+            b.style.display = expand ? 'block' : 'none';
+        });
+    },
+
     getHeaderHTML: function () {
-        return `<thead><tr>
-            <th width="40"></th>
-            <th width="90">Data</th>
-            <th width="140">Utente</th>
-            <th width="150">Commessa</th>
-            <th>Macro / Lav.</th>
-            <th width="50">Ore</th>
-            <th width="150">Note</th>
-            <th width="50">Act</th>
-        </tr></thead>`;
+        // ... unused now ...
+        return '';
     },
 
     createRow: function (r) {
