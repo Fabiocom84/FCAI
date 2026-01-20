@@ -440,7 +440,7 @@ input:focus {
 .full-screen-body {
     padding: 10px 20px !important;
     /* RIDOTTO PADDING */
-    padding-bottom: 400px !important;
+    padding-bottom: 100px !important;
     /* Spazio per dropdown 10 voci */
     flex: 1;
     display: flex;

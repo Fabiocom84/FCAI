@@ -925,7 +925,7 @@ const MobileHoursApp = {
         if (this.state.choicesMacro) { this.state.choicesMacro.clearStore(); this.state.choicesMacro.setChoices([{ value: '', label: '-- Seleziona Commessa prima --', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesMacro.disable(); }
         if (this.state.choicesComponent) { this.state.choicesComponent.clearStore(); this.state.choicesComponent.setChoices([{ value: '', label: '--', disabled: true, selected: true }], 'value', 'label', true); this.state.choicesComponent.disable(); }
 
-        this.dom.saveBtn.textContent = "AGGIUNGI ORE (V2)";
+        this.dom.saveBtn.textContent = "AGGIUNGI ORE";
         this.dom.saveBtn.style.backgroundColor = "";
         this.dom.cancelEditBtn.style.display = 'none';
 
@@ -953,7 +953,7 @@ const MobileHoursApp = {
         // 2. MACRO (Nuovo)
         if (this.state.choicesMacro) this.state.choicesMacro.destroy();
         this.state.choicesMacro = new Choices(this.dom.macroSelect, {
-            searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Reparto...',
+            searchEnabled: true, itemSelectText: '', placeholder: true, placeholderValue: 'Cerca Assieme...',
             shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
         });
 
@@ -1046,7 +1046,7 @@ const MobileHoursApp = {
 
         this.state.currentOptionsTree = tree;
 
-        const macroChoices = [{ value: '', label: 'Seleziona Reparto...', disabled: true, selected: true }];
+        const macroChoices = [{ value: '', label: 'Seleziona Assieme...', disabled: true, selected: true }];
         tree.forEach(m => {
             macroChoices.push({ value: String(m.id_macro), label: `${m.icona || ''} ${m.nome_macro}`.trim() });
         });
