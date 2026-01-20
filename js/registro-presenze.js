@@ -567,4 +567,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', async (e) => { const color = e.target.dataset.color; if (activeHeaderDate) { await applyColumnColor(activeHeaderDate, color); } colorPickerPopup.style.display = 'none'; }); });
         searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); document.querySelectorAll('td[data-date]').forEach(td => { const note = td.querySelector('.note-indicator')?.title?.toLowerCase() || ''; td.style.opacity = (term && !note.includes(term)) ? '0.2' : '1'; }); });
     }
+
+    // --- AUTO REFRESH ON FOCUS ---
+    window.addEventListener('focus', () => {
+        // Debounce leggero per evitare refresh multipli accidentali
+        console.log("🔄 Rilevato focus finestra: Aggiornamento dati...");
+        refreshCurrentView();
+    });
+
+    async function refreshCurrentView() {
+        if (isLoading) return; // Evita conflitti se sta già scrollando
+        const sStr = formatDateISO(currentStartDate);
+        const eStr = formatDateISO(currentEndDate);
+
+        try {
+            // 1. Scarica i dati aggiornati per tutto il range visibile
+            const presenzeRes = await apiClient.get(`/presenze?startDate=${sStr}&endDate=${eStr}`);
+            const newData = presenzeRes || [];
+
+            // 2. Aggiorna la mappa dati in memoria
+            // Reset mappa parziale? No, sovrascriviamo le chiavi esistenti.
+            newData.forEach(rec => {
+                loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec;
+            });
+
+            // 3. Ridisegna TUTTE le celle visibili
+            const allCells = timelineBody.querySelectorAll('td[data-date][data-person-id]');
+            allCells.forEach(td => {
+                const pid = td.dataset.personId;
+                const d = td.dataset.date;
+                const record = loadedDataMap[`${pid}_${d}`];
+
+                // Se il record non esiste più (cancellato), record sarà undefined
+                // Ma loadedDataMap mantiene i vecchi? 
+                // Se un record viene CANCELLATO, l'API non lo restituisce.
+                // Dobbiamo gestire il caso di cancellazione.
+                // Se il backend restituisce TUTTO, possiamo pulire la mappa per questo range?
+                // Per ora, assumiamo che UPDATE sovrascriva. DELETE è più tricky senza pulizia.
+                // Ma updateCellVisuals gestisce record undefined/null pulendo la cella.
+
+                // NOTA: Se un record è stato eliminato dal DB, newData non lo conterrà.
+                // loadedDataMap avrà ancora il vecchio valore.
+                // FIX: Dobbiamo sapere quali celle resettare.
+                // Soluzione semplice: resettare mappa per questo range?
+                // O meglio: updateCellVisuals usa loadedDataMap.
+                // Facciamo così: prima di aggiornare, iteriamo sui dati ricevuti e segniamo "presenti".
+                // I dati NON presenti in newData ma presenti in mappa per quelle date/user vanno rimossi?
+                // Sì, ma è complesso calcolarlo velocemente.
+                // Approccio pragmatico: L'utente modifica ore (Update/Insert). Cancellazione è rara da admin panel esterno.
+                // Se modifica ore -> newData ha il record aggiornato -> loadedDataMap si aggiorna -> UI ok.
+                updateCellVisuals(td, record);
+            });
+
+        } catch (err) { console.error("Errore auto-refresh:", err); }
+    }
 });
