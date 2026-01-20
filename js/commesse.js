@@ -500,9 +500,15 @@ const App = {
                     <div class="card-header">
                         <div style="display:flex; justify-content:space-between; align-items:start;">
                             <h3>${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
-                            <select class="status-select-badge" data-commessa="${c.id_commessa}">
-                                ${statusOptions}
-                            </select>
+                            ${IsAdmin ?
+                    `<select class="status-select-badge" data-commessa="${c.id_commessa}" onclick="event.stopPropagation()">
+                                    ${statusOptions}
+                                </select>`
+                    :
+                    `<span class="status-badge" style="background:${c.status_commessa?.colore || '#ccc'}; color:white; padding:4px 8px; border-radius:12px; font-size:0.8em;">
+                                    ${c.status_commessa?.nome_status || 'Status ???'}
+                                </span>`
+                }
                         </div>
                         <span>${c.impianto || 'Impianto Generico'}</span>
                     </div>
@@ -571,15 +577,15 @@ const App = {
 
             // --- BINDING EVENTI (Con stopPropagation per evitare click su card non voluti) ---
 
-            // 1. Status Change
+            // 1. Status Change (Solo Admin)
             const statusSelect = card.querySelector('.status-select-badge');
             if (statusSelect) {
-                // Previene click sulla card
-                statusSelect.addEventListener('click', (e) => e.stopPropagation());
+                // Click gestito inline per stopPropagation
                 statusSelect.addEventListener('change', (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Per sicurezza
                     this.updateStatusCommesse(c.id_commessa, e.target.value);
                 });
+                // Styling custom (colorazione in base al valore)
                 this.styleStatusSelect(statusSelect);
             }
 

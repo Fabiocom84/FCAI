@@ -9,7 +9,7 @@ import { showModal } from './shared-ui.js';
 const MobileHoursApp = {
     state: {
         offset: 0,
-        limit: 14,
+        limit: 10, // RIDOTTO: Carica solo gli ultimi 10 giorni
         isLoading: false,
         isListFinished: false,
         currentDate: null,
@@ -70,6 +70,7 @@ const MobileHoursApp = {
         this.loadTimelineBatch();
     },
 
+    // ... (initDOM e attachListeners invariati) ...
     initDOM: function () {
         this.dom = {
             timelineContainer: document.getElementById('mobileTimelineContainer'),
@@ -121,6 +122,7 @@ const MobileHoursApp = {
         if (this.dom.absType) this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
     },
 
+    // ... (setupAdminUI e loadUserName invariati) ...
     setupAdminUI: function () {
         // 1. Cambia Header
         const headerEl = document.getElementById('headerUserName');
@@ -168,16 +170,38 @@ const MobileHoursApp = {
         if (this.state.isLoading || this.state.isListFinished) return;
         this.state.isLoading = true;
 
+        const isInitialLoad = (this.state.offset === 0);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const cacheKey = `timeline_v1_${this.state.adminMode ? this.state.targetUserId : 'me'}`;
+
+        // --- SWR: CACHE HIT (Solo per initial load) ---
+        if (isInitialLoad) {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    const days = JSON.parse(cached);
+                    console.log("⚡ CACHE HIT (Timeline): Rendering...");
+
+                    // Pulizia container per evitare duplicati pre-fresh
+                    // (Ma non dobbiamo pulirlo se vogliamo l'effetto instantaneo? 
+                    //  Sì, perché potrebbe esserci il loader o nulla)
+                    if (this.dom.timelineContainer) this.dom.timelineContainer.innerHTML = '';
+
+                    days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
+
+                    // Mostriamo un indicatore "Aggiornamento..." discreto?
+                } catch (e) {
+                    console.warn("Timeline Cache corrupted", e);
+                }
+            }
+        }
+
         try {
             // Costruzione URL
             let url = `/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`;
-
-            if (this.state.adminMode) {
-                url += `&userId=${this.state.targetUserId}`;
-            }
+            if (this.state.adminMode) url += `&userId=${this.state.targetUserId}`;
 
             console.log("📡 Fetching:", url); // <--- LOG IMPORTANTE
-
             const res = await apiFetch(url);
 
             // Gestione errori HTTP non gestiti da apiFetch
@@ -195,17 +219,35 @@ const MobileHoursApp = {
                 this.state.isListFinished = true;
                 if (this.state.offset === 0) {
                     this.dom.timelineContainer.innerHTML = "<div style='padding:20px; text-align:center'>Nessun dato trovato per questo utente.</div>";
+                    // Pulisci cache se vuoto
+                    if (isInitialLoad) localStorage.removeItem(cacheKey);
                 }
                 return;
             }
 
-            const todayStr = new Date().toISOString().split('T')[0];
+            // --- AGGIORNAMENTO CACHE / UI ---
+            if (isInitialLoad) {
+                // Sovrascrivi Cache
+                localStorage.setItem(cacheKey, JSON.stringify(days));
+
+                // Pulisci e Ri-renderizza (per sicurezza dati aggiornati)
+                // Se i dati cached erano identici, l'utente non nota nulla.
+                // Se sono diversi, vedrà lo "scatto" di aggiornamento (SWR behavior corretto)
+                this.dom.timelineContainer.innerHTML = '';
+            }
+
             days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
             this.state.offset += this.state.limit;
 
         } catch (e) {
             console.error("❌ Errore loadTimelineBatch:", e);
-            this.dom.timelineContainer.innerHTML = `<div style='padding:20px; color:red; text-align:center'>Errore caricamento: ${e.message}</div>`;
+            // Se errore in SWR e avevo già renderizzato da cache, magari non mostro errore invasivo?
+            // Per ora mostriamo errore in fondo
+            const errDiv = document.createElement('div');
+            errDiv.style.color = 'red';
+            errDiv.style.textAlign = 'center';
+            errDiv.textContent = `Errore sync: ${e.message}`;
+            this.dom.timelineContainer.appendChild(errDiv);
         }
         finally {
             this.state.isLoading = false;
@@ -960,26 +1002,55 @@ const MobileHoursApp = {
             this.state.choicesComponent.disable();
         }
 
+        const cacheKey = `options_v1_c${commessaId}`;
+        let renderedFromCache = false;
+
+        // --- SWR: CACHE RENDERING ---
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            try {
+                const tree = JSON.parse(cached);
+                console.log("⚡ CACHE HIT (Options): Rendering...");
+                this._renderSmartOptions(tree);
+                renderedFromCache = true;
+            } catch (e) { console.warn(e); }
+        }
+
         try {
             const res = await apiFetch(`/api/ore/options?id_commessa=${commessaId}`);
             const tree = await res.json();
 
-            // ORDINAMENTO ALFABETICO MACRO
-            tree.sort((a, b) => (a.nome_macro || '').localeCompare(b.nome_macro || ''));
+            // Cache Update
+            localStorage.setItem(cacheKey, JSON.stringify(tree));
 
-            this.state.currentOptionsTree = tree;
+            // Se non avevamo cache, o se vogliamo aggiornare (SWR update UI is tricky for dropdowns if user already selected something)
+            // Per sicurezza: se l'utente ha già interagito (ha selezionato qualcosa su cache), evitare di distruggere tutto.
+            // Ma qui stiamo caricando "al cambio commessa", quindi l'utente sta aspettando.
+            // Se avevamo cache, l'utente vede subito le opzioni. Se arriva l'aggiornamento, ridisegniamo.
+            this._renderSmartOptions(tree);
 
-            const macroChoices = [{ value: '', label: 'Seleziona Reparto...', disabled: true, selected: true }];
-            tree.forEach(m => {
-                macroChoices.push({ value: String(m.id_macro), label: `${m.icona || ''} ${m.nome_macro}`.trim() });
-            });
+        } catch (e) {
+            console.error("Errore Options:", e);
+            if (!renderedFromCache) alert("Errore caricamento opzioni: " + e.message);
+        }
+    },
 
-            if (this.state.choicesMacro) {
-                this.state.choicesMacro.clearStore();
-                this.state.choicesMacro.setChoices(macroChoices, 'value', 'label', true);
-                this.state.choicesMacro.enable();
-            }
-        } catch (e) { console.error(e); }
+    _renderSmartOptions: function (tree) {
+        // ORDINAMENTO ALFABETICO MACRO
+        tree.sort((a, b) => (a.nome_macro || '').localeCompare(b.nome_macro || ''));
+
+        this.state.currentOptionsTree = tree;
+
+        const macroChoices = [{ value: '', label: 'Seleziona Reparto...', disabled: true, selected: true }];
+        tree.forEach(m => {
+            macroChoices.push({ value: String(m.id_macro), label: `${m.icona || ''} ${m.nome_macro}`.trim() });
+        });
+
+        if (this.state.choicesMacro) {
+            this.state.choicesMacro.clearStore();
+            this.state.choicesMacro.setChoices(macroChoices, 'value', 'label', true);
+            this.state.choicesMacro.enable();
+        }
     },
 
     renderComponentOptions: function (macroId) {
