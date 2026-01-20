@@ -85,30 +85,97 @@ const App = {
     },
 
     loadUnifiedData: async function () {
-        // Chiama endpoint unificato per ottenere Clienti, Modelli, Macro E le prime commesse
+        // --- SWR PATTERN (Stale-While-Revalidate) ---
+        // 1. Check & Render Cached Data (Instant)
+        const cachedInit = localStorage.getItem('commesse_init_v1');
+        const cachedList = localStorage.getItem('commesse_list_cache');
+        const cacheTimestamp = localStorage.getItem('commesse_cache_ts');
+        const now = Date.now();
+        const MAX_AGE = 3600 * 1000; // 1 ora per init data
+
+        let renderedFromCache = false;
+
+        if (cachedInit && cachedList) {
+            try {
+                const initData = JSON.parse(cachedInit);
+                const listData = JSON.parse(cachedList);
+
+                // Check Validità Init Data (Non scaduto)
+                if (cacheTimestamp && (now - parseInt(cacheTimestamp) < MAX_AGE)) {
+                    console.log("⚡ CACHE HIT: Rendering from Storage");
+
+                    // Popola State
+                    this.state.allStatuses = initData.status || [];
+                    this.state.allMacros = initData.macros || [];
+                    this.state.allPhases = initData.fasi || [];
+
+                    if (IsAdmin) this.initModalChoices(initData.clienti || [], initData.modelli || [], initData.macros || []);
+
+                    if (listData && listData.length > 0) {
+                        this.state.totalCount = listData.length; // Approssimato
+                        this.renderCards(listData);
+                        renderedFromCache = true;
+
+                        // Show "Syncing" indicator
+                        this.showSyncIndicator(true);
+                    }
+                }
+            } catch (e) {
+                console.warn("Cache Corrupted", e);
+                localStorage.removeItem('commesse_init_v1');
+            }
+        }
+
+        // 2. Network Fetch (Always execute to revalidate/update)
         try {
+            console.log("📡 REMOTE FETCH: Updating data...");
+            // Se non abbiamo renderizzato da cache, mostriamo loader classico
+            if (!renderedFromCache && this.dom.loader) this.dom.loader.style.display = 'flex';
+
             const res = await apiFetch('/api/commesse/init-data');
             const data = await res.json();
 
-            // 1. Popola i Metadati
+            // Aggiorna Storage
+            localStorage.setItem('commesse_init_v1', JSON.stringify({
+                status: data.status,
+                macros: data.macros,
+                fasi: data.fasi,
+                clienti: data.clienti,
+                modelli: data.modelli
+            }));
+            localStorage.setItem('commesse_cache_ts', now.toString());
+
+            // Aggiorna State
             this.state.allStatuses = data.status || [];
             this.state.allMacros = data.macros || [];
             this.state.allPhases = data.fasi || [];
 
-            // Inizializza Choices.js SOLO se l'utente è Admin
+            // Re-init Choices se Admin (Aggiorna opzioni)
             if (IsAdmin) {
-                this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
+                // Se non avevamo cache, inizializza. Se avevamo cache, aggiorna solo se necessario (qui rifacciamo init per sicurezza)
+                // Nota: SetChoiceByValue potrebbe rompersi se rifacciamo init, ma initModalChoices gestisce istanze?
+                // initModalChoices crea "new Choices", quindi dobbiamo distruggere le vecchie se esistono?
+                // Per ora lasciamo semplice: Choices.js gestisce il re-mount se l'elemento è pulito, 
+                // ma initModalChoices non pulisce. Miglioriamo dopo se serve.
+                // Facciamo un check se le istanze sono null.
+                if (!this.state.choicesInstances.cliente) {
+                    this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
+                }
             }
 
-            // 2. Popola la Griglia Commesse IMMEDIATAMENTE
+            // 3. Verifica dati lista (Fresh)
             if (data.commesse_data) {
                 this.state.totalCount = data.commesse_count || 0;
+                localStorage.setItem('commesse_list_cache', JSON.stringify(data.commesse_data)); // Cache Fresh List
 
                 if (data.commesse_data.length === 0) {
                     this.state.hasMore = false;
                     this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Nessuna commessa trovata.</div>';
                 } else {
-                    // Renderizza le card
+                    // Re-Render Solo se dati diversi? Per semplicità ri-renderizziamo sempre per ora.
+                    // UX: Se l'utente sta scrollando potrebbe disturbare.
+                    // Ma siamo al load iniziale, quindi ok.
+                    this.dom.grid.innerHTML = ''; // Reset UI cache
                     this.renderCards(data.commesse_data);
 
                     if (data.commesse_data.length < 12) {
@@ -117,20 +184,40 @@ const App = {
                         this.state.currentPage = 2;
                     }
                 }
-
-                if (this.dom.loader) this.dom.loader.style.display = 'none';
             } else {
+                // Fallback fetch se init-data non ha commesse
                 this.fetchCommesse(true);
             }
 
         } catch (e) {
             console.error("Errore fetch unified data:", e);
-            // Fallback
-            this.fetchCommesse(true);
+            if (!renderedFromCache) {
+                this.fetchCommesse(true);
+            }
+        } finally {
+            if (this.dom.loader) this.dom.loader.style.display = 'none';
+            this.showSyncIndicator(false);
         }
     },
 
+    showSyncIndicator: function (show) {
+        let el = document.getElementById('sync-indicator');
+        if (!el && show) {
+            el = document.createElement('div');
+            el.id = 'sync-indicator';
+            el.style.cssText = "position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:white; padding:5px 10px; border-radius:20px; font-size:12px; z-index:9999; display:flex; align-items:center; gap:5px;";
+            el.innerHTML = '<div class="spinner-small" style="width:12px;height:12px;border-width:2px;"></div> Sync...';
+            document.body.appendChild(el);
+        }
+        if (el) el.style.display = show ? 'flex' : 'none';
+    },
+
     initModalChoices: function (clienti, modelli, macros) {
+        // Destroy previous instances if any to avoid duplicates
+        if (this.state.choicesInstances.cliente) { try { this.state.choicesInstances.cliente.destroy(); } catch (e) { } }
+        if (this.state.choicesInstances.modello) { try { this.state.choicesInstances.modello.destroy(); } catch (e) { } }
+        if (this.state.choicesInstances.macro) { try { this.state.choicesInstances.macro.destroy(); } catch (e) { } }
+
         // Configurazione comune
         const baseConfig = { searchEnabled: true, itemSelectText: '', shouldSort: true };
 
@@ -475,7 +562,7 @@ const App = {
                         ${IsAdmin ? `
                         <a href="${linkReg}" class="btn-registrazioni">
                             <img src="img/table.png" style="width:16px; opacity:0.8;">
-                            Vedi ${regCount > 0 ? regCount : ''} Registrazioni
+                            Vedi Registrazioni
                         </a>` : ''}
                         ${adminActions}
                     </div>
