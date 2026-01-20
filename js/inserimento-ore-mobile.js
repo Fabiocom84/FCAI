@@ -977,14 +977,19 @@ const MobileHoursApp = {
         } catch (e) { console.error(e); }
 
         // Listener Commessa -> Carica Macro
-        this.dom.commessaSelect.addEventListener('change', (e) => {
-            if (e.target.value) this.loadSmartOptions(e.target.value);
-        });
+        const handleCommessaChange = (e) => {
+            // Usa getValue(true) per ottenere il value grezzo (ID) ed evitare problemi con event target
+            const val = this.state.choicesInstance.getValue(true);
+            console.log("🔄 Commessa Changed (Listener):", val);
+            if (val) this.loadSmartOptions(val);
+        };
+
+        this.dom.commessaSelect.addEventListener('change', handleCommessaChange);
+        // Backup: a volte Choices usa addItem
+        this.dom.commessaSelect.addEventListener('addItem', handleCommessaChange);
 
         // Listener Macro -> Filtra Componenti
         this.dom.macroSelect.addEventListener('change', (e) => {
-            // Choices a volte spara eventi vuoti o multipli.
-            // Se usiamo this.state.choicesMacro.getValue(), è più sicuro.
             const val = this.state.choicesMacro.getValue(true);
             if (val) this.renderComponentOptions(val);
         });
