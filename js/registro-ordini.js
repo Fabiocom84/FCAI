@@ -349,7 +349,7 @@ const App = {
             }
             btn.disabled = false;
         }
-    }
+    },
     async deleteOrder() {
         const order = this.data.currentOrder;
         if (!order) return;
