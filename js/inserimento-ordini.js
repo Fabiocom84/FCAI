@@ -5,7 +5,7 @@ import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
 const State = {
-    commesseList: [], 
+    commesseList: [],
     fasiList: [], // Rinominato da ruoliList
     stagedRows: [],
     knownDefaults: {}
@@ -20,12 +20,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ------------------------------------------
     setupDragAndDrop();
     await loadReferenceData();
-    
+
     document.getElementById('fileInput').addEventListener('change', handleFileSelect);
     document.getElementById('clearBtn').addEventListener('click', clearPreview);
     document.getElementById('confirmBtn').addEventListener('click', saveProductionRows);
     document.getElementById('addManualRowBtn').addEventListener('click', addManualRow);
-    
+
     renderPreviewTable();
 });
 
@@ -33,7 +33,7 @@ async function loadReferenceData() {
     try {
         const commRes = await apiFetch('/api/commesse/view?limit=1000&status=In Lavorazione');
         const commData = await commRes.json();
-        
+
         State.commesseList = (commData.data || []).map(c => ({
             id: c.id_commessa,
             label: `${c.vo || '???'} - ${c.clienti?.ragione_sociale || ''} (${c.impianto || ''})`,
@@ -43,7 +43,7 @@ async function loadReferenceData() {
         // MODIFICA: Carichiamo le FASI invece dei ruoli
         const fasiRes = await apiFetch('/api/commesse/fasi'); // Endpoint esistente
         const fasiData = await fasiRes.json();
-        
+
         State.fasiList = (fasiData || []).map(f => ({
             id: f.id_fase,
             label: f.nome_fase
@@ -64,7 +64,7 @@ function setupDragAndDrop() {
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
     });
-    
+
     dropZone.addEventListener('dragenter', () => dropZone.classList.add('dragover'));
     dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -79,15 +79,15 @@ function handleFileSelect(e) { handleFiles(e.target.files); }
 async function handleFiles(files) {
     const spinner = document.getElementById('upload-spinner');
     spinner.style.display = 'block';
-    
+
     const fileArray = [...files];
     let processedCount = 0;
-    
+
     // --- UI Update: Mantieni nome file ---
     const dropZone = document.getElementById('drop-zone');
     const title = document.getElementById('drop-title');
     const subtitle = document.getElementById('drop-subtitle');
-    
+
     if (fileArray.length > 0) {
         const fileName = fileArray[0].name;
         const extra = fileArray.length > 1 ? ` (+ altri ${fileArray.length - 1})` : '';
@@ -123,7 +123,7 @@ async function handleFiles(files) {
     }
 
     spinner.style.display = 'none';
-    
+
     if (processedCount > 0 && State.stagedRows.length > 0) {
         dropZone.classList.add('file-loaded');
         subtitle.textContent = "Righe aggiunte alla tabella sottostante";
@@ -136,7 +136,7 @@ async function handleFiles(files) {
             title.textContent = "Errore o File non valido";
             subtitle.textContent = "Riprova con un PDF valido";
         }
-        
+
         setTimeout(() => {
             if (!dropZone.classList.contains('file-loaded')) {
                 title.textContent = "Trascina qui il PDF";
@@ -152,12 +152,12 @@ async function handleFiles(files) {
 async function parsePDF(file) {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    
+
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items.map(item => item.str).join(' ');
-        
+
         // 1. OP
         const opMatch = pageText.match(/(?:Ordine\s+di\s+Produzione\s+n\.|OP)\s*[:.]?\s*([0-9-]{6,})/i);
         const opNumber = opMatch ? opMatch[1].trim() : "???";
@@ -165,7 +165,7 @@ async function parsePDF(file) {
         // 2. Commessa
         const voMatch = pageText.match(/(?:Commessa|VO)\s*[:.]?\s*(VO\s*[\d-]+|[\d-]{5,})/i);
         let voNumber = voMatch ? voMatch[1].trim() : null;
-        
+
         // 3. Codice Articolo
         const codeMatch = pageText.match(/Nr\.?\s*Articolo\s*[:.]?\s*(\d+)/i);
         const codice = codeMatch ? codeMatch[1].trim() : "";
@@ -177,9 +177,9 @@ async function parsePDF(file) {
         // 5. Data Intestazione
         const dateMatch = pageText.match(/(\d{2}\/\d{2}\/\d{4})/);
         let dataRicezione = new Date().toISOString().split('T')[0];
-        
+
         if (dateMatch) {
-            const rawDate = dateMatch[1]; 
+            const rawDate = dateMatch[1];
             const parts = rawDate.split('/');
             if (parts.length === 3) {
                 dataRicezione = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -190,7 +190,7 @@ async function parsePDF(file) {
         const descMatch = pageText.match(/Descrizione\s+(.+?)\s+(?=Magazzino|Data Inizio|ENEL|Cod\.)/i);
         let descrizione = descMatch ? descMatch[1].trim() : "";
         descrizione = descrizione.replace(/Qt[àa] riordino fissa/gi, "").trim().toLowerCase();
-        
+
         if (!descrizione && codice) {
             descrizione = "descrizione non rilevata";
         }
@@ -198,7 +198,7 @@ async function parsePDF(file) {
         // Matching Commessa
         let preselectedCommessaId = "";
         if (voNumber) {
-            const cleanVO = voNumber.replace(/^VO/i, '').trim(); 
+            const cleanVO = voNumber.replace(/^VO/i, '').trim();
             const found = State.commesseList.find(c => c.vo && c.vo.includes(cleanVO));
             if (found) preselectedCommessaId = found.id;
         }
@@ -234,9 +234,9 @@ function addManualRow() {
         manual: true
     });
     renderPreviewTable();
-    
+
     const tableContainer = document.querySelector('.table-responsive');
-    if(tableContainer) {
+    if (tableContainer) {
         setTimeout(() => tableContainer.scrollTop = tableContainer.scrollHeight, 100);
     }
 }
@@ -260,18 +260,18 @@ function renderPreviewTable() {
         const codeReadonly = row.manual ? '' : 'readonly';
         const codeBg = row.manual ? '#ffffff' : '#f9f9f9';
 
-        const statusHtml = row.commessa_id 
-            ? `<span class="badge-ok">OK</span>` 
+        const statusHtml = row.commessa_id
+            ? `<span class="badge-ok">OK</span>`
             : `<span class="badge-new">Check</span>`;
-        
+
         if (!row.commessa_id) tr.style.backgroundColor = '#fff5f5';
 
-        const commessaOptions = State.commesseList.map(c => 
+        const commessaOptions = State.commesseList.map(c =>
             `<option value="${c.id}" ${c.id == row.commessa_id ? 'selected' : ''}>${c.label}</option>`
         ).join('');
-        
+
         // MODIFICA: Usiamo fasiList
-        const fasiOptions = `<option value="">-- Fase --</option>` + 
+        const fasiOptions = `<option value="">-- Fase --</option>` +
             State.fasiList.map(f => {
                 const isSelected = String(f.id) === String(defaultFaseId);
                 return `<option value="${f.id}" ${isSelected ? 'selected' : ''}>${f.label}</option>`;
@@ -279,12 +279,12 @@ function renderPreviewTable() {
 
         tr.innerHTML = `
             <td>${statusHtml}</td>
-            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:90px; background:${opBg}; font-size:0.85rem;" placeholder="00-0000" maxlength="7"></td>
+            <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:110px; background:${opBg};" placeholder="00-0000" maxlength="7"></td>
             <td><select class="input-select commessa-select" style="min-width: 180px;"><option value="">-- Seleziona --</option>${commessaOptions}</select></td>
             <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:110px;"></td>
-            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}; width:80px;" placeholder="000000" maxlength="6"></td>
+            <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}; width:110px;" placeholder="000000" maxlength="6"></td>
             <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" style="text-transform:lowercase;"></td>
-            <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:50px;"></td>
+            <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:70px;"></td>
             
             <!-- MODIFICA: Select Fase invece di Ruolo -->
             <td><select class="input-select fase-select" style="min-width: 130px;">${fasiOptions}</select></td>
@@ -333,8 +333,8 @@ function bindTableEvents() {
     // Masking Descrizione + Update Title
     document.querySelectorAll('.desc-input').forEach(input => {
         // Al caricamento, setta il title se non c'è (ridondante ma sicuro)
-        if(!input.title) input.title = input.value;
-        
+        if (!input.title) input.title = input.value;
+
         input.addEventListener('input', (e) => {
             e.target.value = e.target.value.toLowerCase();
             e.target.title = e.target.value;
@@ -369,7 +369,7 @@ async function saveProductionRows() {
         const qta = tr.querySelector('.qty-input').value;
         const op = tr.querySelector('.op-input').value;
         const dataRicezione = tr.querySelector('.date-input').value;
-        
+
         // MODIFICA: Leggiamo fase-select
         const faseId = tr.querySelector('.fase-select').value;
 
@@ -416,9 +416,9 @@ async function saveProductionRows() {
         if (result.skipped > 0) msg += ` (Saltati ${result.skipped} duplicati).`;
 
         showSuccessFeedbackModal("Operazione Completata", msg);
-        
-        setTimeout(() => { 
-            clearPreview(); 
+
+        setTimeout(() => {
+            clearPreview();
             btn.textContent = "Salva Ordini";
             btn.disabled = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });

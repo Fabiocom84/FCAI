@@ -177,13 +177,10 @@ body {
     font-size: 0.95rem;
     box-sizing: border-box;
 
-    /* Novità: Gestione testo lungo */
-    white-space: nowrap;
-    /* Niente a capo */
-    overflow: hidden;
-    /* Nascondi eccesso */
-    text-overflow: ellipsis;
-    /* Aggiungi i tre puntini ... */
+    /* Novità: Gestione testo lungo - RIMOSSO ELLIPSIS per leggibilità */
+    /* white-space: nowrap;  Mantengo nowrap per input */
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; Rimosso per evitare puntini su numeri */
     transition: all 0.2s ease-in-out;
     /* Animazione fluida */
 }
