@@ -37,7 +37,8 @@ async function loadReferenceData() {
         State.commesseList = (commData.data || []).map(c => ({
             id: c.id_commessa,
             label: `${c.vo || '???'} - ${c.clienti?.ragione_sociale || ''} (${c.impianto || ''})`,
-            vo: c.vo
+            vo: c.vo,
+            client_code: c.clienti?.codice_cliente
         }));
 
         // MODIFICA: Carichiamo le FASI invece dei ruoli
@@ -198,8 +199,16 @@ async function parsePDF(file) {
         // Matching Commessa
         let preselectedCommessaId = "";
         if (voNumber) {
-            const cleanVO = voNumber.replace(/^VO/i, '').trim();
-            const found = State.commesseList.find(c => c.vo && c.vo.includes(cleanVO));
+            // Pulisce il VO rimuovendo "VO" iniziale e spazi extra
+            const cleanVO = voNumber.replace(/^VO/i, '').replace(/\s+/g, '').trim();
+
+            // Cerca nella lista operando un confronto "generoso"
+            const found = State.commesseList.find(c => {
+                if (!c.vo) return false;
+                const dbVO = c.vo.replace(/^VO/i, '').replace(/\s+/g, '').trim();
+                return dbVO.includes(cleanVO) || cleanVO.includes(dbVO);
+            });
+
             if (found) preselectedCommessaId = found.id;
         }
 
@@ -281,7 +290,7 @@ function renderPreviewTable() {
             <td>${statusHtml}</td>
             <td><input type="text" value="${row.op}" class="input-flat op-input" ${opReadonly} style="width:110px; background:${opBg};" placeholder="00-0000" maxlength="7"></td>
             <td><select class="input-select commessa-select" style="min-width: 180px;"><option value="">-- Seleziona --</option>${commessaOptions}</select></td>
-            <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:110px;"></td>
+            <td><input type="date" value="${row.data_ricezione}" class="input-flat date-input" style="width:145px;"></td>
             <td><input type="text" value="${row.codice_articolo}" class="input-flat code-input" ${codeReadonly} style="background:${codeBg}; width:110px;" placeholder="000000" maxlength="6"></td>
             <td><input type="text" value="${row.descrizione}" class="input-flat desc-input" style="text-transform:lowercase;"></td>
             <td><input type="number" value="${row.qta}" class="input-flat qty-input" style="width:70px;"></td>
