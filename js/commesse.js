@@ -212,7 +212,7 @@ const App = {
         if (this.state.choicesInstances.macro) { try { this.state.choicesInstances.macro.destroy(); } catch (e) { } }
 
         // Configurazione comune
-        const baseConfig = { searchEnabled: true, itemSelectText: '', shouldSort: true };
+        const baseConfig = { searchEnabled: true, itemSelectText: '', shouldSort: true, searchResultLimit: 100 };
 
         // 1. Clienti
         const clientSelect = document.getElementById('cliente');
