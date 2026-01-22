@@ -150,17 +150,10 @@ const App = {
             this.state.allMacros = data.macros || [];
             this.state.allPhases = data.fasi || [];
 
-            // Re-init Choices se Admin (Aggiorna opzioni)
+            // Re-init Choices se Admin (Aggiorna opzioni con dati freschi)
             if (IsAdmin) {
-                // Se non avevamo cache, inizializza. Se avevamo cache, aggiorna solo se necessario (qui rifacciamo init per sicurezza)
-                // Nota: SetChoiceByValue potrebbe rompersi se rifacciamo init, ma initModalChoices gestisce istanze?
-                // initModalChoices crea "new Choices", quindi dobbiamo distruggere le vecchie se esistono?
-                // Per ora lasciamo semplice: Choices.js gestisce il re-mount se l'elemento è pulito, 
-                // ma initModalChoices non pulisce. Miglioriamo dopo se serve.
-                // Facciamo un check se le istanze sono null.
-                if (!this.state.choicesInstances.cliente) {
-                    this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
-                }
+                // Forziamo l'aggiornamento delle scelte anche se esistono già (per bug fix lista incompleta cache vs live)
+                this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
             }
 
             // 3. Verifica dati lista (Fresh)
