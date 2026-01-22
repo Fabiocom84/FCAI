@@ -3,7 +3,7 @@
 import { apiFetch } from './api-client.js';
 import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
-import Legend from './legend.js'; 
+import Legend from './legend.js';
 
 let mediaRecorder = null;
 let audioChunks = [];
@@ -36,12 +36,13 @@ async function loadCommesseDropdown() {
         });
 
         if (window.Choices) {
-            new Choices(select, { 
-                searchEnabled: true, 
-                itemSelectText: '', 
+            new Choices(select, {
+                searchEnabled: true,
+                itemSelectText: '',
                 shouldSort: false,
                 placeholder: true,
-                placeholderValue: 'Cerca commessa...'
+                placeholderValue: 'Cerca commessa...',
+                searchResultLimit: 100
             });
         }
     } catch (error) {
@@ -74,12 +75,12 @@ function setupEventListeners() {
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
         // Determina il mimeType supportato dal browser (importante per iOS vs Chrome)
         let mimeType = 'audio/webm';
         if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
         else if (MediaRecorder.isTypeSupported('audio/aac')) mimeType = 'audio/aac';
-        
+
         mediaRecorder = new MediaRecorder(stream, { mimeType });
         audioChunks = [];
 
@@ -89,10 +90,10 @@ async function startRecording() {
 
         mediaRecorder.start();
         isRecording = true;
-        
+
         // UI Updates
         updateAudioUI(true);
-        
+
     } catch (err) {
         console.error("Errore Microfono:", err);
         showModal({ title: "Errore Microfono", message: "Impossibile accedere al microfono. Verifica i permessi o usa HTTPS." });
@@ -112,14 +113,14 @@ function stopRecordingAndTranscribe() {
         // 1. Crea il blob audio temporaneo
         const mimeType = mediaRecorder.mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunks, { type: mimeType });
-        
+
         // 2. Invia SUBITO al backend per trascrizione
         await transcribeAudioFile(audioBlob, mimeType);
-        
+
         // 3. Reset variabili (l'audio viene scartato lato frontend)
         audioChunks = [];
         isRecording = false;
-        
+
         // Spegne tracce microfono
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         mediaRecorder = null;
@@ -148,7 +149,7 @@ async function transcribeAudioFile(blob, mimeType) {
         // Usiamo fetch nativa invece di apiFetch per evitare che venga aggiunto 
         // l'header 'Content-Type: application/json' che rompe l'invio del file.
         const token = localStorage.getItem('session_token');
-        
+
         const response = await fetch(`${API_BASE_URL}/api/transcribe-voice`, {
             method: 'POST',
             headers: {
@@ -164,7 +165,7 @@ async function transcribeAudioFile(blob, mimeType) {
         }
 
         const data = await response.json();
-        
+
         // Inserimento testo nel campo
         if (data.transcription) {
             const currentText = textArea.value;
@@ -186,7 +187,7 @@ function updateAudioUI(isRec) {
     document.getElementById('startButton').disabled = isRec;
     document.getElementById('stopButton').disabled = !isRec;
     document.getElementById('visualizer').classList.toggle('active', isRec);
-    
+
     const statusText = document.getElementById('recordingStatus');
     if (isRec) {
         statusText.innerText = "Registrazione in corso...";
@@ -201,7 +202,7 @@ async function handleFormSubmit(e) {
 
     const btn = document.getElementById('saveDataBtn');
     const originalBtnContent = btn.innerHTML;
-    
+
     // Controlli base
     const text = document.getElementById('voiceTranscription').value.trim();
     const fileInput = document.getElementById('fileUpload');
@@ -217,10 +218,10 @@ async function handleFormSubmit(e) {
 
     try {
         const formData = new FormData();
-        
+
         // Inviamo solo TESTO e RIFERIMENTO
-        formData.append('transcription', text); 
-        
+        formData.append('transcription', text);
+
         const commessaId = document.getElementById('riferimentoDropdown').value;
         if (commessaId) formData.append('riferimento', commessaId);
 
@@ -242,7 +243,7 @@ async function handleFormSubmit(e) {
         if (!response.ok) throw new Error(await response.text());
 
         showSuccessFeedbackModal("Dati Salvati!", "Il contenuto è stato archiviato.", null);
-        
+
         setTimeout(() => { window.location.href = "index.html"; }, 1500);
 
     } catch (error) {
