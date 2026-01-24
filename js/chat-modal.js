@@ -1,6 +1,7 @@
 // js/chat-modal.js
 
 import { API_BASE_URL } from './config.js';
+import { apiFetch } from './api-client.js';
 
 // --- 1. ELEMENTI DOM ---
 const chatModal = document.getElementById('chatModal');
