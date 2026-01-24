@@ -4,7 +4,7 @@ import { API_BASE_URL } from './config.js';
 import { apiFetch } from './api-client.js';
 
 // --- 1. ELEMENTI DOM ---
-const chatModal = document.getElementById('chatModal');
+const chatModal = document.getElementById('chatPanel'); // Renamed from chatModal
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const startChatRecordingBtn = document.getElementById('startChatRecording');
@@ -260,3 +260,21 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage('ai', 'Ciao! Sono Frank. Come posso aiutarti?');
     }
 });
+
+// Intercettazione Tasto Home per salvataggio
+const btnHome = document.getElementById('btnHome');
+if (btnHome) {
+    btnHome.addEventListener('click', async (e) => {
+        e.preventDefault(); // Blocca navigazione immediata
+
+        // Se c'è una chat, salvala
+        if (chatHistory.length > 1) {
+            btnHome.style.pointerEvents = 'none'; // Evita doppi click
+            btnHome.innerHTML = '<span>Salvataggio...</span>';
+            await saveChatHistory();
+        }
+
+        // Procedi alla home
+        window.location.href = 'index.html';
+    });
+}
