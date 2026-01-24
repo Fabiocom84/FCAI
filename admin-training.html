@@ -95,10 +95,15 @@
                         <div class="terminal-cursor"></div>
                     </div>
 
-                    <button id="btn-stop-monitoring" class="std-btn std-btn--secondary"
-                        style="margin-top: 15px; width: auto; font-size: 0.85rem;">
-                        Torna alla Home (Processo continua in background)
-                    </button>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                        <button id="btn-stop-monitoring" class="std-btn std-btn--secondary" style="font-size: 0.85rem;">
+                            Torna alla Home (Background)
+                        </button>
+                        <button id="btn-force-stop" class="std-btn std-btn--danger"
+                            style="font-size: 0.85rem; background-color: #c0392b;">
+                            ⚠️ ARRESTO FORZATO (KILL)
+                        </button>
+                    </div>
                 </div>
 
             </div>

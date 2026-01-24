@@ -9,7 +9,26 @@ const stepLoading = document.getElementById('step-loading');
 const btnGoStep2 = document.getElementById('btn-goto-step-2');
 const btnBackStep1 = document.getElementById('btn-back-step-1');
 const btnStart = document.getElementById('btn-start-training');
+const btnForceStop = document.getElementById('btn-force-stop'); // Kill switch
 const securityInput = document.getElementById('security-input');
+
+// --- STOP FORZATO ---
+if (btnForceStop) {
+    btnForceStop.addEventListener('click', async () => {
+        if (!confirm("SEI SICURO? Questo arresterà l'indicizzazione immediatamente. I dati potrebbero essere incompleti.")) return;
+
+        try {
+            // Chiamata all'endpoint di stop
+            await apiFetch('/api/admin/stop-training', { method: 'POST' });
+            alert("Segnale di STOP inviato. Il processo terminerà a breve.");
+
+            // Ritorniamo alla home dopo un po'
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        } catch (e) {
+            alert("Errore invio stop: " + e.message);
+        }
+    });
+}
 
 // --- NAVIGAZIONE WIZARD ---
 
