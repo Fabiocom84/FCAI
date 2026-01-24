@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Addestramento AI - Segretario AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="admin-training.css">
+</head>
+
+<body>
+
+    <div class="std-app-shell">
+        
+        <header class="std-app-header">
+            <a href="index.html" class="header-button" style="width: 80px;">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1); width: 14px;">
+                <span>Home</span>
+            </a>
+
+            <div style="flex: 1; display: flex; justify-content: center;">
+                <h1 style="margin: 0; font-size: 1.2rem; color: #3498db;">GESTIONE KNOWLEDGE BASE</h1>
+            </div>
+
+            <div style="width: 80px;"></div> </header>
+
+        <main class="training-wrapper">
+            
+            <div class="training-card">
+                <div class="card-icon">
+                    <img src="img/brain.png" alt="AI Brain">
+                </div>
+                <h2>Indicizzazione Manuale</h2>
+                
+                <div id="step-1" class="step-container">
+                    <p class="description">
+                        Questa procedura forza una <strong>rilettura completa</strong> di tutti i dati aziendali (Commesse, Note, Ore Lavorate) per aggiornare il "cervello" dell'Assistente AI.
+                    </p>
+
+                    <div class="info-box">
+                        <ul>
+                            <li><strong>Pulizia:</strong> La memoria attuale verrà cancellata per evitare duplicati.</li>
+                            <li><strong>Tempo:</strong> L'operazione avviene in background e richiede alcuni minuti.</li>
+                            <li><strong>Costi:</strong> Verranno generati nuovi vettori (utilizzo API OpenAI).</li>
+                        </ul>
+                    </div>
+
+                    <div class="actions">
+                        <button id="btn-goto-step-2" class="std-btn std-btn--primary full-width">
+                            Procedi con la configurazione
+                        </button>
+                    </div>
+                </div>
+
+                <div id="step-2" class="step-container" style="display: none;">
+                    <div class="warning-box">
+                        <strong>⚠️ Attenzione</strong><br>
+                        L'Assistente AI non sarà in grado di rispondere a domande sullo storico durante il processo di aggiornamento.
+                    </div>
+
+                    <p class="input-label">Digita <strong>CONFERMA</strong> per abilitare il pulsante:</p>
+                    <input type="text" id="security-input" class="security-input" placeholder="Scrivi qui..." autocomplete="off">
+
+                    <div class="actions two-buttons">
+                        <button id="btn-back-step-1" class="std-btn std-btn--secondary">Annulla</button>
+                        <button id="btn-start-training" class="std-btn std-btn--danger" disabled>
+                            AVVIA RINDICIZZAZIONE
+                        </button>
+                    </div>
+                </div>
+
+                <div id="step-loading" class="step-container" style="display: none; text-align: center;">
+                    <div class="spinner"></div>
+                    <p>Avvio procedura in corso...</p>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="success-feedback-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="feedback-modal-title"></h2>
+                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div>
+            </div>
+            <div class="modal-body feedback-body">
+                <h3 id="feedback-modal-message"></h3>
+                <p id="feedback-modal-countdown"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="feedback-modal-close-btn" class="std-btn std-btn--primary">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalOverlay" class="modal-overlay" style="display: none;"></div>
+
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module" src="js/admin-training.js"></script>
+
+</body>
+</html>

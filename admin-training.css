@@ -1,0 +1,151 @@
+/* admin-training.css */
+
+.training-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centra verticalmente */
+    padding: 20px;
+    background-color: #f4f7f9;
+}
+
+.training-card {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.card-icon img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 6px rgba(52, 152, 219, 0.2));
+}
+
+.training-card h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.description {
+    color: #7f8c8d;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* BOX INFORMATIVI */
+.info-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    text-align: left;
+    padding: 15px 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+}
+
+.info-box ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #34495e;
+    font-size: 0.95rem;
+}
+
+.info-box li {
+    margin-bottom: 8px;
+}
+
+.warning-box {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+}
+
+/* INPUT E BOTTONI */
+.input-label {
+    text-align: left;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.security-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 25px;
+    transition: border-color 0.2s;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.security-input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.actions {
+    margin-top: 10px;
+}
+
+.two-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.two-buttons button {
+    flex: 1;
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* Varianti Bottoni */
+.std-btn--danger {
+    background-color: #e74c3c;
+    color: white;
+}
+.std-btn--danger:hover:not(:disabled) {
+    background-color: #c0392b;
+}
+.std-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #95a5a6;
+}
+
+/* Spinner Semplice */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+    .training-card {
+        padding: 20px;
+    }
+}
