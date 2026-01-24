@@ -10,6 +10,7 @@ const startChatRecordingBtn = document.getElementById('startChatRecording');
 const sendChatMessageBtn = document.getElementById('sendChatMessage');
 const chatStatus = document.getElementById('chatStatus');
 const typingIndicator = document.querySelector('.typing-indicator');
+const modalOverlay = document.getElementById('modalOverlay'); // Recuperato anche overlay
 
 // --- 2. STATO DELLA CHAT E RICONOSCIMENTO VOCALE ---
 let recognition;
@@ -17,23 +18,26 @@ let isRecording = false;
 let currentTranscription = '';
 let chatHistory = [];
 
-// --- 3. FUNZIONI PRINCIPALI DEL MODALE ---
+// --- 3. FUNZIONI PRINCIPALI ---
 
 // Funzione per aprire il modale della chat
-function openChatModal() {
-    chatModal.style.display = 'flex';
-    modalOverlay.style.display = 'block';
-    chatInput.focus();
-    // Pulisci la cronologia e l'interfaccia all'apertura per una nuova sessione
+// (Esportiamo la funzione se serve chiamarla da altri file, o la lasciamo globale)
+window.openChatModal = function() {
+    if(chatModal) chatModal.style.display = 'flex';
+    if(modalOverlay) modalOverlay.style.display = 'block';
+    if(chatInput) chatInput.focus();
+    
     chatHistory = [];
-    chatMessages.innerHTML = ''; 
-    addMessage('ai', 'Ciao! Sono Frank, il tuo assistente. Come posso aiutarti oggi?');
-}
+    if(chatMessages) {
+        chatMessages.innerHTML = ''; 
+        addMessage('ai', 'Ciao! Sono Frank, il tuo assistente. Come posso aiutarti oggi?');
+    }
+};
 
-// Funzione per chiudere il modale della chat
-async function closeChatModal() {
-    chatModal.style.display = 'none';
-    modalOverlay.style.display = 'none';
+// Funzione per chiudere il modale
+window.closeChatModal = async function() {
+    if(chatModal) chatModal.style.display = 'none';
+    if(modalOverlay) modalOverlay.style.display = 'none';
 
     if (isRecording && recognition) {
         recognition.stop();
@@ -42,9 +46,9 @@ async function closeChatModal() {
     if (chatHistory.length > 1) {
         await saveChatHistory();
     }
-}
+};
 
-// Funzione per salvare la cronologia della chat
+// Funzione per salvare la cronologia
 async function saveChatHistory() {
     if (chatHistory.length <= 1) return;
 
@@ -55,50 +59,43 @@ async function saveChatHistory() {
             method: 'POST',
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
-        
-        if (!response.ok) throw new Error(`Errore del server: ${response.status}`);
-        
-        const result = await response.json();
-        console.log("Chat salvata:", result.message);
+        if (!response.ok) throw new Error(`Errore server: ${response.status}`);
     } catch (error) {
-        if (error.message !== "Unauthorized") {
-            console.error("Errore nel salvataggio della chat:", error);
-        }
+        if (error.message !== "Unauthorized") console.error("Errore salvataggio chat:", error);
     }
 }
 
-// Funzione per aggiungere un messaggio alla chat UI
+// Funzione per aggiungere messaggio UI
 function addMessage(sender, text) {
+    if(!chatMessages) return;
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', sender);
     
     const messageContentDiv = document.createElement('div');
     messageContentDiv.classList.add('message-content');
-    if (text) {
-        messageContentDiv.textContent = text;
-    }
-    messageElement.appendChild(messageContentDiv);
+    if (text) messageContentDiv.textContent = text;
     
+    messageElement.appendChild(messageContentDiv);
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
     if (sender === 'user') {
         chatHistory.push({ role: 'user', content: text });
     }
-    
     return messageElement;
 }
 
-// Funzione di invio messaggio (versione robusta e semplificata)
+// Funzione di invio messaggio
 async function sendChatMessage(messageText) {
     if (!messageText.trim()) return;
 
     addMessage('user', messageText);
-    chatInput.value = '';
+    if(chatInput) chatInput.value = '';
     
-    sendChatMessageBtn.disabled = true;
-    startChatRecordingBtn.disabled = true;
-    typingIndicator.style.display = 'flex';
+    if(sendChatMessageBtn) sendChatMessageBtn.disabled = true;
+    if(startChatRecordingBtn) startChatRecordingBtn.disabled = true;
+    if(typingIndicator) typingIndicator.style.display = 'flex';
 
     let aiMessageElement;
     
@@ -108,33 +105,20 @@ async function sendChatMessage(messageText) {
             body: JSON.stringify({ history: chatHistory }),
         });
 
-        if (!response.ok) {
-            throw new Error(`Errore del server: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Errore: ${response.status}`);
 
-        typingIndicator.style.display = 'none';
-        aiMessageElement = addMessage('ai', ''); // Crea un messaggio AI vuoto
+        if(typingIndicator) typingIndicator.style.display = 'none';
+        aiMessageElement = addMessage('ai', ''); 
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
 
         const fullResponseData = await response.text();
-        let fullResponseText = '';
+        let fullResponseText = fullResponseData;
         let audioData = null;
 
         if (fullResponseData.includes('--AUDIO--')) {
             const parts = fullResponseData.split('--AUDIO--', 2);
             fullResponseText = parts[0];
-            const jsonPart = parts[1];
-
-            if (jsonPart) {
-                try {
-                    audioData = JSON.parse(jsonPart);
-                } catch (e) {
-                    console.error("Errore nel parsing del JSON audio:", e);
-                    fullResponseText += `\n(Errore nella ricezione dei dati audio)`;
-                }
-            }
-        } else {
-            fullResponseText = fullResponseData;
+            try { audioData = JSON.parse(parts[1]); } catch (e) { console.error(e); }
         }
 
         aiContentDiv.textContent = fullResponseText;
@@ -143,11 +127,10 @@ async function sendChatMessage(messageText) {
             const audio = new Audio(`data:audio/mpeg;base64,${audioData.audio}`);
             audio.controls = true;
             audio.autoplay = true;
-
-            const audioContainer = document.createElement('div');
-            audioContainer.classList.add('audio-playback');
-            audioContainer.appendChild(audio);
-            aiMessageElement.appendChild(audioContainer);
+            const ac = document.createElement('div');
+            ac.classList.add('audio-playback');
+            ac.appendChild(audio);
+            aiMessageElement.appendChild(ac);
         }
 
         if (fullResponseText.trim()) {
@@ -155,93 +138,96 @@ async function sendChatMessage(messageText) {
         }
 
     } catch (error) {
-        // --- BLOCCO CATCH CORRETTO ---
         if (error.message !== "Unauthorized") {
-            console.error("Errore nell'invio del messaggio alla chat AI:", error);
-            const errorText = `Mi dispiace, si è verificato un errore: ${error.message}. Riprova più tardi.`;
-            if (aiMessageElement) {
-                aiMessageElement.querySelector('.message-content').textContent = errorText;
-            } else {
-                addMessage('ai', errorText);
-            }
+            const errorText = `Errore: ${error.message}.`;
+            if (aiMessageElement) aiMessageElement.querySelector('.message-content').textContent = errorText;
+            else addMessage('ai', errorText);
         }
     } finally {
-        // --- BLOCCO FINALLY CORRETTO ---
-        sendChatMessageBtn.disabled = false;
-        startChatRecordingBtn.disabled = false;
-        chatInput.focus();
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if(sendChatMessageBtn) sendChatMessageBtn.disabled = false;
+        if(startChatRecordingBtn) startChatRecordingBtn.disabled = false;
+        if(chatInput) chatInput.focus();
+        if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
 
-// --- 4. EVENT LISTENERS ---
+// --- 4. EVENT LISTENERS (PROTETTI) ---
 
-// Listener per il pulsante di invio
-sendChatMessageBtn.addEventListener('click', () => {
-    sendChatMessage(chatInput.value);
-});
-
-// Listener per il tasto Invio nell'area di testo
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
+// Inizializza solo se gli elementi esistono nella pagina corrente
+if (sendChatMessageBtn && chatInput) {
+    sendChatMessageBtn.addEventListener('click', () => {
         sendChatMessage(chatInput.value);
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage(chatInput.value);
+        }
+    });
+}
+
+if (startChatRecordingBtn) {
+    startChatRecordingBtn.addEventListener('click', () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Riconoscimento vocale non supportato.");
+            return;
+        }
+
+        if (!isRecording) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'it-IT';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma">';
+                startChatRecordingBtn.classList.add('recording-active');
+                if(chatStatus) chatStatus.textContent = "Parla ora...";
+            };
+
+            recognition.onresult = (event) => {
+                currentTranscription = event.results[0][0].transcript;
+                if(chatInput) chatInput.value = currentTranscription;
+            };
+
+            recognition.onerror = (event) => {
+                if(chatStatus) chatStatus.textContent = `Errore: ${event.error}`;
+                resetRecBtn();
+            };
+
+            recognition.onend = () => {
+                resetRecBtn();
+                if(chatStatus) chatStatus.textContent = "";
+                if (currentTranscription.trim() !== '') {
+                    sendChatMessage(currentTranscription);
+                    currentTranscription = '';
+                }
+            };
+
+            recognition.start();
+        } else {
+            recognition.stop();
+        }
+    });
+}
+
+function resetRecBtn() {
+    isRecording = false;
+    if(startChatRecordingBtn) {
+        startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
+        startChatRecordingBtn.classList.remove('recording-active');
     }
-});
+}
 
-// Listener e logica per il riconoscimento vocale
-startChatRecordingBtn.addEventListener('click', () => {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Spiacente, il riconoscimento vocale non è supportato. Prova Chrome.");
-        return;
-    }
-
-    if (!isRecording) {
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'it-IT';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-            isRecording = true;
-            startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma">';
-            startChatRecordingBtn.classList.add('recording-active');
-            chatStatus.textContent = "Registrazione in corso...";
-        };
-
-        recognition.onresult = (event) => {
-            currentTranscription = event.results[0][0].transcript;
-            chatInput.value = currentTranscription;
-        };
-
-        recognition.onerror = (event) => {
-            chatStatus.textContent = `Errore registrazione: ${event.error}`;
-            isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
-            startChatRecordingBtn.classList.remove('recording-active');
-        };
-
-        recognition.onend = () => {
-            isRecording = false;
-            startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
-            startChatRecordingBtn.classList.remove('recording-active');
-            chatStatus.textContent = "";
-            
-            if (currentTranscription.trim() !== '') {
-                sendChatMessage(currentTranscription);
-                currentTranscription = '';
-            }
-        };
-
-        recognition.start();
-    } else {
-        recognition.stop();
-    }
-});
-
-// Scorri in fondo all'avvio
+// Scroll all'avvio solo se esiste la chat
 document.addEventListener('DOMContentLoaded', () => {
     if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    // Se siamo su chat.html, avvia il messaggio di benvenuto
+    if (window.location.pathname.includes('chat.html') && chatMessages) {
+         addMessage('ai', 'Ciao! Sono Frank. Come posso aiutarti?');
     }
 });
