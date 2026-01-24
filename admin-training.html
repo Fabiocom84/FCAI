@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Addestramento AI - Segretario AI</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style-v2.css">
@@ -15,7 +15,7 @@
 <body>
 
     <div class="std-app-shell">
-        
+
         <header class="std-app-header">
             <a href="index.html" class="header-button" style="width: 80px;">
                 <img src="img/log-out.png" alt="Home"
@@ -27,25 +27,29 @@
                 <h1 style="margin: 0; font-size: 1.2rem; color: #3498db;">GESTIONE KNOWLEDGE BASE</h1>
             </div>
 
-            <div style="width: 80px;"></div> </header>
+            <div style="width: 80px;"></div>
+        </header>
 
         <main class="training-wrapper">
-            
+
             <div class="training-card">
                 <div class="card-icon">
                     <img src="img/brain.png" alt="AI Brain">
                 </div>
                 <h2>Indicizzazione Manuale</h2>
-                
+
                 <div id="step-1" class="step-container">
                     <p class="description">
-                        Questa procedura forza una <strong>rilettura completa</strong> di tutti i dati aziendali (Commesse, Note, Ore Lavorate) per aggiornare il "cervello" dell'Assistente AI.
+                        Questa procedura forza una <strong>rilettura completa</strong> di tutti i dati aziendali
+                        (Commesse, Note, Ore Lavorate) per aggiornare il "cervello" dell'Assistente AI.
                     </p>
 
                     <div class="info-box">
                         <ul>
-                            <li><strong>Pulizia:</strong> La memoria attuale verrà cancellata per evitare duplicati.</li>
-                            <li><strong>Tempo:</strong> L'operazione avviene in background e richiede alcuni minuti.</li>
+                            <li><strong>Pulizia:</strong> La memoria attuale verrà cancellata per evitare duplicati.
+                            </li>
+                            <li><strong>Tempo:</strong> L'operazione avviene in background e richiede alcuni minuti.
+                            </li>
                             <li><strong>Costi:</strong> Verranno generati nuovi vettori (utilizzo API OpenAI).</li>
                         </ul>
                     </div>
@@ -60,11 +64,13 @@
                 <div id="step-2" class="step-container" style="display: none;">
                     <div class="warning-box">
                         <strong>⚠️ Attenzione</strong><br>
-                        L'Assistente AI non sarà in grado di rispondere a domande sullo storico durante il processo di aggiornamento.
+                        L'Assistente AI non sarà in grado di rispondere a domande sullo storico durante il processo di
+                        aggiornamento.
                     </div>
 
                     <p class="input-label">Digita <strong>CONFERMA</strong> per abilitare il pulsante:</p>
-                    <input type="text" id="security-input" class="security-input" placeholder="Scrivi qui..." autocomplete="off">
+                    <input type="text" id="security-input" class="security-input" placeholder="Scrivi qui..."
+                        autocomplete="off">
 
                     <div class="actions two-buttons">
                         <button id="btn-back-step-1" class="std-btn std-btn--secondary">Annulla</button>
@@ -75,8 +81,24 @@
                 </div>
 
                 <div id="step-loading" class="step-container" style="display: none; text-align: center;">
-                    <div class="spinner"></div>
-                    <p>Avvio procedura in corso...</p>
+                    <!-- Sostituito Spinner con Console -->
+                    <div style="margin-bottom: 15px;">
+                        <div class="spinner"
+                            style="width: 30px; height: 30px; display: inline-block; vertical-align: middle; margin: 0 10px 0 0;">
+                        </div>
+                        <span style="font-weight: 500; color: #34495e;">Indicizzazione in corso...</span>
+                    </div>
+
+                    <div class="terminal-console" id="training-console">
+                        <div class="terminal-line">> Inizializzazione procedura...</div>
+                        <!-- Logs dinamici qui -->
+                        <div class="terminal-cursor"></div>
+                    </div>
+
+                    <button id="btn-stop-monitoring" class="std-btn std-btn--secondary"
+                        style="margin-top: 15px; width: auto; font-size: 0.85rem;">
+                        Torna alla Home (Processo continua in background)
+                    </button>
                 </div>
 
             </div>
@@ -87,7 +109,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="feedback-modal-title"></h2>
-                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div>
+                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button>
+                </div>
             </div>
             <div class="modal-body feedback-body">
                 <h3 id="feedback-modal-message"></h3>
@@ -105,4 +128,5 @@
     <script type="module" src="js/admin-training.js"></script>
 
 </body>
+
 </html>

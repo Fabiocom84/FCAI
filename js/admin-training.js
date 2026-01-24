@@ -52,40 +52,83 @@ if (securityInput) {
 
 if (btnStart) {
     btnStart.addEventListener('click', async () => {
-        // UI Loading State
+        // UI Loading State (Switch to Console)
         step2.style.display = 'none';
         stepLoading.style.display = 'block';
 
+        const consoleEl = document.getElementById('training-console');
+        const stopBtn = document.getElementById('btn-stop-monitoring');
+        let monitoringInterval;
+
+        // Funzione helper per scrivere in console
+        const log = (msg) => {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.textContent = `> ${msg}`;
+            consoleEl.insertBefore(line, consoleEl.lastElementChild); // Inserisce prima del cursore
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
+        if (stopBtn) {
+            stopBtn.onclick = () => {
+                if (monitoringInterval) clearInterval(monitoringInterval);
+                window.location.href = 'index.html';
+            };
+        }
+
         try {
+            log("Contatto il server...");
             const response = await apiFetch('/api/admin/retrain-knowledge', {
                 method: 'POST'
             });
 
             if (response.ok) {
-                // Successo: Mostra feedback e poi torna alla home o resetta
-                showSuccessFeedbackModal(
-                    "Procedura Avviata",
-                    "Il sistema sta lavorando in background. Puoi tornare alla Home.",
-                    // true // rimosso perché la funzione non accetta il terzo parametro
-                );
+                log("Ricevuto 202 Accepted. Processo avviato in background.");
+                log("Attendo pulizia memoria...");
 
-                // Opzionale: redirect dopo chiusura modal (gestito dall'utente cliccando OK)
-                document.getElementById('feedback-modal-close-btn').onclick = function () {
-                    window.location.href = 'index.html';
-                };
+                // Inizio Polling
+                let previousCount = -1;
+                let sameCountIter = 0;
+
+                monitoringInterval = setInterval(async () => {
+                    try {
+                        const statusRes = await apiFetch('/api/admin/training-status');
+                        const statusData = await statusRes.json();
+                        const count = statusData.count;
+
+                        if (count !== previousCount) {
+                            if (previousCount === -1) {
+                                log(`Stato iniziale Database: ${count} vettori.`);
+                            } else if (count < previousCount) {
+                                log(`Reset Memoria in corso... (da ${previousCount} a ${count})`);
+                            } else {
+                                log(`Indicizzazione in corso... Totale vettori: ${count} (+${count - previousCount})`);
+                            }
+                            previousCount = count;
+                            sameCountIter = 0;
+                        } else {
+                            sameCountIter++;
+                            if (sameCountIter % 5 === 0) { // Logga "still working" ogni 5 iterazioni uguali (ca 10-15s)
+                                log("Elaborazione batch in corso...");
+                            }
+                        }
+
+                    } catch (e) {
+                        log(`Errore monitoraggio: ${e.message}`);
+                    }
+                }, 3000); // Check ogni 3 secondi
 
             } else {
                 const errData = await response.json();
+                log(`ERRORE AVVIO: ${errData.error || "Sconosciuto"}`);
                 alert("Errore avvio: " + (errData.error || "Sconosciuto"));
-                // Torna allo step 2 in caso di errore
-                stepLoading.style.display = 'none';
-                step2.style.display = 'block';
+                if (monitoringInterval) clearInterval(monitoringInterval);
             }
         } catch (error) {
             console.error("Training Error:", error);
+            log(`ERRORE DI COMUNICAZIONE: ${error.message}`);
             alert("Errore di comunicazione col server.");
-            stepLoading.style.display = 'none';
-            step2.style.display = 'block';
+            if (monitoringInterval) clearInterval(monitoringInterval);
         }
     });
 }
