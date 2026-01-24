@@ -56,7 +56,7 @@ async function saveChatHistory() {
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
 
     try {
-        const response = await apiFetch(`${window.BACKEND_URL}/api/save-chat`, {
+        const response = await apiFetch(`/api/save-chat`, {
             method: 'POST',
             body: JSON.stringify({ chatTranscription: chatTranscription })
         });
@@ -101,7 +101,7 @@ async function sendChatMessage(messageText) {
     let aiMessageElement;
 
     try {
-        const response = await apiFetch(`${window.BACKEND_URL}/api/chat`, {
+        const response = await apiFetch(`/api/chat`, {
             method: 'POST',
             body: JSON.stringify({ history: chatHistory }),
         });
@@ -203,37 +203,20 @@ if (startChatRecordingBtn) {
                     formData.append("audio", file);
 
                     try {
-                        const response = await apiFetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
+                        const response = await apiFetch(`/api/transcribe-voice`, {
                             method: "POST",
                             body: formData, // No JSON.stringify per FormData
                             // headers: Content-Type lo gestisce il browser col boundary
-                        }, true); // true = skip default JSON headers if implemented in apiFetch, altrimenti bisogna gestire
+                        }, true); // true = skip default JSON headers se apiFetch lo supporta
 
-                        // *Nota*: se apiFetch aggiunge Content-Type: application/json forzatamente, bisogna modificarlo.
-                        // Assumiamo che apiFetch accetti un flag o gestiamo la chiamata fetch nativa qui per sicurezza.
-
-                    } catch (e) {
-                        // Fallback se apiFetch non supporta formData pulito
-                        console.warn("Uso fetch nativa per upload audio");
-                    }
-
-                    // Implementazione pulita con fetch nativa per evitare conflitti Header
-                    try {
-                        const token = localStorage.getItem('authToken');
-                        const resp = await fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${token}` },
-                            body: formData
-                        });
-
-                        if (!resp.ok) throw new Error("Errore trascrizione");
-                        const data = await resp.json();
-
+                        // Handle result
+                        const data = await response.json();
                         if (data.transcription) {
                             currentTranscription = data.transcription;
                             if (chatInput) chatInput.value = currentTranscription;
-                            sendChatMessage(currentTranscription); // Invio automatico opzionale
+                            sendChatMessage(currentTranscription);
                         }
+
                     } catch (err) {
                         console.error("Errore Whisper:", err);
                         if (chatStatus) chatStatus.textContent = "Errore trascrizione.";
