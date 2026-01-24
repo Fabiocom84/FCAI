@@ -22,27 +22,27 @@ let chatHistory = [];
 
 // Funzione per aprire il modale della chat
 // (Esportiamo la funzione se serve chiamarla da altri file, o la lasciamo globale)
-window.openChatModal = function() {
-    if(chatModal) chatModal.style.display = 'flex';
-    if(modalOverlay) modalOverlay.style.display = 'block';
-    if(chatInput) chatInput.focus();
-    
+window.openChatModal = function () {
+    if (chatModal) chatModal.style.display = 'flex';
+    if (modalOverlay) modalOverlay.style.display = 'block';
+    if (chatInput) chatInput.focus();
+
     chatHistory = [];
-    if(chatMessages) {
-        chatMessages.innerHTML = ''; 
+    if (chatMessages) {
+        chatMessages.innerHTML = '';
         addMessage('ai', 'Ciao! Sono Frank, il tuo assistente. Come posso aiutarti oggi?');
     }
 };
 
 // Funzione per chiudere il modale
-window.closeChatModal = async function() {
-    if(chatModal) chatModal.style.display = 'none';
-    if(modalOverlay) modalOverlay.style.display = 'none';
+window.closeChatModal = async function () {
+    if (chatModal) chatModal.style.display = 'none';
+    if (modalOverlay) modalOverlay.style.display = 'none';
 
     if (isRecording && recognition) {
         recognition.stop();
     }
-    
+
     if (chatHistory.length > 1) {
         await saveChatHistory();
     }
@@ -53,7 +53,7 @@ async function saveChatHistory() {
     if (chatHistory.length <= 1) return;
 
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
-    
+
     try {
         const response = await apiFetch(`${window.BACKEND_URL}/api/save-chat`, {
             method: 'POST',
@@ -67,15 +67,15 @@ async function saveChatHistory() {
 
 // Funzione per aggiungere messaggio UI
 function addMessage(sender, text) {
-    if(!chatMessages) return;
+    if (!chatMessages) return;
 
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', sender);
-    
+
     const messageContentDiv = document.createElement('div');
     messageContentDiv.classList.add('message-content');
     if (text) messageContentDiv.textContent = text;
-    
+
     messageElement.appendChild(messageContentDiv);
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -91,14 +91,14 @@ async function sendChatMessage(messageText) {
     if (!messageText.trim()) return;
 
     addMessage('user', messageText);
-    if(chatInput) chatInput.value = '';
-    
-    if(sendChatMessageBtn) sendChatMessageBtn.disabled = true;
-    if(startChatRecordingBtn) startChatRecordingBtn.disabled = true;
-    if(typingIndicator) typingIndicator.style.display = 'flex';
+    if (chatInput) chatInput.value = '';
+
+    if (sendChatMessageBtn) sendChatMessageBtn.disabled = true;
+    if (startChatRecordingBtn) startChatRecordingBtn.disabled = true;
+    if (typingIndicator) typingIndicator.style.display = 'flex';
 
     let aiMessageElement;
-    
+
     try {
         const response = await apiFetch(`${window.BACKEND_URL}/api/chat`, {
             method: 'POST',
@@ -107,8 +107,8 @@ async function sendChatMessage(messageText) {
 
         if (!response.ok) throw new Error(`Errore: ${response.status}`);
 
-        if(typingIndicator) typingIndicator.style.display = 'none';
-        aiMessageElement = addMessage('ai', ''); 
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        aiMessageElement = addMessage('ai', '');
         const aiContentDiv = aiMessageElement.querySelector('.message-content');
 
         const fullResponseData = await response.text();
@@ -144,10 +144,10 @@ async function sendChatMessage(messageText) {
             else addMessage('ai', errorText);
         }
     } finally {
-        if(sendChatMessageBtn) sendChatMessageBtn.disabled = false;
-        if(startChatRecordingBtn) startChatRecordingBtn.disabled = false;
-        if(chatInput) chatInput.focus();
-        if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (sendChatMessageBtn) sendChatMessageBtn.disabled = false;
+        if (startChatRecordingBtn) startChatRecordingBtn.disabled = false;
+        if (chatInput) chatInput.focus();
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
 
@@ -168,54 +168,99 @@ if (sendChatMessageBtn && chatInput) {
 }
 
 if (startChatRecordingBtn) {
-    startChatRecordingBtn.addEventListener('click', () => {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("Riconoscimento vocale non supportato.");
-            return;
-        }
+    let mediaRecorder;
+    let audioChunks = [];
 
+    startChatRecordingBtn.addEventListener('click', async () => {
         if (!isRecording) {
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'it-IT';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+            // AVVIO REGISTRAZIONE
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
 
-            recognition.onstart = () => {
+                mediaRecorder.start();
                 isRecording = true;
-                startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma">';
+
+                // UI Update
+                startChatRecordingBtn.innerHTML = '<img src="img/stop.png" alt="Ferma" style="width: 20px; height: 20px;">';
                 startChatRecordingBtn.classList.add('recording-active');
-                if(chatStatus) chatStatus.textContent = "Parla ora...";
-            };
+                if (chatStatus) chatStatus.textContent = "Ascolto... (Whisper)";
 
-            recognition.onresult = (event) => {
-                currentTranscription = event.results[0][0].transcript;
-                if(chatInput) chatInput.value = currentTranscription;
-            };
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
 
-            recognition.onerror = (event) => {
-                if(chatStatus) chatStatus.textContent = `Errore: ${event.error}`;
-                resetRecBtn();
-            };
+                mediaRecorder.addEventListener("stop", async () => {
+                    // STOP & SEND
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' }); // o webm
+                    const file = new File([audioBlob], "voice_msg.mp3", { type: "audio/mp3" });
 
-            recognition.onend = () => {
-                resetRecBtn();
-                if(chatStatus) chatStatus.textContent = "";
-                if (currentTranscription.trim() !== '') {
-                    sendChatMessage(currentTranscription);
-                    currentTranscription = '';
-                }
-            };
+                    if (chatStatus) chatStatus.textContent = "Trascrizione in corso...";
 
-            recognition.start();
+                    const formData = new FormData();
+                    formData.append("audio", file);
+
+                    try {
+                        const response = await apiFetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
+                            method: "POST",
+                            body: formData, // No JSON.stringify per FormData
+                            // headers: Content-Type lo gestisce il browser col boundary
+                        }, true); // true = skip default JSON headers if implemented in apiFetch, altrimenti bisogna gestire
+
+                        // *Nota*: se apiFetch aggiunge Content-Type: application/json forzatamente, bisogna modificarlo.
+                        // Assumiamo che apiFetch accetti un flag o gestiamo la chiamata fetch nativa qui per sicurezza.
+
+                    } catch (e) {
+                        // Fallback se apiFetch non supporta formData pulito
+                        console.warn("Uso fetch nativa per upload audio");
+                    }
+
+                    // Implementazione pulita con fetch nativa per evitare conflitti Header
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        const resp = await fetch(`${window.BACKEND_URL}/api/transcribe-voice`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            body: formData
+                        });
+
+                        if (!resp.ok) throw new Error("Errore trascrizione");
+                        const data = await resp.json();
+
+                        if (data.transcription) {
+                            currentTranscription = data.transcription;
+                            if (chatInput) chatInput.value = currentTranscription;
+                            sendChatMessage(currentTranscription); // Invio automatico opzionale
+                        }
+                    } catch (err) {
+                        console.error("Errore Whisper:", err);
+                        if (chatStatus) chatStatus.textContent = "Errore trascrizione.";
+                    } finally {
+                        if (chatStatus && chatStatus.textContent.includes("Trascrizione")) chatStatus.textContent = "";
+                        resetRecBtn();
+
+                        // Stop tracks
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                });
+
+            } catch (err) {
+                console.error("Errore Microfono:", err);
+                alert("Impossibile accedere al microfono.");
+            }
         } else {
-            recognition.stop();
+            // STOP REGISTRAZIONE
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
         }
     });
 }
 
 function resetRecBtn() {
     isRecording = false;
-    if(startChatRecordingBtn) {
+    if (startChatRecordingBtn) {
         startChatRecordingBtn.innerHTML = '<img src="img/voice.png" alt="Registra">';
         startChatRecordingBtn.classList.remove('recording-active');
     }
@@ -228,6 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Se siamo su chat.html, avvia il messaggio di benvenuto
     if (window.location.pathname.includes('chat.html') && chatMessages) {
-         addMessage('ai', 'Ciao! Sono Frank. Come posso aiutarti?');
+        addMessage('ai', 'Ciao! Sono Frank. Come posso aiutarti?');
     }
 });
