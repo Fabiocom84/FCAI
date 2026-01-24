@@ -48,11 +48,21 @@
             flex-direction: column;
             width: 100%;
             max-width: 100%;
-            /* ORA 100% PER DAVVERO */
             margin: 0;
             background: white;
             border: none;
-            /* Niente bordi laterali */
+        }
+
+        /* Fix Margini Interni */
+        .modal-header,
+        .modal-footer {
+            padding: 15px 20px;
+            /* Spazio laterale */
+        }
+
+        .modal-body {
+            padding: 0 20px;
+            /* Spazio laterale per i messaggi */
         }
 
         .close-button {
@@ -88,7 +98,7 @@
                                 </div>
                             </div>
 
-                            <div class="modal-body" style="padding: 0;">
+                            <div class="modal-body">
                                 <div id="chatMessages" class="chat-messages">
                                 </div>
                             </div>
