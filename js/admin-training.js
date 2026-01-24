@@ -1,4 +1,4 @@
-import { safeFetch } from './api-client.js';
+import { apiFetch } from './api-client.js';
 import { showFeedbackModal } from './shared-ui.js';
 
 // DOM Elements
@@ -57,7 +57,7 @@ if (btnStart) {
         stepLoading.style.display = 'block';
 
         try {
-            const response = await safeFetch('/api/admin/retrain-knowledge', {
+            const response = await apiFetch('/api/admin/retrain-knowledge', {
                 method: 'POST'
             });
 
