@@ -4,18 +4,22 @@
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center; /* Centra verticalmente */
+    /* align-items: center;  <-- Rimosso per evitare taglio su schermi piccoli */
     padding: 20px;
     background-color: #f4f7f9;
+    overflow-y: auto;
+    /* Abilita scroll */
 }
 
 .training-card {
     background: white;
     width: 100%;
     max-width: 500px;
+    margin: auto;
+    /* Centra verticalmente se c'è spazio, altrimenti scrollabile */
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     text-align: center;
 }
 
@@ -119,9 +123,11 @@
     background-color: #e74c3c;
     color: white;
 }
+
 .std-btn--danger:hover:not(:disabled) {
     background-color: #c0392b;
 }
+
 .std-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -140,8 +146,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 600px) {
@@ -161,7 +172,7 @@
     overflow-y: auto;
     text-align: left;
     font-size: 0.9rem;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
     border: 1px solid #333;
     margin-top: 20px;
 }
@@ -174,8 +185,15 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .terminal-cursor {
@@ -188,6 +206,13 @@
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
