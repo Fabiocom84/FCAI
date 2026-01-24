@@ -148,6 +148,16 @@ if (btnStart) {
                             log("✅ CICLO COMPLETATO.");
                             log(`Riepilogo: ${processed} nuovi vettori, ${skipped} saltati.`);
                             if (dbCount > 0) log(`Totale vettori nel DB: ${dbCount}`);
+
+                            // Aggiorna UI Header
+                            const headerEl = document.getElementById('loading-status-header');
+                            if (headerEl) {
+                                headerEl.innerHTML = `
+                                    <span style="font-size: 1.5rem; color: #27ae60; margin-right: 10px;">✅</span>
+                                    <span style="font-weight: 700; color: #27ae60;">Indicizzazione Completata!</span>
+                                `;
+                            }
+
                             clearInterval(monitoringInterval);
                         }
 
