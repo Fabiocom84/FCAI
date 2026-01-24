@@ -1,5 +1,5 @@
 import { apiFetch } from './api-client.js';
-import { showFeedbackModal } from './shared-ui.js';
+import { showSuccessFeedbackModal } from './shared-ui.js';
 
 // DOM Elements
 const step1 = document.getElementById('step-1');
@@ -33,7 +33,7 @@ if (btnBackStep1) {
 // --- LOGICA DI SICUREZZA ---
 
 if (securityInput) {
-    securityInput.addEventListener('input', function() {
+    securityInput.addEventListener('input', function () {
         const val = this.value.trim().toUpperCase();
         // Abilitiamo solo se scrive CONFERMA
         if (val === 'CONFERMA') {
@@ -63,14 +63,14 @@ if (btnStart) {
 
             if (response.ok) {
                 // Successo: Mostra feedback e poi torna alla home o resetta
-                showFeedbackModal(
-                    "Procedura Avviata", 
-                    "Il sistema sta lavorando in background. Puoi tornare alla Home.", 
-                    true // true = successo (verde)
+                showSuccessFeedbackModal(
+                    "Procedura Avviata",
+                    "Il sistema sta lavorando in background. Puoi tornare alla Home.",
+                    // true // rimosso perché la funzione non accetta il terzo parametro
                 );
-                
+
                 // Opzionale: redirect dopo chiusura modal (gestito dall'utente cliccando OK)
-                document.getElementById('feedback-modal-close-btn').onclick = function() {
+                document.getElementById('feedback-modal-close-btn').onclick = function () {
                     window.location.href = 'index.html';
                 };
 
