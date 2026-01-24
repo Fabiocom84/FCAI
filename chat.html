@@ -9,66 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style-v2.css">
 
-    <style>
-        .chat-page-container {
-            height: calc(100vh - 80px);
-            /* Altezza meno header */
-            display: flex;
-            background-color: #f5f7fa;
-            width: 100%;
-            padding: 0;
-            /* Full widt */
-            margin: 0;
-        }
-
-        /* Riadattiamo lo stile del modale per farlo sembrare un pannello Full Screen */
-        /* Riadattiamo lo stile del modale per farlo sembrare un pannello Full Screen */
-        #chatPanel {
-            position: relative;
-            top: auto;
-            left: auto;
-            transform: none;
-            width: 100%;
-            max-width: 100%;
-            /* Full Width */
-            height: 100%;
-            display: flex;
-            box-shadow: none;
-            /* No shadow */
-            border-radius: 0;
-            /* No rounded corners */
-            background-color: transparent;
-        }
-
-        .modal-content {
-            border-radius: 0;
-            box-shadow: none;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 100%;
-            margin: 0;
-            background: white;
-            border: none;
-        }
-
-        /* Fix Margini Interni */
-        .modal-header,
-        .modal-footer {
-            padding: 15px 20px;
-            /* Spazio laterale */
-        }
-
-        .modal-body {
-            padding: 0 20px;
-            /* Spazio laterale per i messaggi */
-        }
-
-        .close-button {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="chat.css">
 </head>
 
 <body class="internal-page">
@@ -103,20 +44,18 @@
                                 </div>
                             </div>
 
-                            <div class="modal-footer"
-                                style="flex-direction: column; gap: 10px; box-sizing: border-box;">
+                            <div class="modal-footer">
                                 <p id="chatStatus" style="font-size: 0.8em; color: #666; margin: 0; min-height: 1.2em;">
                                 </p>
-                                <div class="voice-controls-modern"
-                                    style="width: 100%; display: flex; gap: 10px; box-sizing: border-box;">
+                                <div class="voice-controls-modern" style="display: flex; gap: 10px; width: 100%;">
                                     <textarea id="chatInput" placeholder="Scrivi qui il tuo messaggio..."
-                                        style="flex: 1; resize: none; height: 50px;"></textarea>
+                                        style="flex: 1; resize: none; height: 50px; padding: 10px;"></textarea>
                                     <button id="startChatRecording" class="chat-voice-button"
-                                        style="height: 50px; width: 50px;">
+                                        style="height: 50px; width: 50px; padding: 0; display:flex; justify-content:center; align-items:center;">
                                         <img src="img/voice.png" alt="Vocale">
                                     </button>
                                     <button id="sendChatMessage" class="chat-send-button"
-                                        style="height: 50px; width: 50px; background-color: #3498db; border: none;">
+                                        style="height: 50px; width: 50px; background-color: #3498db; border: none; padding: 0; display:flex; justify-content:center; align-items:center;">
                                         <img src="img/play.png" alt="Invia" style="filter: invert(1);">
                                     </button>
                                 </div>
