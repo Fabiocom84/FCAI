@@ -11,6 +11,7 @@ const btnBackStep1 = document.getElementById('btn-back-step-1');
 const btnStart = document.getElementById('btn-start-training');
 const btnForceStop = document.getElementById('btn-force-stop'); // Kill switch
 const securityInput = document.getElementById('security-input');
+const forceResetCheckbox = document.getElementById('force-reset-checkbox');
 
 // --- STOP FORZATO ---
 if (btnForceStop) {
@@ -71,6 +72,9 @@ if (securityInput) {
 
 if (btnStart) {
     btnStart.addEventListener('click', async () => {
+        // Leggi checkbox
+        const forceReset = forceResetCheckbox ? forceResetCheckbox.checked : false;
+
         // UI Loading State (Switch to Console)
         step2.style.display = 'none';
         stepLoading.style.display = 'block';
@@ -98,10 +102,12 @@ if (btnStart) {
         try {
             log("Contatto il server...");
             const response = await apiFetch('/api/admin/retrain-knowledge', {
-                method: 'POST'
+                method: 'POST',
+                body: JSON.stringify({ force_reset: forceReset })
             });
 
             if (response.ok) {
+                log(`Richiesta inviata. Modalità: ${forceReset ? "RESET TOTALE" : "INCREMENTALE"}`);
                 log("Ricevuto 202 Accepted. Processo avviato in background.");
                 log("Attendo pulizia memoria...");
 
