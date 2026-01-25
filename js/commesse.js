@@ -1063,7 +1063,8 @@ function setupGeocodingControls() {
 
             try {
                 const token = localStorage.getItem('access_token');
-                const url = `${API_BASE_URL}/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
+                // Fix: apiFetch handles base URL internally. Use relative path.
+                const url = `/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
 
                 const response = await apiFetch(url, { method: 'GET' });
                 // apiFetch already handles auth, but we need strictly GET here. 
