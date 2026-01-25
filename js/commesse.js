@@ -308,6 +308,9 @@ const App = {
 
         // Drag & Drop
         this.setupDragDrop();
+
+        // [NEW] Setup Geocoding Interactions
+        setupGeocodingControls();
     },
 
     // --- LOGICA DATI & SCROLL ---
@@ -1027,5 +1030,160 @@ const App = {
         this.dom.previewContainer.style.display = 'none';
     }
 };
+
+// ==========================================
+// [NEW] GEOLOCALIZZAZIONE LOGIC
+// ==========================================
+let map = null;
+let currentMarker = null;
+
+function setupGeocodingControls() {
+    const btnCalc = document.getElementById('btn-calc-geo');
+    const btnMap = document.getElementById('btn-open-map');
+    const btnConfirmMap = document.getElementById('confirmMapBtn');
+    const btnCloseMap = document.getElementById('closeMapBtn');
+    const mapModal = document.getElementById('mapModal');
+    const mapOverlay = document.getElementById('mapModalOverlay');
+
+    // 1. CALCOLA DA INDIRIZZO
+    if (btnCalc) {
+        btnCalc.addEventListener('click', async () => {
+            const city = document.getElementById('luogo').value;
+            const prov = document.getElementById('provincia').value;
+
+            if (!city) {
+                showModal({ title: "Attenzione", message: "Inserisci almeno il Luogo (Città) per calcolare le coordinate." });
+                return;
+            }
+
+            // Show loading state on button
+            const originalText = btnCalc.innerHTML;
+            btnCalc.innerHTML = "<span>⏳...</span>";
+            btnCalc.disabled = true;
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const url = `${API_BASE_URL}/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
+
+                const response = await apiFetch(url, { method: 'GET' });
+                // apiFetch already handles auth, but we need strictly GET here. 
+                // Note: apiFetch usually returns the response object.
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('latitudine').value = data.lat;
+                    document.getElementById('longitudine').value = data.lon;
+                } else {
+                    showModal({ title: "Non trovato", message: "Impossibile trovare le coordinate per questo luogo." });
+                }
+            } catch (error) {
+                console.error(error);
+                showModal({ title: "Errore", message: "Errore durante la geocodifica." });
+            } finally {
+                btnCalc.innerHTML = originalText;
+                btnCalc.disabled = false;
+            }
+        });
+    }
+
+    // 2. MAPPA INTERATTIVA
+    if (btnMap) {
+        btnMap.addEventListener('click', () => {
+            if (mapModal) mapModal.style.display = 'block';
+            if (mapOverlay) mapOverlay.style.display = 'block';
+
+            // Inizializza mappa solo se visibile
+            setTimeout(() => {
+                initMap();
+            }, 100);
+        });
+    }
+
+    function closeMap() {
+        if (mapModal) mapModal.style.display = 'none';
+        if (mapOverlay) mapOverlay.style.display = 'none';
+    }
+
+    if (btnCloseMap) btnCloseMap.addEventListener('click', closeMap);
+    if (mapOverlay) mapOverlay.addEventListener('click', closeMap);
+
+    if (btnConfirmMap) {
+        btnConfirmMap.addEventListener('click', () => {
+            if (currentMarker) {
+                const latlng = currentMarker.getLatLng();
+                document.getElementById('latitudine').value = latlng.lat.toFixed(6);
+                document.getElementById('longitudine').value = latlng.lng.toFixed(6);
+                closeMap();
+            } else {
+                showModal({ title: "Info", message: "Seleziona un punto sulla mappa." });
+            }
+        });
+    }
+}
+
+function initMap() {
+    if (map) {
+        map.invalidateSize(); // Fix render issues if hidden
+        // Update view based on current inputs
+        updateMapFromInputs();
+        return;
+    }
+
+    // Check if L (Leaflet) is loaded
+    if (typeof L === 'undefined') {
+        console.error("Leaflet not loaded");
+        return;
+    }
+
+    // Default: Italia centrale
+    map = L.map('mapContainer').setView([41.8719, 12.5674], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Click handler to move marker
+    map.on('click', function (e) {
+        placeMarker(e.latlng);
+    });
+
+    updateMapFromInputs();
+}
+
+function updateMapFromInputs() {
+    const latIn = parseFloat(document.getElementById('latitudine').value);
+    const lonIn = parseFloat(document.getElementById('longitudine').value);
+
+    // Se abbiamo input validi, centriamo la mappa li
+    if (!isNaN(latIn) && !isNaN(lonIn)) {
+        const latlng = [latIn, lonIn];
+        map.setView(latlng, 13);
+        placeMarker(latlng);
+    }
+}
+
+function placeMarker(latlng) {
+    if (currentMarker) {
+        currentMarker.setLatLng(latlng);
+    } else {
+        currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
+        currentMarker.on('dragend', function (event) {
+            const position = event.target.getLatLng();
+            updateCoordsDisplay(position);
+        });
+    }
+    updateCoordsDisplay(latlng);
+}
+
+function updateCoordsDisplay(latlng) {
+    const display = document.getElementById('map-coords-display');
+    if (display) {
+        // Gestiamo sia oggetto Leaflet ({lat, lng}) che array ([lat, lon])
+        const lat = latlng.lat || latlng[0];
+        const lng = latlng.lng || latlng[1];
+        display.textContent = `Lat: ${parseFloat(lat).toFixed(6)}, Lon: ${parseFloat(lng).toFixed(6)}`;
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => { App.init(); });
