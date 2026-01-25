@@ -1284,69 +1284,64 @@ function renderGeoMapSidebar() {
     if (!listContainer) return;
     listContainer.innerHTML = '';
 
-    // Extract all unique macros from allGeoCommesse
-    const macroMap = {};
-    if (App.state.allMacros) {
-        App.state.allMacros.forEach(m => {
-            macroMap[m.id_macro_categoria] = m.nome || m.nome_macro;
-        });
-    }
-
-    // Count usage
-    const stats = {}; // Name -> Count
-
-    allGeoCommesse.forEach(c => {
-        if (c.ids_macro_categorie_attive && Array.isArray(c.ids_macro_categorie_attive)) {
-            c.ids_macro_categorie_attive.forEach(mid => {
-                const name = macroMap[mid] || `Macro ${mid}`;
-                stats[name] = (stats[name] || 0) + 1;
-            });
-        }
+    // Sort by Impianto Name
+    const sortedList = [...allGeoCommesse].sort((a, b) => {
+        const nameA = (a.impianto || '').toLowerCase();
+        const nameB = (b.impianto || '').toLowerCase();
+        return nameA.localeCompare(nameB);
     });
-
-    // Sort by name
-    const sortedNames = Object.keys(stats).sort();
 
     let activeItem = null;
 
     // Helper to create items
-    const createItem = (text, count, onClick) => {
+    const createItem = (commessa) => {
         const div = document.createElement('div');
         div.className = 'geomap-label-item';
-        div.style.cssText = 'padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;';
-        div.innerHTML = `<span style="font-weight:500; color:#34495e;">${text}</span> <span style="background: #ecf0f1; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; color:#7f8c8d;">${count}</span>`;
+        // Put searchable content in dataset if needed, or rely on textContent
+        const impianto = commessa.impianto || 'Impianto Sconosciuto';
+        const cliente = commessa.clienti?.ragione_sociale || '';
+
+        // Custom search handling logic will look at textContent
+        div.style.cssText = 'padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; flex-direction: column; transition: background 0.2s;';
+
+        div.innerHTML = `
+            <span style="font-weight:500; color:#2c3e50; font-size: 0.95em;">${impianto}</span>
+            <span style="font-size: 0.8em; color:#7f8c8d; margin-top: 2px;">${cliente}</span>
+        `;
 
         div.onmouseover = () => { if (div !== activeItem) div.style.background = '#f5f6fa'; };
         div.onmouseout = () => { if (div !== activeItem) div.style.background = 'transparent'; };
 
         div.onclick = () => {
-            if (activeItem) {
-                activeItem.style.background = 'transparent';
-            }
+            if (activeItem) activeItem.style.background = 'transparent';
             activeItem = div;
             div.style.background = '#e1f5fe'; // Selected
-            onClick();
+
+            // Fly to marker
+            if (geoMap && commessa.latitudine && commessa.longitudine) {
+                // If zoom is low, zoom in. If already distinct, maybe keep zoom? 
+                // Suggestion: Fly to specific high zoom
+                geoMap.flyTo([commessa.latitudine, commessa.longitudine], 16, {
+                    duration: 1.5
+                });
+
+                // Open popup if marker exists in layer
+                geoMarkersLayer.eachLayer(layer => {
+                    const latlng = layer.getLatLng();
+                    // Check coords with small tolerance
+                    const tolerance = 0.00001;
+                    if (Math.abs(latlng.lat - commessa.latitudine) < tolerance &&
+                        Math.abs(latlng.lng - commessa.longitudine) < tolerance) {
+
+                        layer.openPopup();
+                    }
+                });
+            }
         };
         return div;
     };
 
-    // "All" option
-    const allItem = createItem('Tutte le Etichette', allGeoCommesse.length, () => {
-        renderGeoMapMarkers(allGeoCommesse);
-    });
-    listContainer.appendChild(allItem);
-
-    // Default Active
-    activeItem = allItem;
-    allItem.style.background = '#e1f5fe';
-
-    sortedNames.forEach(name => {
-        listContainer.appendChild(createItem(name, stats[name], () => {
-            const filtered = allGeoCommesse.filter(c => {
-                if (!c.ids_macro_categorie_attive) return false;
-                return c.ids_macro_categorie_attive.some(mid => (macroMap[mid] || `Macro ${mid}`) === name);
-            });
-            renderGeoMapMarkers(filtered);
-        }));
+    sortedList.forEach(c => {
+        listContainer.appendChild(createItem(c));
     });
 }
