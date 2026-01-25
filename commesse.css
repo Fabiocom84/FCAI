@@ -111,8 +111,12 @@
     }
 
     .filters-group {
-        overflow-x: auto;
-        white-space: nowrap;
+        /* overflow-x: auto; removed to allow wrap */
+        /* white-space: nowrap; removed */
+        flex-wrap: wrap;
+        /* NEW: Allow wrapping */
+        justify-content: flex-start;
+        /* Optional: align left */
         padding-bottom: 2px;
     }
 
@@ -121,9 +125,13 @@
         align-items: stretch;
     }
 
-    #search-input,
-    #sort-select {
+    #search-input {
         width: 100%;
+    }
+
+    #sort-select {
+        display: none;
+        /* NEW: Hide on mobile */
     }
 }
 
