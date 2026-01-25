@@ -311,6 +311,7 @@ const App = {
 
         // [NEW] Setup Geocoding Interactions
         setupGeocodingControls();
+        setupGeoMapControls();
     },
 
     // --- LOGICA DATI & SCROLL ---
@@ -818,6 +819,10 @@ const App = {
                 setValue('provincia', data.provincia);
                 setValue('anno', data.anno);
                 setValue('note', data.note || data.descrizione);
+
+                // [NEW] Popola lat/lon se presenti
+                setValue('latitudine', data.latitudine);
+                setValue('longitudine', data.longitudine);
             }
 
             // Popola Select (Choices.js)
@@ -1162,3 +1167,186 @@ function updateCoordsDisplay(latlng) {
 }
 
 document.addEventListener('DOMContentLoaded', () => { App.init(); });
+
+// --- GEO MAP FEATURE ---
+let geoMap = null;
+let geoMarkersLayer = null;
+let allGeoCommesse = []; // Cache for filtering locally
+
+function setupGeoMapControls() {
+    const btnOpenGeoMap = document.getElementById('btn-open-geomap');
+    const geoModal = document.getElementById('geoMapModal');
+    const geoOverlay = document.getElementById('geoMapModalOverlay');
+    const btnCloseGeo = document.getElementById('closeGeoMapBtn');
+
+    if (btnOpenGeoMap) {
+        btnOpenGeoMap.addEventListener('click', () => {
+            if (geoModal) geoModal.style.display = 'block';
+            if (geoOverlay) geoOverlay.style.display = 'block';
+
+            // Init Map after transition
+            setTimeout(() => {
+                initGeoMap();
+                loadGeoMapData();
+            }, 200);
+        });
+    }
+
+    function closeGeoMap() {
+        if (geoModal) geoModal.style.display = 'none';
+        if (geoOverlay) geoOverlay.style.display = 'none';
+    }
+
+    if (btnCloseGeo) btnCloseGeo.addEventListener('click', closeGeoMap);
+    if (geoOverlay) geoOverlay.addEventListener('click', closeGeoMap);
+
+    // Sidebar Search
+    const searchInput = document.getElementById('geomap-search-labels');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.geomap-label-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        });
+    }
+}
+
+function initGeoMap() {
+    if (geoMap) {
+        geoMap.invalidateSize();
+        return;
+    }
+
+    if (typeof L === 'undefined') return;
+
+    // Use a different container ID: geoMapFullContainer
+    geoMap = L.map('geoMapFullContainer').setView([41.8719, 12.5674], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(geoMap);
+
+    geoMarkersLayer = L.layerGroup().addTo(geoMap);
+}
+
+async function loadGeoMapData() {
+    try {
+        const res = await apiFetch('/api/commesse/geo-map');
+        if (res.ok) {
+            allGeoCommesse = await res.json();
+            renderGeoMapSidebar(); // Build filters
+            renderGeoMapMarkers(allGeoCommesse); // Show all initially
+        }
+    } catch (e) {
+        console.error("GeoMap Fetch Error", e);
+    }
+}
+
+function renderGeoMapMarkers(list) {
+    if (!geoMarkersLayer) return;
+    geoMarkersLayer.clearLayers();
+
+    if (list.length === 0) return;
+
+    const bounds = L.latLngBounds();
+
+    list.forEach(c => {
+        if (c.latitudine && c.longitudine) {
+            const marker = L.marker([c.latitudine, c.longitudine]);
+
+            // Build Popup
+            let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
+            popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${c.impianto || 'Impianto'}</b><br>`;
+            if (c.clienti && c.clienti.ragione_sociale) {
+                popupContent += `<span style="color:#7f8c8d; font-size:0.9em;">${c.clienti.ragione_sociale}</span><br>`;
+            }
+            // Helper Link
+            //  popupContent += `<a href="#" style="color:#3498db; text-decoration:none; font-size:0.85em; margin-top:5px; display:inline-block;">Vedi Dettaglio</a>`;
+            popupContent += `</div>`;
+
+            marker.bindPopup(popupContent);
+            geoMarkersLayer.addLayer(marker);
+            bounds.extend([c.latitudine, c.longitudine]);
+        }
+    });
+
+    if (list.length > 0) {
+        geoMap.fitBounds(bounds, { padding: [50, 50] });
+    }
+}
+
+function renderGeoMapSidebar() {
+    const listContainer = document.getElementById('geomap-labels-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    // Extract all unique macros from allGeoCommesse
+    const macroMap = {};
+    if (App.state.allMacros) {
+        App.state.allMacros.forEach(m => {
+            macroMap[m.id_macro_categoria] = m.nome || m.nome_macro;
+        });
+    }
+
+    // Count usage
+    const stats = {}; // Name -> Count
+
+    allGeoCommesse.forEach(c => {
+        if (c.ids_macro_categorie_attive && Array.isArray(c.ids_macro_categorie_attive)) {
+            c.ids_macro_categorie_attive.forEach(mid => {
+                const name = macroMap[mid] || `Macro ${mid}`;
+                stats[name] = (stats[name] || 0) + 1;
+            });
+        }
+    });
+
+    // Sort by name
+    const sortedNames = Object.keys(stats).sort();
+
+    let activeItem = null;
+
+    // Helper to create items
+    const createItem = (text, count, onClick) => {
+        const div = document.createElement('div');
+        div.className = 'geomap-label-item';
+        div.style.cssText = 'padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;';
+        div.innerHTML = `<span style="font-weight:500; color:#34495e;">${text}</span> <span style="background: #ecf0f1; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; color:#7f8c8d;">${count}</span>`;
+
+        div.onmouseover = () => { if (div !== activeItem) div.style.background = '#f5f6fa'; };
+        div.onmouseout = () => { if (div !== activeItem) div.style.background = 'transparent'; };
+
+        div.onclick = () => {
+            if (activeItem) {
+                activeItem.style.background = 'transparent';
+            }
+            activeItem = div;
+            div.style.background = '#e1f5fe'; // Selected
+            onClick();
+        };
+        return div;
+    };
+
+    // "All" option
+    const allItem = createItem('Tutte le Etichette', allGeoCommesse.length, () => {
+        renderGeoMapMarkers(allGeoCommesse);
+    });
+    listContainer.appendChild(allItem);
+
+    // Default Active
+    activeItem = allItem;
+    allItem.style.background = '#e1f5fe';
+
+    sortedNames.forEach(name => {
+        listContainer.appendChild(createItem(name, stats[name], () => {
+            const filtered = allGeoCommesse.filter(c => {
+                if (!c.ids_macro_categorie_attive) return false;
+                return c.ids_macro_categorie_attive.some(mid => (macroMap[mid] || `Macro ${mid}`) === name);
+            });
+            renderGeoMapMarkers(filtered);
+        }));
+    });
+}

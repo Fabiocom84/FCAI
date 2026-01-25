@@ -64,6 +64,10 @@
                             <option value="data_commessa:asc">Meno Recenti</option>
                             <option value="cliente:asc">Alfabetico (Cliente)</option>
                         </select>
+                        <button id="btn-open-geomap" class="std-btn std-btn--secondary"
+                            title="Mappa Interattiva Commesse" style="margin-left: 10px;">
+                            <span>🌍 GeoMap</span>
+                        </button>
                     </div>
                 </div>
 
@@ -288,6 +292,33 @@
         </div>
     </div>
 
+
+    <!-- GEO MAP MODAL -->
+    <div id="geoMapModalOverlay" class="modal-overlay" style="z-index: 9000; display: none;"></div>
+    <div id="geoMapModal" class="commessa-modal-container"
+        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9001; width: 95vw; height: 90vh; display: none; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div class="modal-content" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>🌍 Mappa Commesse</h3>
+                <button type="button" id="closeGeoMapBtn" class="std-btn std-btn--secondary">Chiudi</button>
+            </div>
+            <div class="modal-body" style="flex: 1; padding: 0; display: flex; overflow: hidden;">
+                <!-- Sidebar Filtri -->
+                <div class="geomap-sidebar"
+                    style="width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: #f9f9f9;">
+                    <div style="padding: 15px; border-bottom: 1px solid #ddd;">
+                        <input type="text" id="geomap-search-labels" placeholder="Filtra etichette..."
+                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div id="geomap-labels-list" style="flex: 1; overflow-y: auto; padding: 10px;">
+                        <!-- Checkboxes will be injected here -->
+                    </div>
+                </div>
+                <!-- Mappa -->
+                <div id="geoMapFullContainer" style="flex: 1; height: 100%;"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- IMAGE LIGHTBOX MODAL -->
     <div id="imageViewerModal" class="image-viewer-modal" style="display: none;">
