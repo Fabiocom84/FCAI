@@ -1200,6 +1200,30 @@ function setupGeoMapControls() {
     if (btnCloseGeo) btnCloseGeo.addEventListener('click', closeGeoMap);
     if (geoOverlay) geoOverlay.addEventListener('click', closeGeoMap);
 
+    // Mobile Toggles
+    const btnShowMap = document.getElementById('btn-show-map');
+    const btnShowList = document.getElementById('btn-show-list');
+    const modalContent = document.querySelector('#geoMapModal .modal-content');
+
+    const setMobileView = (view) => {
+        // view = 'map' or 'list'
+        if (view === 'map') {
+            modalContent.classList.remove('view-list');
+            modalContent.classList.add('view-map');
+            if (btnShowMap) btnShowMap.classList.add('active');
+            if (btnShowList) btnShowList.classList.remove('active');
+            if (geoMap) setTimeout(() => geoMap.invalidateSize(), 150);
+        } else {
+            modalContent.classList.remove('view-map');
+            modalContent.classList.add('view-list');
+            if (btnShowList) btnShowList.classList.add('active');
+            if (btnShowMap) btnShowMap.classList.remove('active');
+        }
+    };
+
+    if (btnShowMap) btnShowMap.addEventListener('click', () => setMobileView('map'));
+    if (btnShowList) btnShowList.addEventListener('click', () => setMobileView('list'));
+
     // Sidebar Search
     const searchInput = document.getElementById('geomap-search-labels');
     if (searchInput) {
@@ -1208,10 +1232,15 @@ function setupGeoMapControls() {
             const items = document.querySelectorAll('.geomap-label-item');
             items.forEach(item => {
                 const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(term) ? 'flex' : 'none';
+                const dataset = item.dataset.search || '';
+                // Search in text content AND dataset (names)
+                item.style.display = (text.includes(term) || dataset.includes(term)) ? 'flex' : 'none';
             });
         });
     }
+
+    // Expose for sidebar
+    window.geoMapSetMobileView = setMobileView;
 }
 
 function initGeoMap() {
@@ -1231,6 +1260,12 @@ function initGeoMap() {
     }).addTo(geoMap);
 
     geoMarkersLayer = L.layerGroup().addTo(geoMap);
+
+    // Default Mobile View: Map
+    const modalContent = document.querySelector('#geoMapModal .modal-content');
+    if (modalContent && window.innerWidth <= 768) {
+        modalContent.classList.add('view-map');
+    }
 }
 
 async function loadGeoMapData() {
@@ -1316,6 +1351,11 @@ function renderGeoMapSidebar() {
             if (activeItem) activeItem.style.background = 'transparent';
             activeItem = div;
             div.style.background = '#e1f5fe'; // Selected
+
+            // Auto-switch to map on mobile
+            if (window.innerWidth <= 768 && window.geoMapSetMobileView) {
+                window.geoMapSetMobileView('map');
+            }
 
             // Fly to marker
             if (geoMap && commessa.latitudine && commessa.longitudine) {
