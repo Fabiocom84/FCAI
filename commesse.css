@@ -808,133 +808,136 @@
     font-weight: 500;
 }
 
-.phase-pill:hover {
-    border-color: #bdc3c7;
-    background-color: #f4f6f7;
-}
-
 .phase-pill.active {
-    background-color: #3498db;
+    background-color: #2c3e50;
     color: white;
-    border-color: #2980b9;
+    border-color: #2c3e50;
 }
 
-.preview-container {
-    width: 100%;
-    margin-top: 10px;
+.phase-pill:hover:not(.active) {
+    background-color: #f0f0f0;
 }
 
-.remove-img-btn {
-    width: 100%;
-    border: 1px solid #e74c3c;
-    background: #fff;
-    color: #e74c3c;
-    padding: 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.remove-img-btn:hover {
-    background: #e74c3c;
-    color: white;
-}
-
-/* LIGHTBOX STYLES */
-.image-viewer-modal {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    padding-top: 50px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.9);
-    align-items: center;
-    justify-content: center;
-}
-
-.viewer-content {
-    margin: auto;
-    display: block;
-    max-width: 90%;
-    max-height: 90vh;
-    animation: zoom 0.3s;
-    object-fit: contain;
-}
-
-@keyframes zoom {
-    from {
-        transform: scale(0)
-    }
-
-    to {
-        transform: scale(1)
-    }
-}
-
-.close-viewer {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
-    cursor: pointer;
-    z-index: 10001;
-}
-
-.close-viewer:hover,
-.close-viewer:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-@media only screen and (max-width: 700px) {
-    .viewer-content {
-        width: 100%;
-    }
-}
-
-.remove-img-btn:hover {
-    background: #e74c3c;
-    color: white;
-}
-
-/* CUSTOM MODAL STYLES HAVE BEEN MOVED TO STYLE-V2.CSS (as .std-modal) */
-
-/* Progress Bar Labels & Hours Badge */
-.progress-labels {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-    font-size: 0.85em;
-    color: #555;
-    font-weight: 600;
-}
-
-.hours-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.hours-badge {
-    font-weight: 600;
-    color: #2c3e50;
+/* --- 6.1 BADGE STATUS SU CARD --- */
+.status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    background: #eef2f3;
-    padding: 2px 8px;
+    gap: 4px;
+    padding: 4px 8px;
     border-radius: 12px;
-    border: 1px solid #dcdcdc;
-    font-size: 0.9em;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.status-badge.status-new {
+    background-color: #3498db;
+}
+
+.status-badge.status-wip {
+    background-color: #f39c12;
+}
+
+.status-badge.status-done {
+    background-color: #27ae60;
+}
+
+.status-badge.status-cancel {
+    background-color: #c0392b;
+}
+
+.phase-mini-pills {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.phase-mini-pill {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+
+/* --- MOBILE GEOMAP STYLES --- */
+
+/* Nascondi toggles su desktop */
+.mobile-toggles {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* Mostra Toggles */
+    .mobile-toggles {
+        display: flex;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px;
+        border-radius: 20px;
+        margin-left: 10px;
+        margin-right: auto;
+        /* Push close btn to right */
+    }
+
+    .toggle-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+        background: white;
+        color: #2c3e50;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modifica Header per accomodare i controlli */
+    #geoMapModal .modal-header h3 {
+        display: none;
+        /* Nascondi titolo per spazio */
+    }
+
+    #geoMapModal .modal-header {
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    /* Logica Visibilità View */
+    #geoMapModal .modal-body {
+        flex-direction: column;
+    }
+
+    /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
+
+    .view-map .geomap-sidebar {
+        display: none !important;
+    }
+
+    .view-map #geoMapFullContainer {
+        display: block !important;
+        height: 100% !important;
+    }
+
+    .view-list .geomap-sidebar {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        border-right: none !important;
+    }
+
+    .view-list #geoMapFullContainer {
+        display: none !important;
+    }
 }
