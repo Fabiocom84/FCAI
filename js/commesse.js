@@ -1064,7 +1064,7 @@ function setupGeocodingControls() {
             try {
                 const token = localStorage.getItem('access_token');
                 // Fix: apiFetch handles base URL internally. Use relative path.
-                const url = `/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
+                const url = `/api/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
 
                 const response = await apiFetch(url, { method: 'GET' });
                 // apiFetch already handles auth, but we need strictly GET here. 
@@ -1072,8 +1072,24 @@ function setupGeocodingControls() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('latitudine').value = data.lat;
-                    document.getElementById('longitudine').value = data.lon;
+                    const newLatLng = [data.lat, data.lon];
+
+                    // Apri Modale Mappa per Conferma
+                    if (mapModal) mapModal.style.display = 'block';
+                    if (mapOverlay) mapOverlay.style.display = 'block';
+
+                    // Inizializza/Aggiorna Mappa con i nuovi dati
+                    setTimeout(() => {
+                        if (!map) {
+                            initMap();
+                        } else {
+                            map.invalidateSize();
+                        }
+                        // Forza vista e marker sui dati calcolati (senza toccare ancora gli input)
+                        map.setView(newLatLng, 15);
+                        placeMarker(newLatLng);
+                    }, 100);
+
                 } else {
                     showModal({ title: "Non trovato", message: "Impossibile trovare le coordinate per questo luogo." });
                 }
