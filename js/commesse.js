@@ -113,7 +113,13 @@ const App = {
 
                     if (listData && listData.length > 0) {
                         this.state.totalCount = listData.length; // Approssimato
-                        this.renderCards(listData);
+
+                        // [FIX] Apply Client-Side Filtering on Cache
+                        const filteredList = this.state.activeStatus
+                            ? listData.filter(c => c.status_commessa?.nome_status === this.state.activeStatus)
+                            : listData;
+
+                        this.renderCards(filteredList);
                         renderedFromCache = true;
 
                         // Show "Syncing" indicator
@@ -169,7 +175,20 @@ const App = {
                     // UX: Se l'utente sta scrollando potrebbe disturbare.
                     // Ma siamo al load iniziale, quindi ok.
                     this.dom.grid.innerHTML = ''; // Reset UI cache
-                    this.renderCards(data.commesse_data);
+
+                    // [FIX] Apply Client-Side Filtering on Fresh Data
+                    const filteredFresh = this.state.activeStatus
+                        ? data.commesse_data.filter(c => c.status_commessa?.nome_status === this.state.activeStatus)
+                        : data.commesse_data;
+
+                    this.renderCards(filteredFresh);
+
+                    // Check Pagination based on filtered or total?
+                    // Pagination logic usually depends on total fetched, but here we are filtering locally what we got.
+                    // If init-data returns everything, hasMore depends on total vs loaded.
+                    // But init-data usually returns a chunk. 
+                    // Let's assume init-data returns what it returns. 
+                    // If we filtered locally, we might show less than 12, but that's fine for initial view.
 
                     if (data.commesse_data.length < 12) {
                         this.state.hasMore = false;
