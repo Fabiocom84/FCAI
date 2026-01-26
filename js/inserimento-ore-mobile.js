@@ -74,40 +74,37 @@ const MobileHoursApp = {
             this.openDayDetail(dayObj);
 
             // 2. Imposta Dropdown (Robusto)
+            // 2. Imposta Dropdown (Robusto)
             const checkAndSet = setInterval(() => {
                 if (!this.state.choicesInstance) return;
 
-                const choices = this.state.choicesInstance.config.choices;
-                // Wait for choices to load
-                const hasData = choices.some(c => c.value && c.value !== 'placeholder');
+                // FIX: config.choices non si aggiorna dinamicamente in alcune versioni.
+                // Usiamo commesseMap che popoliamo noi esplicitamente in initChoices.
+                const hasMap = this.state.commesseMap && Object.keys(this.state.commesseMap).length > 0;
 
-                if (hasData) {
+                if (hasMap) {
                     try {
-                        // Debug per capire cosa c'è davvero dentro
-                        console.log("🔍 Dropdown Data Sample:", choices.slice(0, 3).map(c => ({ val: c.value, lbl: c.label })));
-
-                        const valNum = parseInt(preCommessaId);
                         const valStr = String(preCommessaId);
 
-                        // Cerca se esiste match per valore stringa o numero
-                        const found = choices.find(c => c.value == valStr || c.value == valNum);
+                        // Debug rapido presenza
+                        if (!this.state._debugLogged) {
+                            console.log(`🔍 Cerco ID ${valStr} in ${Object.keys(this.state.commesseMap).length} commesse.`);
+                            console.log("ESISTE?", this.state.commesseMap[valStr] ? "SÌ: " + this.state.commesseMap[valStr] : "NO ({})");
+                            this.state._debugLogged = true;
+                        }
 
-                        if (found) {
-                            console.log("✅ Commessa trovata in lista:", found.label);
-                            // Usa il valore esatto trovato nell'oggetto (type-safe)
-                            this.state.choicesInstance.setChoiceByValue(found.value);
+                        // Se esiste nella mappa, Choices ce l'ha.
+                        if (this.state.commesseMap[valStr]) {
+                            console.log("✅ Trovata in mappa, imposto valore:", valStr);
+                            this.state.choicesInstance.setChoiceByValue(valStr);
 
                             // Force UI update
-                            this.loadSmartOptions(found.value);
+                            this.loadSmartOptions(valStr);
 
                             const form = document.querySelector('.mobile-insert-form');
                             if (form) form.scrollIntoView({ behavior: 'smooth' });
 
                             clearInterval(checkAndSet);
-                        } else {
-                            // Se non trovato, continua a cercare finché non scade il timeout
-                            // (Potrebbe essere in una pagina successiva o caricamento lento?)
-                            // Ma se l'utente dice che c'è, ci fidiamo che apparirà.
                         }
                     } catch (e) { console.warn("Errore pre-selezione", e); }
                 }
