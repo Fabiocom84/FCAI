@@ -582,7 +582,7 @@ const App = {
                         
                         <!-- QUICK ACTIONS (Visible to All) -->
                         <div class="quick-actions" style="display:flex; gap:10px; margin-bottom:10px;">
-                             <button class="std-btn std-btn--blue" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;">
+                             <button class="std-btn std-btn--blue" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}, '${encodeURIComponent(c.impianto || 'Impianto')}', '${encodeURIComponent(c.clienti?.ragione_sociale || '')}'); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;">
                                 🗺️ Mappa
                              </button>
                              <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
@@ -1419,13 +1419,16 @@ function renderGeoMapSidebar() {
 }
 
 // [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
-// [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
-function openGeoMap(commessaId, lat, lon) {
+function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
     // 1. Check coordinates validity
     if (!lat || !lon || lat === 'null' || lon === 'null') {
         showModal({ title: "Info", message: "Questa commessa non ha coordinate geografiche impostate." });
         return;
     }
+
+    // Decode names (if passed)
+    const impianto = encImpianto ? decodeURIComponent(encImpianto) : 'Impianto';
+    const cliente = encCliente ? decodeURIComponent(encCliente) : '';
 
     // 2. Open Modal
     const btnOpenGeoMap = document.getElementById('btn-open-geomap');
@@ -1450,7 +1453,14 @@ function openGeoMap(commessaId, lat, lon) {
                         zIndexOffset: 1000 // Ensure it's on top
                     }).addTo(geoMap);
 
-                    highlightMarker.bindPopup(`<b>Posizione Commessa</b><br>Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+                    let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
+                    popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${impianto}</b><br>`;
+                    if (cliente) {
+                        popupContent += `<span style="color:#7f8c8d; font-size:0.9em;">${cliente}</span><br>`;
+                    }
+                    popupContent += `</div>`;
+
+                    highlightMarker.bindPopup(popupContent).openPopup();
                 }
             }, 300);
         }
