@@ -145,14 +145,19 @@ const MobileHoursApp = {
             if (!res.ok) throw new Error("Commessa fetch failed");
 
             const c = await res.json();
-            // Costruisci etichetta coerente con get-etichette
-            // Format tipico: CLIENTE | IMPIANTO | CODICE
-            let label = "";
-            if (c.clienti && c.clienti.ragione_sociale) label += c.clienti.ragione_sociale + " | ";
-            label += (c.impianto || "Nuovo Impianto");
-            if (c.codice_commessa) label += " | " + c.codice_commessa;
 
-            console.log("✏️ Authoritative Label:", label);
+            // Costruisci etichetta STRICTLY MATCHING common_api.py logic
+            // logic: " | ".join(filter(None, [clienti.ragione_sociale, impianto, vo, riferimento_tecnico]))
+
+            const clientName = (c.clienti && c.clienti.ragione_sociale) ? c.clienti.ragione_sociale : null;
+            const impianto = c.impianto || null;
+            const vo = c.vo || null;
+            const rifTecnico = c.riferimento_tecnico || null;
+
+            const parts = [clientName, impianto, vo, rifTecnico].filter(p => p && p.trim() !== "");
+            const label = parts.join(" | ");
+
+            console.log("✏️ Authoritative Label (CommonAPI Style):", label);
 
             // Aggiungi o Aggiorna nel Dropdown
             const interval = setInterval(() => {
