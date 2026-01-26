@@ -1339,9 +1339,11 @@ function renderGeoMapMarkers(list) {
         }
     });
 
-    if (list.length > 0) {
+    if (list.length > 0 && !window.skipNextGeoFit) {
         geoMap.fitBounds(bounds, { padding: [50, 50] });
     }
+    // Reset flag immediately after check so next manual open works
+    window.skipNextGeoFit = false;
 }
 
 function renderGeoMapSidebar() {
@@ -1427,7 +1429,10 @@ function openGeoMap(commessaId, lat, lon) {
 
     // 2. Open Modal
     const btnOpenGeoMap = document.getElementById('btn-open-geomap');
-    if (btnOpenGeoMap) btnOpenGeoMap.click();
+    if (btnOpenGeoMap) {
+        window.skipNextGeoFit = true; // [FIX] Prevent fitBounds from resetting view
+        btnOpenGeoMap.click();
+    }
 
     // 3. Wait for Map Init and Transition
     setTimeout(() => {
