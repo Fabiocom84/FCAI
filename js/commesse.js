@@ -585,7 +585,7 @@ const App = {
                              <button class="std-btn std-btn--blue" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;">
                                 🗺️ Mappa
                              </button>
-                             <a href="inserimento_ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
+                             <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
                                 ⏱️ Ore
                              </a>
                         </div>
