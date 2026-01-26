@@ -579,6 +579,17 @@ const App = {
                     </div>
 
                     <div class="card-footer-actions">
+                        
+                        <!-- QUICK ACTIONS (Visible to All) -->
+                        <div class="quick-actions" style="display:flex; gap:10px; margin-bottom:10px;">
+                             <button class="std-btn std-btn--blue" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;">
+                                🗺️ Mappa
+                             </button>
+                             <a href="inserimento_ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
+                                ⏱️ Ore
+                             </a>
+                        </div>
+
                         ${IsAdmin ? `
                         <a href="${linkReg}" class="btn-registrazioni">
                             <img src="img/table.png" style="width:16px; opacity:0.8;">
@@ -1404,3 +1415,36 @@ function renderGeoMapSidebar() {
         listContainer.appendChild(createItem(c));
     });
 }
+
+// [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
+function openGeoMap(commessaId) {
+    const btnOpenGeoMap = document.getElementById('btn-open-geomap');
+    if (btnOpenGeoMap) btnOpenGeoMap.click();
+
+    // After opening, find and focus the specific commessa
+    setTimeout(() => {
+        if (!allGeoCommesse || allGeoCommesse.length === 0) return;
+
+        const commessa = allGeoCommesse.find(c => c.id_commessa == commessaId);
+
+        if (commessa && commessa.latitudine && commessa.longitudine) {
+            if (geoMap) {
+                geoMap.flyTo([commessa.latitudine, commessa.longitudine], 16, { duration: 1.5 });
+
+                // Try to find marker to open popup
+                geoMarkersLayer.eachLayer(layer => {
+                    const latlng = layer.getLatLng();
+                    if (Math.abs(latlng.lat - commessa.latitudine) < 0.0001 &&
+                        Math.abs(latlng.lng - commessa.longitudine) < 0.0001) {
+                        layer.openPopup();
+                    }
+                });
+            }
+        } else {
+            showModal({ title: "Info", message: "Questa commessa non ha coordinate geografiche impostate." });
+        }
+    }, 500); // Wait for map init
+}
+
+// Expose to App scope if needed, or window
+window.openGeoMap = openGeoMap;
