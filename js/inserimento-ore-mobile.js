@@ -56,30 +56,42 @@ const MobileHoursApp = {
 
         // [NEW] Pre-selezione Commessa da URL
         const preCommessaId = urlParams.get('commessaId');
-        if (preCommessaId && this.state.choicesInstance) {
-            // Dobbiamo aspettare che choices sia popolato?
-            // scelte caricate async in initChoices -> API.
-            // Impostiamo un observer o un timeout?
-            // Meglio: initChoices lancia fetch.
-            // Possiamo provare a settare il valore dopo un po', o intercettare il caricamento.
-            // Soluzione semplice: controlliamo periodicamente
-            const checkAndSet = setInterval(() => {
-                const choices = this.state.choicesInstance.config.choices;
-                if (choices && choices.length > 0) {
-                    try {
-                        this.state.choicesInstance.setChoiceByValue(preCommessaId);
-                        // Apri anche il modale dettaglio giorno se serve? No, l'utente vuole inserire.
-                        // Magari scrollare al form?
-                        document.querySelector('.mobile-insert-form').scrollIntoView({ behavior: 'smooth' });
-                        // Load options
-                        this.loadSmartOptions(preCommessaId);
-                    } catch (e) { console.warn("Errore pre-selezione", e); }
-                    clearInterval(checkAndSet);
-                }
-            }, 500);
+        if (preCommessaId) {
+            // 1. Apri automaticamente il modale per OGGI
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
 
-            // Timeout di sicurezza
-            setTimeout(() => clearInterval(checkAndSet), 5000);
+            // Format es: "Lunedì 26 Gennaio" - Costruiamo oggetto day dummy
+            const dayObj = {
+                full_date: todayStr,
+                weekday: today.toLocaleDateString('it-IT', { weekday: 'long' }),
+                day_num: today.getDate(),
+                month_str: today.toLocaleDateString('it-IT', { month: 'short' }).toUpperCase(),
+                status: 'open' // status dummy
+            };
+
+            // Call openDayDetail immediately (it sets displays flex)
+            this.openDayDetail(dayObj);
+
+            // 2. Imposta Dropdown
+            if (this.state.choicesInstance) {
+                const checkAndSet = setInterval(() => {
+                    const choices = this.state.choicesInstance.config.choices;
+                    if (choices && choices.length > 0) {
+                        try {
+                            this.state.choicesInstance.setChoiceByValue(preCommessaId);
+                            // Scroll to form logic
+                            const form = document.querySelector('.mobile-insert-form');
+                            if (form) form.scrollIntoView({ behavior: 'smooth' });
+
+                            // Load options
+                            this.loadSmartOptions(preCommessaId);
+                        } catch (e) { console.warn("Errore pre-selezione", e); }
+                        clearInterval(checkAndSet);
+                    }
+                }, 500);
+                setTimeout(() => clearInterval(checkAndSet), 5000);
+            }
         }
 
         if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {

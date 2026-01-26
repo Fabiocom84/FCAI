@@ -1417,33 +1417,39 @@ function renderGeoMapSidebar() {
 }
 
 // [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
-function openGeoMap(commessaId) {
+// [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
+function openGeoMap(commessaId, lat, lon) {
+    // 1. Check coordinates validity
+    if (!lat || !lon || lat === 'null' || lon === 'null') {
+        showModal({ title: "Info", message: "Questa commessa non ha coordinate geografiche impostate." });
+        return;
+    }
+
+    // 2. Open Modal
     const btnOpenGeoMap = document.getElementById('btn-open-geomap');
     if (btnOpenGeoMap) btnOpenGeoMap.click();
 
-    // After opening, find and focus the specific commessa
+    // 3. Wait for Map Init and Transition
     setTimeout(() => {
-        if (!allGeoCommesse || allGeoCommesse.length === 0) return;
+        if (geoMap) {
+            // CRITICAL: Fix Leaflet render issues when showing hidden map
+            geoMap.invalidateSize();
 
-        const commessa = allGeoCommesse.find(c => c.id_commessa == commessaId);
+            // 4. Fly to coords
+            geoMap.flyTo([lat, lon], 16, { duration: 1.0 });
 
-        if (commessa && commessa.latitudine && commessa.longitudine) {
-            if (geoMap) {
-                geoMap.flyTo([commessa.latitudine, commessa.longitudine], 16, { duration: 1.5 });
+            // 5. Add Explicit Marker (Red/Highlighted)
+            setTimeout(() => {
+                if (geoMarkersLayer) {
+                    const highlightMarker = L.marker([lat, lon], {
+                        zIndexOffset: 1000 // Ensure it's on top
+                    }).addTo(geoMap);
 
-                // Try to find marker to open popup
-                geoMarkersLayer.eachLayer(layer => {
-                    const latlng = layer.getLatLng();
-                    if (Math.abs(latlng.lat - commessa.latitudine) < 0.0001 &&
-                        Math.abs(latlng.lng - commessa.longitudine) < 0.0001) {
-                        layer.openPopup();
-                    }
-                });
-            }
-        } else {
-            showModal({ title: "Info", message: "Questa commessa non ha coordinate geografiche impostate." });
+                    highlightMarker.bindPopup(`<b>Posizione Commessa</b><br>Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+                }
+            }, 300);
         }
-    }, 500); // Wait for map init
+    }, 600);
 }
 
 // Expose to App scope if needed, or window
