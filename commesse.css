@@ -3,7 +3,8 @@
 /* --- 0. LAYOUT GENERALE --- */
 .commesse-view-wrapper {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    /* Fix: Allow growth */
     display: flex;
     flex-direction: column;
     background-color: #f4f7f9;
@@ -149,10 +150,19 @@
     .commesse-view-wrapper {
         background-color: #dfe6ed;
         /* Darker background for contrast */
-        min-height: 100%;
-        /* Ensure background covers full scrollable area */
+        min-height: 100vh;
+        /* Force full viewport height at minimum */
         height: auto;
         /* Allow growth */
+    }
+
+    .controls-container {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        /* Ensure it stays on top of everything */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        /* Enhanced shadow for separation */
     }
 
     .commesse-grid {
@@ -165,9 +175,11 @@
     }
 
     .commesse-card {
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-        /* Even Stronger shadow */
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        /* Even Stronger shadow for pop */
         border: 1px solid #cfd8dc;
+        margin-bottom: 5px;
+        /* Extra visual separation */
     }
 }
 
