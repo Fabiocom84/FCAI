@@ -146,12 +146,21 @@
 }
 
 @media (max-width: 480px) {
+    .commesse-view-wrapper {
+        background-color: #dfe6ed; /* Darker background for contrast */
+    }
+
     .commesse-grid {
         grid-template-columns: 1fr;
         /* Una colonna piena su mobile */
-        padding: 15px;
+        padding: 20px;
         /* Meno padding laterale */
-        gap: 15px;
+        gap: 25px; /* Increased gap */
+    }
+
+    .commesse-card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+        border: 1px solid #cfd8dc;
     }
 }
 
