@@ -147,13 +147,17 @@
 }
 
 @media (max-width: 480px) {
+
+    /* FIX: Apply background to the scrolling container, not the wrapper */
+    .std-app-content {
+        background-color: #dfe6ed !important;
+    }
+
     .commesse-view-wrapper {
-        background-color: #dfe6ed;
-        /* Darker background for contrast */
-        min-height: 100vh;
-        /* Force full viewport height at minimum */
+        background-color: transparent;
+        /* Let parent background show through */
+        min-height: 100%;
         height: auto;
-        /* Allow growth */
     }
 
     .controls-container {
