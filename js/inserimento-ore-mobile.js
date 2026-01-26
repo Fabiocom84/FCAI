@@ -73,25 +73,60 @@ const MobileHoursApp = {
             // Call openDayDetail immediately (it sets displays flex)
             this.openDayDetail(dayObj);
 
-            // 2. Imposta Dropdown
-            if (this.state.choicesInstance) {
-                const checkAndSet = setInterval(() => {
-                    const choices = this.state.choicesInstance.config.choices;
-                    if (choices && choices.length > 0) {
-                        try {
-                            this.state.choicesInstance.setChoiceByValue(preCommessaId);
-                            // Scroll to form logic
+            // 2. Imposta Dropdown (Robusto)
+            const checkAndSet = setInterval(() => {
+                if (!this.state.choicesInstance) return;
+
+                const choices = this.state.choicesInstance.config.choices;
+                // Wait for choices to load
+                const hasData = choices.some(c => c.value && c.value !== 'placeholder');
+
+                if (hasData) {
+                    try {
+                        const valNum = parseInt(preCommessaId);
+                        const valStr = String(preCommessaId);
+
+                        // Cerca se esiste match per valore stringa o numero
+                        const found = choices.find(c => c.value == valStr || c.value == valNum);
+
+                        if (found) {
+                            console.log("✅ Commessa trovata in lista:", found.label);
+                            // Usa il valore esatto trovato nell'oggetto (type-safe)
+                            this.state.choicesInstance.setChoiceByValue(found.value);
+
+                            // Force UI update
+                            this.loadSmartOptions(found.value);
+
                             const form = document.querySelector('.mobile-insert-form');
                             if (form) form.scrollIntoView({ behavior: 'smooth' });
 
-                            // Load options
-                            this.loadSmartOptions(preCommessaId);
-                        } catch (e) { console.warn("Errore pre-selezione", e); }
-                        clearInterval(checkAndSet);
-                    }
-                }, 500);
-                setTimeout(() => clearInterval(checkAndSet), 5000);
-            }
+                            clearInterval(checkAndSet);
+                        } else {
+                            // Se non trovato, continua a cercare finché non scade il timeout
+                            // (Potrebbe essere in una pagina successiva o caricamento lento?)
+                            // Ma se l'utente dice che c'è, ci fidiamo che apparirà.
+                        }
+                    } catch (e) { console.warn("Errore pre-selezione", e); }
+                }
+            }, 500);
+
+            // Timeout increased to 10s
+            // Se scade e non l'abbiamo trovato, proviamo un tentativo "blind" disperato con la stringa
+            setTimeout(() => {
+                if (checkAndSet) {
+                    clearInterval(checkAndSet);
+                    // Tentativo finale blind se non ancora selezionato
+                    // (Utile se la logica 'find' sopra ha fallito per qualche motivo strano)
+                    try {
+                        const current = this.state.choicesInstance.getValue(true);
+                        if (!current) {
+                            console.warn("⚠️ Timeout selezione: tentativo blind finale.");
+                            this.state.choicesInstance.setChoiceByValue(String(preCommessaId));
+                            this.loadSmartOptions(String(preCommessaId));
+                        }
+                    } catch (e) { }
+                }
+            }, 10000);
         }
 
         if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
