@@ -83,6 +83,9 @@ const MobileHoursApp = {
 
                 if (hasData) {
                     try {
+                        // Debug per capire cosa c'è davvero dentro
+                        console.log("🔍 Dropdown Data Sample:", choices.slice(0, 3).map(c => ({ val: c.value, lbl: c.label })));
+
                         const valNum = parseInt(preCommessaId);
                         const valStr = String(preCommessaId);
 
