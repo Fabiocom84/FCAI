@@ -895,9 +895,9 @@ const Dashboard = {
             </td>
             <td style="font-weight:bold; text-align:right;">${r.ore}</td>
             <td><small>${r.note || ''}</small></td>
-            <td><button class="btn-icon">✏️</button></td>
+            <td><button class="btn-icon" title="Ripristina in 'Da Validare'">✏️</button></td>
         `;
-        tr.querySelector('.btn-icon').onclick = () => alert("Modifica non implementata in questa vista.");
+        tr.querySelector('.btn-icon').onclick = () => this.restoreRow(r.id_registrazione);
 
         // Row check listener
         tr.querySelector('.row-checkbox').addEventListener('change', (e) => {
@@ -958,7 +958,27 @@ const Dashboard = {
     closeConfirmModal: function () {
         this.dom.confirmModal.style.display = 'none';
         this.state.pendingIds = [];
+    },
+
+    // --- AZIONI SULLE RIGHE ---
+
+    restoreRow: async function (id) {
+        if (!confirm("Vuoi ripristinare questa registrazione in 'Da Validare'?\nPotrai modificarla dalla pagina Inserimento Ore.")) return;
+
+        try {
+            await apiFetch('/api/dashboard/restore', {
+                method: 'POST',
+                body: JSON.stringify({ id: id })
+            });
+            // showModal({ title: "Successo", message: "Registrazione ripristinata." });
+            // Refresh to remove from current view (if Archive) or update status
+            this.fetchData({ resetPage: true });
+        } catch (e) {
+            alert("Errore durante il ripristino: " + e.message);
+        }
     }
+
+    // --- FINE AZIONI SULLE RIGHE ---
 };
 
 // Global for inline onclick
