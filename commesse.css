@@ -148,7 +148,8 @@
 
 @media (max-width: 480px) {
 
-    /* FIX: Apply background to the scrolling container, not the wrapper */
+    /* FIX: Apply background to the ENTIRE app shell to avoid white gaps */
+    .std-app-shell,
     .std-app-content {
         background-color: #dfe6ed !important;
     }
