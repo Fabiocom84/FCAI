@@ -75,7 +75,8 @@ const MobileHoursApp = {
 
             // 2. Imposta Dropdown (Robusto)
             // 2. Imposta Dropdown (Robusto)
-            const checkAndSet = setInterval(() => {
+            // 2. Imposta Dropdown (Robusto)
+            let checkAndSet = setInterval(() => {
                 if (!this.state.choicesInstance) return;
 
                 // FIX: config.choices non si aggiorna dinamicamente in alcune versioni.
@@ -89,13 +90,13 @@ const MobileHoursApp = {
                         // Debug rapido presenza
                         if (!this.state._debugLogged) {
                             console.log(`🔍 Cerco ID ${valStr} in ${Object.keys(this.state.commesseMap).length} commesse.`);
-                            console.log("ESISTE?", this.state.commesseMap[valStr] ? "SÌ: " + this.state.commesseMap[valStr] : "NO ({})");
+                            // console.log("ESISTE?", this.state.commesseMap[valStr] ? "SÌ" : "NO"); 
                             this.state._debugLogged = true;
                         }
 
                         // Se esiste nella mappa, Choices ce l'ha.
                         if (this.state.commesseMap[valStr]) {
-                            console.log("✅ Trovata in mappa, imposto valore:", valStr);
+                            // console.log("✅ Trovata in mappa, imposto valore:", valStr);
                             this.state.choicesInstance.setChoiceByValue(valStr);
 
                             // Force UI update
@@ -105,16 +106,28 @@ const MobileHoursApp = {
                             if (form) form.scrollIntoView({ behavior: 'smooth' });
 
                             clearInterval(checkAndSet);
+                            checkAndSet = null; // STOP TIMEOUT
                         }
                     } catch (e) { console.warn("Errore pre-selezione", e); }
                 }
             }, 500);
 
             // Timeout increased to 10s
-            // Se scade e non l'abbiamo trovato, proviamo un tentativo "blind" disperato con la stringa
             setTimeout(() => {
+                // Se il timer è ancora attivo...
                 if (checkAndSet) {
                     clearInterval(checkAndSet);
+
+                    // CHECK FINALE: È stato selezionato nel frattempo (es. da ensureCommessaLoaded)?
+                    try {
+                        const current = this.state.choicesInstance.getValue(true);
+                        // Se è selezionato e corrisponde all'incirca (string match), TUTTO OK.
+                        if (current && String(current.value) == String(preCommessaId)) {
+                            // Successo silenzioso (gestito da ensureCommessaLoaded)
+                            return;
+                        }
+                    } catch (e) { }
+
                     console.warn("⚠️ Timeout selezione: Commessa non trovata nel menu dopo 10 secondi.");
                 }
             }, 10000);
