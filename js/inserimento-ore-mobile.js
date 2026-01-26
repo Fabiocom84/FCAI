@@ -1037,7 +1037,7 @@ const MobileHoursApp = {
             const data = await res.json();
 
             // DEBUG DATA STRUCTURE
-            if (data.length > 0) console.log("🔍 API Etichette Sample:", data[0]);
+
 
             this.state.commesseMap = {};
             const choicesData = data.map(c => {
