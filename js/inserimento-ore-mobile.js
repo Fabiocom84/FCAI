@@ -118,8 +118,8 @@ const MobileHoursApp = {
                     console.warn("⚠️ Timeout selezione: Commessa non trovata nel menu dopo 10 secondi.");
                 }
             }, 10000);
+            this.ensureCommessaLoaded(preCommessaId);
         }
-
 
         if (urlParams.get('adminMode') === 'true' && urlParams.get('targetUserId')) {
             this.state.adminMode = true;
@@ -135,6 +135,47 @@ const MobileHoursApp = {
         // 3. Avvia caricamento dati
         console.log("⏳ Avvio loadTimelineBatch...");
         this.loadTimelineBatch();
+    },
+
+    // [NEW] Recupera dati precisi della commessa se richiesto (Bypassa inconsistenze get-etichette)
+    ensureCommessaLoaded: async function (id) {
+        try {
+            console.log("📡 Fetching details for commessa:", id);
+            const res = await apiFetch(`/api/commesse/${id}`);
+            if (!res.ok) throw new Error("Commessa fetch failed");
+
+            const c = await res.json();
+            // Costruisci etichetta coerente con get-etichette
+            // Format tipico: CLIENTE | IMPIANTO | CODICE
+            let label = "";
+            if (c.clienti && c.clienti.ragione_sociale) label += c.clienti.ragione_sociale + " | ";
+            label += (c.impianto || "Nuovo Impianto");
+            if (c.codice_commessa) label += " | " + c.codice_commessa;
+
+            console.log("✏️ Authoritative Label:", label);
+
+            // Aggiungi o Aggiorna nel Dropdown
+            const interval = setInterval(() => {
+                if (this.state.choicesInstance) {
+                    clearInterval(interval);
+
+                    // Sovrascrive o aggiunge l'opzione corretta
+                    this.state.choicesInstance.setChoices(
+                        [{ value: String(c.id_commessa), label: label, selected: true }],
+                        'value',
+                        'label',
+                        false
+                    );
+
+                    this.state.choicesInstance.setChoiceByValue(String(c.id_commessa));
+                    this.loadSmartOptions(String(c.id_commessa));
+
+                    const form = document.querySelector('.mobile-insert-form');
+                    if (form) form.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 200);
+
+        } catch (e) { console.error("❌ ensureCommessaLoaded error:", e); }
     },
 
     // ... (initDOM e attachListeners invariati) ...
