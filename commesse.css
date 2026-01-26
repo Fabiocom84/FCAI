@@ -7,7 +7,14 @@
     /* Fix: Allow growth */
     display: flex;
     flex-direction: column;
-    background-color: #f4f7f9;
+    background-color: transparent;
+    /* Reset to transparent for global application */
+}
+
+/* FIX GLOBAL BACKGROUND */
+.std-app-shell,
+.std-app-content {
+    background-color: #dfe6ed !important;
 }
 
 /* --- 1. BARRA FILTRI (Sticky) --- */
@@ -142,21 +149,15 @@
     display: grid;
     /* Adatta a schermi più piccoli, ma mantieni leggibilità */
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
+    gap: 30px;
+    /* Global Gap Increase */
     padding: 25px;
 }
 
 @media (max-width: 480px) {
-
-    /* FIX: Apply background to the ENTIRE app shell to avoid white gaps */
-    .std-app-shell,
-    .std-app-content {
-        background-color: #dfe6ed !important;
-    }
+    /* Background styles handled globally now */
 
     .commesse-view-wrapper {
-        background-color: transparent;
-        /* Let parent background show through */
         min-height: 100%;
         height: auto;
     }
@@ -165,26 +166,18 @@
         position: sticky;
         top: 0;
         z-index: 1000;
-        /* Ensure it stays on top of everything */
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        /* Enhanced shadow for separation */
     }
 
     .commesse-grid {
         grid-template-columns: 1fr;
-        /* Una colonna piena su mobile */
         padding: 20px;
-        /* Meno padding laterale */
-        gap: 30px;
-        /* Increased gap further */
+        /* Gap already 30px globally */
     }
 
     .commesse-card {
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-        /* Even Stronger shadow for pop */
-        border: 1px solid #cfd8dc;
+        /* Base styles are global now, just adding mobile margin if desired */
         margin-bottom: 5px;
-        /* Extra visual separation */
     }
 }
 
@@ -240,9 +233,9 @@
 .commesse-card {
     background-color: #fff;
     border-radius: 12px;
-    /* Ombra più morbida */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid #edf2f7;
+    /* Ombra più morbida GLOBALE */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #cfd8dc;
     display: flex;
     flex-direction: column;
     overflow: hidden;
