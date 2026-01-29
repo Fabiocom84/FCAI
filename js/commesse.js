@@ -522,6 +522,27 @@ const App = {
             const regCount = c.registrazioni ? c.registrazioni.length : 0;
             const linkReg = `gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${c.id_commessa}`;
 
+            // [NEW] Badge OP Aperti/Chiusi
+            let opBadge = '';
+            if (c.stats_op) {
+                const open = c.stats_op.open;
+                const closed = c.stats_op.closed;
+                const total = open + closed;
+
+                if (open > 0) {
+                    // C'è roba aperta -> Arancione/Rosso
+                    // Stile inline per rapidità, poi spostare in CSS
+                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
+                        ⚙️ <b>${open}</b> / ${total} OP
+                    </a>`;
+                } else if (closed > 0) {
+                    // Solo roba chiusa -> Verde (ma discreto)
+                    opBadge = `<span style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; cursor:default;">
+                        ✅ ${closed} OP
+                    </span>`;
+                }
+            }
+
             // Azioni Admin
             let adminActions = '';
             if (IsAdmin) {
@@ -615,13 +636,20 @@ const App = {
                                 ⏱️ Ore
                              </a>
                         </div>
+                        
+                        <!-- NEW OP BADGE & OTHER ACTIONS -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:5px;">
+                            ${opBadge}
+                            
+                            ${IsAdmin ? `
+                            <a href="${linkReg}" class="btn-registrazioni" style="flex:1; text-align:center;">
+                                <img src="img/table.png" style="width:16px; opacity:0.8;">
+                                Reg.
+                            </a>` : ''}
+                            
+                            ${adminActions}
+                        </div>
 
-                        ${IsAdmin ? `
-                        <a href="${linkReg}" class="btn-registrazioni">
-                            <img src="img/table.png" style="width:16px; opacity:0.8;">
-                            Vedi Registrazioni
-                        </a>` : ''}
-                        ${adminActions}
                     </div>
                 </div>
             `;
