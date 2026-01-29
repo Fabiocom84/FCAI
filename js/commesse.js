@@ -24,7 +24,8 @@ const App = {
             cliente: null,
             modello: null,
             macro: null
-        }
+        },
+        clientsLoaded: false // Flag per lazy loading
     },
 
     dom: {},
@@ -274,6 +275,31 @@ const App = {
                 macros.map(m => ({ value: m.id_macro_categoria, label: m.nome || m.nome_macro })),
                 'value', 'label', true
             );
+        }
+    },
+
+    loadClientsOptions: async function () {
+        if (this.state.clientsLoaded) return;
+
+        try {
+            // Show loading in dropdown if exists (optional UX)
+            // if (this.state.choicesInstances.cliente) ...
+
+            const res = await apiFetch('/api/commesse/clienti-options');
+            if (res.ok) {
+                const clients = await res.json();
+
+                if (this.state.choicesInstances.cliente) {
+                    this.state.choicesInstances.cliente.setChoices(
+                        clients.map(c => ({ value: c.id_cliente, label: c.ragione_sociale })),
+                        'value', 'label', true
+                    );
+                }
+                this.state.clientsLoaded = true;
+            }
+        } catch (e) {
+            console.error("Errore lazy load clienti", e);
+            showModal({ title: "Errore", message: "Impossibile caricare la lista clienti." });
         }
     },
 
@@ -800,8 +826,21 @@ const App = {
 
     // --- MODALE CREAZIONE / MODIFICA ---
 
-    openModal: function (isEdit, id = null) {
+    // --- MODALE CREAZIONE / MODIFICA ---
+
+    openModal: async function (isEdit, id = null) {
         if (!IsAdmin) return;
+
+        // LAZY LOAD: Carica clienti se non ancora fatto
+        if (!this.state.clientsLoaded) {
+            // Possiamo mostrare un micro-loader o cambiare il cursore
+            const btn = this.dom.addBtn;
+            if (btn) { btn.disabled = true; btn.innerHTML = "⏳..." }
+
+            await this.loadClientsOptions();
+
+            if (btn) { btn.disabled = false; btn.innerHTML = "+ AGGIUNGI" }
+        }
 
         // Reset Form
         this.dom.modalForm.reset();
