@@ -32,7 +32,8 @@ const MobileHoursApp = {
         targetUserName: null,
 
         // Sequential Request Control
-        currentRequestController: null
+        currentRequestController: null,
+        suppressChangeEvent: false // Flag per evitare race conditions su eventi Choice.js
     },
 
     dom: {}, // Popolato in initDOM()
@@ -97,7 +98,12 @@ const MobileHoursApp = {
                         // Se esiste nella mappa, Choices ce l'ha.
                         if (this.state.commesseMap[valStr]) {
                             // console.log("✅ Trovata in mappa, imposto valore:", valStr);
-                            this.state.choicesInstance.setChoiceByValue(valStr);
+                            this.state.suppressChangeEvent = true;
+                            try {
+                                this.state.choicesInstance.setChoiceByValue(valStr);
+                            } finally {
+                                this.state.suppressChangeEvent = false;
+                            }
 
                             // Force UI update
                             this.loadSmartOptions(valStr);
@@ -177,15 +183,21 @@ const MobileHoursApp = {
                 if (this.state.choicesInstance) {
                     clearInterval(interval);
 
-                    // Sovrascrive o aggiunge l'opzione corretta
-                    this.state.choicesInstance.setChoices(
-                        [{ value: String(c.id_commessa), label: label, selected: true }],
-                        'value',
-                        'label',
-                        false
-                    );
+                    this.state.suppressChangeEvent = true; // SILENZIA
+                    try {
+                        // Sovrascrive o aggiunge l'opzione corretta
+                        this.state.choicesInstance.setChoices(
+                            [{ value: String(c.id_commessa), label: label, selected: true }],
+                            'value',
+                            'label',
+                            false
+                        );
 
-                    this.state.choicesInstance.setChoiceByValue(String(c.id_commessa));
+                        this.state.choicesInstance.setChoiceByValue(String(c.id_commessa));
+                    } finally {
+                        this.state.suppressChangeEvent = false;
+                    }
+
                     this.loadSmartOptions(String(c.id_commessa));
 
                     const form = document.querySelector('.mobile-insert-form');
@@ -990,25 +1002,30 @@ const MobileHoursApp = {
             const cId = work.id_commessa_fk;
             const cVal = String(cId);
 
-            // 1. Tenta di impostare il valore
-            this.state.choicesInstance.setChoiceByValue(cVal);
+            // 1. Tenta di impostare il valore (SILENZIA EVENTI)
+            this.state.suppressChangeEvent = true;
+            try {
+                this.state.choicesInstance.setChoiceByValue(cVal);
 
-            // 2. Controlla se è stato impostato davvero
-            const selected = this.state.choicesInstance.getValue(true);
+                // 2. Controlla se è stato impostato davvero
+                const selected = this.state.choicesInstance.getValue(true);
 
-            // 3. Se non è stato trovato (es. commessa chiusa non in lista), aggiungilo manualmente
-            if (!selected || String(selected) !== cVal) {
-                if (work.commesse) {
-                    let label = work.commesse.impianto || 'Commessa ???';
-                    if (work.commesse.codice_commessa) label += ` (${work.commesse.codice_commessa})`;
-                    // Aggiungiamo l'opzione "fantasma"
-                    this.state.choicesInstance.setChoices(
-                        [{ value: cVal, label: label, selected: true }],
-                        'value',
-                        'label',
-                        false
-                    );
+                // 3. Se non è stato trovato (es. commessa chiusa non in lista), aggiungilo manualmente
+                if (!selected || String(selected) !== cVal) {
+                    if (work.commesse) {
+                        let label = work.commesse.impianto || 'Commessa ???';
+                        if (work.commesse.codice_commessa) label += ` (${work.commesse.codice_commessa})`;
+                        // Aggiungiamo l'opzione "fantasma"
+                        this.state.choicesInstance.setChoices(
+                            [{ value: cVal, label: label, selected: true }],
+                            'value',
+                            'label',
+                            false
+                        );
+                    }
                 }
+            } finally {
+                this.state.suppressChangeEvent = false;
             }
 
             // 4. Carica Macro e Componenti
@@ -1026,9 +1043,14 @@ const MobileHoursApp = {
             }
 
             if (foundMacroId) {
-                // Imposta Macro
-                if (this.state.choicesMacro) this.state.choicesMacro.setChoiceByValue(String(foundMacroId));
-                else this.dom.macroSelect.value = foundMacroId;
+                // Imposta Macro (SILENZIA EVENTI)
+                this.state.suppressChangeEvent = true;
+                try {
+                    if (this.state.choicesMacro) this.state.choicesMacro.setChoiceByValue(String(foundMacroId));
+                    else this.dom.macroSelect.value = foundMacroId;
+                } finally {
+                    this.state.suppressChangeEvent = false;
+                }
 
                 // Renderizza Componenti per quella Macro
                 this.renderComponentOptions(foundMacroId);
@@ -1110,6 +1132,10 @@ const MobileHoursApp = {
 
         // Listener Commessa -> Carica Macro
         const handleCommessaChange = (e) => {
+            if (this.state.suppressChangeEvent) {
+                console.log("🤫 HandleCommessaChange soppresso per evitare race condition.");
+                return;
+            }
             // Usa getValue(true) per ottenere il value grezzo (ID) ed evitare problemi con event target
             const val = this.state.choicesInstance.getValue(true);
             console.log("🔄 Commessa Changed (Listener):", val);
@@ -1122,6 +1148,7 @@ const MobileHoursApp = {
 
         // Listener Macro -> Filtra Componenti
         this.dom.macroSelect.addEventListener('change', (e) => {
+            if (this.state.suppressChangeEvent) return;
             const val = this.state.choicesMacro.getValue(true);
             if (val) this.renderComponentOptions(val);
         });
