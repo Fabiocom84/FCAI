@@ -88,7 +88,7 @@ const App = {
     loadUnifiedData: async function () {
         // --- SWR PATTERN (Stale-While-Revalidate) ---
         // 1. Check & Render Cached Data (Instant)
-        const cachedInit = localStorage.getItem('commesse_init_v1');
+        const cachedInit = localStorage.getItem('commesse_init_v2'); // FORCE REFRESH: v2
         const cachedList = localStorage.getItem('commesse_list_cache');
         const cacheTimestamp = localStorage.getItem('commesse_cache_ts');
         const now = Date.now();
@@ -143,7 +143,7 @@ const App = {
             const data = await res.json();
 
             // Aggiorna Storage
-            localStorage.setItem('commesse_init_v1', JSON.stringify({
+            localStorage.setItem('commesse_init_v2', JSON.stringify({
                 status: data.status,
                 macros: data.macros,
                 fasi: data.fasi,
