@@ -436,9 +436,6 @@ const App = {
         const fragment = document.createDocumentFragment();
 
         commesse.forEach(c => {
-            // DEBUG: Chiedi all'utente di aprire F12 se non vede i dati
-            // console.log("Commessa Debug:", c.id_commessa, c.stats_op);
-
             const card = document.createElement('div');
             card.className = 'commesse-card';
 
@@ -458,6 +455,37 @@ const App = {
             const statusOptions = statuses.map(s =>
                 `<option value="${s.id_status}" ${c.id_status_fk == s.id_status ? 'selected' : ''}>${s.nome_status}</option>`
             ).join('');
+
+            // ... (Fasi Logic Omitted for brevity, kept structure implicitly correct by context matching if needed, but here we just focus on the start of loop) ...
+
+            // NOTE: The user instruction was just to update logic. I will target the specific block for Badge OP.
+
+            // [NEW] Badge OP Aperti/Chiusi
+            let opBadge = '';
+            // Mostra sempre se Admin, oppure se ci sono ordini per gli altri (se mai servisse, ma qui limitiamo logica visuale)
+            if (IsAdmin || (c.stats_op && (c.stats_op.open > 0 || c.stats_op.closed > 0))) {
+                const stats = c.stats_op || { open: 0, closed: 0 };
+                const open = stats.open;
+                const closed = stats.closed;
+                const total = open + closed;
+
+                if (open > 0) {
+                    // C'è roba aperta -> Arancione/Rosso
+                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
+                        ⚙️ <b>${open}</b> / ${total} OP
+                    </a>`;
+                } else if (closed > 0) {
+                    // Solo roba chiusa -> Verde
+                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ✅ ${closed} OP
+                    </a>`;
+                } else {
+                    // 0 Ordini (Solo Admin vede questo ramo grazie all'if esterno)
+                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ⚙️ 0 OP
+                    </a>`;
+                }
+            }
 
             // --- 2. FASI AVANZAMENTO ---
             const targetPhases = ['Ufficio', 'Carpenteria', 'Assemblaggio', 'Preparazione'];
@@ -525,26 +553,7 @@ const App = {
             const regCount = c.registrazioni ? c.registrazioni.length : 0;
             const linkReg = `gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${c.id_commessa}`;
 
-            // [NEW] Badge OP Aperti/Chiusi
-            let opBadge = '';
-            if (c.stats_op) {
-                const open = c.stats_op.open;
-                const closed = c.stats_op.closed;
-                const total = open + closed;
-
-                if (open > 0) {
-                    // C'è roba aperta -> Arancione/Rosso
-                    // Stile inline per rapidità, poi spostare in CSS
-                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
-                        ⚙️ <b>${open}</b> / ${total} OP
-                    </a>`;
-                } else if (closed > 0) {
-                    // Solo roba chiusa -> Verde (ma discreto)
-                    opBadge = `<span style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; cursor:default;">
-                        ✅ ${closed} OP
-                    </span>`;
-                }
-            }
+            // NOTE: opBadge logic moved to top of loop. Removed duplicate block here.
 
             // Azioni Admin
             let adminActions = '';
