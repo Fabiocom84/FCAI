@@ -436,6 +436,9 @@ const App = {
         const fragment = document.createDocumentFragment();
 
         commesse.forEach(c => {
+            // DEBUG: Chiedi all'utente di aprire F12 se non vede i dati
+            // console.log("Commessa Debug:", c.id_commessa, c.stats_op);
+
             const card = document.createElement('div');
             card.className = 'commesse-card';
 
