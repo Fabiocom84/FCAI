@@ -279,7 +279,7 @@
     border-right: 0;
     z-index: 11;
     /* Sopra anche alla barra se serve */
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 

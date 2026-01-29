@@ -500,6 +500,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCellContent(td, record) {
+        // Mostra la nota come tooltip dell'intera cella
+        td.title = record.note || '';
+
         if (record.colore && record.colore !== 'none') td.classList.add(`cell-color-${record.colore}`);
         const wrapper = document.createElement('div');
         wrapper.className = 'cell-content-wrapper';
@@ -521,6 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateCellVisuals(td, record) {
         td.innerHTML = '';
         td.className = '';
+        td.title = ''; // Reset title
         if (td.dataset.isWeekend === "true") td.classList.add('weekend-column');
         if (record) renderCellContent(td, record);
         const statusClass = calculateStatusClass(record, td.dataset.isWeekend === "true");
