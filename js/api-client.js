@@ -6,9 +6,14 @@ export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('session_token');
 
     const headers = {
-        'Content-Type': 'application/json',
         ...options.headers
     };
+
+    // Auto-detect JSON content type requirement
+    // Se il body non è FormData e non è stato specificato altro Content-Type, assumiamo JSON
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
@@ -74,9 +79,12 @@ export async function apiFetch(endpoint, options = {}) {
 
 export async function publicApiFetch(endpoint, options = {}) {
     const headers = {
-        'Content-Type': 'application/json',
         ...options.headers
     };
+    // Auto-detect JSON content type requirement
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
     const config = { ...options, headers };
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
