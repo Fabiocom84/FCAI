@@ -2,7 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
-import { IsAdmin } from './core-init.js';
+import { IsAdmin, CurrentUser } from './core-init.js';
 import { supabase } from './supabase-client.js';
 
 const App = {
@@ -460,10 +460,25 @@ const App = {
 
             // NOTE: The user instruction was just to update logic. I will target the specific block for Badge OP.
 
+            // ... (rest of imports not needed to repeat here, just Context)
+
+            // ... (rest of imports not needed to repeat here, just Context)
+
             // [NEW] Badge OP Aperti/Chiusi
             let opBadge = '';
-            // Mostra sempre se Admin, oppure se ci sono ordini per gli altri (se mai servisse, ma qui limitiamo logica visuale)
-            if (IsAdmin || (c.stats_op && (c.stats_op.open > 0 || c.stats_op.closed > 0))) {
+
+            // CONDIZIONE VISIBILITÀ:
+            // 1. Admin
+            // 2. Ruolo Impiegato (id_ruolo_fk === 1)
+            const canViewBadge = IsAdmin || (CurrentUser && CurrentUser.id_ruolo_fk === 1);
+
+            // Se l'utente può vedere il badge, procediamo con la logica dei dati
+            if (canViewBadge) {
+                // Se Admin o Impiegato, mostriamo sempre qualcosa se specificato, 
+                // oppure solo se ci sono dati. 
+                // La logica precedente mostrava badge grigio se 0 OP per admin. Manteniamo questa logica.
+
+                // Nota: c.stats_op viene iniettato dal backend (sia /view che /init-data ora)
                 const stats = c.stats_op || { open: 0, closed: 0 };
                 const open = stats.open;
                 const closed = stats.closed;
@@ -480,7 +495,7 @@ const App = {
                         ✅ ${closed} OP
                     </a>`;
                 } else {
-                    // 0 Ordini (Solo Admin vede questo ramo grazie all'if esterno)
+                    // 0 Ordini (Visibile sempre a chi ha i permessi di vedere il badge, per indicare "Nessun ordine")
                     opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
                         ⚙️ 0 OP
                     </a>`;
