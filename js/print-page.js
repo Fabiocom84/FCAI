@@ -608,21 +608,25 @@ const PrintPage = {
             // ---------------------------------------------------------
             let nextVersion = 1;
             try {
-                // Chiamata rapida per vedere l'ultima versione (best effort)
-                // Usiamo la stessa logica di `checkExistingReport` ma sincrona/rapida qui o assumiamo base
-                // Per semplicità, se siamo in questa fase, potremmo non sapere la versione "reale" finale finché non salviamo,
-                // ma per il footer "stampato" dobbiamo stimarla o usare un ID univoco indipendente.
-                // Strategia: Usiamo il timestamp come ID univoco o generiamo un UUID breve.
-                // Per la versione "vX", se esiste già v1, ipotizziamo v2.
+                // [FIX] Recuperiamo la versione reale dal server per evitare disallineamenti
+                let vUrl = `/api/report/latest?mese=${month}&anno=${year}`;
+                if (this.state.adminMode) {
+                    vUrl += `&userId=${this.state.targetUserId}`;
+                }
+                const vRes = await apiFetch(vUrl);
+                const vData = await vRes.json();
 
-                // Opzionale: rifacciamo una check veloce (o ci fidiamo di quello che abbiamo caricato in init)
-                // Se `checkExistingReport` ha trovato qualcosa, `foundVersion` nell'Alert ha il numero.
-                const alertVisible = this.dom.existingReportAlert.style.display !== 'none';
-                if (alertVisible) {
-                    const txt = this.dom.foundVersion.textContent; // es "1"
+                if (vData.exists && vData.version) {
+                    nextVersion = vData.version + 1;
+                }
+            } catch (e) {
+                console.warn("Impossibile recuperare versione remota, uso fallback stima", e);
+                // Fallback UI
+                if (this.dom.existingReportAlert.style.display !== 'none') {
+                    const txt = this.dom.foundVersion.textContent;
                     nextVersion = parseInt(txt) + 1;
                 }
-            } catch (e) { console.warn("Versione stima errata", e); }
+            }
 
             // Generatore ID Univoco (Alfanumerico breve)
             const uniqueID = Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
