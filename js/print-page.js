@@ -617,7 +617,7 @@ const PrintPage = {
                 const vData = await vRes.json();
 
                 if (vData.exists && vData.version) {
-                    nextVersion = vData.version + 1;
+                    nextVersion = parseInt(vData.version) + 1;
                 }
             } catch (e) {
                 console.warn("Impossibile recuperare versione remota, uso fallback stima", e);
@@ -637,7 +637,6 @@ const PrintPage = {
             const targetId = this.state.adminMode ? this.state.targetUserId : this.state.currentUser.id_personale;
 
             // Costruzione URL Previsto (Hardcoded base URL per coerenza con backend)
-            // NOTA: Sostituire con il propeio URL progetto Supabase se diverso o dinamicizzare
             const SUPABASE_PROJECT_URL = "https://mqfhsiezsorpdnskcsgw.supabase.co";
             const fileNameStub = `${targetId}_${year}_${month}_v${nextVersion}.pdf`;
             const publicUrl = `${SUPABASE_PROJECT_URL}/storage/v1/object/public/archivio-presenze/${year}/${month}/${fileNameStub}`;
@@ -650,8 +649,9 @@ const PrintPage = {
             const footerText = `Generato da: ${creatorName} il ${creationDate} | Rev: v${nextVersion} | ID: ${uniqueID}`;
             const footerY = 20; // Margine basso
 
+            // [FIX] Spostato a sinistra (da 40 a 25) per allineare con il testo superiore
             page.drawText(footerText, {
-                x: 40,
+                x: 25,
                 y: footerY,
                 size: 9,
                 font: font,
@@ -685,8 +685,11 @@ const PrintPage = {
 
                 if (qrDataUrl) {
                     const qrImage = await pdfDoc.embedPng(qrDataUrl);
+                    // [FIX] Spostato a sinistra per allineare col margine destro tabella
+                    // Tabella finisce circa a 550-570. QR da 50px.
+                    // Prima era 520 (destra 570). Proviamo 500 (destra 550) o 495.
                     page.drawImage(qrImage, {
-                        x: 520, // Angolo destro basso
+                        x: 495,
                         y: 15,
                         width: 50,
                         height: 50,
