@@ -648,6 +648,12 @@ const PrintPage = {
             // ---------------------------------------
 
             const uploadRes = await apiFetch('/api/report/archive', { method: 'POST', body: formData });
+
+            if (!uploadRes.ok) {
+                const errJson = await uploadRes.json();
+                throw new Error(errJson.error || "Errore sconosciuto dal server");
+            }
+
             const result = await uploadRes.json();
 
             this.dom.stepPreview.style.display = 'none';
