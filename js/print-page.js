@@ -469,7 +469,7 @@ const PrintPage = {
         };
 
         const waMsg = `Report ${this.state.currentUser.nome_cognome} - ${month}/${year}: ${url}`;
-        btnWa.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+        btnWa.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
     },
 
     // =========================================================
@@ -687,7 +687,7 @@ const PrintPage = {
             // Configura WhatsApp
             if (result.url) {
                 const waMsg = `Report ${this.state.currentUser.nome_cognome}: ${result.url}`;
-                this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+                this.dom.btnWhatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
                 this.dom.btnWhatsapp.style.pointerEvents = 'auto';
                 this.dom.btnWhatsapp.style.opacity = '1';
             } else {
