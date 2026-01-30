@@ -649,9 +649,9 @@ const PrintPage = {
             const footerText = `Generato da: ${creatorName} il ${creationDate} | Rev: v${nextVersion} | ID: ${uniqueID}`;
             const footerY = 20; // Margine basso
 
-            // [FIX] Spostato a sinistra (da 40 a 25) per allineare con il testo superiore
+            // [FIX] Spostato ancor più a sinistra (da 25 a 15)
             page.drawText(footerText, {
-                x: 25,
+                x: 15,
                 y: footerY,
                 size: 9,
                 font: font,
@@ -685,11 +685,9 @@ const PrintPage = {
 
                 if (qrDataUrl) {
                     const qrImage = await pdfDoc.embedPng(qrDataUrl);
-                    // [FIX] Spostato a sinistra per allineare col margine destro tabella
-                    // Tabella finisce circa a 550-570. QR da 50px.
-                    // Prima era 520 (destra 570). Proviamo 500 (destra 550) o 495.
+                    // [FIX] Spostato più a destra (da 495 a 525)
                     page.drawImage(qrImage, {
-                        x: 495,
+                        x: 525,
                         y: 15,
                         width: 50,
                         height: 50,
