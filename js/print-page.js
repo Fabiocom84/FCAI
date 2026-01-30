@@ -649,9 +649,9 @@ const PrintPage = {
             const footerText = `Generato da: ${creatorName} il ${creationDate} | Rev: v${nextVersion} | ID: ${uniqueID}`;
             const footerY = 20; // Margine basso
 
-            // [FIX] Spostato ancor più a sinistra (da 25 a 15)
+            // [FIX] Spostato ancor più a sinistra (da 15 a 10)
             page.drawText(footerText, {
-                x: 15,
+                x: 10,
                 y: footerY,
                 size: 9,
                 font: font,
@@ -685,9 +685,9 @@ const PrintPage = {
 
                 if (qrDataUrl) {
                     const qrImage = await pdfDoc.embedPng(qrDataUrl);
-                    // [FIX] Spostato più a destra (da 495 a 525)
+                    // [FIX] Spostato più a destra (da 525 a 530)
                     page.drawImage(qrImage, {
-                        x: 525,
+                        x: 530,
                         y: 15,
                         width: 50,
                         height: 50,
