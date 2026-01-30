@@ -390,16 +390,23 @@ const PrintPage = {
 
 
     convertPdfToImgBlob: async function (pdfUrl) {
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdf = await loadingTask.promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-        return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        if (!pdfUrl) throw new Error("URL PDF mancante per la conversione.");
+
+        try {
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        } catch (e) {
+            console.error("PDF Convert Error:", e);
+            throw new Error("Impossibile convertire il PDF in immagine. " + e.message);
+        }
     },
 
     checkExistingReport: async function () {
@@ -446,16 +453,18 @@ const PrintPage = {
             const oldText = btnDown.textContent;
             btnDown.textContent = "Scarico...";
             try {
-                // Scarichiamo come blob per forzare il nome file
-                const resp = await fetch(url);
-                const blob = await resp.blob();
+                // [FIX] Usiamo convertPdfToImgBlob per ottenere un vero JPG, non un rename
+                const blob = await this.convertPdfToImgBlob(url);
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = fileName; // <--- NOME SIGNIFICATIVO QUI
+                link.download = fileName; // <--- Ora è un vero JPG
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            } catch (e) { alert("Errore download"); }
+            } catch (e) {
+                console.error(e);
+                alert("Errore durante il download dell'immagine: " + e.message);
+            }
             finally { btnDown.textContent = oldText; }
         };
 
@@ -669,8 +678,17 @@ const PrintPage = {
             };
 
             // Configura WhatsApp
-            const waMsg = `Report ${this.state.currentUser.nome_cognome}: ${result.url}`;
-            this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+            // Configura WhatsApp
+            if (result.url) {
+                const waMsg = `Report ${this.state.currentUser.nome_cognome}: ${result.url}`;
+                this.dom.btnWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+                this.dom.btnWhatsapp.style.pointerEvents = 'auto';
+                this.dom.btnWhatsapp.style.opacity = '1';
+            } else {
+                this.dom.btnWhatsapp.removeAttribute('href');
+                this.dom.btnWhatsapp.style.pointerEvents = 'none';
+                this.dom.btnWhatsapp.style.opacity = '0.5';
+            }
 
             showSuccessFeedbackModal("Salvato", "Il PDF è stato archiviato.");
 
