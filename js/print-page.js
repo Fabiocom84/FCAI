@@ -604,6 +604,96 @@ const PrintPage = {
                 }
             }
 
+            // C. Calcolo Versione e ID Univoco
+            // ---------------------------------------------------------
+            let nextVersion = 1;
+            try {
+                // Chiamata rapida per vedere l'ultima versione (best effort)
+                // Usiamo la stessa logica di `checkExistingReport` ma sincrona/rapida qui o assumiamo base
+                // Per semplicità, se siamo in questa fase, potremmo non sapere la versione "reale" finale finché non salviamo,
+                // ma per il footer "stampato" dobbiamo stimarla o usare un ID univoco indipendente.
+                // Strategia: Usiamo il timestamp come ID univoco o generiamo un UUID breve.
+                // Per la versione "vX", se esiste già v1, ipotizziamo v2.
+
+                // Opzionale: rifacciamo una check veloce (o ci fidiamo di quello che abbiamo caricato in init)
+                // Se `checkExistingReport` ha trovato qualcosa, `foundVersion` nell'Alert ha il numero.
+                const alertVisible = this.dom.existingReportAlert.style.display !== 'none';
+                if (alertVisible) {
+                    const txt = this.dom.foundVersion.textContent; // es "1"
+                    nextVersion = parseInt(txt) + 1;
+                }
+            } catch (e) { console.warn("Versione stima errata", e); }
+
+            // Generatore ID Univoco (Alfanumerico breve)
+            const uniqueID = Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+            // Dati Utente & Data Creazione
+            const creatorName = this.state.currentUser.nome_cognome;
+            const creationDate = new Date().toLocaleString('it-IT');
+            const targetId = this.state.adminMode ? this.state.targetUserId : this.state.currentUser.id_personale;
+
+            // Costruzione URL Previsto (Hardcoded base URL per coerenza con backend)
+            // NOTA: Sostituire con il propeio URL progetto Supabase se diverso o dinamicizzare
+            const SUPABASE_PROJECT_URL = "https://mqfhsiezsorpdnskcsgw.supabase.co";
+            const fileNameStub = `${targetId}_${year}_${month}_v${nextVersion}.pdf`;
+            const publicUrl = `${SUPABASE_PROJECT_URL}/storage/v1/object/public/archivio-presenze/${year}/${month}/${fileNameStub}`;
+
+            // ---------------------------------------------------------
+            // D. Disegno Footer & QR
+            // ---------------------------------------------------------
+
+            // 1. Footer Testo
+            const footerText = `Generato da: ${creatorName} il ${creationDate} | Rev: v${nextVersion} | ID: ${uniqueID}`;
+            const footerY = 20; // Margine basso
+
+            page.drawText(footerText, {
+                x: 40,
+                y: footerY,
+                size: 9,
+                font: font,
+                color: PDFLib.rgb(0.4, 0.4, 0.4), // Grigio scuro
+            });
+
+            // 2. QR Code
+            try {
+                // Genera QR come DataURL
+                const qrDataUrl = await new Promise((resolve) => {
+                    // QRCode di qrcodejs
+                    // Creiamo un elemento temporaneo per generare il QR (la lib richiede un container)
+                    const tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: publicUrl,
+                        width: 100,
+                        height: 100,
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+                    // Estraiamo l'immagine base64 (img tag creato dalla lib)
+                    setTimeout(() => {
+                        const img = tempDiv.querySelector('img');
+                        if (img && img.src) resolve(img.src);
+                        else {
+                            // Fallback: canvas
+                            const cvs = tempDiv.querySelector('canvas');
+                            resolve(cvs ? cvs.toDataURL() : null);
+                        }
+                    }, 50); // Piccolo delay per rendering
+                });
+
+                if (qrDataUrl) {
+                    const qrImage = await pdfDoc.embedPng(qrDataUrl);
+                    page.drawImage(qrImage, {
+                        x: 520, // Angolo destro basso
+                        y: 15,
+                        width: 50,
+                        height: 50,
+                    });
+
+                    // Link cliccabile sopra il QR (opzionale, pdf-lib lo supporta con link annotation ma per ora basta l'immagine)
+                }
+            } catch (e_qr) {
+                console.warn("QR Code non generato:", e_qr);
+            }
+
             const pdfBytes = await pdfDoc.save();
             this.state.currentPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
