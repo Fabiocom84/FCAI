@@ -186,23 +186,18 @@ body {
 }
 
 .input-flat:focus {
-    position: absolute;
-    /* Si sgancia dalla griglia */
-    z-index: 10;
-    /* Va in primo piano */
-    width: 400px !important;
-    /* Diventa larga */
-    background-color: #fff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    /* Ombra per stacco */
+    /* position: absolute; REMOVED: prevents layout jumping */
+    /* z-index: 10; REMOVED */
+    /* width: 400px !important; REMOVED */
+    /* background-color: #fff; */
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    /* Standard accessible focus ring */
     border-color: #3498db;
-    white-space: normal;
-    /* Permetti a capo se serve */
-    overflow: visible;
-    /* Mostra tutto */
-    height: auto;
-    /* Altezza automatica */
-    min-height: 40px;
+    /* white-space: normal; REMOVED */
+    /* overflow: visible; REMOVED */
+    /* height: auto; REMOVED */
+    /* min-height: 40px; REMOVED */
+    outline: none;
 }
 
 .input-select {
