@@ -15,14 +15,23 @@
 /* Adattamenti specifici per il contenuto mobile */
 /* Adattamenti specifici per il contenuto mobile */
 .mobile-content-wrapper {
-    height: 100%;
+    /* height: 100%; REMOVED: Cause of scroll issues in some contexts */
+    flex: 1; /* Allow it to fill the flex container (std-app-content) */
+    min-height: 0; /* Crucial for flex nested scrolling */
+    width: 100%;
     overflow-y: auto;
     padding: 5px;
-    scrollbar-width: none;
+    scrollbar-width: thin; /* Changed from none to thin for better UX */
 }
 
 .mobile-content-wrapper::-webkit-scrollbar {
-    display: none;
+    /* display: none; REMOVED: Better to have a visible scrollbar if needed */
+    width: 6px;
+}
+
+.mobile-content-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
 }
 
 .timeline-row {
