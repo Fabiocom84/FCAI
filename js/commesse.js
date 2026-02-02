@@ -440,9 +440,15 @@ const App = {
             card.className = 'commesse-card';
 
             // Header Image
-            const imgStyle = c.immagine ? `background-image: url('${c.immagine}'); cursor: pointer;` : '';
-            const imgContent = !c.immagine ? '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>' :
-                `<div style="width:100%;height:100%;" data-full-img="${c.immagine}"></div>`;
+            // [OPTIMIZATION] Usa <img> tag per lazy loading + Supabase resize
+            let imgContent = '';
+            if (!c.immagine) {
+                imgContent = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>';
+            } else {
+                // Richiedi thumbnail piccola (400px width)
+                const optimizedUrl = this.getOptimizedImageUrl(c.immagine, 400);
+                imgContent = `<img src="${optimizedUrl}" loading="lazy" alt="${c.impianto || 'Commessa'}" data-full-img="${c.immagine}">`;
+            }
 
             // --- 1. TOGGLE STATO RAPIDO ---
             const statuses = this.state.allStatuses.length > 0 ? this.state.allStatuses : [
@@ -583,7 +589,7 @@ const App = {
 
             // HTML Card
             card.innerHTML = `
-                <div class="card-image" style="${imgStyle}">
+                <div class="card-image" style="cursor: pointer;">
                     ${imgContent}
                 </div>
                 <div class="card-details">
@@ -1115,6 +1121,20 @@ const App = {
         this.dom.imageInput.value = '';
         this.dom.uploadText.textContent = 'Trascina file o Clicca';
         this.dom.previewContainer.style.display = 'none';
+    },
+
+    // --- UTILITIES ---
+    getOptimizedImageUrl: function (url, width = 500) {
+        if (!url) return '';
+        // Controlla se è un URL Supabase Storage
+        if (url.includes('supabase.co') && url.includes('/storage/v1/object/')) {
+            // Append transformation params
+            // Supabase Storage Transformation: ?width=X&resize=cover&quality=Y
+            // Nota: se l'URL ha già query params, usa &, altrimenti ?
+            const separator = url.includes('?') ? '&' : '?';
+            return `${url}${separator}width=${width}&resize=cover&quality=80`;
+        }
+        return url; // Fallback URL originale
     }
 };
 
