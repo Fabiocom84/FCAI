@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,14 +8,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
-    
+    <link rel="stylesheet" href="css/libs/choices.min.css" />
+    <script src="js/libs/choices.min.js"></script>
+
     <!-- Ordine Importante: Prima il globale, poi lo specifico -->
     <link rel="stylesheet" href="style-v2.css">
     <link rel="stylesheet" href="inserisci-dati.css">
 </head>
 
 <!-- 1. CLASSE SPECIALE PER RESETTARE IL BODY -->
+
 <body class="internal-page">
 
     <!-- 2. IL GUSCIO (Shell) CHE CREA IL BORDO E L'EFFETTO FLOTTANTE -->
@@ -24,26 +27,27 @@
         <div class="std-app-header">
             <a href="index.html" class="header-button">
                 <!-- Mantengo la tua icona attuale -->
-                <img src="img/log-out.png" alt="Home" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1);">
                 <span>Home</span>
             </a>
-            
+
             <h1>INSERIMENTO DATI</h1>
-            
+
             <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
         </div>
 
         <!-- 4. AREA CONTENUTO (Qui avviene lo scroll) -->
         <div class="std-app-content">
-            
+
             <div class="insert-container">
                 <form id="insertDataForm">
-                    
+
                     <div class="columns-wrapper">
-                        
+
                         <!-- COLONNA SINISTRA -->
                         <div class="left-panel">
-                            
+
                             <!-- Box 1: Vocale -->
                             <div class="card-section recording-section">
                                 <div class="section-header">
@@ -51,11 +55,14 @@
                                 </div>
                                 <div class="recording-ui">
                                     <div id="visualizer" class="audio-visualizer">
-                                        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                                        <div class="bar"></div><div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
                                     </div>
                                     <p id="recordingStatus" class="status-text">Pronto per registrare</p>
-                                    
+
                                     <div class="voice-controls-stacked">
                                         <button type="button" id="startButton" class="record-btn">
                                             Avvia Registrazione
@@ -87,7 +94,7 @@
                         <!-- COLONNA DESTRA -->
                         <div class="right-panel">
                             <div class="card-section editor-card">
-                                
+
                                 <!-- Scelta Commessa -->
                                 <div class="form-group styled-choices-container commessa-select-group">
                                     <label for="riferimentoDropdown">Riferimento Commessa</label>
@@ -99,7 +106,8 @@
                                 <!-- Area di Testo -->
                                 <div class="form-group editor-group">
                                     <label for="voiceTranscription">Contenuto / Trascrizione</label>
-                                    <textarea id="voiceTranscription" name="transcription" placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
+                                    <textarea id="voiceTranscription" name="transcription"
+                                        placeholder="Il testo trascritto o le tue note appariranno qui..."></textarea>
                                 </div>
 
                                 <!-- Pulsante Salva -->
@@ -127,7 +135,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="feedback-modal-title"></h2>
-                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button></div>
+                <div class="modal-header-buttons"><button class="close-button" data-close-feedback>&times;</button>
+                </div>
             </div>
             <div class="modal-body feedback-body">
                 <h3 id="feedback-modal-message"></h3>
@@ -157,4 +166,5 @@
     <script type="module" src="js/inserisci-dati.js"></script>
 
 </body>
+
 </html>
