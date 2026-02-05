@@ -187,11 +187,45 @@ const TaskApp = {
         }
 
         // 4. Preparazione Contenuti (Tags, Nomi, Date)
-        let headerText = task.categoria?.nome_categoria || 'Generale';
+        // 4. Preparazione Contenuti (Tags, Nomi, Date)
+        // [MODIFIED] Gestione Colori Categorie
+        const catName = task.categoria?.nome_categoria || 'Altro';
+
+        // Mappa Colori (Basata su DB + Richieste)
+        const catColors = {
+            'Milano': '#607D8B',       // Blue Grey
+            'Qualità': '#9C27B0',      // Purple
+            'Sicurezza': '#FF9800',    // Orange
+            'Produzione': '#2196F3',   // Blue
+            'OP': '#009688',           // Teal
+            'Trevignano': '#795548',   // Brown
+            'Acquisti': '#4CAF50',     // Green
+            'Altro': '#9E9E9E',        // Grey
+            'Commessa': '#3F51B5',     // Indigo
+            'Montaggi': '#FF5722',     // Deep Orange
+            'Rozzano': '#673AB7',      // Deep Purple
+            'Fontanafredda': '#00BCD4',// Cyan
+            'Generale': '#607D8B',     // Blue Grey
+            'Amministrazione': '#E91E63', // Pink
+            'Tecnico': '#3F51B5',      // Indigo
+            'Commerciale': '#8BC34A'   // Light Green
+        };
+        // Normalizza nome per case-insensitive match se necessario (qui chiavi esatte)
+        const badgeColor = catColors[catName] || catColors[catName.trim()] || '#9E9E9E';
+
+        let headerText = catName;
         let headerClass = 'cat-tag';
+        let headerStyle = `background-color: ${badgeColor}; color: white;`;
+
         if (task.commessa) {
             headerText = task.commessa.codice_commessa;
             headerClass = 'commessa-tag';
+            // Se è OP/Commessa, usiamo il colore OP o manteniamo lo stile Commessa?
+            // L'utente vuole distinguere le categorie. 
+            // Se è OP, ha senso usare il colore OP (Teal) per il tag, anche se mostra il codice commessa.
+            if (catName.toUpperCase() === 'OP') {
+                headerStyle = `background-color: ${catColors['OP']}; color: white;`;
+            }
         }
 
         // Recupero nomi per visualizzazione
@@ -220,7 +254,7 @@ const TaskApp = {
         el.innerHTML = `
             ${incomingAlert}
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span class="${headerClass}">${headerText}</span>
+                <span class="${headerClass}" style="${headerStyle}">${headerText}</span>
                 ${lockIcon}
             </div>
             
@@ -755,11 +789,13 @@ const TaskApp = {
     toggleSubField: function () {
         const val = document.getElementById('inpCat').value;
         const cat = this.state.initData.categorie.find(c => c.id_categoria == val);
-        const type = cat ? cat.nome_categoria.toLowerCase() : '';
+        const name = cat ? cat.nome_categoria.toUpperCase() : '';
 
-        const isComm = (type === 'commessa');
-        document.getElementById('wrapSub').style.display = isComm ? 'none' : 'block';
-        document.getElementById('wrapComm').style.display = isComm ? 'block' : 'none';
+        // [MODIFIED] Solo la categoria "OP" richiede la commessa
+        const isOP = (name === 'OP');
+
+        document.getElementById('wrapSub').style.display = isOP ? 'none' : 'block';
+        document.getElementById('wrapComm').style.display = isOP ? 'block' : 'none';
     },
 
     saveTask: async function () {
@@ -774,6 +810,8 @@ const TaskApp = {
             descrizione: document.getElementById('inpDesc').value,
             priorita: document.getElementById('inpPrio').value,
             id_categoria_fk: document.getElementById('inpCat').value,
+            id_assegnatario_fk: document.getElementById('inpAss').value,
+            data_obiettivo: document.getElementById('inpDate').value || null,
             id_assegnatario_fk: document.getElementById('inpAss').value,
             data_obiettivo: document.getElementById('inpDate').value || null,
             id_commessa_fk: isComm ? commVal : null,
