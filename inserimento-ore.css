@@ -24,7 +24,10 @@
     overflow-y: auto;
     overflow-x: auto;
     /* [FIX] Enable horizontal scroll if content > viewport */
-    padding: 5px;
+    padding: 15px;
+    /* Increased from 5px to give breathing room */
+    box-sizing: border-box;
+    /* Ensure padding doesn't widen the container */
     scrollbar-width: thin;
 }
 
@@ -294,6 +297,10 @@
     padding: 4px;
     margin-bottom: 2px !important;
     /* ULTRA COMPATTO */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    /* Ensure rounded corners clip content */
 }
 
 .entry-type-selector input {
