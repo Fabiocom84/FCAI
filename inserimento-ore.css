@@ -35,22 +35,33 @@
 }
 
 /* [FIX] Header row class replacing inline styles */
+/* [FIX] Header row class replacing inline styles */
 .section-header-row {
     display: flex;
     justify-content: space-between;
+    /* Revert to Right Alignment */
     align-items: center;
     margin-bottom: 2px;
     flex-wrap: wrap;
-    /* Allow wrapping on extremely small screens */
     gap: 10px;
+    padding-right: 15px;
+    /* SAFE AREA from Right Edge */
 }
 
 .day-total-badge {
     /* ... existing styles ... */
     white-space: nowrap;
     /* Prevent internal breaking */
-    margin-right: 5px;
-    /* Safety margin */
+    margin-right: 0;
+    /* Handled by container padding */
+}
+
+/* Ensure Palette is Symmetric */
+.entry-type-selector {
+    /* ... existing styles ... */
+    width: 100%;
+    box-sizing: border-box;
+    /* Ensure padding doesn't overflow width */
 }
 
 .mobile-content-wrapper::-webkit-scrollbar {
@@ -556,8 +567,7 @@ input:focus {
     white-space: nowrap;
     flex-shrink: 0;
     /* Prevent shrinking */
-    margin-left: auto;
-    /* Push to right if wrapping */
+    /* margin-left: auto; REMOVED to keep it near title */
 }
 
 .day-total-badge.warning {
