@@ -475,8 +475,21 @@ const App = {
 
             // CONDIZIONE VISIBILITÀ:
             // 1. Admin
-            // 2. Ruolo Impiegato (id_ruolo_fk === 1)
-            const canViewBadge = IsAdmin || (CurrentUser && CurrentUser.id_ruolo_fk === 1);
+            // 2. Ruolo Impiegato (Check nome ruolo robusto)
+            let isImpiegatoRole = false;
+            if (CurrentUser && !IsAdmin) {
+                let rIdx = "Nessuno";
+                // Estrae nome ruolo come in main.js
+                if (CurrentUser.ruoli) {
+                    if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) rIdx = CurrentUser.ruoli[0].nome_ruolo;
+                    else if (typeof CurrentUser.ruoli === 'object') rIdx = CurrentUser.ruoli.nome_ruolo;
+                }
+                if ((!rIdx || rIdx === "Nessuno") && CurrentUser.ruolo) rIdx = CurrentUser.ruolo;
+
+                if (rIdx && rIdx.trim().toLowerCase() === 'impiegato') isImpiegatoRole = true;
+            }
+
+            const canViewBadge = IsAdmin || isImpiegatoRole;
 
             // Se l'utente può vedere il badge, procediamo con la logica dei dati
             if (canViewBadge) {
