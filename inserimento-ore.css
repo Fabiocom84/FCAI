@@ -30,8 +30,8 @@
 
 /* [FIX] Container for content to ensure min-width */
 .mobile-content-wrapper>* {
-    min-width: 350px;
-    /* Minimum supported width before scrolling kicks in */
+    min-width: 320px;
+    /* Reduced to standard mobile width */
 }
 
 /* [FIX] Header row class replacing inline styles */
@@ -40,6 +40,17 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2px;
+    flex-wrap: wrap;
+    /* Allow wrapping on extremely small screens */
+    gap: 10px;
+}
+
+.day-total-badge {
+    /* ... existing styles ... */
+    white-space: nowrap;
+    /* Prevent internal breaking */
+    margin-right: 5px;
+    /* Safety margin */
 }
 
 .mobile-content-wrapper::-webkit-scrollbar {
@@ -542,6 +553,11 @@ input:focus {
     font-size: 0.9rem;
     font-weight: bold;
     border: 1px solid #4a5568;
+    white-space: nowrap;
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    margin-left: auto;
+    /* Push to right if wrapping */
 }
 
 .day-total-badge.warning {
