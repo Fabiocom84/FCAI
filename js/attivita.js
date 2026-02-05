@@ -791,11 +791,31 @@ const TaskApp = {
         const cat = this.state.initData.categorie.find(c => c.id_categoria == val);
         const name = cat ? cat.nome_categoria.toUpperCase() : '';
 
-        // [MODIFIED] Solo la categoria "OP" richiede la commessa
-        const isOP = (name === 'OP');
+        // [MODIFIED] Commessa o OP abilitano il tag commessa
+        const isTarget = (name === 'OP' || name === 'COMMESSA');
 
-        document.getElementById('wrapSub').style.display = isOP ? 'none' : 'block';
-        document.getElementById('wrapComm').style.display = isOP ? 'block' : 'none';
+        // wrapComm = Commessa Dropdown ("Tag" commessa)
+        // wrapSub = Dettaglio Dropdown ("Tag" generico)
+
+        // Logica richiesta:
+        // "Se op o commessa -> abilita selezione tag (commessa), altrimenti azzerare su null e disabilitare"
+
+        const wrapComm = document.getElementById('wrapComm');
+        const wrapSub = document.getElementById('wrapSub');
+
+        if (isTarget) {
+            wrapComm.style.display = 'block';
+            wrapSub.style.display = 'none';
+        } else {
+            wrapComm.style.display = 'none';
+            wrapSub.style.display = 'block';
+
+            // Azzerare selezione commessa
+            if (this.state.choicesInstances[0]) {
+                this.state.choicesInstances[0].removeActiveItems();
+                this.state.choicesInstances[0].setChoiceByValue('');
+            }
+        }
     },
 
     saveTask: async function () {
