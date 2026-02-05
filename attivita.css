@@ -407,7 +407,7 @@ body {
     /* Generic border first */
     border: 1px solid #e0e0e0;
     /* Specific left border override */
-    border-left: 20px solid transparent;
+    border-left: 5px solid transparent;
     transition: transform 0.1s;
     user-select: none;
 }

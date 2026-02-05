@@ -102,6 +102,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Archivio Task Completati</h2>
+
+                <!-- SEARCH BAR -->
+                <div class="archive-search-box" style="display:flex; gap:5px; margin-left: auto; margin-right: 15px;">
+                    <input type="text" id="inpArchiveSearch" placeholder="Cerca..."
+                        style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    <button id="btnArchiveSearch" class="std-btn std-btn--primary" style="padding: 5px 10px;"><i
+                            class="fas fa-search"></i></button>
+                </div>
+
                 <button class="close-button" data-close-archive>&times;</button>
             </div>
             <div class="modal-body" id="archiveTasksContainer">

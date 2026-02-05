@@ -970,33 +970,65 @@ const TaskApp = {
         }).join('');
     },
 
-    openArchive: async function () {
+    openArchive: async function (query = '') {
         const container = document.getElementById('archiveTasksContainer');
-        document.getElementById('archiveModal').style.display = 'flex';
+        const modal = document.getElementById('archiveModal');
+        modal.style.display = 'flex';
         document.getElementById('modalOverlay').style.display = 'block';
+
         container.innerHTML = 'Caricamento...';
+
+        // Setup Event Listeners Search (solo la prima volta o sempre? Meglio proteggere da duplicati)
+        const btnSearch = document.getElementById('btnArchiveSearch');
+        const inpSearch = document.getElementById('inpArchiveSearch');
+
+        // Rimuoviamo vecchi listener clonando o usando proprietà one-shot? 
+        // Usiamo un flag o riassegnazione diretta onclick per semplicità nel contesto
+        btnSearch.onclick = () => this.openArchive(inpSearch.value);
+        inpSearch.onkeydown = (e) => { if (e.key === 'Enter') this.openArchive(inpSearch.value); };
+
         try {
-            const res = await apiFetch(`/api/tasks/completed?page=1`);
+            // Se c'è una query, la passiamo
+            const qs = query ? `&q=${encodeURIComponent(query)}` : '';
+            const res = await apiFetch(`/api/tasks/completed?page=1${qs}`);
             const tasks = await res.json();
+
+            // Render HTML
             container.innerHTML = tasks.length
                 ? tasks.map(t => `
-                    <div class="archive-task-item">
-                        <div class="archive-task-title">
+                    <div class="archive-task-item" data-task="${t.id_task}" style="cursor:pointer;">
+                        <div class="archive-task-title" style="pointer-events:none;">
                             <i class="fas fa-check-circle" style="color:#2ecc71;"></i> 
                             ${t.titolo}
                         </div>
-                        <div class="archive-task-date">
+                        <div class="archive-task-date" style="pointer-events:none;">
                             <i class="far fa-calendar-alt"></i> 
                             ${new Date(t.data_ultima_modifica).toLocaleDateString()}
+                        </div>
+                        <div style="font-size:0.8rem; color:#666; pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                           ${t.descrizione || ''}
                         </div>
                     </div>`).join('')
                 : `
                     <div class="empty-archive">
                         <i class="fas fa-folder-open fa-3x"></i>
-                        <p>Nessun task completato in archivio.</p>
-                        <small>I task completati appariranno qui.</small>
+                        <p>${query ? 'Nessun risultato trovato.' : 'Nessun task completato in archivio.'}</p>
                     </div>`;
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi.</div>'; }
+
+            // [NEW] Event Listener per click su task archiviati
+            container.onclick = (e) => {
+                const item = e.target.closest('.archive-task-item');
+                if (item) {
+                    const tId = item.dataset.task;
+                    // Chiudi modale (stile e overlay)
+                    modal.style.display = 'none';
+                    document.getElementById('modalOverlay').style.display = 'none';
+                    // Apri ispettore
+                    this.renderInspectorView(tId);
+                }
+            };
+
+        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
     }
 };
 
