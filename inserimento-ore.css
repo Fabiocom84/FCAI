@@ -16,12 +16,30 @@
 /* Adattamenti specifici per il contenuto mobile */
 .mobile-content-wrapper {
     /* height: 100%; REMOVED: Cause of scroll issues in some contexts */
-    flex: 1; /* Allow it to fill the flex container (std-app-content) */
-    min-height: 0; /* Crucial for flex nested scrolling */
+    flex: 1;
+    /* Allow it to fill the flex container (std-app-content) */
+    min-height: 0;
+    /* Crucial for flex nested scrolling */
     width: 100%;
     overflow-y: auto;
+    overflow-x: auto;
+    /* [FIX] Enable horizontal scroll if content > viewport */
     padding: 5px;
-    scrollbar-width: thin; /* Changed from none to thin for better UX */
+    scrollbar-width: thin;
+}
+
+/* [FIX] Container for content to ensure min-width */
+.mobile-content-wrapper>* {
+    min-width: 350px;
+    /* Minimum supported width before scrolling kicks in */
+}
+
+/* [FIX] Header row class replacing inline styles */
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
 }
 
 .mobile-content-wrapper::-webkit-scrollbar {
