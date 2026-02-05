@@ -807,13 +807,18 @@ const TaskApp = {
             wrapComm.style.display = 'block';
             wrapSub.style.display = 'none';
         } else {
+            // [MODIFIED] Se non è OP o Commessa, nascondi TUTTO (nessun tag selezionabile)
             wrapComm.style.display = 'none';
-            wrapSub.style.display = 'block';
+            wrapSub.style.display = 'none';
 
-            // Azzerare selezione commessa
-            if (this.state.choicesInstances[0]) {
+            // Azzerare selezioni
+            if (this.state.choicesInstances[0]) { // Commessa
                 this.state.choicesInstances[0].removeActiveItems();
                 this.state.choicesInstances[0].setChoiceByValue('');
+            }
+            if (this.state.choicesInstances[1]) { // Sub/Tag
+                this.state.choicesInstances[1].removeActiveItems();
+                this.state.choicesInstances[1].setChoiceByValue('');
             }
         }
     },
