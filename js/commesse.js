@@ -166,15 +166,19 @@ const App = {
             // 3. Verifica dati lista (Fresh)
             if (data.commesse_data) {
                 this.state.totalCount = data.commesse_count || 0;
-                localStorage.setItem('commesse_list_cache', JSON.stringify(data.commesse_data)); // Cache Fresh List
+                const freshListJson = JSON.stringify(data.commesse_data);
+                const cachedListJson = localStorage.getItem('commesse_list_cache');
+                localStorage.setItem('commesse_list_cache', freshListJson);
 
-                if (data.commesse_data.length === 0) {
+                // SMART RE-RENDER: se dati identici alla cache già renderizzata, skip DOM rebuild
+                if (renderedFromCache && freshListJson === cachedListJson) {
+                    console.log("✅ Dati identici alla cache, skip re-render");
+                    // Carica comunque OP stats (i badge dalla cache sono placeholder)
+                    this.loadOpStatsBatch();
+                } else if (data.commesse_data.length === 0) {
                     this.state.hasMore = false;
                     this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Nessuna commessa trovata.</div>';
                 } else {
-                    // Re-Render Solo se dati diversi? Per semplicità ri-renderizziamo sempre per ora.
-                    // UX: Se l'utente sta scrollando potrebbe disturbare.
-                    // Ma siamo al load iniziale, quindi ok.
                     this.dom.grid.innerHTML = ''; // Reset UI cache
 
                     // [FIX] Apply Client-Side Filtering on Fresh Data
@@ -183,13 +187,6 @@ const App = {
                         : data.commesse_data;
 
                     this.renderCards(filteredFresh);
-
-                    // Check Pagination based on filtered or total?
-                    // Pagination logic usually depends on total fetched, but here we are filtering locally what we got.
-                    // If init-data returns everything, hasMore depends on total vs loaded.
-                    // But init-data usually returns a chunk. 
-                    // Let's assume init-data returns what it returns. 
-                    // If we filtered locally, we might show less than 12, but that's fine for initial view.
 
                     if (data.commesse_data.length < 12) {
                         this.state.hasMore = false;
@@ -491,34 +488,14 @@ const App = {
 
             const canViewBadge = IsAdmin || isImpiegatoRole;
 
-            // Se l'utente può vedere il badge, procediamo con la logica dei dati
+            // Se l'utente può vedere il badge, mostriamo placeholder (dati caricati async)
             if (canViewBadge) {
-                // Se Admin o Impiegato, mostriamo sempre qualcosa se specificato, 
-                // oppure solo se ci sono dati. 
-                // La logica precedente mostrava badge grigio se 0 OP per admin. Manteniamo questa logica.
-
-                // Nota: c.stats_op viene iniettato dal backend (sia /view che /init-data ora)
-                const stats = c.stats_op || { open: 0, closed: 0 };
-                const open = stats.open;
-                const closed = stats.closed;
-                const total = open + closed;
-
-                if (open > 0) {
-                    // C'è roba aperta -> Arancione/Rosso
-                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
-                        ⚙️ <b>${open}</b> / ${total} OP
-                    </a>`;
-                } else if (closed > 0) {
-                    // Solo roba chiusa -> Verde
-                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
-                        ✅ ${closed} OP
-                    </a>`;
-                } else {
-                    // 0 Ordini (Visibile sempre a chi ha i permessi di vedere il badge, per indicare "Nessun ordine")
-                    opBadge = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
-                        ⚙️ 0 OP
-                    </a>`;
-                }
+                // Placeholder grigio con data attribute — verrà aggiornato da loadOpStatsBatch
+                opBadge = `<span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}">
+                    <a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                    </a>
+                </span>`;
             }
 
             // --- 2. FASI AVANZAMENTO ---
@@ -770,6 +747,58 @@ const App = {
 
         this.dom.grid.appendChild(fragment);
 
+        // Carica OP stats in modo asincrono (post-render, non bloccante)
+        this.loadOpStatsBatch();
+    },
+
+    // --- OP STATS ASYNC LOADING ---
+    loadOpStatsBatch: async function () {
+        // Raccogli tutti i placeholder visibili
+        const placeholders = this.dom.grid.querySelectorAll('.op-badge-placeholder[data-op-commessa]');
+        if (!placeholders.length) return;
+
+        const ids = Array.from(placeholders).map(el => parseInt(el.dataset.opCommessa)).filter(id => !isNaN(id));
+        if (!ids.length) return;
+
+        try {
+            const res = await apiFetch('/api/commesse/op-stats', {
+                method: 'POST',
+                body: JSON.stringify({ ids })
+            });
+            if (!res.ok) return;
+
+            const statsMap = await res.json();
+
+            // Aggiorna ogni badge placeholder
+            placeholders.forEach(el => {
+                const cId = el.dataset.opCommessa;
+                const stats = statsMap[cId] || { open: 0, closed: 0 };
+                const open = stats.open;
+                const closed = stats.closed;
+                const total = open + closed;
+
+                let badgeHtml;
+                if (open > 0) {
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
+                        ⚙️ <b>${open}</b> / ${total} OP
+                    </a>`;
+                } else if (closed > 0) {
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ✅ ${closed} OP
+                    </a>`;
+                } else {
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ⚙️ 0 OP
+                    </a>`;
+                }
+
+                el.innerHTML = badgeHtml;
+            });
+
+            console.log(`🏷️ OP Stats aggiornati per ${ids.length} commesse`);
+        } catch (e) {
+            console.warn("OP Stats async load fallito (non bloccante):", e.message);
+        }
     },
 
 

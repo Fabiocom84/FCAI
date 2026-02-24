@@ -1664,7 +1664,11 @@ body.internal-page {
 .std-app-content.no-padding {
     padding: 0;
     overflow: hidden;
-    /* Per layout complessi (es. split view) che gestiscono lo scroll internamente */
+    /* Deleghiamo lo scroll ai figli, ma garantiamo che il flex layout funzioni */
+    min-height: 0;
+    /* CRITICAL: permette al flex child di calcolare correttamente la sua altezza */
+    display: flex;
+    flex-direction: column;
 }
 
 /* --- SECURITY: DEFAULT DENY VISIBILITY --- */
