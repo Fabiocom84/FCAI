@@ -327,7 +327,8 @@ const MobileHoursApp = {
 
                     days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
 
-                    // Mostriamo un indicatore "Aggiornamento..." discreto?
+                    // Quick-refresh: aggiorna solo la riga di oggi con dati freschi
+                    this.quickRefreshToday(todayStr);
                 } catch (e) {
                     console.warn("Timeline Cache corrupted", e);
                 }
@@ -389,6 +390,46 @@ const MobileHoursApp = {
         }
         finally {
             this.state.isLoading = false;
+        }
+    },
+
+    // --- QUICK REFRESH: Aggiorna solo la riga di oggi con dati freschi dal server ---
+    quickRefreshToday: async function (todayStr) {
+        try {
+            let url = `/api/ore/timeline?offset=0&limit=1`;
+            if (this.state.adminMode) url += `&userId=${this.state.targetUserId}`;
+
+            const res = await apiFetch(url);
+            if (!res.ok) return;
+
+            const days = await res.json();
+            if (!days || days.length === 0) return;
+
+            const freshToday = days.find(d => d.full_date === todayStr);
+            if (!freshToday) return;
+
+            // Cerca la riga di oggi nel DOM
+            const todayRow = this.dom.timelineContainer.querySelector('.timeline-row.is-today');
+
+            if (todayRow) {
+                // CASO 1: La riga esiste già (cache di oggi) → aggiorna in-place
+                const hoursEl = todayRow.querySelector('.timeline-hours');
+                if (hoursEl) hoursEl.textContent = `${freshToday.total_hours}h`;
+
+                const statusBar = todayRow.querySelector('.timeline-status-bar');
+                if (statusBar) {
+                    statusBar.className = `timeline-status-bar status-${freshToday.status}`;
+                }
+                console.log(`🎯 Quick-refresh oggi (update): ${freshToday.total_hours}h`);
+            } else {
+                // CASO 2: La riga NON esiste (cache di ieri) → creala e mettila in cima
+                const newRow = this.createDayRow(freshToday, todayStr);
+                this.dom.timelineContainer.prepend(newRow);
+                console.log(`🎯 Quick-refresh oggi (nuova riga): ${freshToday.total_hours}h`);
+            }
+        } catch (e) {
+            // Silenzioso: il refresh completo SWR gestirà comunque l'aggiornamento
+            console.warn("Quick-refresh today fallito (non bloccante):", e.message);
         }
     },
 
