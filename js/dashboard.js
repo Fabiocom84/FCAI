@@ -8,6 +8,7 @@ import { IsAdmin } from './core-init.js';
 const Dashboard = {
     state: {
         analyticsData: null,
+        etichetteMap: {},  // Mappa id_commessa -> etichetta standard (4 campi)
 
         // Active Filters (Multi-select arrays)
         filters: {
@@ -82,13 +83,32 @@ const Dashboard = {
         // (Access dynamically by ID in renderCharts)
     },
 
-    init: function () {
+    init: async function () {
         console.log("🚀 Dashboard V9.0 (Pagination + Multi-Select)");
         if (!IsAdmin) { window.location.replace('index.html'); return; }
 
         this.initDates();
         this.addListeners();
+
+        // Carica etichette commesse (formato standard 4 campi)
+        await this.loadEtichetteMap();
+
         this.fetchData({ resetPage: true });
+    },
+
+    loadEtichetteMap: async function () {
+        try {
+            const res = await apiFetch('/api/get-etichette');
+            if (res.ok) {
+                const data = await res.json();
+                data.forEach(e => {
+                    this.state.etichetteMap[e.id] = e.label;
+                });
+                console.log(`✅ Etichette caricate: ${data.length} commesse`);
+            }
+        } catch (e) {
+            console.warn('⚠️ Errore caricamento etichette commesse:', e);
+        }
     },
 
     initDates: function () {
@@ -502,8 +522,14 @@ const Dashboard = {
         const charts = this.state.availableFilters || this.state.analyticsData.charts;
         if (!charts) return;
 
+        // Rimappa le label commesse con le etichette standard (4 campi)
+        const commesseItems = (charts.by_commessa || []).map(item => {
+            const etichetta = this.state.etichetteMap[item.id];
+            return etichetta ? { ...item, label: etichetta } : item;
+        });
+
         // Pass Title and Key
-        this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa', 'COMMESSE');
+        this.renderCheckList(this.dom.boxCommesse, commesseItems, 'id_commessa', 'COMMESSE');
         this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale', 'DIPENDENTI');
         this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro', 'MACROCATEGORIE');
         this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente', 'LAVORAZIONI');
