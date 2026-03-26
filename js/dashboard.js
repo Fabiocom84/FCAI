@@ -580,7 +580,7 @@ const Dashboard = {
             const div = document.createElement('div');
             div.className = 'filter-item';
             div.innerHTML = `
-                <label>
+                <label title="${item.label}">
                     <input type="checkbox" value="${val}" ${isChecked ? 'checked' : ''}>
                     <span>${item.label} <small>(${Number(item.value).toFixed(0)})</small></span>
                 </label>
