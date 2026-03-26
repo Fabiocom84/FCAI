@@ -46,7 +46,7 @@
 
 /* --- SIDEBAR DI CONTROLLO --- */
 .control-sidebar {
-    width: 308px;
+    width: 400px;
     background: #fff;
     border-right: 1px solid #dcdcdc;
     display: flex;
