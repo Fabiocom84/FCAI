@@ -8,6 +8,18 @@ const App = {
         currentOrder: null
     },
 
+    // Helper: etichetta commessa standard (4 campi)
+    buildCommessaLabel: function (c) {
+        if (!c) return 'N/D';
+        const parts = [
+            c.clienti?.ragione_sociale,
+            c.impianto,
+            c.vo,
+            c.riferimento_tecnico
+        ].filter(p => p && p.trim() !== '');
+        return parts.join(' | ') || 'N/D';
+    },
+
     init: async function () {
         this.bindEvents();
         // Carica tutti per default (o aperti, come preferisci)
@@ -70,8 +82,8 @@ const App = {
         const uniqueCommesse = new Set();
 
         this.data.allOrders.forEach(o => {
-            if (o.commesse && o.commesse.vo) {
-                const label = `${o.commesse.vo} - ${o.commesse.clienti?.ragione_sociale || ''}`;
+            if (o.commesse) {
+                const label = this.buildCommessaLabel(o.commesse);
                 uniqueCommesse.add(label);
             }
         });
@@ -107,7 +119,7 @@ const App = {
             // Match Commessa
             let matchComm = true;
             if (commessaVal) {
-                const label = `${o.commesse?.vo || ''} - ${o.commesse?.clienti?.ragione_sociale || ''}`.toLowerCase();
+                const label = this.buildCommessaLabel(o.commesse).toLowerCase();
                 matchComm = label === commessaVal;
             }
 
@@ -135,7 +147,7 @@ const App = {
             if (!groups[op]) {
                 groups[op] = {
                     opNumber: op,
-                    commessa: order.commesse ? `${order.commesse.vo} (${order.commesse.clienti?.ragione_sociale || '?'})` : 'N/D',
+                    commessa: this.buildCommessaLabel(order.commesse),
                     items: []
                 };
             }
@@ -198,9 +210,7 @@ const App = {
         document.getElementById('detArticolo').textContent = order.anagrafica_articoli?.codice_articolo;
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
 
-        const commTxt = order.commesse ?
-            `${order.commesse.vo} - ${order.commesse.clienti?.ragione_sociale}` : 'N/D';
-        document.getElementById('detCommessa').textContent = commTxt;
+        document.getElementById('detCommessa').textContent = this.buildCommessaLabel(order.commesse);
 
         // --- LOGICA DI POPOLAMENTO CAMPI (MODIFICATA) ---
         const btn = document.getElementById('btnCloseOrder');
