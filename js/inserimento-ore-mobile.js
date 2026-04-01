@@ -310,29 +310,14 @@ const MobileHoursApp = {
 
         const isInitialLoad = (this.state.offset === 0);
         const todayStr = new Date().toISOString().split('T')[0];
-        const cacheKey = `timeline_v1_${this.state.adminMode ? this.state.targetUserId : 'me'}`;
 
-        // --- SWR: CACHE HIT (Solo per initial load) ---
-        if (isInitialLoad) {
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                try {
-                    const days = JSON.parse(cached);
-                    console.log("⚡ CACHE HIT (Timeline): Rendering...");
-
-                    // Pulizia container per evitare duplicati pre-fresh
-                    // (Ma non dobbiamo pulirlo se vogliamo l'effetto instantaneo? 
-                    //  Sì, perché potrebbe esserci il loader o nulla)
-                    if (this.dom.timelineContainer) this.dom.timelineContainer.innerHTML = '';
-
-                    days.forEach(day => this.dom.timelineContainer.appendChild(this.createDayRow(day, todayStr)));
-
-                    // Quick-refresh: aggiorna solo la riga di oggi con dati freschi
-                    this.quickRefreshToday(todayStr);
-                } catch (e) {
-                    console.warn("Timeline Cache corrupted", e);
-                }
-            }
+        // Mostra loader al primo caricamento
+        if (isInitialLoad && this.dom.timelineContainer) {
+            this.dom.timelineContainer.innerHTML = `
+                <div style="text-align:center; padding:40px 20px; color:#64748b;">
+                    <div class="spinner" style="margin: 0 auto 12px;"></div>
+                    <div style="font-size:0.9rem;">Caricamento presenze...</div>
+                </div>`;
         }
 
         try {
@@ -340,7 +325,7 @@ const MobileHoursApp = {
             let url = `/api/ore/timeline?offset=${this.state.offset}&limit=${this.state.limit}`;
             if (this.state.adminMode) url += `&userId=${this.state.targetUserId}`;
 
-            console.log("📡 Fetching:", url); // <--- LOG IMPORTANTE
+            console.log("📡 Fetching:", url);
             const res = await apiFetch(url);
 
             // Gestione errori HTTP non gestiti da apiFetch
@@ -358,20 +343,12 @@ const MobileHoursApp = {
                 this.state.isListFinished = true;
                 if (this.state.offset === 0) {
                     this.dom.timelineContainer.innerHTML = "<div style='padding:20px; text-align:center'>Nessun dato trovato per questo utente.</div>";
-                    // Pulisci cache se vuoto
-                    if (isInitialLoad) localStorage.removeItem(cacheKey);
                 }
                 return;
             }
 
-            // --- AGGIORNAMENTO CACHE / UI ---
+            // Pulisci e renderizza
             if (isInitialLoad) {
-                // Sovrascrivi Cache
-                localStorage.setItem(cacheKey, JSON.stringify(days));
-
-                // Pulisci e Ri-renderizza (per sicurezza dati aggiornati)
-                // Se i dati cached erano identici, l'utente non nota nulla.
-                // Se sono diversi, vedrà lo "scatto" di aggiornamento (SWR behavior corretto)
                 this.dom.timelineContainer.innerHTML = '';
             }
 
@@ -380,58 +357,27 @@ const MobileHoursApp = {
 
         } catch (e) {
             console.error("❌ Errore loadTimelineBatch:", e);
-            // Se errore in SWR e avevo già renderizzato da cache, magari non mostro errore invasivo?
-            // Per ora mostriamo errore in fondo
-            const errDiv = document.createElement('div');
-            errDiv.style.color = 'red';
-            errDiv.style.textAlign = 'center';
-            errDiv.textContent = `Errore sync: ${e.message}`;
-            this.dom.timelineContainer.appendChild(errDiv);
+            if (isInitialLoad) {
+                this.dom.timelineContainer.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#e53e3e;">
+                        <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
+                        <p style="font-weight:bold; margin-bottom:5px;">Errore caricamento</p>
+                        <p style="font-size:0.85rem; margin-bottom:15px;">${e.message}</p>
+                        <button onclick="location.reload()" style="padding:8px 20px; border-radius:8px; border:none; background:#34495e; color:white; cursor:pointer;">🔄 Riprova</button>
+                    </div>`;
+            } else {
+                const errDiv = document.createElement('div');
+                errDiv.style.cssText = 'color:red; text-align:center; padding:10px;';
+                errDiv.textContent = `Errore: ${e.message}`;
+                this.dom.timelineContainer.appendChild(errDiv);
+            }
         }
         finally {
             this.state.isLoading = false;
         }
     },
 
-    // --- QUICK REFRESH: Aggiorna solo la riga di oggi con dati freschi dal server ---
-    quickRefreshToday: async function (todayStr) {
-        try {
-            let url = `/api/ore/timeline?offset=0&limit=1`;
-            if (this.state.adminMode) url += `&userId=${this.state.targetUserId}`;
 
-            const res = await apiFetch(url);
-            if (!res.ok) return;
-
-            const days = await res.json();
-            if (!days || days.length === 0) return;
-
-            const freshToday = days.find(d => d.full_date === todayStr);
-            if (!freshToday) return;
-
-            // Cerca la riga di oggi nel DOM
-            const todayRow = this.dom.timelineContainer.querySelector('.timeline-row.is-today');
-
-            if (todayRow) {
-                // CASO 1: La riga esiste già (cache di oggi) → aggiorna in-place
-                const hoursEl = todayRow.querySelector('.timeline-hours');
-                if (hoursEl) hoursEl.textContent = `${freshToday.total_hours}h`;
-
-                const statusBar = todayRow.querySelector('.timeline-status-bar');
-                if (statusBar) {
-                    statusBar.className = `timeline-status-bar status-${freshToday.status}`;
-                }
-                console.log(`🎯 Quick-refresh oggi (update): ${freshToday.total_hours}h`);
-            } else {
-                // CASO 2: La riga NON esiste (cache di ieri) → creala e mettila in cima
-                const newRow = this.createDayRow(freshToday, todayStr);
-                this.dom.timelineContainer.prepend(newRow);
-                console.log(`🎯 Quick-refresh oggi (nuova riga): ${freshToday.total_hours}h`);
-            }
-        } catch (e) {
-            // Silenzioso: il refresh completo SWR gestirà comunque l'aggiornamento
-            console.warn("Quick-refresh today fallito (non bloccante):", e.message);
-        }
-    },
 
     // Helper per abbreviazioni mesi
     getShortMonth: function (monthStr) {
