@@ -589,8 +589,11 @@ const PrintPage = {
                         page.drawText(totAssenza.toString(), { x: CX.Perm, y: Y, size: fs, font });
                     }
 
-                    const finalType = types.has('T') ? 'T' : 'O';
-                    page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
+                    const allAbsences = items.every(it => it.is_assenza);
+                    if (!allAbsences) {
+                        const finalType = types.has('T') ? 'T' : 'O';
+                        page.drawText(finalType, { x: CX.Tipo, y: Y, size: fs, font });
+                    }
 
                     let fullDesc = labels.join(", ");
                     if (fullDesc.length > 55) fullDesc = fullDesc.substring(0, 52) + "..";

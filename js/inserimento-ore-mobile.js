@@ -614,12 +614,12 @@ const MobileHoursApp = {
 
     handleAbsencePreset: function (absType) {
         if (absType === 'Ferie' || absType === 'Malattia') {
-            this.dom.hoursInput.value = 8; // Standard
-            // Orari standard
-            this.dom.absMattinaStart.value = "08:00";
-            this.dom.absMattinaEnd.value = "12:00";
-            this.dom.absPomStart.value = "13:00";
-            this.dom.absPomEnd.value = "17:00";
+            this.dom.hoursInput.value = 8; // Standard giornata intera
+            // Giornata intera: dettaglio orari non necessario
+            this.dom.absMattinaStart.value = "";
+            this.dom.absMattinaEnd.value = "";
+            this.dom.absPomStart.value = "";
+            this.dom.absPomEnd.value = "";
         } else {
             // Permesso: Pulisci tutto per lasciare libertà
             this.dom.hoursInput.value = "";
