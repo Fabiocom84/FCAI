@@ -490,7 +490,8 @@ const PrintPage = {
         try {
             // A. Recupero Dati
             const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-            const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+            const lastDay = new Date(year, month, 0);
+            const endDate = `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
 
             // --- FIX ADMIN MODE ---
             let url = `/api/report/analyze?start=${startDate}&end=${endDate}`;
