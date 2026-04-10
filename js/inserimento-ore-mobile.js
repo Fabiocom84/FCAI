@@ -559,7 +559,7 @@ const MobileHoursApp = {
     },
 
     handleAbsencePreset: function (absType) {
-        if (absType === 'Ferie' || absType === 'Malattia') {
+        if (absType === 'Ferie' || absType === 'Malattia' || absType === 'Festivita') {
             this.dom.hoursInput.value = 8; // Standard giornata intera
             // Giornata intera: dettaglio orari non necessario
             this.dom.absMattinaStart.value = "";
@@ -662,7 +662,7 @@ const MobileHoursApp = {
                     sub = w.componenti?.nome_componente || 'Attività generica';
                 }
 
-                if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia') || sub.toLowerCase().includes('104')) {
+                if (w.assenza_mattina_dalle || w.assenza_pomeriggio_dalle || sub.toLowerCase().includes('ferie') || sub.toLowerCase().includes('permesso') || sub.toLowerCase().includes('malattia') || sub.toLowerCase().includes('104') || sub.toLowerCase().includes('festivit')) {
                     cardClass = 'card-abs';
                     if (title === 'N/D' || title === 'Assenza') {
                         title = 'GESTIONE PERSONALE (SYS-JOB-ABS)';
@@ -898,6 +898,9 @@ const MobileHoursApp = {
                 case 'L104':
                     componentId = 104; // SYS-104
                     break;
+                case 'Festivita':
+                    componentId = 149; // SYS-FEST
+                    break;
                 default:
                     componentId = 101; // Fallback
             }
@@ -905,7 +908,8 @@ const MobileHoursApp = {
             payload.id_componente = componentId;
 
             // 3. NOTE: Aggiunta prefisso per chiarezza nel database
-            payload.note = `[${absType.toUpperCase()}] ${payload.note}`;
+            const noteTag = (absType === 'Festivita') ? "FESTIVITA'" : absType.toUpperCase();
+            payload.note = `[${noteTag}] ${payload.note}`;
         }
 
         btn.disabled = true;
@@ -959,7 +963,7 @@ const MobileHoursApp = {
 
         let type = 'produzione';
         const noteUpper = (work.note || '').toUpperCase();
-        if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]')) type = 'assenza';
+        if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]') || noteUpper.includes('[FESTIVITA')) type = 'assenza';
         else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) type = 'cantiere';
 
         const radio = document.querySelector(`input[value="${type}"]`);
@@ -982,6 +986,7 @@ const MobileHoursApp = {
             if (noteUpper.includes('FERIE')) this.dom.absType.value = 'Ferie';
             else if (noteUpper.includes('PERMESSO')) this.dom.absType.value = 'Permesso';
             else if (noteUpper.includes('MALATTIA')) this.dom.absType.value = 'Malattia';
+            else if (noteUpper.includes('FESTIVITA')) this.dom.absType.value = 'Festivita';
         }
 
         // --- FIX CARICAMENTO COMMESSA ---
