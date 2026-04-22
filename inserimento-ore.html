@@ -67,7 +67,10 @@
                     <span id="detailUserName" class="header-subtitle"
                         style="font-size: 0.9rem; font-weight: 500; color: #ffffff; margin-top: 2px;">Utente</span>
                 </div>
-                <div style="width: 80px;"></div>
+                <button id="copyPrevDayBtn" class="header-button copy-prev-btn" title="Copia ore giorno lavorativo precedente">
+                    <span>📋</span>
+                    <span class="copy-btn-label">Copia gg prec.</span>
+                </button>
             </header>
 
             <!-- CORPO SCROLLABILE -->
@@ -270,17 +273,16 @@
 
     </div>
 
-    <!-- UNIVERSAL MODAL (Sostituisce custom-modal) -->
     <div id="universal-modal" class="universal-modal-overlay" style="display: none;">
-        <div class="universal-modal-content">
-            <div class="universal-modal-header">
-                <h2 id="universal-modal-title">Titolo</h2>
-                <button class="universal-modal-close" id="universal-modal-close">&times;</button>
+        <div class="universal-modal">
+            <div class="universal-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 id="universal-modal-title" style="flex: 1;">Titolo</h2>
+                <button class="universal-modal-close" id="universal-modal-close" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#999; padding:0 5px;">&times;</button>
             </div>
-            <div class="universal-modal-body" id="universal-modal-body">
+            <div class="universal-modal-body" id="universal-modal-body" style="color:#555; font-size:1.05rem; line-height:1.5; margin-bottom:25px;">
                 <!-- Contenuto dinamico -->
             </div>
-            <div class="universal-modal-footer" id="universal-modal-footer">
+            <div class="universal-modal-footer" id="universal-modal-footer" style="display:flex; justify-content:center; gap:15px;">
                 <!-- Bottoni dinamici -->
             </div>
         </div>

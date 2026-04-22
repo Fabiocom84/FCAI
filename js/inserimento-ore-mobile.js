@@ -241,7 +241,8 @@ const MobileHoursApp = {
             strMattinaStart: document.getElementById('strMattinaStart'),
             strMattinaEnd: document.getElementById('strMattinaEnd'),
             strPomStart: document.getElementById('strPomStart'),
-            strPomEnd: document.getElementById('strPomEnd')
+            strPomEnd: document.getElementById('strPomEnd'),
+            copyPrevDayBtn: document.getElementById('copyPrevDayBtn')
         };
     },
 
@@ -258,6 +259,7 @@ const MobileHoursApp = {
         if (this.dom.travelAndata) this.dom.travelAndata.addEventListener('input', () => this.checkOvertimeLogic());
         if (this.dom.travelRitorno) this.dom.travelRitorno.addEventListener('input', () => this.checkOvertimeLogic());
         if (this.dom.absType) this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
+        if (this.dom.copyPrevDayBtn) this.dom.copyPrevDayBtn.addEventListener('click', () => this.copyPreviousWorkday());
     },
 
     // ... (setupAdminUI e loadUserName invariati) ...
@@ -1079,6 +1081,169 @@ const MobileHoursApp = {
             await apiFetch(`/api/ore/${id}`, { method: 'DELETE' });
             this.loadExistingWorks(this.state.currentDate);
         } catch (e) { alert("Errore: " + e.message); }
+    },
+
+    // --- COPIA GIORNO LAVORATIVO PRECEDENTE ---
+    _showCopyModal: function (title, messageHtml, buttons) {
+        const overlay = document.getElementById('universal-modal');
+        const titleEl = document.getElementById('universal-modal-title');
+        const bodyEl = document.getElementById('universal-modal-body');
+        const footerEl = document.getElementById('universal-modal-footer');
+        const closeBtn = document.getElementById('universal-modal-close');
+
+        if (!overlay) return;
+
+        titleEl.textContent = title;
+        bodyEl.innerHTML = messageHtml;
+        footerEl.innerHTML = '';
+
+        const closeModal = () => { overlay.style.display = 'none'; };
+        closeBtn.onclick = closeModal;
+
+        buttons.forEach(b => {
+            const btn = document.createElement('button');
+            btn.textContent = b.text;
+            btn.className = b.class || 'save-button';
+            btn.style.cssText = 'padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;';
+            if (b.class === 'cancel-button') {
+                btn.style.background = '#e2e8f0';
+                btn.style.color = '#4a5568';
+            }
+            btn.onclick = () => {
+                closeModal();
+                if (b.onClick) b.onClick();
+            };
+            footerEl.appendChild(btn);
+        });
+
+        overlay.style.display = 'flex';
+    },
+
+    copyPreviousWorkday: async function () {
+        if (!this.state.currentDate) return;
+
+        const btn = this.dom.copyPrevDayBtn;
+        if (btn) btn.disabled = true;
+
+        try {
+            // 1. Chiedi al backend il giorno precedente con ore
+            let url = `/api/ore/previous-workday/${this.state.currentDate}`;
+            if (this.state.adminMode) url += `?userId=${this.state.targetUserId}`;
+
+            const res = await apiFetch(url);
+            if (!res.ok) throw new Error('Errore ricerca giorno precedente');
+
+            const data = await res.json();
+
+            if (!data.source_date || !data.records || data.records.length === 0) {
+                this._showCopyModal('Nessun Dato',
+                    'Non è stato trovato nessun giorno lavorativo precedente con ore registrate (ultimi 60 giorni).',
+                    [{ text: 'OK', class: 'save-button' }]
+                );
+                return;
+            }
+
+            // 2. Formatta data sorgente per visualizzazione
+            const srcDate = new Date(data.source_date + 'T00:00:00');
+            const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+            const mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+            const srcLabel = `${giorni[srcDate.getDay()]} ${srcDate.getDate()} ${mesi[srcDate.getMonth()]}`;
+
+            // 3. Calcola totale ore
+            const totalOre = data.records.reduce((sum, r) => {
+                return sum + (r.ore || 0) + (r.ore_viaggio_andata || 0) + (r.ore_viaggio_ritorno || 0);
+            }, 0);
+
+            // 4. Modale di conferma
+            this._showCopyModal('📋 Copia Ore',
+                `Copiare <strong>${data.records.length} attività</strong> (${totalOre}h) da <strong>${srcLabel}</strong>?`,
+                [
+                    { text: 'Annulla', class: 'cancel-button' },
+                    { text: 'Copia', class: 'save-button', onClick: () => this._executeCopy(data.records) }
+                ]
+            );
+
+        } catch (e) {
+            console.error('❌ Errore copyPreviousWorkday:', e);
+            this._showCopyModal('Errore',
+                'Impossibile recuperare il giorno precedente: ' + e.message,
+                [{ text: 'OK', class: 'save-button' }]
+            );
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
+
+    _executeCopy: async function (records) {
+        const btn = this.dom.copyPrevDayBtn;
+        if (btn) {
+            btn.disabled = true;
+            btn.querySelector('span').textContent = '⏳';
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const rec of records) {
+            try {
+                const payload = {
+                    data: this.state.currentDate,
+                    id_commessa: rec.id_commessa_fk,
+                    id_componente: rec.id_componente_fk,
+                    id_macro_categoria: rec.id_macro_categoria_fk,
+                    ore: rec.ore || 0,
+                    note: rec.note || '',
+                    ore_viaggio_andata: rec.ore_viaggio_andata || 0,
+                    ore_viaggio_ritorno: rec.ore_viaggio_ritorno || 0,
+                    str_mattina_dalle: rec.str_mattina_dalle,
+                    str_mattina_alle: rec.str_mattina_alle,
+                    str_pomeriggio_dalle: rec.str_pomeriggio_dalle,
+                    str_pomeriggio_alle: rec.str_pomeriggio_alle,
+                    assenza_mattina_dalle: rec.assenza_mattina_dalle,
+                    assenza_mattina_alle: rec.assenza_mattina_alle,
+                    assenza_pomeriggio_dalle: rec.assenza_pomeriggio_dalle,
+                    assenza_pomeriggio_alle: rec.assenza_pomeriggio_alle,
+                    stato: 0
+                };
+
+                if (this.state.adminMode) {
+                    payload.id_personale_override = this.state.targetUserId;
+                }
+
+                const postRes = await apiFetch('/api/ore/', { method: 'POST', body: JSON.stringify(payload) });
+                if (postRes.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    console.error('Errore copia record:', await postRes.text());
+                }
+            } catch (e) {
+                errorCount++;
+                console.error('Errore copia record:', e);
+            }
+        }
+
+        // Ripristina pulsante
+        if (btn) {
+            btn.disabled = false;
+            btn.querySelector('span').textContent = '📋';
+        }
+
+        // Refresh lista
+        this.loadExistingWorks(this.state.currentDate);
+
+        // Feedback
+        if (errorCount === 0) {
+            this._showCopyModal('✅ Copia Completata',
+                `${successCount} attività copiate con successo.`,
+                [{ text: 'OK', class: 'save-button' }]
+            );
+        } else {
+            this._showCopyModal('⚠️ Copia Parziale',
+                `${successCount} copiate, ${errorCount} fallite.`,
+                [{ text: 'OK', class: 'save-button' }]
+            );
+        }
     },
 
     // --- CHOICES & OPTIONS ---

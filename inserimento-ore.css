@@ -829,3 +829,48 @@ input:focus {
 .mobile-insert-form.cantiere-mode #mobileHoursForm {
     margin-top: 0 !important;
 }
+
+/* --- PULSANTE COPIA GIORNO PRECEDENTE --- */
+.copy-prev-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 80px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+.copy-prev-btn:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.copy-prev-btn:active {
+    transform: scale(0.95);
+}
+
+.copy-prev-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Mobile: nascondi il testo, mostra solo icona */
+.copy-prev-btn .copy-btn-label {
+    display: none;
+}
+
+/* Desktop (>= 600px): mostra il testo */
+@media (min-width: 600px) {
+    .copy-prev-btn .copy-btn-label {
+        display: inline;
+    }
+    .copy-prev-btn {
+        width: auto;
+        min-width: 80px;
+    }
+}
