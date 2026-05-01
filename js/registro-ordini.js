@@ -20,6 +20,14 @@ const App = {
         return parts.join(' | ') || 'N/D';
     },
 
+    // Helper: formatta data ISO in formato italiano gg/mm/aaaa
+    formatDate: function (dateStr) {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    },
+
     init: async function () {
         this.bindEvents();
         // Carica tutti per default (o aperti, come preferisci)
@@ -211,6 +219,17 @@ const App = {
         document.getElementById('detDescrizione').textContent = order.anagrafica_articoli?.descrizione;
 
         document.getElementById('detCommessa').textContent = this.buildCommessaLabel(order.commesse);
+
+        // Date Info
+        document.getElementById('detCreatedAt').textContent = this.formatDate(order.created_at);
+        document.getElementById('detDataRicezione').textContent = this.formatDate(order.data_ricezione);
+        const invioRow = document.getElementById('dataInvioRow');
+        if (order.data_invio) {
+            document.getElementById('detDataInvio').textContent = this.formatDate(order.data_invio);
+            invioRow.style.display = 'flex';
+        } else {
+            invioRow.style.display = 'none';
+        }
 
         // --- LOGICA DI POPOLAMENTO CAMPI (MODIFICATA) ---
         const btn = document.getElementById('btnCloseOrder');
