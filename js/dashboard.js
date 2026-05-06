@@ -690,6 +690,8 @@ const Dashboard = {
     createStackedChart: function (id, rawData, xKey, stackKey) {
         const el = document.getElementById(id);
         if (!el || !rawData || !rawData.length) return;
+        // Destroy existing chart on this canvas
+        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
 
         // 1. Get Unique X Labels (Users)
         const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
@@ -781,6 +783,7 @@ const Dashboard = {
     createPieChart: function (id, d) {
         const el = document.getElementById(id);
         if (!el || !d.labels.length) return;
+        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
         this.state.chartInstances[id] = new Chart(el, {
             type: 'doughnut',
             data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: this.getColors(d.labels.length) }] },
@@ -791,6 +794,7 @@ const Dashboard = {
     createBarChart: function (id, d, color = '#2ecc71') {
         const el = document.getElementById(id);
         if (!el) return;
+        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
         this.state.chartInstances[id] = new Chart(el, {
             type: 'bar',
             data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
@@ -801,6 +805,7 @@ const Dashboard = {
     createHorizontalBarChart: function (id, d, color = '#3498db') {
         const el = document.getElementById(id);
         if (!el || !d.labels.length) return;
+        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
         this.state.chartInstances[id] = new Chart(el, {
             type: 'bar',
             data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
