@@ -81,6 +81,27 @@ const Dashboard = {
 
         // --- GRAPHS ---
         // (Access dynamically by ID in renderCharts)
+
+        // --- ANALISI COMMESSA ---
+        caPlaceholder: document.getElementById('commessa-analysis-placeholder'),
+        caContent: document.getElementById('commessa-analysis-content'),
+        caTitle: document.getElementById('ca-title'),
+        caSubtitle: document.getElementById('ca-subtitle'),
+        caKpiBudget: document.getElementById('ca-kpiBudget'),
+        caBudgetInfo: document.getElementById('ca-budgetInfo'),
+        caKpiUsed: document.getElementById('ca-kpiUsed'),
+        caKpiProgress: document.getElementById('ca-kpiProgress'),
+        caKpiProgressCard: document.getElementById('ca-kpiProgressCard'),
+        caKpiDelta: document.getElementById('ca-kpiDelta'),
+        caKpiDeltaCard: document.getElementById('ca-kpiDeltaCard'),
+        caMacroContainer: document.getElementById('ca-macro-container'),
+        caBenchmarkMsg: document.getElementById('ca-benchmarkMsg'),
+        caBenchmarkTableContainer: document.getElementById('ca-benchmark-table-container'),
+        // Selettore Commessa
+        caSearchInput: document.getElementById('ca-searchInput'),
+        caSearchDropdown: document.getElementById('ca-searchDropdown'),
+        caToggleAperte: document.getElementById('ca-toggleAperte'),
+        caToggleTutte: document.getElementById('ca-toggleTutte'),
     },
 
     init: async function () {
@@ -173,10 +194,19 @@ const Dashboard = {
                 this.dom.viewTabs.forEach(b => b.classList.remove('active'));
                 this.dom.views.forEach(v => v.classList.remove('active'));
                 e.currentTarget.classList.add('active');
-                const target = document.getElementById(e.currentTarget.dataset.target);
+                const targetId = e.currentTarget.dataset.target;
+                const target = document.getElementById(targetId);
                 if (target) target.classList.add('active');
+
+                // Lazy-load commesse list when Analisi tab is first opened
+                if (targetId === 'view-commessa-analysis' && !this.state.caCommesseLoaded) {
+                    this.loadCommesseForAnalysis();
+                }
             });
         });
+
+        // --- COMMESSA ANALYSIS SELECTOR ---
+        this.initCommessaSelector();
 
         // Client-side grouping buttons - RE-ENABLED
         if (this.dom.btnExpandAll) this.dom.btnExpandAll.onclick = () => this.toggleAllGroups(true);
@@ -259,6 +289,8 @@ const Dashboard = {
 
             // 2. Fetch Groups (Headers)
             await this.fetchGroups();
+
+            // 3. (Commessa Analysis is now independent from sidebar filters)
 
             if (this.dom.statusMsg) this.dom.statusMsg.innerHTML = `Dati aggiornati.`;
 
@@ -363,19 +395,13 @@ const Dashboard = {
         this.state.chartInstances = {};
         if (!charts) return;
 
-        // ... (Charts logic remains same)
         const mapData = (list) => ({
             labels: list ? list.map(i => i.label) : [],
             values: list ? list.map(i => i.value) : []
         });
 
-        this.createPieChart('chartCommessaPie', mapData(charts.by_commessa));
-        // ... restore other charts ...
+        // Charts per "Sintesi Risorse"
         this.createBarChart('chartTimeBar', mapData(charts.time_trend));
-        this.createPieChart('chartLavPie', mapData(charts.by_lavorazione));
-        this.createHorizontalBarChart('chartLavBar', mapData(charts.by_lavorazione));
-        this.createPieChart('chartMacroPie', mapData(charts.by_macro));
-        this.createHorizontalBarChart('chartMacroBar', mapData(charts.by_macro));
         this.createPieChart('chartUserPie', mapData(charts.by_user));
         this.createHorizontalBarChart('chartUserBar', mapData(charts.by_user));
 
@@ -383,11 +409,281 @@ const Dashboard = {
         this.createStackedChart('chartCrossMacroUser', charts.cross_macro_user, 'user', 'category');
         this.createStackedChart('chartCrossLavUser', charts.cross_lav_user, 'user', 'category');
 
-        this.createHorizontalBarChart('chartCostCommessa', mapData(charts.costi_commessa), '#f39c12');
-
         // HR Charts
         this.createPieChart('chartAbsenceUser', mapData(charts.absence_by_user));
         this.createBarChart('chartAbsenceTrend', mapData(charts.absence_trend), '#e74c3c');
+
+        // Removed charts (Non-existent in new HTML): 
+        // chartCommessaPie, chartLavPie, chartLavBar, chartMacroPie, chartMacroBar, chartCostCommessa
+    },
+
+    // --- ANALISI COMMESSA: SELETTORE INDIPENDENTE ---
+
+    initCommessaSelector: function () {
+        const input = this.dom.caSearchInput;
+        const dropdown = this.dom.caSearchDropdown;
+        if (!input || !dropdown) return;
+
+        this.state.caCommesseList = [];      // Full list from API
+        this.state.caCommesseLoaded = false;  // Lazy load flag
+        this.state.caFilterGruppo = 'aperta'; // Default: only open
+        this.state.caSelectedId = null;       // Currently selected commessa ID
+
+        // Search Input: show dropdown on focus, filter on type
+        input.addEventListener('focus', () => {
+            if (!this.state.caCommesseLoaded) this.loadCommesseForAnalysis();
+            this.renderCommessaDropdown(input.value);
+        });
+
+        input.addEventListener('input', () => {
+            this.renderCommessaDropdown(input.value);
+        });
+
+        // Close dropdown on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.ca-search-wrapper')) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Toggle Aperte / Tutte
+        const toggleAperte = this.dom.caToggleAperte;
+        const toggleTutte = this.dom.caToggleTutte;
+
+        if (toggleAperte) toggleAperte.addEventListener('click', () => {
+            this.state.caFilterGruppo = 'aperta';
+            toggleAperte.classList.add('active');
+            toggleTutte.classList.remove('active');
+            this.renderCommessaDropdown(input.value);
+        });
+
+        if (toggleTutte) toggleTutte.addEventListener('click', () => {
+            this.state.caFilterGruppo = 'tutte';
+            toggleTutte.classList.add('active');
+            toggleAperte.classList.remove('active');
+            this.renderCommessaDropdown(input.value);
+        });
+    },
+
+    loadCommesseForAnalysis: async function () {
+        try {
+            const res = await apiFetch('/api/get-etichette-analisi');
+            if (res.ok) {
+                this.state.caCommesseList = await res.json();
+                this.state.caCommesseLoaded = true;
+                console.log(`✅ Commesse analisi caricate: ${this.state.caCommesseList.length}`);
+                // If the search input is focused, show dropdown
+                if (document.activeElement === this.dom.caSearchInput) {
+                    this.renderCommessaDropdown(this.dom.caSearchInput.value);
+                }
+            }
+        } catch (e) {
+            console.warn('⚠️ Errore caricamento commesse analisi:', e);
+        }
+    },
+
+    renderCommessaDropdown: function (searchTerm) {
+        const dropdown = this.dom.caSearchDropdown;
+        if (!dropdown) return;
+        dropdown.innerHTML = '';
+
+        const term = (searchTerm || '').toLowerCase().trim();
+        const gruppo = this.state.caFilterGruppo;
+
+        // Filter list
+        let filtered = this.state.caCommesseList.filter(c => {
+            if (gruppo !== 'tutte' && c.gruppo !== gruppo) return false;
+            if (term && !c.label.toLowerCase().includes(term)) return false;
+            return true;
+        });
+
+        // Limit to 30 for performance
+        const limited = filtered.slice(0, 30);
+
+        if (limited.length === 0) {
+            dropdown.innerHTML = '<div class="ca-dropdown-empty">Nessuna commessa trovata</div>';
+            dropdown.style.display = 'block';
+            return;
+        }
+
+        limited.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'ca-dropdown-item';
+            if (c.gruppo === 'chiusa') item.classList.add('ca-item-closed');
+            item.innerHTML = `
+                <span class="ca-item-label">${c.label}</span>
+                ${c.gruppo === 'chiusa' ? '<span class="ca-item-badge">Chiusa</span>' : ''}
+            `;
+            item.addEventListener('click', () => {
+                this.selectCommessaForAnalysis(c.id, c.label);
+            });
+            dropdown.appendChild(item);
+        });
+
+        if (filtered.length > 30) {
+            dropdown.innerHTML += `<div class="ca-dropdown-empty">...e altre ${filtered.length - 30} commesse (affina la ricerca)</div>`;
+        }
+
+        dropdown.style.display = 'block';
+    },
+
+    selectCommessaForAnalysis: function (id, label) {
+        this.state.caSelectedId = id;
+        this.dom.caSearchInput.value = label;
+        this.dom.caSearchDropdown.style.display = 'none';
+
+        // Show content, hide placeholder
+        this.dom.caPlaceholder.style.display = 'none';
+        this.dom.caContent.style.display = 'block';
+
+        // Load analysis
+        this.renderCommessaAnalysis(id);
+    },
+
+    renderCommessaAnalysis: async function (idCommessa) {
+        try {
+            this.dom.caTitle.textContent = "Caricamento analisi...";
+            this.dom.caSubtitle.textContent = "";
+            
+            // 1. Label Info
+            const label = this.state.etichetteMap[idCommessa] || "Commessa #" + idCommessa;
+            const parts = label.split(' | ');
+            this.dom.caTitle.textContent = parts[1] || label;
+            this.dom.caSubtitle.textContent = parts[0] || "Cliente N/D";
+
+            // 2. Fetch analisi completa dal nuovo endpoint dedicato
+            const res = await apiFetch('/api/dashboard/analisi-commessa/' + idCommessa);
+            if (!res.ok) throw new Error("Errore caricamento analisi commessa");
+            const data = await res.json();
+
+            // 3. KPI: Ore Consumate (da ore_lavorate)
+            const totaleOre = data.totale_ore || 0;
+            this.dom.caKpiUsed.textContent = totaleOre.toFixed(1);
+
+            // 4. KPI: Budget Stimato (da commesse simili chiuse, registro_produzione)
+            const budget = data.budget_stimato || {};
+            const budgetOre = budget.budget_ore;
+            
+            if (budgetOre && budgetOre > 0) {
+                this.dom.caKpiBudget.textContent = budgetOre.toFixed(1);
+                this.dom.caBudgetInfo.textContent = `da ${budget.num_commesse_analizzate || 0} commesse simili`;
+
+                // 5. KPI: Avanzamento % con colore condizionale
+                const avanzamento = (totaleOre / budgetOre) * 100;
+                this.dom.caKpiProgress.textContent = avanzamento.toFixed(0) + '%';
+                
+                // Colore condizionale: verde <80%, giallo 80-100%, rosso >100%
+                const progressCard = this.dom.caKpiProgressCard;
+                progressCard.classList.remove('green', 'orange', 'red');
+                if (avanzamento > 100) {
+                    progressCard.classList.add('red');
+                } else if (avanzamento >= 80) {
+                    progressCard.classList.add('orange');
+                } else {
+                    progressCard.classList.add('green');
+                }
+
+                // 6. KPI: Delta (Budget - Usate)
+                const delta = budgetOre - totaleOre;
+                this.dom.caKpiDelta.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1);
+                const deltaCard = this.dom.caKpiDeltaCard;
+                deltaCard.style.borderColor = delta >= 0 ? '#2ecc71' : '#e74c3c';
+                this.dom.caKpiDelta.style.color = delta >= 0 ? '#27ae60' : '#c0392b';
+            } else {
+                this.dom.caKpiBudget.textContent = '-';
+                this.dom.caBudgetInfo.textContent = budget.messaggio || 'Dati insufficienti';
+                this.dom.caKpiProgress.textContent = '-';
+                this.dom.caKpiDelta.textContent = '-';
+                this.dom.caKpiDeltaCard.style.borderColor = '#95a5a6';
+                this.dom.caKpiDelta.style.color = '#2c3e50';
+            }
+
+            // 7. Distribuzione Ore per Macrocategoria (barre proporzionali)
+            this.dom.caMacroContainer.innerHTML = '';
+            const distMacro = data.distribuzione_macro || {};
+            const macroEntries = Object.entries(distMacro);
+            
+            if (macroEntries.length > 0) {
+                const maxOre = Math.max(...macroEntries.map(([, v]) => v));
+                const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22'];
+                
+                macroEntries.forEach(([macroName, ore], idx) => {
+                    const pct = maxOre > 0 ? (ore / maxOre * 100) : 0;
+                    const color = colors[idx % colors.length];
+                    const item = document.createElement('div');
+                    item.className = 'phase-item';
+                    item.innerHTML = `
+                        <div class="phase-label-row">
+                            <span>${macroName}</span>
+                            <span><b>${ore.toFixed(1)}</b> h</span>
+                        </div>
+                        <div class="phase-bar-bg">
+                            <div class="phase-bar-fill" style="width: ${pct.toFixed(1)}%; background: ${color}"></div>
+                        </div>
+                    `;
+                    this.dom.caMacroContainer.appendChild(item);
+                });
+            } else {
+                this.dom.caMacroContainer.innerHTML = '<p style="color:#999; font-style:italic;">Nessuna ora registrata per macrocategoria.</p>';
+            }
+
+            // 8. Grafici Personale e Lavorazioni (da dati analytics filtrati O da endpoint)
+            const distPersonale = data.distribuzione_personale || [];
+            const personaleData = {
+                labels: distPersonale.map(p => p.label),
+                values: distPersonale.map(p => p.ore)
+            };
+            this.createHorizontalBarChart('ca-chartUserBar', personaleData, '#3498db');
+
+            // Per la pie lavorazioni, usiamo i dati analytics filtrati se disponibili
+            const analytics = this.state.analyticsData;
+            if (analytics && analytics.charts && analytics.charts.by_lavorazione) {
+                const mapData = (list) => ({
+                    labels: list ? list.map(i => i.label) : [],
+                    values: list ? list.map(i => i.value) : []
+                });
+                this.createPieChart('ca-chartCompPie', mapData(analytics.charts.by_lavorazione));
+            }
+
+            // 9. Benchmark: Tabella Commesse Simili
+            const simili = budget.simili || [];
+            const benchmarkContainer = this.dom.caBenchmarkTableContainer;
+            benchmarkContainer.innerHTML = '';
+            
+            if (simili.length > 0) {
+                this.dom.caBenchmarkMsg.style.display = 'block';
+                const table = document.createElement('table');
+                table.className = 'benchmark-table';
+                table.innerHTML = `
+                    <thead><tr>
+                        <th>Commessa</th>
+                        <th width="100">Similarità</th>
+                        <th width="100">Ore Produz.</th>
+                    </tr></thead>
+                    <tbody></tbody>
+                `;
+                const tbody = table.querySelector('tbody');
+                simili.forEach(s => {
+                    const scorePct = (s.jaccard_score * 100).toFixed(0);
+                    const scoreClass = s.jaccard_score >= 0.8 ? 'score-high' : s.jaccard_score >= 0.6 ? 'score-mid' : 'score-low';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td title="${s.label}">${s.label}</td>
+                        <td class="${scoreClass}" style="text-align:center; font-weight:700">${scorePct}%</td>
+                        <td style="text-align:right; font-weight:700">${s.totale_ore} h</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                benchmarkContainer.appendChild(table);
+            } else {
+                this.dom.caBenchmarkMsg.textContent = budget.messaggio || 'Nessuna commessa simile trovata tra quelle chiuse.';
+            }
+
+        } catch (e) {
+            console.error("Analysis Error:", e);
+            this.dom.caTitle.textContent = "Errore";
+            this.dom.caSubtitle.textContent = e.message;
+        }
     },
 
     // Helper for Stacked Bar (Pivoting Data)

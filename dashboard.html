@@ -89,9 +89,9 @@
                     <!-- TOP BAR -->
                     <div class="view-tabs-container">
                         <div class="tabs-left">
-                            <!-- VISTA DETTAGLIO ATTIVA DI DEFAULT -->
-                            <button class="tab-btn" data-target="view-summary">📊 VISTA SINTESI</button>
+                            <button class="tab-btn" data-target="view-summary">📊 SINTESI RISORSE</button>
                             <button class="tab-btn active" data-target="view-detail">📋 VISTA DETTAGLIO</button>
+                            <button class="tab-btn" data-target="view-commessa-analysis">🏗️ ANALISI COMMESSA</button>
                         </div>
 
                         <div class="grouping-controls">
@@ -115,7 +115,7 @@
 
                     <!-- dashboard.html (Parte VISTA SINTESI aggiornata) -->
 
-                    <!-- VISTA SINTESI (Nascosta) -->
+                    <!-- SINTESI RISORSE (Nascosta) -->
                     <div id="view-summary" class="view-panel">
 
                         <!-- KPI CARDS -->
@@ -131,43 +131,15 @@
                             </div>
                         </div>
 
-                        <!-- RIGA 1: COMMESSE + TEMPO -->
-                        <div class="analysis-row">
-                            <div class="chart-box">
-                                <h4>Distribuzione per Commessa</h4>
-                                <div class="chart-wrapper"><canvas id="chartCommessaPie"></canvas></div>
-                            </div>
+                        <!-- RIGA 1: TEMPO -->
+                        <div class="analysis-row full-width">
                             <div class="chart-box">
                                 <h4>Andamento Temporale (Ore/Mese)</h4>
                                 <div class="chart-wrapper"><canvas id="chartTimeBar"></canvas></div>
                             </div>
                         </div>
 
-                        <!-- RIGA 2: LAVORAZIONI -->
-                        <div class="analysis-row">
-                            <div class="chart-box">
-                                <h4>Distribuzione per Lavorazione</h4>
-                                <div class="chart-wrapper"><canvas id="chartLavPie"></canvas></div>
-                            </div>
-                            <div class="chart-box">
-                                <h4>Top 8 Lavorazioni (Ore)</h4>
-                                <div class="chart-wrapper"><canvas id="chartLavBar"></canvas></div>
-                            </div>
-                        </div>
-
-                        <!-- RIGA 3: MACROCATEGORIE -->
-                        <div class="analysis-row">
-                            <div class="chart-box">
-                                <h4>Distribuzione per Macrocategoria</h4>
-                                <div class="chart-wrapper"><canvas id="chartMacroPie"></canvas></div>
-                            </div>
-                            <div class="chart-box">
-                                <h4>Top 8 Macrocategorie (Ore)</h4>
-                                <div class="chart-wrapper"><canvas id="chartMacroBar"></canvas></div>
-                            </div>
-                        </div>
-
-                        <!-- RIGA 4: DIPENDENTI -->
+                        <!-- RIGA 2: DIPENDENTI -->
                         <div class="analysis-row">
                             <div class="chart-box">
                                 <h4>Distribuzione per Dipendente</h4>
@@ -179,7 +151,7 @@
                             </div>
                         </div>
 
-                        <!-- RIGA 5: CROSS DATA (Lavorazioni x Dipendente) -->
+                        <!-- RIGA 3: CROSS DATA (Lavorazioni x Dipendente) -->
                         <div class="analysis-row full-width">
                             <div class="chart-box">
                                 <h4>Top 8 Lavorazioni per Dipendente (Stacked)</h4>
@@ -187,7 +159,7 @@
                             </div>
                         </div>
 
-                        <!-- RIGA 6: CROSS DATA (Macro x Dipendente) -->
+                        <!-- RIGA 4: CROSS DATA (Macro x Dipendente) -->
                         <div class="analysis-row full-width">
                             <div class="chart-box">
                                 <h4>Top 8 Macrocategorie per Dipendente (Stacked)</h4>
@@ -195,15 +167,7 @@
                             </div>
                         </div>
 
-                        <!-- RIGA 7: ANALISI ECONOMICA (Stima 45€/h) -->
-                        <div class="analysis-row full-width">
-                            <div class="chart-box">
-                                <h4>💰 Costificazione Commesse (Basata su Costo Orario Ruolo)</h4>
-                                <div class="chart-wrapper large"><canvas id="chartCostCommessa"></canvas></div>
-                            </div>
-                        </div>
-
-                        <!-- RIGA 8: ANALISI HR (ASSENZE & PERMESSI) -->
+                        <!-- RIGA 5: ANALISI HR (ASSENZE & PERMESSI) -->
                         <div class="analysis-row">
                             <div class="chart-box">
                                 <h4>🏖️ Assenze per Dipendente (Ferie/Permessi/Malattia)</h4>
@@ -216,6 +180,98 @@
                         </div>
 
                     </div>
+
+                    <!-- ANALISI COMMESSA -->
+                    <div id="view-commessa-analysis" class="view-panel">
+
+                        <!-- TOOLBAR SELEZIONE COMMESSA -->
+                        <div class="ca-selector-toolbar">
+                            <div class="ca-selector-left">
+                                <span class="ca-selector-label">Commessa:</span>
+                                <div class="ca-search-wrapper">
+                                    <input type="text" id="ca-searchInput" class="ca-search-input" 
+                                           placeholder="🔍 Cerca commessa..." autocomplete="off">
+                                    <div id="ca-searchDropdown" class="ca-search-dropdown" style="display: none;">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ca-selector-right">
+                                <div class="ca-status-toggle">
+                                    <button class="ca-toggle-btn active" id="ca-toggleAperte" data-gruppo="aperta">📂 Aperte</button>
+                                    <button class="ca-toggle-btn" id="ca-toggleTutte" data-gruppo="tutte">📁 Tutte</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="commessa-analysis-placeholder" class="placeholder-msg">
+                            <div style="font-size: 3rem; margin-bottom: 20px;">📂</div>
+                            <h2>Analisi Singola Commessa</h2>
+                            <p>Cerca e seleziona una commessa dal campo di ricerca in alto per visualizzare l'analisi di dettaglio, la distribuzione ore per macrocategoria e il budget stimato.</p>
+                        </div>
+                        
+                        <div id="commessa-analysis-content" style="display: none;">
+                            <div class="commessa-header-info">
+                                <h2 id="ca-title">Titolo Commessa</h2>
+                                <p id="ca-subtitle">Sottotitolo / Cliente</p>
+                            </div>
+
+                            <!-- KPI ROW (4 cards) -->
+                            <div class="kpi-row kpi-row-4">
+                                <div class="kpi-card blue">
+                                    <h3>Budget Stimato</h3>
+                                    <span id="ca-kpiBudget">-</span>
+                                    <small id="ca-budgetInfo" class="kpi-sub-info"></small>
+                                </div>
+                                <div class="kpi-card orange">
+                                    <h3>Ore Consumate</h3>
+                                    <span id="ca-kpiUsed">0</span>
+                                </div>
+                                <div id="ca-kpiProgressCard" class="kpi-card green">
+                                    <h3>Avanzamento</h3>
+                                    <span id="ca-kpiProgress">-</span>
+                                </div>
+                                <div id="ca-kpiDeltaCard" class="kpi-card" style="border-color: #95a5a6;">
+                                    <h3>Delta (Budget - Usate)</h3>
+                                    <span id="ca-kpiDelta">-</span>
+                                </div>
+                            </div>
+
+                            <!-- DISTRIBUZIONE ORE PER MACROCATEGORIA (Barre Proporzionali) -->
+                            <div class="analysis-row full-width">
+                                <div class="chart-box">
+                                    <h4>📊 Distribuzione Ore per Macrocategoria</h4>
+                                    <div id="ca-macro-container" class="phases-tracker-container">
+                                        <!-- Caricato Dinamicamente -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GRAFICI: Personale e Componenti -->
+                            <div class="analysis-row">
+                                <div class="chart-box">
+                                    <h4>👥 Impiego Risorse (Ore per Dipendente)</h4>
+                                    <div class="chart-wrapper"><canvas id="ca-chartUserBar"></canvas></div>
+                                </div>
+                                <div class="chart-box">
+                                    <h4>🔧 Distribuzione Lavorazioni</h4>
+                                    <div class="chart-wrapper"><canvas id="ca-chartCompPie"></canvas></div>
+                                </div>
+                            </div>
+
+                            <!-- BENCHMARK: Commesse Simili -->
+                            <div class="analysis-row full-width">
+                                <div class="chart-box" id="ca-benchmark-box">
+                                    <h4>🏗️ Benchmark – Commesse Simili (Jaccard ≥ 60%)</h4>
+                                    <p id="ca-benchmarkMsg" class="benchmark-desc">Il budget è stimato come mediana delle ore di commesse chiuse con profilo macrocategorie simile.</p>
+                                    <div id="ca-benchmark-table-container">
+                                        <!-- Tabella benchmark caricata dinamicamente -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <!-- VISTA DETTAGLIO (Attiva) -->
                     <div id="view-detail" class="view-panel active">
