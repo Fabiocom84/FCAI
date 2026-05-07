@@ -681,6 +681,7 @@ const Dashboard = {
 
             // 10. GANTT: Fasi di produzione con proiezione ombra
             const ganttData = data.gantt;
+            console.log('🔍 GANTT DEBUG - data.gantt:', JSON.stringify(ganttData).substring(0, 500));
             if (ganttData) {
                 this.renderGanttChart(ganttData);
             }
