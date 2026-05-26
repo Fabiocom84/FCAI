@@ -386,6 +386,76 @@ const App = {
                     formatter: (r) => r.data_invio ? new Date(r.data_invio).toLocaleDateString('it-IT') : '-'
                 }
             ]
+        },
+
+        'audit_log': {
+            apiEndpoint: '/api/admin/audit-log',
+            idColumn: 'id_log',
+            defaultSortBy: 'timestamp',
+            defaultSortOrder: 'desc',
+            readOnly: true,
+            columns: [
+                {
+                    key: 'timestamp',
+                    label: 'Data/Ora',
+                    editable: false,
+                    formatter: (r) => {
+                        if (!r.timestamp) return '';
+                        return new Date(r.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
+                },
+                {
+                    key: 'nome_utente',
+                    label: 'Utente',
+                    editable: false
+                },
+                {
+                    key: 'azione',
+                    label: 'Azione',
+                    editable: false,
+                    formatter: (r) => {
+                        const badges = {
+                            'DELETE': '<span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">DELETE</span>',
+                            'CREATE': '<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">CREATE</span>',
+                            'UPDATE': '<span style="background:#3498db;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">UPDATE</span>',
+                            'STATUS_CHANGE': '<span style="background:#8e44ad;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">STATUS</span>',
+                            'ADMIN_OVERRIDE': '<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">OVERRIDE</span>',
+                            'ADMIN_ACTION': '<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">ADMIN</span>',
+                            'LOGIN': '<span style="background:#95a5a6;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">LOGIN</span>'
+                        };
+                        return badges[r.azione] || `<span style="background:#bdc3c7;padding:2px 8px;border-radius:4px;font-size:0.8em">${r.azione}</span>`;
+                    }
+                },
+                {
+                    key: 'entita',
+                    label: 'Entit\u00e0',
+                    editable: false
+                },
+                {
+                    key: 'id_entita',
+                    label: 'ID',
+                    editable: false,
+                    formatter: (r) => r.id_entita || '-'
+                },
+                {
+                    key: 'dettagli',
+                    label: 'Dettagli',
+                    editable: false,
+                    formatter: (r) => {
+                        if (!r.dettagli || Object.keys(r.dettagli).length === 0) return '-';
+                        const entries = Object.entries(r.dettagli)
+                            .map(([k, v]) => `<b>${k}</b>: ${v}`)
+                            .join(', ');
+                        return `<span style="font-size:0.85em;color:#555">${entries}</span>`;
+                    }
+                },
+                {
+                    key: 'ip_address',
+                    label: 'IP',
+                    editable: false,
+                    formatter: (r) => r.ip_address || '-'
+                }
+            ]
         }
     },
 
@@ -948,6 +1018,20 @@ const App = {
 
     renderToolbar: function () {
         const view = this.state.currentView;
+        const config = this.viewConfig[view];
+        const isReadOnly = config?.readOnly === true;
+
+        if (isReadOnly) {
+            // Vista read-only: solo barra ricerca
+            this.dom.toolbarArea.innerHTML = `
+                <div class="toolbar-group search-group">
+                    <input type="text" id="filter-search-term" placeholder="Cerca nel registro..."/>
+                    <button class="button icon-button" id="searchBtn" title="Cerca">🔎</button>
+                    <button class="button icon-button" id="resetSearchBtn" title="Azzera ricerca">🧹</button>
+                </div>
+            `;
+            return;
+        }
 
         this.dom.toolbarArea.innerHTML = `
             <div class="toolbar-group">
@@ -1041,7 +1125,14 @@ const App = {
         const headerRow = thead.insertRow();
 
         const fixedHeaders = [{ text: '#', title: 'Numero Riga' }, { text: '☑️', title: 'Seleziona' }];
-        fixedHeaders.forEach(header => {
+
+        // In vista read-only, nascondi la colonna di selezione
+        const isReadOnly = config.readOnly === true;
+        const headersToRender = isReadOnly 
+            ? [{ text: '#', title: 'Numero Riga' }] 
+            : fixedHeaders;
+
+        headersToRender.forEach(header => {
             const th = document.createElement('th');
             th.textContent = header.text;
             th.title = header.title;
@@ -1075,7 +1166,7 @@ const App = {
         if (data.length === 0) {
             const noDataRow = tbody.insertRow();
             const cell = noDataRow.insertCell();
-            cell.colSpan = config.columns.length + 2;
+            cell.colSpan = config.columns.length + (isReadOnly ? 1 : 2);
             cell.textContent = 'Nessun dato trovato. Modifica i filtri per una nuova ricerca.';
             cell.style.textAlign = 'center'; cell.style.padding = '20px';
             cell.style.fontStyle = 'italic'; cell.style.color = '#666';
@@ -1096,13 +1187,15 @@ const App = {
                 cellNum.textContent = pageOffset + index + 1;
                 row.appendChild(cellNum);
 
-                // Cella Radio
-                const cellSelect = document.createElement('td');
-                const radio = document.createElement('input');
-                radio.type = 'radio'; radio.name = 'rowSelector';
-                radio.value = rowData[config.idColumn];
-                cellSelect.appendChild(radio);
-                row.appendChild(cellSelect);
+                // Cella Radio (nascosta in read-only)
+                if (!isReadOnly) {
+                    const cellSelect = document.createElement('td');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio'; radio.name = 'rowSelector';
+                    radio.value = rowData[config.idColumn];
+                    cellSelect.appendChild(radio);
+                    row.appendChild(cellSelect);
+                }
 
                 // Celle Dati
                 config.columns.forEach(col => {
