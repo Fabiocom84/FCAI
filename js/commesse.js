@@ -86,127 +86,72 @@ const App = {
     },
 
     loadUnifiedData: async function () {
-        // --- SWR PATTERN (Stale-While-Revalidate) ---
-        // 1. Check & Render Cached Data (Instant)
-        const cachedInit = localStorage.getItem('commesse_init_v2'); // FORCE REFRESH: v2
-        const cachedList = localStorage.getItem('commesse_list_cache');
+        // --- SWR PATTERN (Stale-While-Revalidate) — Solo metadati ---
+        // I dati commesse vengono sempre caricati dall'endpoint paginato /api/commesse/view
+        const cachedInit = localStorage.getItem('commesse_init_v3');
         const cacheTimestamp = localStorage.getItem('commesse_cache_ts');
         const now = Date.now();
-        const MAX_AGE = 3600 * 1000; // 1 ora per init data
+        const MAX_AGE = 3600 * 1000; // 1 ora
 
-        let renderedFromCache = false;
+        // Pulizia cache obsoleta (v2 e commesse_list_cache non più usati)
+        localStorage.removeItem('commesse_init_v2');
+        localStorage.removeItem('commesse_init_v1');
+        localStorage.removeItem('commesse_list_cache');
 
-        if (cachedInit && cachedList) {
+        // 1. Render immediato da cache metadati (se valida)
+        let metadataCached = false;
+        if (cachedInit) {
             try {
                 const initData = JSON.parse(cachedInit);
-                const listData = JSON.parse(cachedList);
-
-                // Check Validità Init Data (Non scaduto)
                 if (cacheTimestamp && (now - parseInt(cacheTimestamp) < MAX_AGE)) {
-                    console.log("⚡ CACHE HIT: Rendering from Storage");
-
-                    // Popola State
+                    console.log("⚡ CACHE HIT: Metadati da Storage");
                     this.state.allStatuses = initData.status || [];
                     this.state.allMacros = initData.macros || [];
                     this.state.allPhases = initData.fasi || [];
-
                     if (IsAdmin) this.initModalChoices(initData.clienti || [], initData.modelli || [], initData.macros || []);
-
-                    if (listData && listData.length > 0) {
-                        this.state.totalCount = listData.length; // Approssimato
-
-                        // [FIX] Apply Client-Side Filtering on Cache
-                        const filteredList = this.state.activeStatus
-                            ? listData.filter(c => c.status_commessa?.nome_status === this.state.activeStatus)
-                            : listData;
-
-                        this.renderCards(filteredList);
-                        renderedFromCache = true;
-
-                        // Show "Syncing" indicator
-                        this.showSyncIndicator(true);
-                    }
+                    metadataCached = true;
                 }
             } catch (e) {
-                console.warn("Cache Corrupted", e);
-                localStorage.removeItem('commesse_init_v1');
+                console.warn("Cache metadati corrotta", e);
+                localStorage.removeItem('commesse_init_v3');
             }
         }
 
-        // 2. Network Fetch (Always execute to revalidate/update)
-        try {
-            console.log("📡 REMOTE FETCH: Updating data...");
-            // Se non abbiamo renderizzato da cache, mostriamo loader classico
-            if (!renderedFromCache && this.dom.loader) this.dom.loader.style.display = 'flex';
+        // 2. Fetch metadati freschi (in parallelo con le card)
+        const metadataPromise = apiFetch('/api/commesse/init-data')
+            .then(res => res.json())
+            .then(data => {
+                // Aggiorna cache metadati
+                localStorage.setItem('commesse_init_v3', JSON.stringify({
+                    status: data.status, macros: data.macros,
+                    fasi: data.fasi, clienti: data.clienti, modelli: data.modelli
+                }));
+                localStorage.setItem('commesse_cache_ts', now.toString());
 
-            const res = await apiFetch('/api/commesse/init-data');
-            const data = await res.json();
+                // Aggiorna state
+                this.state.allStatuses = data.status || [];
+                this.state.allMacros = data.macros || [];
+                this.state.allPhases = data.fasi || [];
 
-            // Aggiorna Storage
-            localStorage.setItem('commesse_init_v2', JSON.stringify({
-                status: data.status,
-                macros: data.macros,
-                fasi: data.fasi,
-                clienti: data.clienti,
-                modelli: data.modelli
-            }));
-            localStorage.setItem('commesse_cache_ts', now.toString());
-
-            // Aggiorna State
-            this.state.allStatuses = data.status || [];
-            this.state.allMacros = data.macros || [];
-            this.state.allPhases = data.fasi || [];
-
-            // Re-init Choices se Admin (Aggiorna opzioni con dati freschi)
-            if (IsAdmin) {
-                // Forziamo l'aggiornamento delle scelte anche se esistono già (per bug fix lista incompleta cache vs live)
-                this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
-            }
-
-            // 3. Verifica dati lista (Fresh)
-            if (data.commesse_data) {
-                this.state.totalCount = data.commesse_count || 0;
-                const freshListJson = JSON.stringify(data.commesse_data);
-                const cachedListJson = localStorage.getItem('commesse_list_cache');
-                localStorage.setItem('commesse_list_cache', freshListJson);
-
-                // SMART RE-RENDER: se dati identici alla cache già renderizzata, skip DOM rebuild
-                if (renderedFromCache && freshListJson === cachedListJson) {
-                    console.log("✅ Dati identici alla cache, skip re-render");
-                    // Carica comunque OP stats (i badge dalla cache sono placeholder)
-                    this.loadOpStatsBatch();
-                } else if (data.commesse_data.length === 0) {
-                    this.state.hasMore = false;
-                    this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Nessuna commessa trovata.</div>';
-                } else {
-                    this.dom.grid.innerHTML = ''; // Reset UI cache
-
-                    // [FIX] Apply Client-Side Filtering on Fresh Data
-                    const filteredFresh = this.state.activeStatus
-                        ? data.commesse_data.filter(c => c.status_commessa?.nome_status === this.state.activeStatus)
-                        : data.commesse_data;
-
-                    this.renderCards(filteredFresh);
-
-                    if (data.commesse_data.length < 12) {
-                        this.state.hasMore = false;
-                    } else {
-                        this.state.currentPage = 2;
-                    }
+                if (IsAdmin) {
+                    this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
                 }
-            } else {
-                // Fallback fetch se init-data non ha commesse
-                this.fetchCommesse(true);
-            }
+                console.log("📡 Metadati aggiornati da server");
+            })
+            .catch(e => console.warn("Errore fetch metadati (non bloccante):", e));
 
-        } catch (e) {
-            console.error("Errore fetch unified data:", e);
-            if (!renderedFromCache) {
-                this.fetchCommesse(true);
-            }
-        } finally {
-            if (this.dom.loader) this.dom.loader.style.display = 'none';
-            this.showSyncIndicator(false);
+        // 3. Carica commesse dall'endpoint paginato (filtro server-side)
+        // Se i metadati non erano in cache, aspettiamo prima quelli per avere allPhases/allStatuses
+        if (!metadataCached) {
+            await metadataPromise;
+        }
+
+        // Fetch commesse paginato — sempre server-side
+        await this.fetchCommesse(true);
+
+        // Se i metadati erano in cache, aspettiamo il revalidate in background
+        if (metadataCached) {
+            await metadataPromise;
         }
     },
 
