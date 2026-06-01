@@ -1353,15 +1353,21 @@ const MobileHoursApp = {
     },
 
     loadSmartOptions: async function (commessaId) {
-        // Reset scelta Macro e Componente
+        // Reset scelta Macro e Componente con feedback visivo
+        const macroWrapper = this.dom.macroSelect?.closest('.choices');
+        const compWrapper = this.dom.componentSelect?.closest('.choices');
+        
         if (this.state.choicesMacro) {
             this.state.choicesMacro.clearStore();
-            this.state.choicesMacro.setChoices([{ value: '', label: 'Caricamento...', disabled: true, selected: true }], 'value', 'label', true);
+            this.state.choicesMacro.setChoices([{ value: '', label: '⏳ Caricamento...', disabled: true, selected: true }], 'value', 'label', true);
             this.state.choicesMacro.disable();
+            if (macroWrapper) macroWrapper.classList.add('choices--loading');
         }
         if (this.state.choicesComponent) {
             this.state.choicesComponent.clearStore();
+            this.state.choicesComponent.setChoices([{ value: '', label: '⏳ Caricamento...', disabled: true, selected: true }], 'value', 'label', true);
             this.state.choicesComponent.disable();
+            if (compWrapper) compWrapper.classList.add('choices--loading');
         }
 
         const cacheKey = `options_v1_c${commessaId}`;
@@ -1412,7 +1418,13 @@ const MobileHoursApp = {
             this.state.choicesMacro.clearStore();
             this.state.choicesMacro.setChoices(macroChoices, 'value', 'label', true);
             this.state.choicesMacro.enable();
+            // Rimuovi stato di caricamento
+            const macroWrapper = this.dom.macroSelect?.closest('.choices');
+            if (macroWrapper) macroWrapper.classList.remove('choices--loading');
         }
+        // Rimuovi loading anche da componente
+        const compWrapper = this.dom.componentSelect?.closest('.choices');
+        if (compWrapper) compWrapper.classList.remove('choices--loading');
     },
 
     renderComponentOptions: function (macroId) {

@@ -427,6 +427,34 @@ input:focus {
     color: white;
 }
 
+/* --- Feedback visivo caricamento dropdown --- */
+.choices--loading .choices__inner {
+    border-color: #3498db;
+    animation: pulse-border 1.2s ease-in-out infinite;
+}
+
+.choices--loading .choices__inner::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: #3498db; }
+    50% { border-color: #93c5fd; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 
 /* --- CAMPI INSERIMENTO ORE (Semplificato) --- */
 /* Rimuoviamo gli stili complessi del calcolatore e teniamo lo stile semplice */
