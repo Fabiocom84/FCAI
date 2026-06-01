@@ -381,11 +381,22 @@ const PrintPage = {
 
     loadTemplate: async function () {
         try {
-            const templateUrl = "https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf";
-            const res = await fetch(templateUrl);
-            if (!res.ok) throw new Error("Template non trovato");
-            this.state.templateBytes = await res.arrayBuffer();
-        } catch (e) { console.error("PDF Template Error:", e); }
+            // Carica template PDF e font Roboto in parallelo
+            const [templateRes, fontRegRes, fontBoldRes] = await Promise.all([
+                fetch("https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf"),
+                fetch("fonts/Roboto-Regular.ttf"),
+                fetch("fonts/Roboto-Bold.ttf")
+            ]);
+
+            if (!templateRes.ok) throw new Error("Template non trovato");
+            this.state.templateBytes = await templateRes.arrayBuffer();
+
+            // Font embedded: risolve il problema dei "geroglifici" su PC senza Helvetica
+            if (fontRegRes.ok) this.state.fontRegularBytes = await fontRegRes.arrayBuffer();
+            if (fontBoldRes.ok) this.state.fontBoldBytes = await fontBoldRes.arrayBuffer();
+
+            console.log("✅ Template e font caricati");
+        } catch (e) { console.error("PDF Template/Font Error:", e); }
     },
 
 
@@ -507,8 +518,17 @@ const PrintPage = {
             // B. PDF setup
             const pdfDoc = await PDFLib.PDFDocument.load(this.state.templateBytes);
             const page = pdfDoc.getPages()[0];
-            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-            const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+            // [FIX] Font embedded (Roboto TTF) — fallback a StandardFonts se non disponibili
+            let font, fontBold;
+            if (this.state.fontRegularBytes && this.state.fontBoldBytes) {
+                font = await pdfDoc.embedFont(this.state.fontRegularBytes);
+                fontBold = await pdfDoc.embedFont(this.state.fontBoldBytes);
+            } else {
+                console.warn("⚠️ Font Roboto non disponibili, fallback a Helvetica");
+                font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+                fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+            }
             const mNames = ["GENNAIO", "FEBBRAIO", "MARZO", "APRILE", "MAGGIO", "GIUGNO", "LUGLIO", "AGOSTO", "SETTEMBRE", "OTTOBRE", "NOVEMBRE", "DICEMBRE"];
 
             const HEADER_Y = 712;

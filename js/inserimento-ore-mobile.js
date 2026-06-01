@@ -1269,23 +1269,64 @@ const MobileHoursApp = {
             shouldSort: false, position: 'bottom', renderChoiceLimit: 50, removeItemButton: false
         });
 
-        // Caricamento Dati Iniziali Commessa
-        try {
-            const res = await apiFetch('/api/get-etichette');
-            const data = await res.json();
+        // Caricamento Dati Iniziali Commessa (SWR Cache)
+        const ETICHETTE_CACHE_KEY = 'etichette_ore_v1';
+        const ETICHETTE_TS_KEY = 'etichette_ore_ts';
+        const ETICHETTE_MAX_AGE = 30 * 60 * 1000; // 30 minuti
 
-            // DEBUG DATA STRUCTURE
+        // 1. Render immediato da cache (se presente e valida)
+        const cachedEtichette = localStorage.getItem(ETICHETTE_CACHE_KEY);
+        const cachedTs = localStorage.getItem(ETICHETTE_TS_KEY);
+        const now = Date.now();
+        let renderedFromEtichetteCache = false;
 
+        if (cachedEtichette) {
+            try {
+                const cached = JSON.parse(cachedEtichette);
+                this.state.commesseMap = {};
+                const choicesData = cached.map(c => {
+                    const safeId = c.id || c.id_commessa;
+                    this.state.commesseMap[safeId] = c.label;
+                    return { value: safeId, label: c.label };
+                });
+                this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
+                renderedFromEtichetteCache = true;
+                console.log("⚡ CACHE HIT: Etichette commesse da localStorage");
+            } catch (e) {
+                console.warn("Cache etichette corrotta", e);
+                localStorage.removeItem(ETICHETTE_CACHE_KEY);
+            }
+        }
 
-            this.state.commesseMap = {};
-            const choicesData = data.map(c => {
-                // FALLBACK: Probabile che l'API ritorni 'id_commessa' e non 'id'
-                const safeId = c.id || c.id_commessa;
-                this.state.commesseMap[safeId] = c.label;
-                return { value: safeId, label: c.label };
-            });
-            this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
-        } catch (e) { console.error("Errore caricamento etichette:", e); }
+        // 2. Fetch dati freschi (in background se cache valida, bloccante se no)
+        const fetchEtichette = async () => {
+            try {
+                const res = await apiFetch('/api/get-etichette');
+                const data = await res.json();
+
+                // Salva in cache
+                localStorage.setItem(ETICHETTE_CACHE_KEY, JSON.stringify(data));
+                localStorage.setItem(ETICHETTE_TS_KEY, Date.now().toString());
+
+                // Aggiorna dropdown solo se i dati sono diversi dalla cache
+                this.state.commesseMap = {};
+                const choicesData = data.map(c => {
+                    const safeId = c.id || c.id_commessa;
+                    this.state.commesseMap[safeId] = c.label;
+                    return { value: safeId, label: c.label };
+                });
+                this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
+                console.log("📡 Etichette aggiornate da server");
+            } catch (e) { console.error("Errore caricamento etichette:", e); }
+        };
+
+        // Se cache scaduta o mancante, aspetta il fetch
+        if (!renderedFromEtichetteCache || !cachedTs || (now - parseInt(cachedTs) > ETICHETTE_MAX_AGE)) {
+            await fetchEtichette();
+        } else {
+            // Cache valida: fetch in background senza bloccare
+            fetchEtichette();
+        }
 
         // Listener Commessa -> Carica Macro
         const handleCommessaChange = (e) => {
