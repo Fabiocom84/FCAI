@@ -521,7 +521,8 @@ const PrintPage = {
 
             // [FIX] Font embedded (Roboto TTF) — fallback a StandardFonts se non disponibili
             let font, fontBold;
-            if (this.state.fontRegularBytes && this.state.fontBoldBytes) {
+            if (this.state.fontRegularBytes && this.state.fontBoldBytes && typeof fontkit !== 'undefined') {
+                pdfDoc.registerFontkit(fontkit);
                 font = await pdfDoc.embedFont(this.state.fontRegularBytes);
                 fontBold = await pdfDoc.embedFont(this.state.fontBoldBytes);
             } else {
