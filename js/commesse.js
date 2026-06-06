@@ -375,6 +375,10 @@ const App = {
     },
 
     renderCards: function (commesse) {
+        // [FIX] Rimuovi skeleton loader esplicitamente (il riferimento this.dom.loader è stale dopo innerHTML='')
+        const loader = document.getElementById('loader');
+        if (loader) loader.remove();
+
         const fragment = document.createDocumentFragment();
 
         commesse.forEach(c => {
