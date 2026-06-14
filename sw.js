@@ -1,7 +1,7 @@
 // sw.js — Service Worker per Segretario AI
 // Strategia: Cache-First per assets statici, Network-Only per API
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `segretario-ai-${CACHE_VERSION}`;
 
 // Assets da pre-cachare all'installazione (shell minima)
@@ -14,7 +14,9 @@ const PRECACHE_ASSETS = [
     'js/supabase-client.js',
     'js/shared-ui.js',
     'js/libs/supabase.min.js',
-    'js/libs/choices.min.js'
+    'js/libs/choices.min.js',
+    'dark-mode.css',
+    'js/dark-mode.js'
 ];
 
 // Pattern di URL da NON cachare mai

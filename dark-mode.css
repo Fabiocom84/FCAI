@@ -1,0 +1,258 @@
+/* ==========================================================================
+   DARK MODE — Segretario AI
+   Attivato con la classe [data-theme="dark"] su <html>
+   ========================================================================== */
+
+/* --- Variabili Dark Mode --- */
+[data-theme="dark"] body {
+    background-color: #1a1a2e;
+}
+
+[data-theme="dark"] body::after {
+    background-color: rgba(20, 20, 40, 0.85);
+}
+
+/* App Shell */
+[data-theme="dark"] .std-app-shell {
+    background-color: #16213e;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .std-app-header {
+    background-color: #0f3460;
+}
+
+[data-theme="dark"] .std-app-content {
+    background-color: #16213e;
+    color: #e0e0e0;
+}
+
+/* Testi */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] label,
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+    color: #c8c8d0;
+}
+
+/* Home Page */
+[data-theme="dark"] .main-container {
+    background-color: rgba(22, 33, 62, 0.95);
+}
+
+[data-theme="dark"] .greeting-text {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .nav-button {
+    background-color: #1a1a40;
+    border-color: #2a2a5a;
+}
+
+[data-theme="dark"] .nav-button:hover {
+    background-color: #252560;
+    border-color: #3a3a7a;
+}
+
+[data-theme="dark"] .nav-button .nav-text {
+    color: #d0d0d8;
+}
+
+/* Form Elements */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background-color: #1e2a4a;
+    color: #e0e0e0;
+    border-color: #3a4a6a;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: #7a8a9a;
+}
+
+/* Tabelle */
+[data-theme="dark"] table {
+    border-color: #2a3a5a;
+}
+
+[data-theme="dark"] thead th {
+    background-color: #0f3460 !important;
+    color: #e0e0e0 !important;
+    border-color: #1a4a7a;
+}
+
+[data-theme="dark"] tbody tr {
+    background-color: #16213e;
+    border-color: #2a3a5a;
+}
+
+[data-theme="dark"] tbody tr:nth-child(even) {
+    background-color: #1a2744;
+}
+
+[data-theme="dark"] tbody tr:hover {
+    background-color: #1e3050;
+}
+
+/* Card */
+[data-theme="dark"] .card,
+[data-theme="dark"] .commessa-card {
+    background-color: #1a2744;
+    border-color: #2a3a5a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Modali */
+[data-theme="dark"] .modal-content {
+    background-color: #16213e;
+    border-color: #2a3a5a;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .modal-header {
+    background-color: #0f3460;
+    border-color: #1a4a7a;
+}
+
+[data-theme="dark"] .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Bottoni standard */
+[data-theme="dark"] .std-btn {
+    border-color: #3a4a6a;
+}
+
+[data-theme="dark"] .std-btn--secondary {
+    background-color: #2a3a5a;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .std-btn--secondary:hover {
+    background-color: #3a4a6a;
+}
+
+/* Legend / Help */
+[data-theme="dark"] .legend {
+    background-color: #1a2744;
+    border-color: #2a3a5a;
+    color: #e0e0e0;
+}
+
+/* Scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #16213e;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #3a4a6a;
+    border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #4a5a7a;
+}
+
+/* Login Page */
+[data-theme="dark"] .login-container {
+    background-color: rgba(22, 33, 62, 0.95);
+    border-color: #2a3a5a;
+}
+
+/* Skeleton loading */
+[data-theme="dark"] .skeleton-card {
+    background-color: #1a2744;
+}
+
+[data-theme="dark"] .skeleton-card .skeleton-line {
+    background: linear-gradient(90deg, #2a3a5a 25%, #3a4a6a 50%, #2a3a5a 75%);
+    background-size: 200% 100%;
+}
+
+/* Gestione agile table */
+[data-theme="dark"] .agile-table-container {
+    background-color: #16213e;
+}
+
+[data-theme="dark"] #agile-table td {
+    border-color: #2a3a5a;
+    color: #c8c8d0;
+}
+
+/* Kanban / Attivita */
+[data-theme="dark"] .kanban-column {
+    background-color: #1a2744;
+    border-color: #2a3a5a;
+}
+
+[data-theme="dark"] .task-card {
+    background-color: #16213e;
+    border-color: #2a3a5a;
+}
+
+[data-theme="dark"] .task-card:hover {
+    background-color: #1e3050;
+}
+
+[data-theme="dark"] .task-inspector-fixed {
+    background-color: #16213e;
+    border-color: #2a3a5a;
+}
+
+/* Dashboard charts */
+[data-theme="dark"] .chart-container {
+    background-color: #1a2744;
+    border-color: #2a3a5a;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    background-color: #2c3e50;
+    color: #f1c40f;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .dark-mode-toggle {
+    background-color: #f39c12;
+    color: #1a1a2e;
+    border-color: rgba(0,0,0,0.2);
+}
