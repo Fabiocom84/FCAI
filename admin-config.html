@@ -44,6 +44,8 @@
                     <button class="config-tab active" data-target="tab-macros">1. Macro Categorie</button>
                     <button class="config-tab" data-target="tab-components">2. Configura Componenti</button>
                     <button class="config-tab" data-target="tab-orders">3. Configura Commesse</button>
+                    <button class="config-tab" data-target="tab-keywords">4. Keywords OP</button>
+                    <button class="config-tab" data-target="tab-kw-assoc">5. Associa Keywords</button>
                 </div>
 
                 <!-- CONTENUTO TABS -->
@@ -125,6 +127,58 @@
                                         <th style="width: 40%;">Dettagli Commessa</th>
                                         <th style="width: 45%;">Macro Attive</th>
                                         <th style="width: 15%; text-align: center;">Salva</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- JS popola qui --></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: KEYWORDS OP (Anagrafica) -->
+                    <div id="tab-keywords" class="tab-pane">
+                        <div class="input-panel">
+                            <h3>Aggiungi Nuova Keyword</h3>
+                            <div class="input-group">
+                                <input type="text" id="newKeyword" placeholder="Parola chiave (singola parola, es: struttura)">
+                                <button id="addKeywordBtn" class="std-btn std-btn--primary">+ Aggiungi Keyword</button>
+                            </div>
+                            <p style="margin: 8px 0 0; color: #666; font-size: 0.85em;">
+                                Le keywords vengono normalizzate in minuscolo. Solo parole singole, no spazi.
+                            </p>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="config-table" id="keywordsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Keyword</th>
+                                        <th style="width: 60%;">Associata a (Macro → Lavorazione)</th>
+                                        <th style="width: 15%; text-align: center;">Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- JS popola qui --></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: ASSOCIAZIONI KEYWORDS (Combo Macro+Lavorazione) -->
+                    <div id="tab-kw-assoc" class="tab-pane">
+                        <div class="input-panel" style="background: #e8f4fc; border-color: #b8daff;">
+                            <p style="margin: 0; color: #004085;">
+                                <strong>Info:</strong> Per ogni combinazione Macro + Lavorazione, seleziona le keywords
+                                da <strong>includere</strong> (✅ match positivo) e quelle da <strong>escludere</strong>
+                                (❌ se presente, non associare). Le keywords disponibili sono quelle create nella Tab 4.
+                            </p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="config-table" id="kwAssocTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 12%;">Macro</th>
+                                        <th style="width: 18%;">Lavorazione</th>
+                                        <th style="width: 30%;">✅ Keywords Include</th>
+                                        <th style="width: 30%;">❌ Keywords Exclude</th>
+                                        <th style="width: 10%; text-align: center;">Salva</th>
                                     </tr>
                                 </thead>
                                 <tbody><!-- JS popola qui --></tbody>

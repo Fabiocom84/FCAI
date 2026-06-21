@@ -9,7 +9,9 @@ const App = {
         ruoli: [],
         fasi: [],
         allComponents: [],
-        componentiPage: 1
+        componentiPage: 1,
+        keywords: [],       // Anagrafica keywords_op
+        matchings: []       // Associazioni keywords_matching
     },
 
     init: async function() {
@@ -40,7 +42,11 @@ const App = {
         document.getElementById('prevCompPage')?.addEventListener('click', () => this.changeCompPage(-1));
         document.getElementById('nextCompPage')?.addEventListener('click', () => this.changeCompPage(1));
         document.getElementById('addCompBtn')?.addEventListener('click', () => this.addComponent());
+        // Keywords Tab 4
+        document.getElementById('addKeywordBtn')?.addEventListener('click', () => this.addKeyword());
+        document.getElementById('newKeyword')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.addKeyword(); });
     },
+
 
     // --- NUOVA FUNZIONE PER LA PAGINAZIONE ---
     changeCompPage: function(delta) {
@@ -72,6 +78,21 @@ const App = {
             
             console.log(`✅ ANALISI DATI: Macro ${this.data.macros.length}, Ruoli ${this.data.ruoli.length}`);
 
+            // Caricamento keywords (non-blocking per le tab esistenti)
+            try {
+                const [kwRes, matchRes] = await Promise.all([
+                    apiFetch('/api/keywords'),
+                    apiFetch('/api/keywords/matching')
+                ]);
+                this.data.keywords = kwRes.ok ? await kwRes.json() : [];
+                this.data.matchings = matchRes.ok ? await matchRes.json() : [];
+                console.log(`🔑 Keywords: ${this.data.keywords.length}, Matchings: ${this.data.matchings.length}`);
+            } catch (kwErr) {
+                console.warn("⚠️ Keywords load failed (tabelle non ancora create?):", kwErr);
+                this.data.keywords = [];
+                this.data.matchings = [];
+            }
+
         } catch (e) {
             console.error("❌ Errore loadRefData:", e);
             const tbody = document.querySelector('#macrosTable tbody');
@@ -83,12 +104,24 @@ const App = {
     setupTabs: function() {
         const tabs = document.querySelectorAll('.config-tab');
         const contents = document.querySelectorAll('.tab-pane');
+        const renderedTabs = {};
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
                 tab.classList.add('active');
-                document.getElementById(tab.dataset.target)?.classList.add('active');
+                const target = tab.dataset.target;
+                document.getElementById(target)?.classList.add('active');
+
+                // Lazy rendering per Tab 4 e 5
+                if (target === 'tab-keywords' && !renderedTabs['tab-keywords']) {
+                    renderedTabs['tab-keywords'] = true;
+                    this.renderKeywords();
+                }
+                if (target === 'tab-kw-assoc') {
+                    // Sempre re-render (le keywords potrebbero essere cambiate)
+                    this.renderKwAssociations();
+                }
             });
         });
     },
@@ -455,6 +488,235 @@ const App = {
                 });
             });
         } catch(e) { console.error(e); }
+    },
+
+    // ============================================================
+    // == TAB 4: KEYWORDS OP (Anagrafica) ==
+    // ============================================================
+
+    addKeyword: async function() {
+        const input = document.getElementById('newKeyword');
+        const raw = (input.value || '').trim().toLowerCase();
+        if (!raw) return alert("Inserisci una keyword.");
+        if (raw.includes(' ')) return alert("Solo parole singole, senza spazi.");
+
+        const btn = document.getElementById('addKeywordBtn');
+        btn.disabled = true; btn.textContent = "⏳";
+
+        try {
+            const res = await apiFetch('/api/keywords', {
+                method: 'POST',
+                body: JSON.stringify({ keyword: raw })
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Errore creazione');
+            }
+            input.value = '';
+            // Ricarica dati e re-render
+            await this.reloadKeywordsData();
+            this.renderKeywords();
+        } catch (e) {
+            alert("Errore: " + e.message);
+        } finally {
+            btn.disabled = false; btn.textContent = "+ Aggiungi Keyword";
+        }
+    },
+
+    reloadKeywordsData: async function() {
+        try {
+            const [kwRes, matchRes] = await Promise.all([
+                apiFetch('/api/keywords'),
+                apiFetch('/api/keywords/matching')
+            ]);
+            this.data.keywords = kwRes.ok ? await kwRes.json() : [];
+            this.data.matchings = matchRes.ok ? await matchRes.json() : [];
+        } catch (e) {
+            console.error("Errore reload keywords:", e);
+        }
+    },
+
+    renderKeywords: function() {
+        const tbody = document.querySelector('#keywordsTable tbody');
+        if (!tbody) return;
+
+        if (this.data.keywords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Nessuna keyword creata. Usa il campo sopra per aggiungerne una.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        // Ordina alfabeticamente
+        const sorted = [...this.data.keywords].sort((a, b) => a.keyword.localeCompare(b.keyword));
+
+        sorted.forEach(kw => {
+            const tr = document.createElement('tr');
+
+            // Trova associazioni di questa keyword
+            const assocs = (kw.keywords_matching || []);
+            let assocHtml = '';
+            if (assocs.length === 0) {
+                assocHtml = '<span style="color: #999; font-style: italic;">Nessuna associazione</span>';
+            } else {
+                assocHtml = assocs.map(a => {
+                    const macro = this.data.macros.find(m => m.id_macro_categoria === a.id_macro_categoria);
+                    const comp = this.data.allComponents.find(c => c.id_componente === a.id_componente);
+                    const macroName = macro ? (macro.nome || macro.nome_macro || '?') : '?';
+                    const compName = comp ? comp.nome_componente : '?';
+                    const tipoIcon = a.tipo === 'include' ? '✅' : '❌';
+                    return `<span class="kw-assoc-badge ${a.tipo}" title="${a.tipo}">${tipoIcon} ${macroName} → ${compName}</span>`;
+                }).join(' ');
+            }
+
+            tr.innerHTML = `
+                <td style="font-weight: 600; font-family: monospace; font-size: 1.05em;">${kw.keyword}</td>
+                <td style="line-height: 1.8;">${assocHtml}</td>
+                <td style="text-align: center;">
+                    <button class="action-btn delete-kw-btn" data-id="${kw.id_keyword}" data-name="${kw.keyword}" 
+                            title="Elimina" style="color: #dc3545; border-color: #dc3545;">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Bind delete
+            tr.querySelector('.delete-kw-btn').addEventListener('click', async (e) => {
+                const btn = e.currentTarget;
+                const name = btn.dataset.name;
+                const assocCount = assocs.length;
+                const msg = assocCount > 0
+                    ? `Eliminare la keyword "${name}"?\n⚠️ Ha ${assocCount} associazione/i che verranno rimosse.`
+                    : `Eliminare la keyword "${name}"?`;
+                if (!confirm(msg)) return;
+
+                btn.textContent = "⏳";
+                try {
+                    const res = await apiFetch(`/api/keywords/${btn.dataset.id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Errore eliminazione');
+                    await App.reloadKeywordsData();
+                    App.renderKeywords();
+                } catch (err) {
+                    alert("Errore: " + err.message);
+                    btn.textContent = "🗑️";
+                }
+            });
+        });
+    },
+
+    // ============================================================
+    // == TAB 5: ASSOCIAZIONI KEYWORDS (Combo Macro + Lavorazione) ==
+    // ============================================================
+
+    renderKwAssociations: function() {
+        const tbody = document.querySelector('#kwAssocTable tbody');
+        if (!tbody) return;
+
+        // Costruisci tutte le combo macro+lavorazione esistenti
+        const combos = [];
+        this.data.allComponents.forEach(comp => {
+            const macroIds = comp.ids_macro_categorie || [];
+            macroIds.forEach(mId => {
+                const macro = this.data.macros.find(m => m.id_macro_categoria === mId);
+                if (macro) {
+                    combos.push({
+                        id_componente: comp.id_componente,
+                        id_macro_categoria: mId,
+                        macroName: macro.nome || macro.nome_macro || '?',
+                        macroIcon: macro.icona || '📦',
+                        compName: comp.nome_componente || '?',
+                        compCode: comp.codice_componente || ''
+                    });
+                }
+            });
+        });
+
+        // Ordina per macro, poi per lavorazione
+        combos.sort((a, b) => {
+            const mc = a.macroName.localeCompare(b.macroName);
+            return mc !== 0 ? mc : a.compName.localeCompare(b.compName);
+        });
+
+        if (combos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Nessuna combinazione Macro+Lavorazione trovata. Configura prima le Tab 1 e 2.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        combos.forEach(combo => {
+            const tr = document.createElement('tr');
+
+            // Trova associazioni esistenti per questa combo
+            const comboMatchings = this.data.matchings.filter(m =>
+                m.id_componente === combo.id_componente &&
+                m.id_macro_categoria === combo.id_macro_categoria
+            );
+            const currentInclude = comboMatchings.filter(m => m.tipo === 'include').map(m => m.id_keyword);
+            const currentExclude = comboMatchings.filter(m => m.tipo === 'exclude').map(m => m.id_keyword);
+
+            tr.innerHTML = `
+                <td style="white-space: nowrap;">
+                    <span style="font-size: 1.1em;">${combo.macroIcon}</span> ${combo.macroName}
+                </td>
+                <td>
+                    <strong>${combo.compName}</strong>
+                    ${combo.compCode ? '<br><span style="color:#888; font-size:0.85em;">' + combo.compCode + '</span>' : ''}
+                </td>
+                <td style="overflow: visible;"><select class="choice-kw-include" multiple></select></td>
+                <td style="overflow: visible;"><select class="choice-kw-exclude" multiple></select></td>
+                <td style="text-align: center;">
+                    <button class="action-btn save-kw-assoc-btn" 
+                            data-comp="${combo.id_componente}" 
+                            data-macro="${combo.id_macro_categoria}" 
+                            title="Salva">💾</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Inizializza Choices.js per Include
+            const configChoices = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: true, searchEnabled: true, placeholderValue: 'Seleziona...', searchPlaceholderValue: 'Cerca keyword...' };
+
+            const includeSelect = new Choices(tr.querySelector('.choice-kw-include'), { ...configChoices, classNames: { containerOuter: 'choices choices-include' } });
+            const excludeSelect = new Choices(tr.querySelector('.choice-kw-exclude'), { ...configChoices, classNames: { containerOuter: 'choices choices-exclude' } });
+
+            // Popola le opzioni da keywords disponibili
+            const kwOptions = this.data.keywords.map(kw => ({
+                value: kw.id_keyword,
+                label: kw.keyword,
+                selected: false
+            }));
+
+            const includeOpts = kwOptions.map(o => ({ ...o, selected: currentInclude.includes(o.value) }));
+            const excludeOpts = kwOptions.map(o => ({ ...o, selected: currentExclude.includes(o.value) }));
+
+            includeSelect.setChoices(includeOpts, 'value', 'label', true);
+            excludeSelect.setChoices(excludeOpts, 'value', 'label', true);
+
+            // Bind Save
+            tr.querySelector('.save-kw-assoc-btn').addEventListener('click', async (e) => {
+                const btn = e.currentTarget;
+                btn.textContent = "⏳";
+                try {
+                    const payload = {
+                        id_componente: parseInt(btn.dataset.comp),
+                        id_macro_categoria: parseInt(btn.dataset.macro),
+                        include_ids: includeSelect.getValue(true).map(Number),
+                        exclude_ids: excludeSelect.getValue(true).map(Number)
+                    };
+                    const res = await apiFetch('/api/keywords/matching/combo', {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) throw new Error('Errore salvataggio');
+                    btn.textContent = "✅";
+                    setTimeout(() => btn.textContent = "💾", 1500);
+                    // Ricarica matchings per aggiornare Tab 4
+                    await App.reloadKeywordsData();
+                } catch (err) {
+                    alert("Errore: " + err.message);
+                    btn.textContent = "❌";
+                }
+            });
+        });
     }
 };
 

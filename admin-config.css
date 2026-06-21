@@ -302,3 +302,56 @@
     font-size: 0.85em;
     text-align: center;
 }
+
+/* --- Keywords Badges (Tab 4) --- */
+.kw-assoc-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin: 2px 3px;
+    white-space: nowrap;
+}
+
+.kw-assoc-badge.include {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.kw-assoc-badge.exclude {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* --- Choices.js styling per Tab 5 (Include/Exclude) --- */
+.choices-include .choices__item {
+    background-color: #28a745 !important;
+    border-color: #218838 !important;
+}
+
+.choices-exclude .choices__item {
+    background-color: #dc3545 !important;
+    border-color: #c82333 !important;
+}
+
+/* Tab 5: overflow per dropdown Choices */
+#kwAssocTable td {
+    vertical-align: top;
+}
+
+#kwAssocTable .choices {
+    min-width: 150px;
+}
+
+/* Tabs wrapping su mobile */
+@media (max-width: 900px) {
+    .config-tabs-container {
+        flex-wrap: wrap;
+    }
+    .config-tab {
+        flex: 0 0 auto;
+        min-width: 120px;
+    }
+}
