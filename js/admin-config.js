@@ -569,7 +569,7 @@ const App = {
             }
 
             tr.innerHTML = `
-                <td style="font-weight: 600; font-family: monospace; font-size: 1.05em;">${kw.keyword}</td>
+                <td style="font-weight: 600; font-size: 1.05em;">${kw.keyword}</td>
                 <td style="line-height: 1.8;">${assocHtml}</td>
                 <td style="text-align: center;">
                     <button class="action-btn delete-kw-btn" data-id="${kw.id_keyword}" data-name="${kw.keyword}" 
@@ -686,8 +686,8 @@ const App = {
                     <strong>${combo.compName}</strong>
                     ${combo.compCode ? '<br><span style="color:#888; font-size:0.85em;">' + combo.compCode + '</span>' : ''}
                 </td>
-                <td style="overflow: visible;"><select class="choice-kw-include" multiple></select></td>
-                <td style="overflow: visible;"><select class="choice-kw-exclude" multiple></select></td>
+                <td style="overflow: visible;"><div class="kw-include-wrap"><select class="choice-kw-include" multiple></select></div></td>
+                <td style="overflow: visible;"><div class="kw-exclude-wrap"><select class="choice-kw-exclude" multiple></select></div></td>
                 <td style="text-align: center;">
                     <button class="action-btn save-kw-assoc-btn" 
                             data-comp="${combo.id_componente}" 
@@ -697,11 +697,11 @@ const App = {
             `;
             tbody.appendChild(tr);
 
-            // Inizializza Choices.js per Include
+            // Inizializza Choices.js per Include/Exclude (no classNames custom - usa wrapper CSS)
             const configChoices = { removeItemButton: true, itemSelectText: '', position: 'bottom', shouldSort: true, searchEnabled: true, placeholderValue: 'Seleziona...', searchPlaceholderValue: 'Cerca keyword...' };
 
-            const includeSelect = new Choices(tr.querySelector('.choice-kw-include'), { ...configChoices, classNames: { containerOuter: 'choices choices-include' } });
-            const excludeSelect = new Choices(tr.querySelector('.choice-kw-exclude'), { ...configChoices, classNames: { containerOuter: 'choices choices-exclude' } });
+            const includeSelect = new Choices(tr.querySelector('.choice-kw-include'), configChoices);
+            const excludeSelect = new Choices(tr.querySelector('.choice-kw-exclude'), configChoices);
 
             // Popola le opzioni da keywords disponibili
             const kwOptions = this.data.keywords.map(kw => ({

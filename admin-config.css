@@ -325,13 +325,13 @@
     border: 1px solid #f5c6cb;
 }
 
-/* --- Choices.js styling per Tab 5 (Include/Exclude) --- */
-.choices-include .choices__item {
+/* --- Choices.js styling per Tab 5 (Include/Exclude via wrapper divs) --- */
+.kw-include-wrap .choices__item {
     background-color: #28a745 !important;
     border-color: #218838 !important;
 }
 
-.choices-exclude .choices__item {
+.kw-exclude-wrap .choices__item {
     background-color: #dc3545 !important;
     border-color: #c82333 !important;
 }
