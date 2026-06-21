@@ -76,7 +76,7 @@ const App = {
             this.data.fasi = Array.isArray(d.fasi) ? d.fasi : [];
             this.data.allComponents = Array.isArray(d.componenti) ? d.componenti : []; 
             
-            console.log(`✅ ANALISI DATI: Macro ${this.data.macros.length}, Ruoli ${this.data.ruoli.length}`);
+            console.log(`✅ ANALISI DATI: Macro ${this.data.macros.length}, Ruoli ${this.data.ruoli.length}, Componenti RPC: ${this.data.allComponents.length}`);
 
             // Caricamento keywords (non-blocking per le tab esistenti)
             try {
@@ -606,13 +606,35 @@ const App = {
     // == TAB 5: ASSOCIAZIONI KEYWORDS (Combo Macro + Lavorazione) ==
     // ============================================================
 
-    renderKwAssociations: function() {
+    renderKwAssociations: async function() {
         const tbody = document.querySelector('#kwAssocTable tbody');
         if (!tbody) return;
 
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">⏳ Caricamento combinazioni...</td></tr>';
+
+        // Carica TUTTI i componenti via API paginata (la RPC potrebbe non restituirli tutti)
+        let allComps = [];
+        try {
+            let page = 1;
+            let hasMore = true;
+            while (hasMore) {
+                const res = await apiFetch(`/api/admin/componenti?page=${page}&limit=200`);
+                const json = await res.json();
+                const data = json.data || [];
+                allComps = allComps.concat(data);
+                hasMore = data.length >= 200;
+                page++;
+            }
+            console.log(`📦 Tab 5: Caricati ${allComps.length} componenti totali`);
+        } catch (e) {
+            console.error("Errore caricamento componenti per Tab 5:", e);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Errore caricamento componenti</td></tr>';
+            return;
+        }
+
         // Costruisci tutte le combo macro+lavorazione esistenti
         const combos = [];
-        this.data.allComponents.forEach(comp => {
+        allComps.forEach(comp => {
             const macroIds = comp.ids_macro_categorie || [];
             macroIds.forEach(mId => {
                 const macroIdInt = parseInt(mId);
@@ -635,6 +657,8 @@ const App = {
             const mc = a.macroName.localeCompare(b.macroName);
             return mc !== 0 ? mc : a.compName.localeCompare(b.compName);
         });
+
+        console.log(`📊 Tab 5: ${combos.length} combinazioni macro+lavorazione trovate`);
 
         if (combos.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Nessuna combinazione Macro+Lavorazione trovata. Configura prima le Tab 1 e 2.</td></tr>';
