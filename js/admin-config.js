@@ -615,11 +615,12 @@ const App = {
         this.data.allComponents.forEach(comp => {
             const macroIds = comp.ids_macro_categorie || [];
             macroIds.forEach(mId => {
-                const macro = this.data.macros.find(m => m.id_macro_categoria === mId);
+                const macroIdInt = parseInt(mId);
+                const macro = this.data.macros.find(m => m.id_macro_categoria === macroIdInt);
                 if (macro) {
                     combos.push({
                         id_componente: comp.id_componente,
-                        id_macro_categoria: mId,
+                        id_macro_categoria: macroIdInt,
                         macroName: macro.nome || macro.nome_macro || '?',
                         macroIcon: macro.icona || '📦',
                         compName: comp.nome_componente || '?',
