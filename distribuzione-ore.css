@@ -1,0 +1,418 @@
+/* distribuzione-ore.css */
+
+/* === WRAPPER PRINCIPALE === */
+.dist-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 15px 20px;
+}
+
+/* === SELETTORE COMMESSA === */
+.dist-selector-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 15px;
+}
+
+.selector-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.selector-group {
+    flex: 1;
+}
+
+.selector-group label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 0.95em;
+}
+
+.dist-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95em;
+    background: #fff;
+    color: #2c3e50;
+    transition: border-color 0.2s;
+}
+
+.dist-select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+/* === BOTTONI === */
+.dist-btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.dist-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dist-btn--primary {
+    background: #3498db;
+    color: #fff;
+}
+.dist-btn--primary:hover:not(:disabled) {
+    background: #2980b9;
+}
+
+.dist-btn--ai {
+    background: linear-gradient(135deg, #8e44ad, #3498db);
+    color: #fff;
+    font-size: 1em;
+    padding: 12px 28px;
+}
+.dist-btn--ai:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7d3c98, #2c81ba);
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+}
+
+.dist-btn--success {
+    background: #27ae60;
+    color: #fff;
+    font-size: 1em;
+    padding: 12px 28px;
+}
+.dist-btn--success:hover:not(:disabled) {
+    background: #219a52;
+}
+
+/* === RIEPILOGO === */
+.dist-summary-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 15px;
+}
+
+.summary-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.summary-card {
+    flex: 1;
+    min-width: 120px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.summary-card.accent {
+    background: #e8f4fc;
+    border-color: #b8daff;
+}
+
+.summary-label {
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.summary-value {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.summary-value.highlight {
+    color: #e67e22;
+}
+
+/* Ore per mese */
+.ore-mesi-container {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+}
+
+.ore-mesi-container h4 {
+    margin: 0 0 10px;
+    font-size: 0.9em;
+    color: #555;
+    font-weight: 500;
+}
+
+.ore-mesi-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ore-mese-badge {
+    background: #f0f4f8;
+    border: 1px solid #dde;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.ore-mese-badge .mese-label {
+    font-size: 0.75em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.ore-mese-badge .mese-value {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.05em;
+}
+
+/* === BARRA AZIONI === */
+.dist-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding: 12px 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.actions-spacer {
+    flex: 1;
+}
+
+/* === TABELLA OP === */
+.dist-table-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.dist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.dist-table thead {
+    background: #2c3e50;
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dist-table th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.dist-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+}
+
+.dist-table tbody tr:hover {
+    background: #f8f9fc;
+}
+
+/* Colonne */
+.col-check { width: 40px; text-align: center !important; }
+.col-op { width: 30%; }
+.col-ore-ai { width: 10%; text-align: center !important; }
+.col-dettaglio { width: 35%; }
+.col-ore-finali { width: 12%; text-align: center !important; }
+
+.col-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* OP info */
+.op-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.op-numero {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 0.95em;
+}
+
+.op-descrizione {
+    color: #555;
+    font-size: 0.85em;
+    line-height: 1.3;
+}
+
+.op-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.78em;
+    color: #888;
+    margin-top: 2px;
+}
+
+.op-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.op-badge-closed {
+    display: inline-block;
+    background: #d4edda;
+    color: #155724;
+    font-size: 0.72em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 6px;
+}
+
+/* Ore AI / Finali */
+.ore-cell {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #2c3e50;
+}
+
+.ore-cell.empty {
+    color: #ccc;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.ore-input {
+    width: 80px;
+    padding: 6px 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1em;
+    font-weight: 600;
+    color: #2c3e50;
+    transition: border-color 0.2s;
+}
+
+.ore-input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.ore-input:not(:placeholder-shown) {
+    background: #fef9e7;
+    border-color: #f39c12;
+}
+
+/* Dettaglio lavorazioni */
+.dettaglio-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.82em;
+}
+
+.dettaglio-list li {
+    padding: 3px 0;
+    color: #555;
+    border-bottom: 1px dotted #eee;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dettaglio-list li:last-child {
+    border-bottom: none;
+}
+
+.dettaglio-lav {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.dettaglio-persona {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.dettaglio-ore {
+    font-weight: 600;
+    color: #8e44ad;
+    white-space: nowrap;
+}
+
+/* Footer Totali */
+.totals-row {
+    background: #f0f4f8;
+    border-top: 2px solid #2c3e50;
+}
+
+.totals-row td {
+    padding: 14px;
+    border-bottom: none;
+}
+
+.totals-label {
+    font-weight: 700;
+    font-size: 0.95em;
+    text-align: right !important;
+    color: #2c3e50;
+}
+
+.totals-value {
+    font-weight: 700;
+    font-size: 1.2em;
+    text-align: center !important;
+    color: #2c3e50;
+}
+
+/* Sticky footer */
+.dist-table tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .dist-wrapper { padding: 10px; }
+    .selector-row { flex-direction: column; }
+    .summary-cards { flex-direction: column; }
+    .dist-actions-bar { flex-wrap: wrap; }
+    .col-dettaglio { display: none; }
+    .dist-table { font-size: 0.82em; }
+    .ore-input { width: 60px; }
+}
