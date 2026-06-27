@@ -280,6 +280,16 @@ h2 {
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
+.dist-ore-button {
+    background: linear-gradient(135deg, #8e44ad, #3498db);
+}
+
+.dist-ore-button:hover {
+    background: linear-gradient(135deg, #7d3c98, #2c81ba);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(142, 68, 173, 0.3);
+}
+
 .agile-view-button,
 .manage-data-button,
 .config-button {
