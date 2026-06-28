@@ -1,5 +1,6 @@
-// js/distribuzione-ore.js
+// js/distribuzione-ore.js — v2: query dirette Supabase (no backend per le letture)
 
+import { supabase } from './supabase-client.js';
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
@@ -9,8 +10,10 @@ const App = {
         selectedCommessa: null,
         ordini: [],          // OP della commessa
         oreLavorate: [],     // ore_lavorate della commessa
+        storicoArticoli: {}, // id_articolo -> [{numero_op, ore, commessa}]
         oreProposte: {},     // id_op -> ore proposte dall'AI
         oreFinali: {},       // id_op -> ore inserite dall'utente
+        showClosed: false,   // toggle mostra/nascondi OP chiusi
     },
 
     // === HELPERS ===
@@ -30,9 +33,14 @@ const App = {
         return (minuti / 60).toFixed(1) + 'h';
     },
 
+    formatOreDecimal: function(ore) {
+        if (!ore || ore <= 0) return '0h';
+        return ore.toFixed(1) + 'h';
+    },
+
     // === INIT ===
     init: async function() {
-        console.log("🚀 DISTRIBUZIONE ORE INIT");
+        console.log("🚀 DISTRIBUZIONE ORE INIT (v2 Supabase)");
         if (!IsAdmin) {
             window.location.replace('index.html');
             return;
@@ -43,41 +51,44 @@ const App = {
     },
 
     bindEvents: function() {
-        // Selettore commessa
         document.getElementById('commessaSelect').addEventListener('change', (e) => {
             document.getElementById('btnCarica').disabled = !e.target.value;
         });
 
-        // Bottone carica
         document.getElementById('btnCarica').addEventListener('click', () => this.loadCommessaData());
-
-        // Bottone elabora (placeholder)
         document.getElementById('btnElabora').addEventListener('click', () => this.elaboraDistribuzione());
-
-        // Bottone chiudi selezionati
         document.getElementById('btnChiudiSelezionati').addEventListener('click', () => this.chiudiSelezionati());
 
-        // Select all checkbox
+        document.getElementById('toggleChiusi').addEventListener('change', (e) => {
+            this.data.showClosed = e.target.checked;
+            this.renderTable();
+        });
+
         document.getElementById('checkAll').addEventListener('change', (e) => {
-            document.querySelectorAll('.op-check').forEach(cb => {
-                // Solo OP aperti
-                if (!cb.disabled) cb.checked = e.target.checked;
+            document.querySelectorAll('.op-check:not(:disabled)').forEach(cb => {
+                if (cb.closest('tr').style.display !== 'none') {
+                    cb.checked = e.target.checked;
+                }
             });
             this.updateChiudiButton();
         });
     },
 
-    // === CARICAMENTO COMMESSE ===
+    // === CARICAMENTO COMMESSE (diretto Supabase) ===
     loadCommesse: async function() {
         try {
-            const res = await apiFetch('/api/commesse/view?limit=200&status=In Lavorazione');
-            const json = await res.json();
-            this.data.commesse = json.data || [];
+            const { data, error } = await supabase
+                .from('commesse')
+                .select('id_commessa, vo, impianto, riferimento_tecnico, stato, clienti(ragione_sociale)')
+                .eq('stato', 'In Lavorazione')
+                .order('vo', { ascending: true });
+
+            if (error) throw error;
+            this.data.commesse = data || [];
 
             const select = document.getElementById('commessaSelect');
             select.innerHTML = '<option value="">— Seleziona una commessa —</option>';
 
-            // Ordina per label
             const sorted = this.data.commesse
                 .map(c => ({ ...c, label: this.buildCommessaLabel(c) }))
                 .sort((a, b) => a.label.localeCompare(b.label));
@@ -89,40 +100,59 @@ const App = {
                 select.appendChild(opt);
             });
 
-            console.log(`📋 ${this.data.commesse.length} commesse caricate`);
+            console.log(`📋 ${this.data.commesse.length} commesse caricate (Supabase diretto)`);
         } catch (e) {
             console.error("Errore caricamento commesse:", e);
         }
     },
 
-    // === CARICAMENTO DATI COMMESSA ===
+    // === CARICAMENTO DATI COMMESSA (3 query Supabase in parallelo) ===
     loadCommessaData: async function() {
-        const idCommessa = document.getElementById('commessaSelect').value;
+        const idCommessa = parseInt(document.getElementById('commessaSelect').value);
         if (!idCommessa) return;
 
         const btn = document.getElementById('btnCarica');
         btn.disabled = true; btn.textContent = '⏳ Caricamento...';
 
         try {
-            // Caricamento parallelo: OP + Ore lavorate
-            const [ordiniRes, oreRes] = await Promise.all([
-                apiFetch(`/api/produzione/ordini?status=tutti&id_commessa=${idCommessa}`),
-                apiFetch(`/api/distribuzione/ore-commessa/${idCommessa}`)
+            // 3 query Supabase in parallelo
+            const [ordiniResult, oreResult] = await Promise.all([
+                // 1. OP della commessa (tutti: aperti + chiusi)
+                supabase
+                    .from('registro_produzione')
+                    .select('*, anagrafica_articoli(codice_articolo, descrizione), fasi_produzione(nome_fase)')
+                    .eq('id_commessa', idCommessa)
+                    .order('data_ricezione', { ascending: true }),
+
+                // 2. Ore lavorate per commessa (con dettaglio personale, lavorazione, macro)
+                supabase
+                    .from('ore_lavorate')
+                    .select('id_registrazione, ore, data_lavoro, note, personale(nome_cognome), componenti(nome_componente, id_componente), macro_categorie(nome, id_macro_categoria)')
+                    .eq('id_commessa_fk', idCommessa)
+                    .order('data_lavoro', { ascending: false })
             ]);
 
-            this.data.ordini = await ordiniRes.json();
-            
-            // Ore lavorate: potrebbe fallire se l'endpoint non esiste ancora
-            try {
-                const oreJson = await oreRes.json();
-                this.data.oreLavorate = oreJson.data || oreJson || [];
-            } catch {
-                this.data.oreLavorate = [];
-            }
+            if (ordiniResult.error) throw ordiniResult.error;
+            if (oreResult.error) throw oreResult.error;
 
-            this.data.selectedCommessa = parseInt(idCommessa);
+            this.data.ordini = ordiniResult.data || [];
+            this.data.oreLavorate = (oreResult.data || []).map(r => ({
+                id_registrazione: r.id_registrazione,
+                ore: r.ore || 0,
+                data_registrazione: r.data_lavoro,
+                personale: r.personale?.nome_cognome || '?',
+                lavorazione: r.componenti?.nome_componente || '?',
+                id_componente: r.componenti?.id_componente || null,
+                macro: r.macro_categorie?.nome || '?',
+                id_macro: r.macro_categorie?.id_macro_categoria || null,
+                note: r.note || ''
+            }));
+
+            this.data.selectedCommessa = idCommessa;
             this.data.oreProposte = {};
             this.data.oreFinali = {};
+
+            console.log(`📦 ${this.data.ordini.length} OP, ${this.data.oreLavorate.length} registrazioni ore (Supabase)`);
 
             // Render
             this.renderSummary();
@@ -134,12 +164,99 @@ const App = {
             document.getElementById('tableContainer').style.display = 'block';
             document.getElementById('btnElabora').disabled = false;
 
+            // Reset toggle
+            document.getElementById('toggleChiusi').checked = false;
+            this.data.showClosed = false;
+
+            // Carica storico articoli (in background, non blocca)
+            this.loadStoricoArticoli();
+
         } catch (e) {
             console.error("Errore caricamento dati commessa:", e);
-            alert("Errore nel caricamento: " + e.message);
+            alert("Errore nel caricamento: " + (e.message || e));
         } finally {
             btn.disabled = false; btn.textContent = '📊 Carica';
         }
+    },
+
+    // === CARICAMENTO STORICO ARTICOLI (Supabase diretto) ===
+    loadStoricoArticoli: async function() {
+        const idArticoli = [...new Set(
+            this.data.ordini.filter(o => o.id_articolo).map(o => o.id_articolo)
+        )];
+
+        if (idArticoli.length === 0) {
+            this.data.storicoArticoli = {};
+            this.fillStoricoColumn();
+            return;
+        }
+
+        try {
+            // Query Supabase: OP chiusi per quegli articoli, con join commessa
+            const { data, error } = await supabase
+                .from('registro_produzione')
+                .select('id, numero_op, id_articolo, id_commessa, tempo_impiegato, data_invio, commesse(vo, impianto)')
+                .in('id_articolo', idArticoli)
+                .not('data_invio', 'is', null)
+                .gt('tempo_impiegato', 0)
+                .order('data_invio', { ascending: false });
+
+            if (error) throw error;
+
+            // Raggruppa per id_articolo, escludendo OP della commessa corrente
+            const storico = {};
+            const currentCommessa = this.data.selectedCommessa;
+
+            for (const r of (data || [])) {
+                // Escludi OP della commessa corrente
+                if (r.id_commessa === currentCommessa) continue;
+
+                const artId = r.id_articolo;
+                if (!storico[artId]) storico[artId] = [];
+
+                const parts = [r.commesse?.vo, r.commesse?.impianto].filter(Boolean);
+                storico[artId].push({
+                    numero_op: r.numero_op,
+                    ore: Math.round(r.tempo_impiegato / 60 * 10) / 10,
+                    commessa: parts.join(' - ') || r.numero_op
+                });
+            }
+
+            this.data.storicoArticoli = storico;
+            console.log(`📜 Storico caricato: ${Object.keys(storico).length} articoli con registrazioni (Supabase)`);
+            this.fillStoricoColumn();
+
+        } catch (e) {
+            console.warn("Storico articoli non disponibile:", e);
+            this.data.storicoArticoli = {};
+            this.fillStoricoColumn();
+        }
+    },
+
+    // === RIEMPIE LA COLONNA STORICO ===
+    fillStoricoColumn: function() {
+        document.querySelectorAll('[data-storico-art]').forEach(cell => {
+            const artId = parseInt(cell.dataset.storicoArt);
+            if (isNaN(artId)) {
+                cell.innerHTML = '<span class="storico-empty">—</span>';
+                return;
+            }
+
+            const entries = this.data.storicoArticoli[artId] || [];
+
+            if (entries.length === 0) {
+                cell.innerHTML = '<span class="storico-empty">Nessuno storico</span>';
+            } else {
+                const display = entries.slice(0, 5);
+                cell.innerHTML = `<ul class="storico-list">
+                    ${display.map(s => `<li>
+                        <span class="storico-label" title="OP: ${s.numero_op}">${s.commessa}</span>
+                        <span class="storico-ore">${s.ore}h</span>
+                    </li>`).join('')}
+                    ${entries.length > 5 ? `<li style="color:#888; font-size:0.9em;">+${entries.length - 5} altri</li>` : ''}
+                </ul>`;
+            }
+        });
     },
 
     // === RENDER RIEPILOGO ===
@@ -152,9 +269,17 @@ const App = {
         document.getElementById('sumOpAperti').textContent = aperti.length;
         document.getElementById('sumOpChiusi').textContent = chiusi.length;
 
-        // Ore lavorate totali
+        // Ore lavorate totali (da tabella ore_lavorate)
         const oreTotali = this.data.oreLavorate.reduce((sum, o) => sum + (o.ore || 0), 0);
         document.getElementById('sumOreLavorate').textContent = oreTotali.toFixed(1) + 'h';
+
+        // Ore contabilizzate (tempo_impiegato degli OP chiusi, in minuti → ore)
+        const oreContabilizzate = chiusi.reduce((sum, o) => sum + ((o.tempo_impiegato || 0) / 60), 0);
+        document.getElementById('sumOreContabilizzate').textContent = oreContabilizzate.toFixed(1) + 'h';
+
+        // Ore da distribuire
+        const oreDaDistribuire = Math.max(0, oreTotali - oreContabilizzate);
+        document.getElementById('sumOreDaDistribuire').textContent = oreDaDistribuire.toFixed(1) + 'h';
 
         // Ore per mese
         const orePerMese = {};
@@ -192,16 +317,14 @@ const App = {
         tbody.innerHTML = '';
 
         if (this.data.ordini.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#999;">Nessun OP trovato per questa commessa</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">Nessun OP trovato per questa commessa</td></tr>';
             return;
         }
 
         // Ordina: aperti prima, poi per data
         const sorted = [...this.data.ordini].sort((a, b) => {
-            // Aperti prima
             if (!a.data_invio && b.data_invio) return -1;
             if (a.data_invio && !b.data_invio) return 1;
-            // Poi per data ricezione
             return (a.data_ricezione || '').localeCompare(b.data_ricezione || '');
         });
 
@@ -214,7 +337,10 @@ const App = {
             const proposta = this.data.oreProposte[op.id];
             const finali = this.data.oreFinali[op.id];
 
-            if (isClosed) tr.classList.add('row-closed');
+            if (isClosed) {
+                tr.classList.add('row-closed');
+                if (!this.data.showClosed) tr.style.display = 'none';
+            }
 
             tr.innerHTML = `
                 <td class="col-check">
@@ -234,6 +360,9 @@ const App = {
                             ${isClosed && op.tempo_impiegato ? `<span>⏱️ ${this.formatOre(op.tempo_impiegato)}</span>` : ''}
                         </div>
                     </div>
+                </td>
+                <td class="col-storico" data-storico-art="${op.id_articolo || ''}">
+                    <span style="color:#ddd; font-size:0.8em;">⏳</span>
                 </td>
                 <td class="col-ore-ai">
                     <div class="ore-cell ${proposta == null ? 'empty' : ''}">
@@ -255,10 +384,8 @@ const App = {
             `;
             tbody.appendChild(tr);
 
-            // Event: checkbox change
             tr.querySelector('.op-check')?.addEventListener('change', () => this.updateChiudiButton());
 
-            // Event: ore finali input change
             const input = tr.querySelector('.ore-input');
             if (input) {
                 input.addEventListener('input', () => {
@@ -270,37 +397,29 @@ const App = {
         });
 
         this.updateTotali();
+        this.fillStoricoColumn();
         document.getElementById('checkAll').checked = false;
     },
 
     // === AGGIORNA TOTALI ===
     updateTotali: function() {
-        // Totale Ore AI
-        let totAI = 0;
-        let hasAI = false;
+        let totAI = 0, hasAI = false;
         Object.values(this.data.oreProposte).forEach(v => {
             if (v != null) { totAI += v; hasAI = true; }
         });
         document.getElementById('totalOreAI').textContent = hasAI ? totAI.toFixed(1) + 'h' : '—';
 
-        // Totale Ore Finali (da input + OP già chiusi)
-        let totFinali = 0;
-        let hasFinali = false;
-
-        // Ore dagli input
+        let totFinali = 0, hasFinali = false;
         document.querySelectorAll('.ore-input').forEach(input => {
             const val = parseFloat(input.value);
             if (!isNaN(val)) { totFinali += val; hasFinali = true; }
         });
-
-        // Ore da OP chiusi
         this.data.ordini.forEach(op => {
             if (op.data_invio && op.tempo_impiegato) {
                 totFinali += op.tempo_impiegato / 60;
                 hasFinali = true;
             }
         });
-
         document.getElementById('totalOreFinali').textContent = hasFinali ? totFinali.toFixed(1) + 'h' : '—';
     },
 
@@ -318,28 +437,21 @@ const App = {
     elaboraDistribuzione: async function() {
         const btn = document.getElementById('btnElabora');
         btn.disabled = true; btn.textContent = '⏳ Elaborazione...';
-
         try {
-            // TODO: Fase 2 — Chiamata API per matching keywords + storico
-            // Per ora simula un breve delay
             await new Promise(r => setTimeout(r, 800));
-
             alert('🚧 Funzionalità in sviluppo.\n\nL\'algoritmo di distribuzione verrà implementato nella Fase 2.\nPer ora puoi inserire le ore manualmente nella colonna "Ore Finali".');
-
         } catch (e) {
             console.error("Errore elaborazione:", e);
-            alert("Errore: " + e.message);
         } finally {
             btn.disabled = false; btn.textContent = '🤖 Elabora Distribuzione';
         }
     },
 
-    // === CHIUDI SELEZIONATI ===
+    // === CHIUDI SELEZIONATI (usa backend perché scrive dati) ===
     chiudiSelezionati: async function() {
         const checked = document.querySelectorAll('.op-check:checked:not(:disabled)');
         if (checked.length === 0) return;
 
-        // Raccogli dati
         const daChiudere = [];
         let errori = [];
         checked.forEach(cb => {
@@ -352,9 +464,7 @@ const App = {
                 errori.push(`OP ${op?.numero_op || idOp}: ore non valide`);
             } else {
                 daChiudere.push({
-                    id_op: idOp,
-                    ore: ore,
-                    qta: op?.qta_richiesta || 0,
+                    id_op: idOp, ore, qta: op?.qta_richiesta || 0,
                     numero_op: op?.numero_op || ''
                 });
             }
@@ -375,18 +485,14 @@ const App = {
         const btn = document.getElementById('btnChiudiSelezionati');
         btn.disabled = true; btn.textContent = '⏳ Chiusura in corso...';
 
-        let successi = 0;
-        let fallimenti = 0;
+        let successi = 0, fallimenti = 0;
 
         for (const item of daChiudere) {
             try {
                 const minuti = Math.round(item.ore * 60);
                 await apiFetch(`/api/produzione/op/${item.id_op}/chiudi`, {
                     method: 'PUT',
-                    body: JSON.stringify({
-                        tempo_impiegato: minuti,
-                        qta_prodotta: item.qta
-                    })
+                    body: JSON.stringify({ tempo_impiegato: minuti, qta_prodotta: item.qta })
                 });
                 successi++;
             } catch (e) {
@@ -396,10 +502,7 @@ const App = {
         }
 
         alert(`✅ ${successi} OP chiusi con successo${fallimenti > 0 ? `\n❌ ${fallimenti} errori` : ''}`);
-
-        // Ricarica dati
         await this.loadCommessaData();
-
         btn.disabled = false; btn.textContent = '✅ Chiudi Selezionati';
     }
 };

@@ -65,8 +65,16 @@
                             <div class="summary-value" id="sumOpChiusi">0</div>
                         </div>
                         <div class="summary-card accent">
-                            <div class="summary-label">Ore Lavorate</div>
+                            <div class="summary-label">Ore Lavorate (totale)</div>
                             <div class="summary-value" id="sumOreLavorate">0h</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Ore Contabilizzate</div>
+                            <div class="summary-value" id="sumOreContabilizzate" style="color:#27ae60;">0h</div>
+                        </div>
+                        <div class="summary-card accent">
+                            <div class="summary-label">Ore da Distribuire</div>
+                            <div class="summary-value" id="sumOreDaDistribuire" style="color:#e67e22;">0h</div>
                         </div>
                     </div>
 
@@ -84,6 +92,10 @@
                     <button id="btnElabora" class="dist-btn dist-btn--ai" disabled>
                         🤖 Elabora Distribuzione
                     </button>
+                    <label class="toggle-chiusi">
+                        <input type="checkbox" id="toggleChiusi">
+                        <span>Mostra OP chiusi</span>
+                    </label>
                     <div class="actions-spacer"></div>
                     <button id="btnChiudiSelezionati" class="dist-btn dist-btn--success" disabled>
                         ✅ Chiudi Selezionati
@@ -100,6 +112,7 @@
                                         <input type="checkbox" id="checkAll" title="Seleziona tutti">
                                     </th>
                                     <th class="col-op">Ordine di Produzione</th>
+                                    <th class="col-storico">Storico Articolo</th>
                                     <th class="col-ore-ai">Ore AI</th>
                                     <th class="col-dettaglio">Dettaglio Lavorazioni</th>
                                     <th class="col-ore-finali">Ore Finali</th>
@@ -112,6 +125,7 @@
                                 <tr class="totals-row">
                                     <td></td>
                                     <td class="totals-label">TOTALI</td>
+                                    <td></td>
                                     <td class="totals-value" id="totalOreAI">—</td>
                                     <td></td>
                                     <td class="totals-value" id="totalOreFinali">—</td>
@@ -126,11 +140,12 @@
     </div>
 
     <script src="js/libs/supabase.min.js" defer></script>
+    <script type="module" src="js/supabase-client.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/core-init.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
     <script type="module" src="js/api-client.js"></script>
-    <script type="module" src="js/distribuzione-ore.js?v=1"></script>
+    <script type="module" src="js/distribuzione-ore.js?v=2"></script>
     <script src="js/dark-mode.js"></script>
 </body>
 
