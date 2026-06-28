@@ -296,6 +296,10 @@ h2 {
     background-color: #34495e;
 }
 
+.dev-tools-button {
+    background: linear-gradient(135deg, #2c3e50, #7f8c8d);
+}
+
 .agile-view-button:hover,
 .manage-data-button:hover,
 .config-button:hover {

@@ -592,6 +592,9 @@ const App = {
                     this.exitEditMode(this.state.editingRowId);
                 }
                 break;
+            case 'downloadXlsBtn':
+                this.exportToXlsx();
+                break;
             case 'searchBtn':
                 const searchTerm = document.getElementById('filter-search-term')?.value || '';
                 this.loadAndRenderData(true, searchTerm); // Passiamo il termine di ricerca direttamente
@@ -1022,12 +1025,15 @@ const App = {
         const isReadOnly = config?.readOnly === true;
 
         if (isReadOnly) {
-            // Vista read-only: solo barra ricerca
+            // Vista read-only: solo barra ricerca + download
             this.dom.toolbarArea.innerHTML = `
                 <div class="toolbar-group search-group">
                     <input type="text" id="filter-search-term" placeholder="Cerca nel registro..."/>
                     <button class="button icon-button" id="searchBtn" title="Cerca">🔎</button>
                     <button class="button icon-button" id="resetSearchBtn" title="Azzera ricerca">🧹</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="button icon-button" id="downloadXlsBtn" title="Scarica XLS">📥</button>
                 </div>
             `;
             return;
@@ -1047,6 +1053,9 @@ const App = {
                 <input type="text" id="filter-search-term" placeholder="Cerca in ${view}..."/>
                 <button class="button icon-button" id="searchBtn" title="Cerca">🔎</button>
                 <button class="button icon-button" id="resetSearchBtn" title="Azzera ricerca">🧹</button>
+            </div>
+            <div class="toolbar-group">
+                <button class="button icon-button" id="downloadXlsBtn" title="Scarica XLS">📥</button>
             </div>
         `;
 
@@ -1514,6 +1523,104 @@ const App = {
         // Altrimenti, prendi il valore della proprietà
         const displayKey = col.displayKey || col.key;
         return this.getPropertyByString(rowData, displayKey) || '';
+    },
+
+    exportToXlsx: async function() {
+        if (typeof XLSX === 'undefined') {
+            alert('Libreria XLSX non caricata. Ricarica la pagina.');
+            return;
+        }
+
+        const view = this.state.currentView;
+        const config = this.viewConfig[view];
+        if (!config) return;
+
+        const btn = document.getElementById('downloadXlsBtn');
+        if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+        try {
+            // Scarica TUTTI i dati (senza paginazione)
+            let allData = [];
+            let page = 1;
+            const limit = 500;
+            let hasMore = true;
+
+            while (hasMore) {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: limit,
+                    sortBy: this.state.sortBy || config.defaultSortBy || config.columns[0].key,
+                    sortOrder: this.state.sortOrder || config.defaultSortOrder || 'asc'
+                });
+
+                // Applica filtri attivi
+                for (const key in this.state.activeFilters) {
+                    this.state.activeFilters[key].forEach(value => params.append(key, value));
+                }
+
+                const searchTerm = document.getElementById('filter-search-term')?.value || '';
+                if (searchTerm) params.append('search', searchTerm);
+
+                const res = await apiFetch(`${config.apiEndpoint}?${params.toString()}`);
+                const json = await res.json();
+                const chunk = json.data || json || [];
+
+                allData = allData.concat(chunk);
+                hasMore = chunk.length === limit;
+                page++;
+
+                if (btn) btn.textContent = `⏳ ${allData.length}`;
+            }
+
+            if (allData.length === 0) {
+                alert('Nessun dato da esportare.');
+                return;
+            }
+
+            // Flatten dei dati: risolve oggetti join (es. clienti.ragione_sociale -> Cliente)
+            const flatData = allData.map(row => {
+                const flat = {};
+                for (const col of config.columns) {
+                    const label = col.label || col.key;
+                    if (col.type === 'foreignKey' && col.displayKey) {
+                        flat[label] = this.getPropertyByString(row, col.displayKey) || '';
+                    } else if (col.formatter) {
+                        flat[label] = col.formatter(row);
+                    } else {
+                        const val = row[col.key];
+                        flat[label] = (val !== null && val !== undefined) ? val : '';
+                    }
+                }
+                // Aggiungi ID
+                flat['ID'] = row[config.idColumn] || '';
+                return flat;
+            });
+
+            // Genera XLSX
+            const ws = XLSX.utils.json_to_sheet(flatData);
+
+            // Auto-width colonne
+            const colWidths = Object.keys(flatData[0]).map(key => {
+                const maxLen = Math.max(
+                    key.length,
+                    ...flatData.map(r => String(r[key] || '').length)
+                );
+                return { wch: Math.min(maxLen + 2, 50) };
+            });
+            ws['!cols'] = colWidths;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, view);
+            XLSX.writeFile(wb, `${view}_export_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+            console.log(`📥 Esportati ${allData.length} record per vista '${view}'`);
+
+        } catch (e) {
+            console.error('Errore export XLSX:', e);
+            alert('Errore durante l\'esportazione: ' + e.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '📥'; }
+        }
     },
 };
 
