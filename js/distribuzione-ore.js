@@ -1,6 +1,5 @@
-// js/distribuzione-ore.js — v2: query dirette Supabase (no backend per le letture)
+// js/distribuzione-ore.js — v3: apiFetch per letture (backend bypassa RLS), Supabase RLS blocca anon key
 
-import { supabase } from './supabase-client.js';
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
@@ -13,7 +12,7 @@ const App = {
         storicoArticoli: {}, // id_articolo -> [{numero_op, ore, commessa}]
         oreProposte: {},     // id_op -> ore proposte dall'AI
         oreFinali: {},       // id_op -> ore inserite dall'utente
-        showClosed: false,   // toggle mostra/nascondi OP chiusi
+        showClosed: false,
     },
 
     // === HELPERS ===
@@ -33,19 +32,13 @@ const App = {
         return (minuti / 60).toFixed(1) + 'h';
     },
 
-    formatOreDecimal: function(ore) {
-        if (!ore || ore <= 0) return '0h';
-        return ore.toFixed(1) + 'h';
-    },
-
     // === INIT ===
     init: async function() {
-        console.log("🚀 DISTRIBUZIONE ORE INIT (v2 Supabase)");
+        console.log("🚀 DISTRIBUZIONE ORE INIT v3");
         if (!IsAdmin) {
             window.location.replace('index.html');
             return;
         }
-
         this.bindEvents();
         await this.loadCommesse();
     },
@@ -54,7 +47,6 @@ const App = {
         document.getElementById('commessaSelect').addEventListener('change', (e) => {
             document.getElementById('btnCarica').disabled = !e.target.value;
         });
-
         document.getElementById('btnCarica').addEventListener('click', () => this.loadCommessaData());
         document.getElementById('btnElabora').addEventListener('click', () => this.elaboraDistribuzione());
         document.getElementById('btnChiudiSelezionati').addEventListener('click', () => this.chiudiSelezionati());
@@ -74,17 +66,12 @@ const App = {
         });
     },
 
-    // === CARICAMENTO COMMESSE (diretto Supabase) ===
+    // === CARICAMENTO COMMESSE (via backend) ===
     loadCommesse: async function() {
         try {
-            const { data, error } = await supabase
-                .from('commesse')
-                .select('id_commessa, vo, impianto, riferimento_tecnico, stato, clienti(ragione_sociale)')
-                .eq('stato', 'In Lavorazione')
-                .order('vo', { ascending: true });
-
-            if (error) throw error;
-            this.data.commesse = data || [];
+            const res = await apiFetch('/api/commesse/view?limit=200&status=In Lavorazione');
+            const json = await res.json();
+            this.data.commesse = json.data || [];
 
             const select = document.getElementById('commessaSelect');
             select.innerHTML = '<option value="">— Seleziona una commessa —</option>';
@@ -100,13 +87,13 @@ const App = {
                 select.appendChild(opt);
             });
 
-            console.log(`📋 ${this.data.commesse.length} commesse caricate (Supabase diretto)`);
+            console.log(`📋 ${this.data.commesse.length} commesse caricate`);
         } catch (e) {
             console.error("Errore caricamento commesse:", e);
         }
     },
 
-    // === CARICAMENTO DATI COMMESSA (3 query Supabase in parallelo) ===
+    // === CARICAMENTO DATI COMMESSA (3 chiamate parallele via backend) ===
     loadCommessaData: async function() {
         const idCommessa = parseInt(document.getElementById('commessaSelect').value);
         if (!idCommessa) return;
@@ -115,44 +102,26 @@ const App = {
         btn.disabled = true; btn.textContent = '⏳ Caricamento...';
 
         try {
-            // 3 query Supabase in parallelo
-            const [ordiniResult, oreResult] = await Promise.all([
-                // 1. OP della commessa (tutti: aperti + chiusi)
-                supabase
-                    .from('registro_produzione')
-                    .select('*, anagrafica_articoli(codice_articolo, descrizione), fasi_produzione(nome_fase)')
-                    .eq('id_commessa', idCommessa)
-                    .order('data_ricezione', { ascending: true }),
-
-                // 2. Ore lavorate per commessa (con dettaglio personale, lavorazione, macro)
-                supabase
-                    .from('ore_lavorate')
-                    .select('id_registrazione, ore, data_lavoro, note, personale(nome_cognome), componenti(nome_componente, id_componente), macro_categorie(nome, id_macro_categoria)')
-                    .eq('id_commessa_fk', idCommessa)
-                    .order('data_lavoro', { ascending: false })
+            // 2 chiamate parallele: OP + Ore lavorate
+            const [ordiniRes, oreRes] = await Promise.all([
+                apiFetch(`/api/produzione/ordini?status=tutti&id_commessa=${idCommessa}`),
+                apiFetch(`/api/distribuzione/ore-commessa/${idCommessa}`)
             ]);
 
-            if (ordiniResult.error) throw ordiniResult.error;
-            if (oreResult.error) throw oreResult.error;
+            this.data.ordini = await ordiniRes.json();
 
-            this.data.ordini = ordiniResult.data || [];
-            this.data.oreLavorate = (oreResult.data || []).map(r => ({
-                id_registrazione: r.id_registrazione,
-                ore: r.ore || 0,
-                data_registrazione: r.data_lavoro,
-                personale: r.personale?.nome_cognome || '?',
-                lavorazione: r.componenti?.nome_componente || '?',
-                id_componente: r.componenti?.id_componente || null,
-                macro: r.macro_categorie?.nome || '?',
-                id_macro: r.macro_categorie?.id_macro_categoria || null,
-                note: r.note || ''
-            }));
+            try {
+                const oreJson = await oreRes.json();
+                this.data.oreLavorate = oreJson.data || [];
+            } catch {
+                this.data.oreLavorate = [];
+            }
 
             this.data.selectedCommessa = idCommessa;
             this.data.oreProposte = {};
             this.data.oreFinali = {};
 
-            console.log(`📦 ${this.data.ordini.length} OP, ${this.data.oreLavorate.length} registrazioni ore (Supabase)`);
+            console.log(`📦 ${this.data.ordini.length} OP, ${this.data.oreLavorate.length} registrazioni ore`);
 
             // Render
             this.renderSummary();
@@ -168,7 +137,7 @@ const App = {
             document.getElementById('toggleChiusi').checked = false;
             this.data.showClosed = false;
 
-            // Carica storico articoli (in background, non blocca)
+            // Carica storico articoli in background
             this.loadStoricoArticoli();
 
         } catch (e) {
@@ -179,7 +148,7 @@ const App = {
         }
     },
 
-    // === CARICAMENTO STORICO ARTICOLI (Supabase diretto) ===
+    // === CARICAMENTO STORICO ARTICOLI (via backend) ===
     loadStoricoArticoli: async function() {
         const idArticoli = [...new Set(
             this.data.ordini.filter(o => o.id_articolo).map(o => o.id_articolo)
@@ -192,40 +161,21 @@ const App = {
         }
 
         try {
-            // Query Supabase: OP chiusi per quegli articoli, con join commessa
-            const { data, error } = await supabase
-                .from('registro_produzione')
-                .select('id, numero_op, id_articolo, id_commessa, tempo_impiegato, data_invio, commesse(vo, impianto)')
-                .in('id_articolo', idArticoli)
-                .not('data_invio', 'is', null)
-                .gt('tempo_impiegato', 0)
-                .order('data_invio', { ascending: false });
+            const res = await apiFetch('/api/distribuzione/storico-articoli', {
+                method: 'POST',
+                body: JSON.stringify({ id_articoli: idArticoli })
+            });
+            const storico = await res.json();
 
-            if (error) throw error;
-
-            // Raggruppa per id_articolo, escludendo OP della commessa corrente
-            const storico = {};
-            const currentCommessa = this.data.selectedCommessa;
-
-            for (const r of (data || [])) {
-                // Escludi OP della commessa corrente
-                if (r.id_commessa === currentCommessa) continue;
-
-                const artId = r.id_articolo;
-                if (!storico[artId]) storico[artId] = [];
-
-                const parts = [r.commesse?.vo, r.commesse?.impianto].filter(Boolean);
-                storico[artId].push({
-                    numero_op: r.numero_op,
-                    ore: Math.round(r.tempo_impiegato / 60 * 10) / 10,
-                    commessa: parts.join(' - ') || r.numero_op
-                });
+            // Escludi OP della commessa corrente
+            const currentOps = new Set(this.data.ordini.map(o => o.numero_op));
+            for (const artId of Object.keys(storico)) {
+                storico[artId] = storico[artId].filter(s => !currentOps.has(s.numero_op));
             }
 
             this.data.storicoArticoli = storico;
-            console.log(`📜 Storico caricato: ${Object.keys(storico).length} articoli con registrazioni (Supabase)`);
+            console.log(`📜 Storico: ${Object.keys(storico).length} articoli con registrazioni`);
             this.fillStoricoColumn();
-
         } catch (e) {
             console.warn("Storico articoli non disponibile:", e);
             this.data.storicoArticoli = {};
@@ -236,8 +186,8 @@ const App = {
     // === RIEMPIE LA COLONNA STORICO ===
     fillStoricoColumn: function() {
         document.querySelectorAll('[data-storico-art]').forEach(cell => {
-            const artId = parseInt(cell.dataset.storicoArt);
-            if (isNaN(artId)) {
+            const artId = cell.dataset.storicoArt;
+            if (!artId) {
                 cell.innerHTML = '<span class="storico-empty">—</span>';
                 return;
             }
@@ -250,7 +200,7 @@ const App = {
                 const display = entries.slice(0, 5);
                 cell.innerHTML = `<ul class="storico-list">
                     ${display.map(s => `<li>
-                        <span class="storico-label" title="OP: ${s.numero_op}">${s.commessa}</span>
+                        <span class="storico-label" title="OP: ${s.numero_op}">${s.commessa || s.numero_op}</span>
                         <span class="storico-ore">${s.ore}h</span>
                     </li>`).join('')}
                     ${entries.length > 5 ? `<li style="color:#888; font-size:0.9em;">+${entries.length - 5} altri</li>` : ''}
@@ -273,7 +223,7 @@ const App = {
         const oreTotali = this.data.oreLavorate.reduce((sum, o) => sum + (o.ore || 0), 0);
         document.getElementById('sumOreLavorate').textContent = oreTotali.toFixed(1) + 'h';
 
-        // Ore contabilizzate (tempo_impiegato degli OP chiusi, in minuti → ore)
+        // Ore contabilizzate (tempo_impiegato degli OP chiusi)
         const oreContabilizzate = chiusi.reduce((sum, o) => sum + ((o.tempo_impiegato || 0) / 60), 0);
         document.getElementById('sumOreContabilizzate').textContent = oreContabilizzate.toFixed(1) + 'h';
 
@@ -321,7 +271,6 @@ const App = {
             return;
         }
 
-        // Ordina: aperti prima, poi per data
         const sorted = [...this.data.ordini].sort((a, b) => {
             if (!a.data_invio && b.data_invio) return -1;
             if (a.data_invio && !b.data_invio) return 1;
@@ -423,7 +372,6 @@ const App = {
         document.getElementById('totalOreFinali').textContent = hasFinali ? totFinali.toFixed(1) + 'h' : '—';
     },
 
-    // === AGGIORNA BOTTONE CHIUDI ===
     updateChiudiButton: function() {
         const checked = document.querySelectorAll('.op-check:checked:not(:disabled)');
         const btn = document.getElementById('btnChiudiSelezionati');
@@ -433,21 +381,19 @@ const App = {
             : '✅ Chiudi Selezionati';
     },
 
-    // === ELABORA DISTRIBUZIONE (PLACEHOLDER) ===
+    // === ELABORA (PLACEHOLDER) ===
     elaboraDistribuzione: async function() {
         const btn = document.getElementById('btnElabora');
         btn.disabled = true; btn.textContent = '⏳ Elaborazione...';
         try {
             await new Promise(r => setTimeout(r, 800));
             alert('🚧 Funzionalità in sviluppo.\n\nL\'algoritmo di distribuzione verrà implementato nella Fase 2.\nPer ora puoi inserire le ore manualmente nella colonna "Ore Finali".');
-        } catch (e) {
-            console.error("Errore elaborazione:", e);
         } finally {
             btn.disabled = false; btn.textContent = '🤖 Elabora Distribuzione';
         }
     },
 
-    // === CHIUDI SELEZIONATI (usa backend perché scrive dati) ===
+    // === CHIUDI SELEZIONATI ===
     chiudiSelezionati: async function() {
         const checked = document.querySelectorAll('.op-check:checked:not(:disabled)');
         if (checked.length === 0) return;
@@ -463,36 +409,24 @@ const App = {
             if (isNaN(ore) || ore < 0) {
                 errori.push(`OP ${op?.numero_op || idOp}: ore non valide`);
             } else {
-                daChiudere.push({
-                    id_op: idOp, ore, qta: op?.qta_richiesta || 0,
-                    numero_op: op?.numero_op || ''
-                });
+                daChiudere.push({ id_op: idOp, ore, qta: op?.qta_richiesta || 0, numero_op: op?.numero_op || '' });
             }
         });
 
-        if (errori.length > 0) {
-            alert('⚠️ Errori:\n\n' + errori.join('\n'));
-            return;
-        }
+        if (errori.length > 0) { alert('⚠️ Errori:\n\n' + errori.join('\n')); return; }
 
-        const conferma = confirm(
-            `Stai per chiudere ${daChiudere.length} OP:\n\n` +
-            daChiudere.map(d => `  ${d.numero_op}: ${d.ore}h`).join('\n') +
-            `\n\nProcedere?`
-        );
-        if (!conferma) return;
+        if (!confirm(`Stai per chiudere ${daChiudere.length} OP:\n\n` +
+            daChiudere.map(d => `  ${d.numero_op}: ${d.ore}h`).join('\n') + `\n\nProcedere?`)) return;
 
         const btn = document.getElementById('btnChiudiSelezionati');
         btn.disabled = true; btn.textContent = '⏳ Chiusura in corso...';
 
         let successi = 0, fallimenti = 0;
-
         for (const item of daChiudere) {
             try {
-                const minuti = Math.round(item.ore * 60);
                 await apiFetch(`/api/produzione/op/${item.id_op}/chiudi`, {
                     method: 'PUT',
-                    body: JSON.stringify({ tempo_impiegato: minuti, qta_prodotta: item.qta })
+                    body: JSON.stringify({ tempo_impiegato: Math.round(item.ore * 60), qta_prodotta: item.qta })
                 });
                 successi++;
             } catch (e) {
