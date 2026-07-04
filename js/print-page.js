@@ -600,9 +600,23 @@ const PrintPage = {
                     if (timeP_Out) page.drawText(timeP_Out, { x: CX.Col_P_Out, y: Y, size: fs, font });
 
                     if (totLavoro > 0) {
-                        const ord = totLavoro > 8 ? 8 : totLavoro;
-                        const str = totLavoro > 8 ? totLavoro - 8 : 0;
-                        page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
+                        // Determina se il giorno è Sabato (6) o Domenica (0)
+                        const dateObj = new Date(year, month - 1, day);
+                        const dayOfWeek = dateObj.getDay(); // 0=Dom, 6=Sab
+                        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+                        let ord, str;
+                        if (isWeekend) {
+                            // Weekend: tutte le ore vanno in straordinari
+                            ord = 0;
+                            str = totLavoro;
+                        } else {
+                            // Feriale: max 8h ordinarie, il resto straordinario
+                            ord = totLavoro > 8 ? 8 : totLavoro;
+                            str = totLavoro > 8 ? totLavoro - 8 : 0;
+                        }
+
+                        if (ord > 0) page.drawText(ord.toString(), { x: CX.Ore, y: Y, size: fs, font });
                         if (str > 0) page.drawText(str.toString(), { x: CX.Straord, y: Y, size: fs, font });
                     }
 
