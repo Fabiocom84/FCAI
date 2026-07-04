@@ -159,14 +159,29 @@ h2 {
 /* --- 3. DASHBOARD & PULSANTI --- */
 .button-container {
     margin-bottom: 5px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     width: 100%;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Tablet: 3 colonne */
+@media (min-width: 700px) {
+    .button-container {
+        max-width: 800px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Desktop: 4 colonne */
+@media (min-width: 1000px) {
+    .button-container {
+        max-width: 1050px;
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .button {
@@ -181,8 +196,6 @@ h2 {
     border: none;
     border-radius: 5px;
     box-sizing: border-box;
-    flex-basis: calc(50% - 7.5px);
-    max-width: calc(50% - 7.5px);
     min-height: 100px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
@@ -300,6 +313,12 @@ h2 {
     background: linear-gradient(135deg, #2c3e50, #7f8c8d);
 }
 
+.dev-tools-button:hover {
+    background: linear-gradient(135deg, #1a252f, #6c7a7d);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 .agile-view-button:hover,
 .manage-data-button:hover,
 .config-button:hover {
@@ -337,8 +356,9 @@ h2 {
     opacity: 0.4;
 }
 
-/* Pulsante Training */
+/* Pulsante Training - sempre full-width in fondo */
 .training-button {
+    grid-column: 1 / -1; /* Occupa tutta la larghezza della griglia */
     width: 100%;
     height: 60px;
     display: flex;
@@ -355,6 +375,7 @@ h2 {
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-sizing: border-box;
     margin-top: 5px;
+    order: 999; /* Forza posizione finale */
 }
 
 .training-button:hover {
@@ -1206,16 +1227,17 @@ textarea:focus {
     }
 
     .button-container {
-        flex-direction: column;
+        grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
 
-    .button,
-    .training-button {
-        width: 100%;
-        max-width: 100%;
-        flex-basis: auto;
+    .button {
         min-height: 70px;
+    }
+
+    .training-button {
+        grid-column: 1 / -1;
+        min-height: 50px;
     }
 
     .modal {
