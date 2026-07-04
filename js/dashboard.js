@@ -1485,6 +1485,21 @@ const Dashboard = {
         if (ids.length === 0) return alert("Seleziona almeno una riga.");
         this.state.pendingIds = ids;
         this.dom.confCount.textContent = ids.length;
+
+        // Calcola il totale ore delle righe selezionate
+        let totalHours = 0;
+        const groups = this.state.groups || [];
+        groups.forEach(g => {
+            if (g.rows && g.rows.length) {
+                g.rows.forEach(r => {
+                    if (ids.includes(r.id_registrazione)) {
+                        totalHours += parseFloat(r.ore || 0);
+                    }
+                });
+            }
+        });
+        this.dom.confHours.textContent = totalHours.toFixed(1);
+
         this.dom.confirmModal.style.display = 'flex';
     },
 
