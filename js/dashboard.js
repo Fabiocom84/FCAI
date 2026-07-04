@@ -46,8 +46,6 @@ const Dashboard = {
         // --- FILTER BOXES ---
         boxCommesse: document.getElementById('boxCommesse'),
         boxDipendenti: document.getElementById('boxDipendenti'),
-        boxMacro: document.getElementById('boxMacro'),
-        boxLavorazioni: document.getElementById('boxLavorazioni'),
 
         // --- ACTIONS ---
         btnExpandAll: document.getElementById('btnExpandAll'),
@@ -929,8 +927,6 @@ const Dashboard = {
         if (!charts) return;
         this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa');
         this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale');
-        this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro');
-        this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente');
     },
 
     // --- GRID with GROUPING ---
@@ -1029,16 +1025,41 @@ const Dashboard = {
             return etichetta ? { ...item, label: etichetta } : item;
         });
 
-        // Pass Title and Key
+        // Pass Title and Key (solo Commesse e Dipendenti)
         this.renderCheckList(this.dom.boxCommesse, commesseItems, 'id_commessa', 'COMMESSE');
         this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale', 'DIPENDENTI');
-        this.renderCheckList(this.dom.boxMacro, charts.by_macro, 'id_macro', 'MACROCATEGORIE');
-        this.renderCheckList(this.dom.boxLavorazioni, charts.by_lavorazione, 'id_componente', 'LAVORAZIONI');
     },
 
     renderCheckList: function (container, items, filterKey, title) {
         if (!container) return;
         container.innerHTML = '';
+
+        // --- Ordinamento alfabetico per etichetta ---
+        let sortedItems = [...(items || [])];
+
+        // Nomi commesse speciali da posizionare in fondo
+        const SPECIAL_COMMESSE = ['gestione personale', 'attività di cantiere'];
+
+        if (filterKey === 'id_commessa') {
+            // Separa commesse speciali da quelle normali
+            const normal = [];
+            const special = [];
+            sortedItems.forEach(item => {
+                const lbl = (item.label || '').toLowerCase();
+                if (SPECIAL_COMMESSE.some(s => lbl.includes(s))) {
+                    special.push(item);
+                } else {
+                    normal.push(item);
+                }
+            });
+            // Ordina ciascun gruppo alfabeticamente
+            normal.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'it'));
+            special.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'it'));
+            sortedItems = [...normal, ...special];
+        } else {
+            // Per tutti gli altri filtri: ordine alfabetico semplice
+            sortedItems.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'it'));
+        }
 
         // --- HEADER (Title + Controls) ---
         const header = document.createElement('div');
@@ -1053,9 +1074,6 @@ const Dashboard = {
         container.appendChild(header);
 
         // Current Filter State
-        // [] -> ALL Selected (Visual: All Checked)
-        // [-1] -> NONE Selected (Visual: None Checked)
-        // [1, 2] -> Some Selected
         const currentIds = this.state.filters[filterKey];
         const isAllSelected = currentIds.length === 0;
         const isNoneSelected = currentIds.includes(-1);
@@ -1063,7 +1081,7 @@ const Dashboard = {
         const listContainer = document.createElement('div');
         listContainer.className = 'filter-list';
 
-        items.forEach(item => {
+        sortedItems.forEach(item => {
             if (!item.id && !item.label) return;
             const val = parseInt(item.id || item.value /* value might be id in charts? usually id */);
             // In charts data: { id: 1, label: 'Name', value: 100 }
