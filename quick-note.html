@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="dark-mode.css">
+    <title>Quick Note - Segretario AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/libs/choices.min.css" />
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="quick-note.css">
+</head>
+
+<body class="internal-page">
+    <div class="std-app-shell">
+        <div class="std-app-header">
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <span>Home</span>
+            </a>
+            <h1>NOTA RAPIDA</h1>
+            <div style="width: 40px;"></div>
+        </div>
+
+        <div class="std-app-content">
+            <div class="qn-container">
+
+                <!-- Stato connessione -->
+                <div id="connectionStatus" class="qn-connection-bar qn-connection-online">
+                    <span id="connectionIcon">🟢</span>
+                    <span id="connectionText">Online</span>
+                </div>
+
+                <!-- Registrazione Vocale -->
+                <div class="qn-card">
+                    <h3 class="qn-card-title">🎤 Registra Vocale</h3>
+                    <div class="qn-audio-controls">
+                        <div id="qnVisualizer" class="qn-visualizer">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <p id="qnRecordingStatus" class="qn-status-text">Pronto</p>
+                        <div class="qn-btn-row">
+                            <button type="button" id="qnStartBtn" class="qn-btn qn-btn-record">
+                                🎤 Avvia
+                            </button>
+                            <button type="button" id="qnStopBtn" class="qn-btn qn-btn-stop" disabled>
+                                ⏹ Ferma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testo / Trascrizione -->
+                <div class="qn-card">
+                    <h3 class="qn-card-title">📝 Nota</h3>
+                    <textarea id="qnTextArea" class="qn-textarea"
+                        placeholder="Scrivi qui o registra un vocale..."></textarea>
+                </div>
+
+                <!-- Commessa (opzionale) -->
+                <div class="qn-card">
+                    <h3 class="qn-card-title">📁 Commessa <span class="qn-optional">(opzionale)</span></h3>
+                    <div class="styled-choices-container">
+                        <select id="qnCommessaDropdown">
+                            <option value="" selected>Nessuna associazione</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pulsante Salva -->
+                <button type="button" id="qnSaveBtn" class="qn-save-btn">
+                    💾 Salva Nota
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Feedback -->
+    <div id="qnToast" class="qn-toast" style="display: none;">
+        <span id="qnToastText"></span>
+    </div>
+
+    <script src="js/libs/choices.min.js"></script>
+    <script src="js/libs/supabase.min.js" defer></script>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module" src="js/quick-note.js"></script>
+    <script src="js/dark-mode.js"></script>
+</body>
+
+</html>

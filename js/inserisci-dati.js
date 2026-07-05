@@ -5,6 +5,9 @@ import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import Legend from './legend.js';
 
+// Cache delle commesse per riuso nella sezione orfane
+let cachedCommesse = [];
+
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
@@ -14,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     new Legend();
     await loadCommesseDropdown();
     setupEventListeners();
+    await loadOrphanNotes();
 });
 
 // --- 1. SETUP UI E DROPDOWN (Invariato) ---
@@ -34,6 +38,9 @@ async function loadCommesseDropdown() {
             option.textContent = c.label;
             select.appendChild(option);
         });
+
+        // Cache per riuso nella sezione orfane
+        cachedCommesse = commesse;
 
         if (window.Choices) {
             new Choices(select, {
@@ -282,4 +289,170 @@ function handleFileSelect(e) {
         document.querySelector('.file-name').style.color = '#27ae60';
         document.querySelector('.drop-icon').textContent = '📄';
     }
+}
+
+// --- 5. NOTE ORFANE (Senza commessa) ---
+
+async function loadOrphanNotes() {
+    const section = document.getElementById('orphanNotesSection');
+    const list = document.getElementById('orphanNotesList');
+    const countEl = document.getElementById('orphanCount');
+    if (!section || !list) return;
+
+    try {
+        // Recupera registrazioni senza commessa
+        const res = await apiFetch('/api/registrazioni?id_commessa_fk=null&sortBy=data_creazione&sortOrder=desc&limit=50');
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const notes = (data.data || []).filter(n => n.id_commessa_fk === null);
+
+        if (notes.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        countEl.textContent = notes.length;
+        section.style.display = 'block';
+        list.innerHTML = '';
+
+        notes.forEach(note => {
+            const card = createOrphanNoteCard(note);
+            list.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Errore caricamento note orfane:', error);
+    }
+}
+
+function createOrphanNoteCard(note) {
+    const card = document.createElement('div');
+    card.className = 'orphan-note-card';
+    card.dataset.noteId = note.id_registrazione;
+
+    // Testo della nota
+    const textEl = document.createElement('div');
+    textEl.className = 'orphan-note-text';
+    textEl.textContent = note.contenuto_testo || '(nessun testo)';
+    card.appendChild(textEl);
+
+    // Data
+    const dateEl = document.createElement('div');
+    dateEl.className = 'orphan-note-date';
+    const d = new Date(note.data_creazione);
+    dateEl.textContent = d.toLocaleDateString('it-IT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+    card.appendChild(dateEl);
+
+    // Azioni: dropdown + pulsante
+    const actions = document.createElement('div');
+    actions.className = 'orphan-note-actions';
+
+    // Dropdown commessa
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="">Scegli commessa...</option>';
+    cachedCommesse.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.label;
+        select.appendChild(opt);
+    });
+    actions.appendChild(select);
+
+    // Pulsante Associa
+    const btn = document.createElement('button');
+    btn.className = 'orphan-associate-btn';
+    btn.textContent = '✓ Associa';
+    btn.addEventListener('click', () => associateNote(note.id_registrazione, select, card));
+    actions.appendChild(btn);
+
+    // Pulsante Elimina
+    const delBtn = document.createElement('button');
+    delBtn.className = 'orphan-delete-btn';
+    delBtn.textContent = '🗑';
+    delBtn.title = 'Elimina nota';
+    delBtn.addEventListener('click', () => deleteOrphanNote(note.id_registrazione, card));
+    actions.appendChild(delBtn);
+
+    card.appendChild(actions);
+    return card;
+}
+
+async function associateNote(noteId, selectEl, cardEl) {
+    const commessaId = selectEl.value;
+    if (!commessaId) {
+        showModal({ title: 'Attenzione', message: 'Seleziona una commessa prima di associare.' });
+        return;
+    }
+
+    const btn = cardEl.querySelector('.orphan-associate-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳...';
+
+    try {
+        const res = await apiFetch(`/api/registrazioni/${noteId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ id_commessa_fk: parseInt(commessaId) })
+        });
+
+        if (!res.ok) throw new Error('Errore aggiornamento');
+
+        removeOrphanCard(cardEl);
+
+    } catch (error) {
+        console.error('Errore associazione:', error);
+        showModal({ title: 'Errore', message: 'Impossibile associare la nota: ' + error.message });
+        btn.disabled = false;
+        btn.textContent = '✓ Associa';
+    }
+}
+
+async function deleteOrphanNote(noteId, cardEl) {
+    const confirmed = await showModal({
+        title: 'Conferma Eliminazione',
+        message: 'Vuoi eliminare questa nota? L\'azione è irreversibile.',
+        confirmText: 'Elimina',
+        cancelText: 'Annulla',
+        type: 'error'
+    });
+
+    if (!confirmed) return;
+
+    const delBtn = cardEl.querySelector('.orphan-delete-btn');
+    delBtn.disabled = true;
+
+    try {
+        const res = await apiFetch(`/api/registrazioni/${noteId}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error('Errore eliminazione');
+
+        removeOrphanCard(cardEl);
+
+    } catch (error) {
+        console.error('Errore eliminazione:', error);
+        showModal({ title: 'Errore', message: 'Impossibile eliminare la nota: ' + error.message });
+        delBtn.disabled = false;
+    }
+}
+
+function removeOrphanCard(cardEl) {
+    cardEl.style.transition = 'opacity 0.3s, transform 0.3s';
+    cardEl.style.opacity = '0';
+    cardEl.style.transform = 'translateX(20px)';
+    setTimeout(() => {
+        cardEl.remove();
+
+        const countEl = document.getElementById('orphanCount');
+        const remaining = document.querySelectorAll('.orphan-note-card').length;
+        countEl.textContent = remaining;
+
+        if (remaining === 0) {
+            document.getElementById('orphanNotesSection').style.display = 'none';
+        }
+    }, 300);
 }

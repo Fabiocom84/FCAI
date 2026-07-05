@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="dark-mode.css">
+    <title>Quick Record - Segretario AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="quick-note.css">
+</head>
+
+<body class="internal-page">
+    <div class="std-app-shell">
+        <div class="std-app-header">
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Home"
+                    style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <span>Home</span>
+            </a>
+            <h1>REGISTRA</h1>
+            <div style="width: 40px;"></div>
+        </div>
+
+        <div class="std-app-content">
+            <div class="qr-container">
+
+                <!-- Stato connessione -->
+                <div id="connectionStatus" class="qn-connection-bar qn-connection-online">
+                    <span id="connectionIcon">🟢</span>
+                    <span id="connectionText">Online</span>
+                </div>
+
+                <!-- Stato -->
+                <div class="qr-status">
+                    <div id="qrStatusIcon" class="qr-status-icon">🎤</div>
+                    <div id="qrStatusText" class="qr-status-text">Pronto</div>
+                    <div id="qrStatusSub" class="qr-status-sub"></div>
+                </div>
+
+                <!-- Timer -->
+                <div id="qrTimer" class="qr-timer">0:00</div>
+
+                <!-- Bottone Push-to-Talk -->
+                <button type="button" id="qrRecordBtn" class="qr-record-btn">
+                    🎤
+                </button>
+
+                <p class="qr-instruction">
+                    Tieni premuto per registrare<br>
+                    Rilascia per fermare e salvare
+                </p>
+
+                <!-- Badge coda offline -->
+                <div id="qrQueueBadge" class="qr-queue-badge" style="display: none;">
+                    📤 <span id="qrQueueCount">0</span> note in coda
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Feedback -->
+    <div id="qnToast" class="qn-toast" style="display: none;">
+        <span id="qnToastText"></span>
+    </div>
+
+    <script src="js/libs/supabase.min.js" defer></script>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module" src="js/quick-record.js"></script>
+    <script src="js/dark-mode.js"></script>
+</body>
+
+</html>

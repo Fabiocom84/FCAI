@@ -113,20 +113,21 @@
 .file-name { color: #718096; font-size: 0.8em; word-break: break-all; }
 
 /* Colonna Destra: Editor */
-.editor-card { height: 100%; display: flex; flex-direction: column; }
+.editor-card { display: flex; flex-direction: column; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px; font-size: 0.85em; text-transform: uppercase; }
 .commessa-select-group .choices__inner { background-color: #f8f9fa; border: 1px solid #cbd5e0; min-height: 40px; }
 
-/* Textarea che riempie lo spazio */
-.editor-group { flex-grow: 1; display: flex; flex-direction: column; margin-bottom: 20px; min-height: 0; }
+/* Textarea (ridotta per lasciare spazio alle note orfane) */
+.editor-group { display: flex; flex-direction: column; margin-bottom: 20px; min-height: 0; }
 textarea#voiceTranscription {
     width: 100%; 
-    flex-grow: 1; /* Si espande verticalmente */
-    padding: 20px;
+    min-height: 80px;
+    max-height: 120px;
+    padding: 14px;
     border: 1px solid #cbd5e0; border-radius: 8px;
-    font-family: 'Roboto', sans-serif; font-size: 1.1em; line-height: 1.6; color: #2d3748;
-    resize: none; /* Disabilita resize manuale perché è flex */
+    font-family: 'Roboto', sans-serif; font-size: 1em; line-height: 1.5; color: #2d3748;
+    resize: vertical;
     box-sizing: border-box;
 }
 textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
@@ -144,7 +145,109 @@ textarea#voiceTranscription:focus { outline: none; border-color: #3498db; box-sh
 
 /* Effetto Highlight per Drag & Drop */
 .file-drop-zone-expanded.highlight {
-    background-color: #e3f2fd; /* Azzurro chiaro */
+    background-color: #e3f2fd;
     border-color: #3498db;
     transform: scale(1.02);
+}
+
+/* =================================================================
+   SEZIONE NOTE ORFANE (Note senza commessa)
+   ================================================================= */
+
+.orphan-notes-section {
+    margin-top: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fafbfc;
+}
+.orphan-notes-section .section-header h3 {
+    margin: 0;
+    font-size: 0.95em;
+    color: #2d3748;
+}
+
+.orphan-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.orphan-note-card {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s;
+}
+.orphan-note-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.orphan-note-text {
+    font-size: 0.9em;
+    color: #2d3748;
+    line-height: 1.4;
+    word-break: break-word;
+}
+.orphan-note-date {
+    font-size: 0.75em;
+    color: #a0aec0;
+}
+
+.orphan-note-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.orphan-note-actions select {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 0.85em;
+    background: #f8f9fa;
+}
+
+.orphan-associate-btn {
+    padding: 6px 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+.orphan-associate-btn:hover {
+    background-color: #218838;
+}
+.orphan-associate-btn:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.orphan-delete-btn {
+    padding: 6px 10px;
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+    border-radius: 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.orphan-delete-btn:hover {
+    background-color: #c53030;
+    color: white;
+}
+.orphan-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

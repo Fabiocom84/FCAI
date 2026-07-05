@@ -130,6 +130,7 @@ function setupUI() {
 
     // CHIAMATA CHECK NOTIFICHE
     checkUnreadNotifications();
+    checkOrphanNotes();
 
     if (!window.uiEventsBound) {
         bindGlobalEvents();
@@ -251,5 +252,38 @@ async function checkUnreadNotifications() {
         }
     } catch (error) {
         console.warn("Impossibile recuperare notifiche:", error);
+    }
+}
+
+async function checkOrphanNotes() {
+    const btnInsert = document.getElementById('btn-inserisci-dati');
+
+    // Solo admin ha questo bottone visibile
+    if (!btnInsert || btnInsert.style.display === 'none') return;
+
+    try {
+        const res = await apiFetch('/api/registrazioni/orfane/count');
+        const data = await res.json();
+
+        if (data.count > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'notification-badge';
+            badge.textContent = data.count > 99 ? '99+' : data.count;
+
+            const oldBadge = btnInsert.querySelector('.notification-badge');
+            if (oldBadge) oldBadge.remove();
+
+            btnInsert.appendChild(badge);
+        }
+    } catch (error) {
+        console.warn("Impossibile recuperare note orfane:", error);
+    }
+
+    // Tenta sync di eventuali note offline in coda
+    try {
+        const { syncQueue } = await import('./offline-queue.js');
+        if (navigator.onLine) syncQueue().catch(() => {});
+    } catch (e) {
+        // offline-queue non disponibile, ignora
     }
 }

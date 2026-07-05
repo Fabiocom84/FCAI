@@ -14,5 +14,21 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nota Rapida",
+      "short_name": "Nota",
+      "description": "Registra o scrivi una nota con commessa opzionale",
+      "url": "/quick-note.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Registra Vocale",
+      "short_name": "Registra",
+      "description": "Registrazione vocale super veloce",
+      "url": "/quick-record.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    }
   ]
 }

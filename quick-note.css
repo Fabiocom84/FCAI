@@ -1,0 +1,309 @@
+/* quick-note.css — Stili pagina Nota Rapida e Quick Record */
+
+/* --- Container --- */
+.qn-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* --- Barra Connessione --- */
+.qn-connection-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+.qn-connection-online {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+.qn-connection-offline {
+    background-color: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffe0b2;
+}
+
+/* --- Card --- */
+.qn-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8;
+}
+.qn-card-title {
+    margin: 0 0 12px 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #2d3748;
+}
+.qn-optional {
+    font-weight: 400;
+    color: #a0aec0;
+    font-size: 0.85em;
+}
+
+/* --- Audio Controls --- */
+.qn-audio-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.qn-status-text {
+    color: #666;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin: 0;
+}
+.qn-btn-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.qn-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.qn-btn-record {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+.qn-btn-record:hover:not(:disabled) {
+    background-color: #2e7d32;
+    color: white;
+}
+.qn-btn-stop {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+.qn-btn-stop:hover:not(:disabled) {
+    background-color: #c62828;
+    color: white;
+}
+.qn-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+    color: #bbb;
+    border-color: #ddd;
+}
+
+/* Visualizer (riuso keyframes da inserisci-dati) */
+.qn-visualizer {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    height: 20px;
+    align-items: flex-end;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+.qn-visualizer.active { opacity: 1; }
+.qn-visualizer .bar {
+    width: 5px;
+    background-color: #28a745;
+    border-radius: 2px;
+    height: 4px;
+}
+.qn-visualizer.active .bar {
+    animation: qnSound 0ms -800ms linear infinite alternate;
+}
+@keyframes qnSound {
+    0% { height: 4px; }
+    100% { height: 100%; }
+}
+.qn-visualizer.active .bar:nth-child(odd) { animation-duration: 400ms; }
+.qn-visualizer.active .bar:nth-child(even) { animation-duration: 450ms; }
+
+/* --- Textarea --- */
+.qn-textarea {
+    width: 100%;
+    min-height: 80px;
+    max-height: 120px;
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1em;
+    line-height: 1.5;
+    color: #2d3748;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.qn-textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* --- Save Button --- */
+.qn-save-btn {
+    width: 100%;
+    padding: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
+}
+.qn-save-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+.qn-save-btn:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- Toast --- */
+.qn-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: white;
+    z-index: 9999;
+    animation: qnToastIn 0.3s ease-out;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.qn-toast-success { background-color: #28a745; }
+.qn-toast-warning { background-color: #e67e22; }
+.qn-toast-error { background-color: #dc3545; }
+
+@keyframes qnToastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* =================================================================
+   QUICK RECORD — Push-to-Talk Page
+   ================================================================= */
+
+.qr-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 80px);
+    gap: 20px;
+}
+
+/* Stato Centrale */
+.qr-status {
+    text-align: center;
+}
+.qr-status-icon {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+.qr-status-text {
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #4a5568;
+}
+.qr-status-sub {
+    font-size: 0.85em;
+    color: #a0aec0;
+    margin-top: 4px;
+}
+
+/* Timer */
+.qr-timer {
+    font-size: 2.5em;
+    font-weight: 300;
+    color: #2d3748;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+    min-height: 1.2em;
+}
+
+/* Pulsante Push-to-Talk */
+.qr-record-btn {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+    color: #2e7d32;
+    font-size: 3em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+.qr-record-btn:active,
+.qr-record-btn.recording {
+    background: linear-gradient(145deg, #ffcdd2, #ef9a9a);
+    color: #c62828;
+    box-shadow: 0 0 0 8px rgba(198, 40, 40, 0.15), 0 8px 25px rgba(198, 40, 40, 0.3);
+    transform: scale(1.08);
+}
+.qr-record-btn.recording {
+    animation: qrPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes qrPulse {
+    0%, 100% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0.15), 0 8px 25px rgba(198, 40, 40, 0.3); }
+    50% { box-shadow: 0 0 0 16px rgba(198, 40, 40, 0.08), 0 8px 25px rgba(198, 40, 40, 0.3); }
+}
+
+.qr-instruction {
+    font-size: 0.9em;
+    color: #718096;
+    text-align: center;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+/* Coda Offline Badge */
+.qr-queue-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: #fff3e0;
+    color: #e65100;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    border: 1px solid #ffe0b2;
+}
