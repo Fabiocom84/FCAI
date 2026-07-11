@@ -564,12 +564,16 @@ const PrintPage = {
                     let totLavoro = 0;
                     let totAssenza = 0;
                     let totViaggio = 0;
+                    let totViaggioAndata = 0;
+                    let totViaggioRitorno = 0;
 
                     let labels = [], types = new Set();
                     let timeM_In = "", timeM_Out = "", timeP_In = "", timeP_Out = "";
 
                     items.forEach(it => {
                         totViaggio += it.viaggio;
+                        totViaggioAndata += (it.viaggio_andata || 0);
+                        totViaggioRitorno += (it.viaggio_ritorno || 0);
                         types.add(it.tipo);
 
                         if (it.is_assenza) totAssenza += it.ore;
@@ -635,10 +639,8 @@ const PrintPage = {
                     page.drawText(fullDesc, { x: CX.Desc, y: Y, size: fs, font });
 
                     if (totViaggio > 0) {
-                        const v_andata = (totViaggio / 2);
-                        const v_ritorno = (totViaggio / 2);
-                        page.drawText(v_andata.toFixed(1), { x: CX.VA, y: Y, size: fs, font });
-                        page.drawText(v_ritorno.toFixed(1), { x: CX.VR, y: Y, size: fs, font });
+                        if (totViaggioAndata > 0) page.drawText(totViaggioAndata.toFixed(1), { x: CX.VA, y: Y, size: fs, font });
+                        if (totViaggioRitorno > 0) page.drawText(totViaggioRitorno.toFixed(1), { x: CX.VR, y: Y, size: fs, font });
                     }
                 }
             }
