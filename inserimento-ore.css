@@ -686,6 +686,39 @@ input:focus {
     margin-bottom: 15px;
 }
 
+/* TOGGLE CHECKBOX VIAGGIO (Produzione) */
+.toggle-travel-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px 15px;
+    background: #f3e5f5;
+    border: 1.5px solid #ce93d8;
+    border-radius: 10px;
+    font-weight: 600;
+    color: #6a1b9a;
+    font-size: 0.95rem;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+.toggle-travel-label:hover {
+    background: #e1bee7;
+    border-color: #ab47bc;
+}
+.toggle-travel-label:has(input:checked) {
+    background: #e1bee7;
+    border-color: #8e24aa;
+    box-shadow: 0 0 0 2px rgba(142, 36, 170, 0.15);
+}
+.toggle-travel-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #6a1b9a;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 .travel-box {
     background: #f3e5f5;
     padding: 15px;

@@ -237,6 +237,8 @@ const MobileHoursApp = {
             travelFields: document.getElementById('travel-fields'),
             travelAndata: document.getElementById('travelAndataInput'),
             travelRitorno: document.getElementById('travelRitornoInput'),
+            prodTravelCheckbox: document.getElementById('prodTravelCheckbox'),
+            prodTravelToggle: document.getElementById('prod-travel-toggle'),
             overtimeFields: document.getElementById('overtime-fields'),
             strMattinaStart: document.getElementById('strMattinaStart'),
             strMattinaEnd: document.getElementById('strMattinaEnd'),
@@ -258,6 +260,15 @@ const MobileHoursApp = {
         if (this.dom.hoursInput) this.dom.hoursInput.addEventListener('input', () => this.checkOvertimeLogic());
         if (this.dom.travelAndata) this.dom.travelAndata.addEventListener('input', () => this.checkOvertimeLogic());
         if (this.dom.travelRitorno) this.dom.travelRitorno.addEventListener('input', () => this.checkOvertimeLogic());
+        if (this.dom.prodTravelCheckbox) this.dom.prodTravelCheckbox.addEventListener('change', () => {
+            const show = this.dom.prodTravelCheckbox.checked;
+            this.dom.travelFields.style.display = show ? 'block' : 'none';
+            if (!show) {
+                this.dom.travelAndata.value = '';
+                this.dom.travelRitorno.value = '';
+            }
+            this.checkOvertimeLogic();
+        });
         if (this.dom.absType) this.dom.absType.addEventListener('change', (e) => this.handleAbsencePreset(e.target.value));
         if (this.dom.copyPrevDayBtn) this.dom.copyPrevDayBtn.addEventListener('click', () => this.copyPreviousWorkday());
     },
@@ -506,17 +517,21 @@ const MobileHoursApp = {
         // 2. Mostra in base al tipo
         if (type === 'produzione') {
             this.dom.prodFields.style.display = 'block';
+            if (this.dom.prodTravelToggle) this.dom.prodTravelToggle.style.display = 'block';
+            if (this.dom.prodTravelCheckbox) this.dom.prodTravelCheckbox.checked = false;
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Lavoro *";
         }
         else if (type === 'cantiere') {
             if (wrapperEl) wrapperEl.classList.add('cantiere-mode'); // CSS Specifico
             this.dom.groupCommessa.style.display = 'none';
             this.dom.travelFields.style.display = 'block';
+            if (this.dom.prodTravelToggle) this.dom.prodTravelToggle.style.display = 'none';
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Cantiere *";
         }
         else if (type === 'assenza') {
             this.dom.groupCommessa.style.display = 'none';
             this.dom.absFields.style.display = 'block';
+            if (this.dom.prodTravelToggle) this.dom.prodTravelToggle.style.display = 'none';
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Assenza";
         }
 
@@ -965,8 +980,11 @@ const MobileHoursApp = {
 
         let type = 'produzione';
         const noteUpper = (work.note || '').toUpperCase();
+        const hasTravel = (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0);
         if (work.assenza_mattina_dalle || noteUpper.includes('[FERIE]') || noteUpper.includes('[PERMESSO]') || noteUpper.includes('[MALATTIA]') || noteUpper.includes('[FESTIVITA')) type = 'assenza';
-        else if (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0 || noteUpper.includes('[CANTIERE]')) type = 'cantiere';
+        // Cantiere: tag [CANTIERE] OPPURE (nessun componente + ore viaggio presenti)
+        else if (noteUpper.includes('[CANTIERE]') || (!work.id_componente_fk && hasTravel)) type = 'cantiere';
+        // NB: produzione con componente + ore viaggio = produzione con checkbox viaggio attivo
 
         const radio = document.querySelector(`input[value="${type}"]`);
         if (radio) { radio.checked = true; this.handleTypeChange(type); }
@@ -975,6 +993,12 @@ const MobileHoursApp = {
         this.dom.noteInput.value = work.note || '';
         if (work.ore_viaggio_andata) this.dom.travelAndata.value = work.ore_viaggio_andata;
         if (work.ore_viaggio_ritorno) this.dom.travelRitorno.value = work.ore_viaggio_ritorno;
+
+        // Se è produzione con ore viaggio, attiva il checkbox e mostra lo specchietto
+        if (type === 'produzione' && (work.ore_viaggio_andata > 0 || work.ore_viaggio_ritorno > 0)) {
+            if (this.dom.prodTravelCheckbox) this.dom.prodTravelCheckbox.checked = true;
+            this.dom.travelFields.style.display = 'block';
+        }
         if (work.str_mattina_dalle) this.dom.strMattinaStart.value = work.str_mattina_dalle;
         if (work.str_mattina_alle) this.dom.strMattinaEnd.value = work.str_mattina_alle;
         if (work.str_pomeriggio_dalle) this.dom.strPomStart.value = work.str_pomeriggio_dalle;
