@@ -18,6 +18,7 @@ const App = {
         allStatuses: [],
         allPhases: [],
         allMacros: [], // Cache delle macro categorie
+        allUbicazioni: [], // Cache delle ubicazioni magazzino
 
         // Istanze Choices.js per poterle resettare/popolare programmaticamente
         choicesInstances: {
@@ -108,7 +109,9 @@ const App = {
                     this.state.allStatuses = initData.status || [];
                     this.state.allMacros = initData.macros || [];
                     this.state.allPhases = initData.fasi || [];
+                    this.state.allUbicazioni = initData.ubicazioni || [];
                     if (IsAdmin) this.initModalChoices(initData.clienti || [], initData.modelli || [], initData.macros || []);
+                    if (IsAdmin) this.populateUbicazioniSelect(this.state.allUbicazioni);
                     metadataCached = true;
                 }
             } catch (e) {
@@ -124,7 +127,8 @@ const App = {
                 // Aggiorna cache metadati
                 localStorage.setItem('commesse_init_v3', JSON.stringify({
                     status: data.status, macros: data.macros,
-                    fasi: data.fasi, clienti: data.clienti, modelli: data.modelli
+                    fasi: data.fasi, clienti: data.clienti, modelli: data.modelli,
+                    ubicazioni: data.ubicazioni
                 }));
                 localStorage.setItem('commesse_cache_ts', now.toString());
 
@@ -132,9 +136,11 @@ const App = {
                 this.state.allStatuses = data.status || [];
                 this.state.allMacros = data.macros || [];
                 this.state.allPhases = data.fasi || [];
+                this.state.allUbicazioni = data.ubicazioni || [];
 
                 if (IsAdmin) {
                     this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
+                    this.populateUbicazioniSelect(this.state.allUbicazioni);
                 }
                 console.log("📡 Metadati aggiornati da server");
             })
@@ -553,6 +559,7 @@ const App = {
                         <div class="info-item"><span class="info-label">Ordine (VO)</span><span class="info-value">${c.vo || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Matricola</span><span class="info-value">${c.matricola || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
+                        <div class="info-item"><span class="info-label">📁 Ubicazione</span><span class="info-value">${c.ubicazioni?.nome_ubicazione || 'ARMADIO'}</span></div>
                     </div>
 
                     ${(() => {
@@ -911,6 +918,11 @@ const App = {
             this.dom.modalTitle.textContent = "NUOVA COMMESSA";
             const yearInput = document.getElementById('anno');
             if (yearInput) yearInput.value = new Date().getFullYear();
+            // Default ubicazione = prima voce (ARMADIO)
+            const ubicazioneSelect = document.getElementById('ubicazione');
+            if (ubicazioneSelect && this.state.allUbicazioni.length > 0) {
+                ubicazioneSelect.value = this.state.allUbicazioni[0].id_ubicazione;
+            }
         }
 
         this.dom.modal.classList.add('active');
@@ -944,6 +956,12 @@ const App = {
                 // [NEW] Popola lat/lon se presenti
                 setValue('latitudine', data.latitudine);
                 setValue('longitudine', data.longitudine);
+
+                // [NEW] Popola ubicazione magazzino
+                const ubicazioneSelect = document.getElementById('ubicazione');
+                if (ubicazioneSelect && data.id_ubicazione_fk) {
+                    ubicazioneSelect.value = data.id_ubicazione_fk;
+                }
             }
 
             // Popola Select (Choices.js)
@@ -1065,6 +1083,14 @@ const App = {
 
     closeModal: function () {
         this.dom.modal.classList.remove('active');
+    },
+
+    populateUbicazioniSelect: function (ubicazioni) {
+        const select = document.getElementById('ubicazione');
+        if (!select) return;
+        select.innerHTML = ubicazioni.map(u =>
+            `<option value="${u.id_ubicazione}">${u.nome_ubicazione}</option>`
+        ).join('');
     },
 
     // Gestione Immagine (Solo Nome File)

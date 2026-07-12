@@ -154,6 +154,20 @@ const App = {
                 { key: 'paese', label: 'Paese', editable: true },
                 { key: 'matricola', label: 'Matricola', editable: true },
                 {
+                    key: 'id_ubicazione_fk',
+                    label: '📁 Ubicazione',
+                    editable: true,
+                    type: 'foreignKey',
+                    formatter: (rowData) => rowData.ubicazioni?.nome_ubicazione || 'N/A',
+                    options: { apiEndpoint: '/api/simple/ubicazioni', valueField: 'id_ubicazione', textField: 'nome_ubicazione' },
+                    filterOptions: {
+                        key: 'id_ubicazione_fk',
+                        apiEndpoint: '/api/simple/ubicazioni',
+                        valueField: 'id_ubicazione',
+                        textField: 'nome_ubicazione'
+                    }
+                },
+                {
                     key: 'immagine',
                     label: 'Immagine',
                     editable: false,
@@ -319,6 +333,15 @@ const App = {
             idColumn: 'id_fase',
             columns: [
                 { key: 'nome_fase', label: 'Nome Fase', editable: true },
+                { key: 'descrizione', label: 'Descrizione', editable: true, type: 'textarea' }
+            ]
+        },
+
+        'ubicazioni': {
+            apiEndpoint: '/api/ubicazioni',
+            idColumn: 'id_ubicazione',
+            columns: [
+                { key: 'nome_ubicazione', label: 'Nome Ubicazione', editable: true },
                 { key: 'descrizione', label: 'Descrizione', editable: true, type: 'textarea' }
             ]
         },
@@ -1481,6 +1504,7 @@ const App = {
                 '/api/simple/status_commessa': 'status_commessa', // o 'status'
                 '/api/commesse/fasi': 'fasi',
                 '/api/simple/articoli': 'articoli',
+                '/api/simple/ubicazioni': 'ubicazioni',
                 '/api/personale?limit=1000': 'personale' // Questo potrebbe non esserci nella cache "gestione" se non l'abbiamo aggiunto
             };
 

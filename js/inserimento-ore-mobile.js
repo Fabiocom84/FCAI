@@ -957,9 +957,9 @@ const MobileHoursApp = {
         } catch (err) {
             console.error("Errore salvataggio:", err);
             alert("Errore salvataggio: " + err.message);
+            btn.textContent = originalText; // Ripristina testo solo in caso di errore
         } finally {
             btn.disabled = false;
-            btn.textContent = originalText;
         }
     },
 
