@@ -608,8 +608,8 @@ const App = {
                         
                         <!-- QUICK ACTIONS (Visible to All) -->
                         <div class="quick-actions" style="display:flex; gap:10px; margin-bottom:10px;">
-                             <button class="std-btn std-btn--blue" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}, '${encodeURIComponent(c.impianto || 'Impianto')}', '${encodeURIComponent(c.clienti?.ragione_sociale || '')}'); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;">
-                                🗺️ Mappa
+                             <button class="std-btn ${c.posizione_esatta ? 'std-btn--blue' : 'std-btn--orange'}" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}, '${encodeURIComponent(c.impianto || 'Impianto')}', '${encodeURIComponent(c.clienti?.ragione_sociale || '')}'); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;" title="${c.posizione_esatta ? 'Posizione Esatta' : 'Posizione Approssimativa'}">
+                                ${c.posizione_esatta ? '🗺️ Mappa' : '⚠️ Mappa'}
                              </button>
                              <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
                                 ⏱️ Ore
@@ -956,6 +956,8 @@ const App = {
                 // [NEW] Popola lat/lon se presenti
                 setValue('latitudine', data.latitudine);
                 setValue('longitudine', data.longitudine);
+                const posEsattaEl = document.getElementById('posizione_esatta');
+                if (posEsattaEl) posEsattaEl.checked = !!data.posizione_esatta;
 
                 // [NEW] Popola ubicazione magazzino
                 const ubicazioneSelect = document.getElementById('ubicazione');
@@ -1458,13 +1460,28 @@ function renderGeoMapMarkers(list) {
 
     const bounds = L.latLngBounds();
 
+    const defaultIcon = new L.Icon.Default();
+    const orangeIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
     list.forEach(c => {
         if (c.latitudine && c.longitudine) {
-            const marker = L.marker([c.latitudine, c.longitudine]);
+            const markerOptions = c.posizione_esatta ? {} : { icon: orangeIcon };
+            const marker = L.marker([c.latitudine, c.longitudine], markerOptions);
 
             // Build Popup
             let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
-            popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${c.impianto || 'Impianto'}</b><br>`;
+            popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${c.impianto || 'Impianto'}</b>`;
+            if (!c.posizione_esatta) {
+                popupContent += ` <span style="font-size:1.2em;" title="Posizione Approssimativa">⚠️</span>`;
+            }
+            popupContent += `<br>`;
             if (c.clienti && c.clienti.ragione_sociale) {
                 popupContent += `<span style="color:#7f8c8d; font-size:0.9em;">${c.clienti.ragione_sociale}</span><br>`;
             }
