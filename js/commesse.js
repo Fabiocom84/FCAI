@@ -559,7 +559,7 @@ const App = {
                         <div class="info-item"><span class="info-label">Ordine (VO)</span><span class="info-value">${c.vo || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Matricola</span><span class="info-value">${c.matricola || '-'}</span></div>
                         <div class="info-item"><span class="info-label">Luogo</span><span class="info-value">${c.paese || '-'} (${c.provincia || ''})</span></div>
-                        <div class="info-item"><span class="info-label">📁 Ubicazione</span><span class="info-value">${(c.ubicazioni?.nome_ubicazione || 'ARMADIO') + (c.modelli?.nome_modello ? ' - ' + c.modelli.nome_modello : '')}</span></div>
+                        <div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">📁 Ubicazione</span><span class="info-value" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${(c.ubicazioni?.nome_ubicazione || 'ARMADIO') + (c.modelli?.nome_modello ? ' - ' + c.modelli.nome_modello : '')}">${(c.ubicazioni?.nome_ubicazione || 'ARMADIO') + (c.modelli?.nome_modello ? ' - ' + c.modelli.nome_modello : '')}</span></div>
                     </div>
 
                     ${(() => {
