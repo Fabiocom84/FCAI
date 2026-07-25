@@ -1163,12 +1163,12 @@ const App = {
 let map = null;
 let currentMarker = null;
 
-// FIX: Leaflet default marker icons path (local CSS missing images/)
+// FIX: Leaflet default marker icons path (locale)
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconRetinaUrl: 'img/marker-icon-2x.png',
+    iconUrl: 'img/marker-icon.png',
+    shadowUrl: 'img/marker-shadow.png',
 });
 
 function setupGeocodingControls() {
@@ -1224,6 +1224,10 @@ function setupGeocodingControls() {
                         placeMarker(newLatLng);
                     }, 100);
 
+                    // Calcolo da Città/Provincia = posizione approssimativa
+                    const posCheckbox = document.getElementById('posizione_esatta');
+                    if (posCheckbox) posCheckbox.checked = false;
+
                 } else {
                     showModal({ title: "Non trovato", message: "Impossibile trovare le coordinate per questo luogo." });
                 }
@@ -1264,6 +1268,9 @@ function setupGeocodingControls() {
                 const latlng = currentMarker.getLatLng();
                 document.getElementById('latitudine').value = latlng.lat.toFixed(6);
                 document.getElementById('longitudine').value = latlng.lng.toFixed(6);
+                // Selezione manuale su mappa = posizione esatta
+                const posCheckbox = document.getElementById('posizione_esatta');
+                if (posCheckbox) posCheckbox.checked = true;
                 closeMap();
             } else {
                 showModal({ title: "Info", message: "Seleziona un punto sulla mappa." });
@@ -1462,8 +1469,8 @@ function renderGeoMapMarkers(list) {
 
     const defaultIcon = new L.Icon.Default();
     const orangeIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconUrl: 'img/marker-icon-orange.png',
+        shadowUrl: 'img/marker-shadow.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
