@@ -343,18 +343,20 @@ const DevTools = {
             this.data.existingRifs = new Set();
         }
 
-        // 5. Check duplicati interni al file
-        const seenRifs = new Set();
+        // 5. Check duplicati interni al file con indicazione riga di origine
+        const seenRifsMap = new Map(); // rif -> rowIdx
         mapped.forEach(r => {
             if (r.riferimento_tecnico) {
                 if (this.data.existingRifs.has(r.riferimento_tecnico)) {
                     r._status = 'skip';
-                    r._errors.push('Già presente nel DB');
-                } else if (seenRifs.has(r.riferimento_tecnico)) {
+                    r._errors.push(`Già presente nel DB (Commessa: ${r.riferimento_tecnico})`);
+                } else if (seenRifsMap.has(r.riferimento_tecnico)) {
                     r._status = 'skip';
-                    r._errors.push('Duplicato nel file');
+                    const origRow = seenRifsMap.get(r.riferimento_tecnico);
+                    r._errors.push(`Duplicato nel file Excel (vista a riga ${origRow})`);
+                } else {
+                    seenRifsMap.set(r.riferimento_tecnico, r._rowIdx);
                 }
-                seenRifs.add(r.riferimento_tecnico);
             }
         });
 
@@ -367,86 +369,99 @@ const DevTools = {
         const container = document.getElementById('mappingLists');
         container.innerHTML = '';
 
-        // Sezione Clienti
+        // Helper per renderizzare gruppo con filtro di ricerca
+        const renderGroup = (title, itemsSet, category, dbList, idKey, nameKey, userMap) => {
+            const itemsArray = Array.from(itemsSet).sort();
+            const groupId = `group-${category}`;
+
+            let html = `
+                <div class="mapping-group" id="${groupId}">
+                    <div class="mapping-group-header">
+                        <h4>Associazione ${title} (${itemsArray.length})</h4>
+                        <input type="text" class="global-mapping-search" data-group="${groupId}" placeholder="🔍 Filtra lista ${title.toLowerCase()}...">
+                    </div>
+            `;
+
+            itemsArray.forEach((itemName, idx) => {
+                const savedMap = userMap[itemName.toLowerCase()] || '';
+                const selectId = `select-${category}-${idx}`;
+
+                html += `
+                    <div class="mapping-row" data-search-label="${itemName.toLowerCase()}">
+                        <span class="mapping-label">Excel: "<strong>${itemName}</strong>"</span>
+                        <span class="mapping-arrow">➡️</span>
+                        <div style="flex: 1.8; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="text" 
+                                   class="mapping-search-input" 
+                                   data-target="${selectId}"
+                                   placeholder="🔍 Cerca ${title.toLowerCase()}..." 
+                                   style="flex: 1; min-width: 140px;">
+                            <select id="${selectId}" class="mapping-select ${savedMap ? 'mapped' : ''}" data-category="${category}" data-excel="${itemName}" style="flex: 1.5; min-width: 200px;">
+                                <option value="">-- Seleziona ${title} --</option>
+                                ${dbList.map(item => `
+                                    <option value="${item[idKey]}" ${Number(savedMap) === item[idKey] ? 'selected' : ''}>
+                                        ${item[nameKey]} ${item.codice_cliente ? `(${item.codice_cliente})` : ''}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            return html;
+        };
+
         if (unmappedClients.size > 0) {
-            let html = `
-                <div class="mapping-group">
-                    <h4>Associazione Clienti (${unmappedClients.size})</h4>
-            `;
-            Array.from(unmappedClients).sort().forEach(clientName => {
-                const savedMap = this.data.userClientiMap[clientName.toLowerCase()] || '';
-                html += `
-                    <div class="mapping-row">
-                        <span class="mapping-label">Excel: "<strong>${clientName}</strong>"</span>
-                        <span class="mapping-arrow">➡️</span>
-                        <select class="mapping-select ${savedMap ? 'mapped' : ''}" data-category="cliente" data-excel="${clientName}">
-                            <option value="">-- Seleziona Cliente --</option>
-                            ${this.data.clientiList.map(c => `
-                                <option value="${c.id_cliente}" ${Number(savedMap) === c.id_cliente ? 'selected' : ''}>
-                                    ${c.ragione_sociale} (${c.codice_cliente || 'N/A'})
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-            container.innerHTML += html;
+            container.innerHTML += renderGroup('Clienti', unmappedClients, 'cliente', this.data.clientiList, 'id_cliente', 'ragione_sociale', this.data.userClientiMap);
         }
-
-        // Sezione Modelli
         if (unmappedModels.size > 0) {
-            let html = `
-                <div class="mapping-group">
-                    <h4>Associazione Modelli (${unmappedModels.size})</h4>
-            `;
-            Array.from(unmappedModels).sort().forEach(modelName => {
-                const savedMap = this.data.userModelliMap[modelName.toLowerCase()] || '';
-                html += `
-                    <div class="mapping-row">
-                        <span class="mapping-label">Excel: "<strong>${modelName}</strong>"</span>
-                        <span class="mapping-arrow">➡️</span>
-                        <select class="mapping-select ${savedMap ? 'mapped' : ''}" data-category="modello" data-excel="${modelName}">
-                            <option value="">-- Seleziona Modello --</option>
-                            ${this.data.modelliList.map(m => `
-                                <option value="${m.id_modello}" ${Number(savedMap) === m.id_modello ? 'selected' : ''}>
-                                    ${m.nome_modello}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-            container.innerHTML += html;
+            container.innerHTML += renderGroup('Modelli', unmappedModels, 'modello', this.data.modelliList, 'id_modello', 'nome_modello', this.data.userModelliMap);
+        }
+        if (unmappedUbicazioni.size > 0) {
+            container.innerHTML += renderGroup('Posizioni', unmappedUbicazioni, 'ubicazione', this.data.ubicazioniList, 'id_ubicazione', 'nome_ubicazione', this.data.userUbicazioniMap);
         }
 
-        // Sezione Ubicazioni
-        if (unmappedUbicazioni.size > 0) {
-            let html = `
-                <div class="mapping-group">
-                    <h4>Associazione Posizioni (${unmappedUbicazioni.size})</h4>
-            `;
-            Array.from(unmappedUbicazioni).sort().forEach(posName => {
-                const savedMap = this.data.userUbicazioniMap[posName.toLowerCase()] || '';
-                html += `
-                    <div class="mapping-row">
-                        <span class="mapping-label">Excel: "<strong>${posName}</strong>"</span>
-                        <span class="mapping-arrow">➡️</span>
-                        <select class="mapping-select ${savedMap ? 'mapped' : ''}" data-category="ubicazione" data-excel="${posName}">
-                            <option value="">-- Seleziona Posizione --</option>
-                            ${this.data.ubicazioniList.map(u => `
-                                <option value="${u.id_ubicazione}" ${Number(savedMap) === u.id_ubicazione ? 'selected' : ''}>
-                                    ${u.nome_ubicazione}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                `;
+        // --- FILTRI DI RICERCA LIVE PER LE SELECT ---
+        container.querySelectorAll('.mapping-search-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const targetSelect = document.getElementById(e.target.dataset.target);
+                if (!targetSelect) return;
+
+                const options = targetSelect.querySelectorAll('option');
+                options.forEach((opt, idx) => {
+                    if (idx === 0) return; // Mantiene sempre l'opzione "-- Seleziona --"
+                    const text = opt.textContent.toLowerCase();
+                    if (!query || text.includes(query)) {
+                        opt.style.display = '';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
             });
-            html += `</div>`;
-            container.innerHTML += html;
-        }
+        });
+
+        // --- FILTRO GLOBALE PER RIGA DI ANAGRAFICA ---
+        container.querySelectorAll('.global-mapping-search').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const groupId = e.target.dataset.group;
+                const group = document.getElementById(groupId);
+                if (!group) return;
+
+                const rows = group.querySelectorAll('.mapping-row');
+                rows.forEach(row => {
+                    const label = row.dataset.searchLabel || '';
+                    if (!query || label.includes(query)) {
+                        row.style.display = 'flex';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
 
         // Event handler sui select di mappatura
         container.querySelectorAll('.mapping-select').forEach(select => {
@@ -480,12 +495,12 @@ const DevTools = {
         document.getElementById('previewStats').innerHTML = `
             <span class="stat-badge stat-badge--info">📄 Totale: ${rows.length}</span>
             <span class="stat-badge stat-badge--success">✅ Da importare: ${okCount}</span>
-            <span class="stat-badge stat-badge--warning">⏭️ Duplicati (skip): ${skipCount}</span>
+            <span class="stat-badge stat-badge--warning">⏭️ Scartati/Duplicati (skip): ${skipCount}</span>
             <span class="stat-badge stat-badge--danger">❌ Errori/Da associare: ${errorCount}</span>
         `;
 
         // Table headers
-        const headers = ['#', 'Stato', 'Commessa', 'Cliente', 'Cantiere', 'Modello', 'VO', 'Anno', 'Regione/Prov', 'Paese', 'Ubicazione', 'Matricola', 'Errori'];
+        const headers = ['#', 'Stato', 'Commessa', 'Cliente', 'Cantiere', 'Modello', 'VO', 'Anno', 'Regione/Prov', 'Paese', 'Ubicazione', 'Matricola', 'Motivo Scarto / Note'];
         document.getElementById('previewHead').innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
 
         // Table body
@@ -493,12 +508,27 @@ const DevTools = {
         tbody.innerHTML = '';
 
         rows.forEach(r => {
-            const statusIcon = r._status === 'ok' ? '✅' : r._status === 'skip' ? '⏭️' : '❌';
-            const rowClass = r._status === 'ok' ? 'row-ok' : r._status === 'skip' ? 'row-skip' : 'row-error';
+            let statusBadge = '';
+            let rowClass = '';
+            let noteHtml = '';
+
+            if (r._status === 'ok') {
+                statusBadge = `<span class="badge-status badge-status--ok">✅ VALIDA</span>`;
+                rowClass = 'row-ok';
+                noteHtml = `<span style="color: #27ae60; font-size: 0.85em;">Pronto all'importazione</span>`;
+            } else if (r._status === 'skip') {
+                statusBadge = `<span class="badge-status badge-status--skip">⏭️ SCARTATA</span>`;
+                rowClass = 'row-skip';
+                noteHtml = `<span style="color: #d35400; font-weight: 500; font-size: 0.85em;">⚠️ ${r._errors.join(', ') || 'Duplicata'}</span>`;
+            } else {
+                statusBadge = `<span class="badge-status badge-status--error">❌ ERRORE</span>`;
+                rowClass = 'row-error';
+                noteHtml = `<span style="color: #c0392b; font-weight: 500; font-size: 0.85em;">⛔ ${r._errors.join(', ') || 'Errore dati'}</span>`;
+            }
 
             tbody.innerHTML += `<tr class="${rowClass}">
                 <td>${r._rowIdx}</td>
-                <td class="status-cell">${statusIcon}</td>
+                <td class="status-cell">${statusBadge}</td>
                 <td><strong>${r.riferimento_tecnico || '—'}</strong></td>
                 <td>${r._clienteNome || '—'}</td>
                 <td>${r.impianto || '—'}</td>
@@ -509,7 +539,7 @@ const DevTools = {
                 <td>${r.paese || '—'}</td>
                 <td>${r._ubicazioneNome || '—'}</td>
                 <td>${r.matricola || '—'}</td>
-                <td style="color: #c0392b; font-size: 0.82em;">${r._errors.join(', ') || '—'}</td>
+                <td>${noteHtml}</td>
             </tr>`;
         });
 

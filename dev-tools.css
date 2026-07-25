@@ -395,8 +395,88 @@
     color: #15803d;
 }
 
+.mapping-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mapping-group-header h4 {
+    margin: 0;
+    font-size: 0.95em;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.global-mapping-search {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.85em;
+    width: 240px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.global-mapping-search:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.mapping-search-input {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.85em;
+    outline: none;
+    transition: all 0.2s;
+    background: #ffffff;
+}
+
+.mapping-search-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15);
+}
+
+.badge-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.badge-status--ok {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-status--skip {
+    background-color: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.badge-status--error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
 .stat-badge--info {
     background: #edf5fc;
     color: #2980b9;
 }
+
 
