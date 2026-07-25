@@ -1087,9 +1087,241 @@
     to {
         transform: scale(1);
         opacity: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    font-weight: 500;
+}
+
+.phase-pill.active {
+    background-color: #2c3e50;
+    color: white;
+    border-color: #2c3e50;
+}
+
+.phase-pill:hover:not(.active) {
+    background-color: #f0f0f0;
+}
+
+/* --- 6.1 BADGE STATUS SU CARD --- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.status-badge.status-new {
+    background-color: #3498db;
+}
+
+.status-badge.status-wip {
+    background-color: #f39c12;
+}
+
+.status-badge.status-done {
+    background-color: #27ae60;
+}
+
+.status-badge.status-cancel {
+    background-color: #c0392b;
+}
+
+.phase-mini-pills {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.phase-mini-pill {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+
+/* --- MOBILE GEOMAP STYLES --- */
+
+/* Nascondi toggles su desktop */
+.mobile-toggles {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* Mostra Toggles */
+    .mobile-toggles {
+        display: flex;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px;
+        border-radius: 20px;
+        margin-left: 10px;
+        margin-right: auto;
+        /* Push close btn to right */
+    }
+
+    .toggle-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+        background: white;
+        color: #2c3e50;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modifica Header per accomodare i controlli */
+    #geoMapModal .modal-header h3 {
+        display: none;
+        /* Nascondi titolo per spazio */
+    }
+
+    #geoMapModal .modal-header {
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    /* Logica Visibilità View */
+    #geoMapModal .modal-body {
+        flex-direction: column;
+    }
+
+    /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
+
+    .view-map .geomap-sidebar {
+        display: none !important;
+    }
+
+    .view-map #geoMapFullContainer {
+        display: block !important;
+        height: 100% !important;
+    }
+
+    .view-list .geomap-sidebar {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        border-right: none !important;
+    }
+
+    .view-list #geoMapFullContainer {
+        display: none !important;
+    }
+}
+
+/* --- IMAGE LIGHTBOX --- */
+.image-viewer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 10002;
+    /* Highest priority */
+    display: none;
+    /* Managed by JS */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.viewer-content {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.3s ease;
+}
+
+.close-viewer {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    user-select: none;
+    z-index: 10003;
+}
+
+.close-viewer:hover,
+.close-viewer:focus {
+    color: #bbb;
+    text-decoration: none;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
 /* Added for approximate location marker */
 .std-btn--orange { background-color: #f39c12; color: #fff; border: none; }
 .std-btn--orange:hover { background-color: #e67e22; filter: brightness(1.1); }
+
+/* ── CARD MANUTENZIONE (appare nella griglia commesse) ── */
+.commesse-card--manutenzione {
+    border-left: 5px solid #e67e22 !important;
+    background: linear-gradient(135deg, #fffdf9 0%, #fff 100%);
+    cursor: default !important;
+    min-height: 220px;
+}
+.commesse-card--manutenzione:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(230, 126, 34, 0.15);
+}
+.card-mann-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+    border-radius: 10px 10px 0 0;
+}
+.card-mann-icon { font-size: 1.8rem; }
+.card-mann-tipo { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.5px; color: rgba(255,255,255,0.85); text-transform: uppercase; display: block; }
+.card-mann-status { font-size: 0.78rem; font-weight: 700; color: #fff; }
+.card-mann-status.done { color: #d5f5e3; }
+.card-mann-body { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.card-info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
+.info-value { font-size: 0.9rem; color: #333; }
+.card-mann-vo { font-family: monospace; font-weight: 700; color: #d35400; }
+
+/* ── FILTRI TIPO ── */
+.tipo-filters { border-left: 2px solid #e8eaf0; padding-left: 12px; }
+.filter-tipo { background: #f8f9fb; color: #555; }
+.filter-tipo.active { background: #e67e22; color: #fff; border-color: #d35400; }
+.filter-tipo.active[data-tipo="COMPLETA"] { background: #9b59b6; border-color: #8e44ad; }
+.filter-tipo.active[data-tipo="ALL"] { background: #2c3e50; border-color: #1a252f; }
+.manutenzioni-tipo-btn.active { background: linear-gradient(135deg, #e67e22, #f39c12); border-color: #d35400; }

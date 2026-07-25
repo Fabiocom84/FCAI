@@ -12,6 +12,7 @@ const App = {
         isLoading: false,
         hasMore: true,
         activeStatus: 'In Lavorazione',
+        activeTipo: 'ALL',  // Filtro tipo: ALL | COMPLETA | MANUTENZIONE
         searchTerm: '',
         sortBy: 'data_commessa',
         sortOrder: 'desc',
@@ -42,7 +43,9 @@ const App = {
             wrapper: document.querySelector('.std-app-content'), // Container scrollabile
 
             // Controlli
-            statusFilters: document.querySelectorAll('.filter-btn'),
+            statusFilters: document.querySelectorAll('.filter-btn:not(.filter-tipo)'),
+            tipoFilters: document.querySelectorAll('.filter-tipo'),
+            tipoFiltersGroup: document.getElementById('tipoFiltersGroup'),
             searchInput: document.getElementById('search-input'),
             deepSearchCheckbox: document.getElementById('search-deep'),
             sortSelect: document.getElementById('sort-select'),
@@ -66,9 +69,17 @@ const App = {
 
         // 2. Controllo Permessi Admin (Mostra tasto aggiungi solo se Admin)
         if (IsAdmin) {
-            if (this.dom.addBtn) this.dom.addBtn.style.display = 'flex'; // Mostra il bottone (nascosto di default)
+            if (this.dom.addBtn) this.dom.addBtn.style.display = 'flex';
+            // Mostra filtro tipo per admin
+            if (this.dom.tipoFiltersGroup) this.dom.tipoFiltersGroup.style.display = 'flex';
         } else {
-            // Se NON è admin, nascondi opzioni avanzate (già nascoste o da nascondere)
+            const ruolo = CurrentUser?.ruoli?.[0]?.nome_ruolo || CurrentUser?.ruolo || '';
+            const isImpiegato = ruolo.toLowerCase().trim() === 'impiegato';
+            // Impiegato: mostra filtro tipo ma non il bottone +Aggiungi
+            if (isImpiegato && this.dom.tipoFiltersGroup) {
+                this.dom.tipoFiltersGroup.style.display = 'flex';
+            }
+            // Nascondi deep search per non-admin
             const deepWrapper = document.getElementById('deep-search-wrapper');
             if (deepWrapper) deepWrapper.style.display = 'none';
         }
@@ -257,15 +268,27 @@ const App = {
             this.dom.wrapper.addEventListener('scroll', () => this.handleScroll());
         }
 
-        // Filtri Stato
+        // Filtri Stato (usa selector specifico per non includere i tipo-btn)
         this.dom.statusFilters.forEach(btn => {
             btn.addEventListener('click', () => {
                 this.dom.statusFilters.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.state.activeStatus = btn.dataset.filter;
-                this.fetchCommesse(true); // Reset e ricarica
+                this.fetchCommesse(true);
             });
         });
+
+        // Filtri Tipo (solo per admin/impiegato)
+        if (this.dom.tipoFilters) {
+            this.dom.tipoFilters.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.dom.tipoFilters.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.state.activeTipo = btn.dataset.tipo;
+                    this.fetchCommesse(true);
+                });
+            });
+        }
 
         // Search Input (Debounce)
         let timeout;
@@ -285,8 +308,8 @@ const App = {
             this.fetchCommesse(true);
         });
 
-        // Modale Events
-        if (this.dom.addBtn) this.dom.addBtn.addEventListener('click', () => this.openModal(false));
+        // Modale Events — il pulsante è ora un <a> link, non ha più il click handler
+        // (navigate to nuova-commessa.html direttamente)
         if (this.dom.closeModalBtn) this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
         if (this.dom.overlay) this.dom.overlay.addEventListener('click', () => this.closeModal());
         if (this.dom.modalForm) this.dom.modalForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
@@ -329,12 +352,13 @@ const App = {
             // Costruzione Query Params
             const params = new URLSearchParams({
                 page: this.state.currentPage,
-                limit: 12, // User requested 12
+                limit: 12,
                 status: this.state.activeStatus,
                 search: this.state.searchTerm,
                 deep_search: this.dom.deepSearchCheckbox?.checked || false,
                 sortBy: this.state.sortBy,
-                sortOrder: this.state.sortOrder
+                sortOrder: this.state.sortOrder,
+                tipo: this.state.activeTipo || 'ALL'
             });
 
             const res = await apiFetch(`/api/commesse/view?${params.toString()}`);
@@ -381,13 +405,46 @@ const App = {
     },
 
     renderCards: function (commesse) {
-        // [FIX] Rimuovi skeleton loader esplicitamente (il riferimento this.dom.loader è stale dopo innerHTML='')
         const loader = document.getElementById('loader');
         if (loader) loader.remove();
 
         const fragment = document.createDocumentFragment();
 
         commesse.forEach(c => {
+            // ──── CARD MANUTENZIONE ────
+            if (c.tipo_commessa === 'MANUTENZIONE') {
+                const card = document.createElement('div');
+                card.className = 'commesse-card commesse-card--manutenzione';
+                const isDone = c.status_commessa?.nome_status?.toLowerCase().includes('complet');
+                const statusPill = isDone
+                    ? '<span class="card-mann-status done">✓ Completata</span>'
+                    : '<span class="card-mann-status wip">⚙️ In Lavorazione</span>';
+                card.innerHTML = `
+                    <div class="card-mann-header">
+                        <div class="card-mann-icon">🔧</div>
+                        <div class="card-mann-title">
+                            <span class="card-mann-tipo">MANUTENZIONE</span>
+                            ${statusPill}
+                        </div>
+                    </div>
+                    <div class="card-details">
+                        <div class="card-header">
+                            <h3>${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
+                        </div>
+                        <div class="card-mann-body">
+                            <div class="card-info-item"><span class="info-label">Oggetto</span><span class="info-value">${c.impianto || '—'}</span></div>
+                            <div class="card-info-item"><span class="info-label">VO</span><span class="info-value card-mann-vo">${c.vo || '—'}</span></div>
+                        </div>
+                        <div class="card-footer-actions">
+                            <a href="manutenzioni.html#${c.id_commessa}" class="std-btn std-btn--secondary" style="font-size:0.82rem;padding:6px 14px;text-decoration:none;">Dettaglio →</a>
+                        </div>
+                    </div>`;
+                // Nessun event listener su card body (nessun click-to-zoom)
+                fragment.appendChild(card);
+                return; // skip il resto
+            }
+
+            // ──── CARD COMMESSA COMPLETA ────
             const card = document.createElement('div');
             card.className = 'commesse-card';
 

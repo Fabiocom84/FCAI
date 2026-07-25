@@ -43,9 +43,11 @@
                 <span>Home</span>
             </a>
             <h1>GESTIONE COMMESSE</h1>
-            <button id="add-commessa-btn" class="std-btn std-btn--primary" style="display: none;">
+            <!-- Admin only: apre pagina nuova commessa -->
+            <a href="nuova-commessa.html?tipo=COMPLETA&from=commesse"
+               id="add-commessa-btn" class="std-btn std-btn--primary" style="display: none;">
                 <span>+ Aggiungi</span>
-            </button>
+            </a>
         </div>
 
         <!-- CONTENUTO SCROLLABILE -->
@@ -59,6 +61,13 @@
                         <button class="filter-btn active" data-filter="In Lavorazione">In Lavorazione</button>
                         <button class="filter-btn" data-filter="Completato">Completato</button>
                         <button class="filter-btn" data-filter="">Tutte</button>
+                    </div>
+                    <!-- Filtro Tipo: visibile solo ad admin/impiegato (nascosto di default, mostrato via JS) -->
+                    <div class="filters-group tipo-filters" id="tipoFiltersGroup" style="display:none;">
+                        <span class="filter-label">Tipo:</span>
+                        <button class="filter-btn filter-tipo active" data-tipo="ALL">Tutte</button>
+                        <button class="filter-btn filter-tipo" data-tipo="COMPLETA">Commesse</button>
+                        <button class="filter-btn filter-tipo manutenzioni-tipo-btn" data-tipo="MANUTENZIONE">🔧 Manutenzioni</button>
                     </div>
 
                     <div class="search-group">

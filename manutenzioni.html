@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Manutenzioni — Segretario AI</title>
+    <meta name="description" content="Gestione commesse di manutenzione: ricambi, assistenza, picking magazzino">
+    <link rel="stylesheet" href="style-v2.css">
+    <link rel="stylesheet" href="manutenzioni.css">
+    <link rel="stylesheet" href="js/libs/choices.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="man-layout" id="appLayout">
+
+    <!-- ══ PANNELLO SINISTRO — LISTA ══ -->
+    <div class="man-sidebar" id="sidebar">
+        <!-- Header sidebar -->
+        <div class="man-sidebar-header">
+            <div class="man-sidebar-top">
+                <a href="index.html" class="man-home-btn" title="Home">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </a>
+                <h1 class="man-sidebar-title">🔧 Manutenzioni</h1>
+                <button class="man-add-btn" id="addBtn" title="Nuova manutenzione">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Nuova
+                </button>
+            </div>
+            <div class="man-search-bar">
+                <svg class="man-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" placeholder="Cerca VO, cliente, impianto..." class="man-search-input">
+            </div>
+            <div class="man-sidebar-filters">
+                <label class="man-toggle-label">
+                    <input type="checkbox" id="showCompletedToggle">
+                    <span class="man-toggle-slider-small"></span>
+                    Mostra completate
+                </label>
+                <div class="man-count-badge" id="countBadge">0</div>
+            </div>
+        </div>
+
+        <!-- Lista cards -->
+        <div class="man-list" id="manutenzioniList">
+            <div class="man-list-loader" id="listLoader">
+                <div class="man-skeleton-card"></div>
+                <div class="man-skeleton-card"></div>
+                <div class="man-skeleton-card"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PANNELLO DESTRO — DETTAGLIO ══ -->
+    <div class="man-detail" id="detailPanel">
+        <!-- Placeholder quando nessuna è selezionata -->
+        <div class="man-detail-placeholder" id="detailPlaceholder">
+            <div class="man-placeholder-icon">🔧</div>
+            <h2>Seleziona una manutenzione</h2>
+            <p>Clicca su una manutenzione nella lista per vedere i dettagli, le ore registrate e gli ordini di produzione.</p>
+        </div>
+
+        <!-- Contenuto dettaglio (nascosto finché non si seleziona) -->
+        <div class="man-detail-content" id="detailContent" style="display:none;">
+            <!-- Header dettaglio -->
+            <div class="man-detail-header">
+                <div class="man-detail-codes">
+                    <span class="man-detail-codice" id="detCodice">MANN-2607-XXXX</span>
+                    <span class="man-detail-status" id="detStatus">In Lavorazione</span>
+                </div>
+                <div class="man-detail-actions">
+                    <button class="man-detail-btn man-detail-btn--secondary" id="btnModifica">
+                        ✏️ Modifica
+                    </button>
+                    <button class="man-detail-btn man-detail-btn--danger admin-only" id="btnElimina" style="display:none;">
+                        🗑️
+                    </button>
+                    <button class="man-detail-btn man-detail-btn--primary" id="btnCompleta" style="display:none;">
+                        ✓ Completa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info commessa -->
+            <div class="man-detail-section">
+                <div class="man-info-grid">
+                    <div class="man-info-item">
+                        <span class="man-info-label">Cliente</span>
+                        <span class="man-info-value" id="detCliente">—</span>
+                    </div>
+                    <div class="man-info-item">
+                        <span class="man-info-label">Impianto / Oggetto</span>
+                        <span class="man-info-value" id="detImpianto">—</span>
+                    </div>
+                    <div class="man-info-item">
+                        <span class="man-info-label">Ordine Vendita</span>
+                        <span class="man-info-value man-info-mono" id="detVO">—</span>
+                    </div>
+                    <div class="man-info-item">
+                        <span class="man-info-label">Data Apertura</span>
+                        <span class="man-info-value" id="detData">—</span>
+                    </div>
+                    <div class="man-info-item">
+                        <span class="man-info-label">Visibile Officina</span>
+                        <span class="man-info-value" id="detOfficina">—</span>
+                    </div>
+                    <div class="man-info-item man-info-item--full">
+                        <span class="man-info-label">Note</span>
+                        <span class="man-info-value" id="detNote">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Riepilogo Ore -->
+            <div class="man-detail-section">
+                <div class="man-section-header">
+                    <h3>⏱️ Ore Registrate</h3>
+                    <div class="man-ore-summary" id="oreSummary">
+                        <span class="man-ore-chip man-ore-chip--total" id="oreTotal">0h totali</span>
+                        <span class="man-ore-chip man-ore-chip--open" id="oreAperte">0h da validare</span>
+                        <span class="man-ore-chip man-ore-chip--locked" id="oreContat">0h contabilizzate 🔒</span>
+                    </div>
+                </div>
+                <div class="man-table-wrapper">
+                    <table class="man-table" id="oreTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Operaio</th>
+                                <th>Ore</th>
+                                <th>Reparto</th>
+                                <th>Note</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="oreTableBody">
+                            <tr class="man-table-empty">
+                                <td colspan="6">Nessuna ora registrata</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ordini di Produzione -->
+            <div class="man-detail-section">
+                <div class="man-section-header">
+                    <h3>⚙️ Ordini di Produzione</h3>
+                    <a href="#" class="man-link-btn" id="btnInserisciOp">+ Inserisci Ordine</a>
+                </div>
+                <div class="man-table-wrapper">
+                    <table class="man-table" id="opTable">
+                        <thead>
+                            <tr>
+                                <th>N° OP</th>
+                                <th>Codice</th>
+                                <th>Descrizione</th>
+                                <th>Q.tà</th>
+                                <th>Stato</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opTableBody">
+                            <tr class="man-table-empty">
+                                <td colspan="5">Nessun ordine di produzione</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Task Associata -->
+            <div class="man-detail-section">
+                <div class="man-section-header">
+                    <h3>📋 Task Associata</h3>
+                    <a href="attivita.html" class="man-link-btn" id="btnOpenTask" target="_blank">Apri Gestione Attività →</a>
+                </div>
+                <div id="taskDetail" class="man-task-card">
+                    <div class="man-task-placeholder">Nessuna task associata</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ FORM MODIFICA MANUTENZIONE (Inline, nascosto) ══ -->
+<div class="man-modal-overlay" id="editModalOverlay" style="display:none;"></div>
+<div class="man-edit-modal" id="editModal" style="display:none;">
+    <div class="man-edit-modal-inner">
+        <div class="man-edit-header">
+            <h2>✏️ Modifica Manutenzione</h2>
+            <button class="man-edit-close" id="editClose">✕</button>
+        </div>
+        <form id="editForm" class="man-edit-form">
+            <input type="hidden" id="editCommessaId">
+            <div class="nc-grid-3">
+                <div class="nc-form-group">
+                    <label>Cliente *</label>
+                    <select id="editCliente" name="id_cliente_fk" required></select>
+                </div>
+                <div class="nc-form-group">
+                    <label>Impianto / Oggetto *</label>
+                    <input type="text" id="editImpianto" name="impianto" required placeholder="Es. Ricambi pompa">
+                </div>
+                <div class="nc-form-group">
+                    <label>Ordine Vendita (VO)</label>
+                    <input type="text" id="editVo" name="vo" placeholder="26-0405" maxlength="10">
+                    <div class="nc-vo-feedback" id="editVoFeedback"></div>
+                </div>
+            </div>
+            <div class="nc-form-group" style="margin-top:16px;">
+                <label>Note</label>
+                <textarea id="editNote" name="note" rows="4" placeholder="Note aggiuntive..."></textarea>
+            </div>
+            <div class="man-edit-toggle-row" style="margin-top:16px;">
+                <label class="nc-toggle-label">
+                    <div class="nc-toggle-switch">
+                        <input type="checkbox" id="editVisibileOfficina" name="visibile_officina">
+                        <span class="nc-toggle-slider" style="border-radius:12px;"></span>
+                    </div>
+                    <div>
+                        <strong>Visibile in Officina</strong>
+                        <small>Gli operai possono registrare ore</small>
+                    </div>
+                </label>
+            </div>
+            <div class="man-edit-footer">
+                <button type="button" class="nc-btn nc-btn-cancel" id="editCancel">Annulla</button>
+                <button type="submit" class="nc-btn nc-btn-save" id="editSave">
+                    💾 Salva Modifiche
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══ MODALE COMPLETAMENTO ══ -->
+<div class="man-modal-overlay" id="completaModalOverlay" style="display:none;"></div>
+<div class="man-completa-modal" id="completaModal" style="display:none;">
+    <div class="man-completa-header">
+        <h2>✓ Conferma Completamento</h2>
+    </div>
+    <div class="man-completa-body">
+        <div class="man-completa-title" id="completaTitolo"></div>
+        <div class="man-completa-grid">
+            <div class="man-completa-item">
+                <span class="man-completa-label">Ordini di Produzione</span>
+                <span class="man-completa-value" id="completaOpTot">—</span>
+            </div>
+            <div class="man-completa-item">
+                <span class="man-completa-label">OdP Chiusi</span>
+                <span class="man-completa-value man-ok" id="completaOpChiusi">—</span>
+            </div>
+            <div class="man-completa-item">
+                <span class="man-completa-label">Ore Totali</span>
+                <span class="man-completa-value" id="completaOreTot">—</span>
+            </div>
+            <div class="man-completa-item">
+                <span class="man-completa-label">Già contabilizzate 🔒</span>
+                <span class="man-completa-value man-locked" id="completaOreContat">—</span>
+            </div>
+            <div class="man-completa-item man-completa-item--highlight">
+                <span class="man-completa-label">Da contabilizzare ora</span>
+                <span class="man-completa-value man-warn" id="completaOreDaContat">—</span>
+            </div>
+        </div>
+        <div class="man-completa-warning" id="completaWarning">
+            ⚠️ Le ore indicate verranno contabilizzate e non saranno più modificabili dagli operai/impiegati.
+        </div>
+    </div>
+    <div class="man-completa-footer">
+        <button class="nc-btn nc-btn-cancel" id="completaAnnulla">Annulla</button>
+        <button class="nc-btn nc-btn-save" id="completaConferma" style="background: linear-gradient(135deg, #27ae60, #219a52);">
+            ✓ Conferma Completamento
+        </button>
+    </div>
+</div>
+
+<!-- ══ MOBILE BACK BUTTON ══ -->
+<button class="man-mobile-back" id="mobileBack" style="display:none;">
+    ← Lista
+</button>
+
+<script src="js/libs/choices.min.js" defer></script>
+<script src="js/libs/supabase.min.js" defer></script>
+<script type="module" src="js/config.js"></script>
+<script type="module" src="js/auth-guard.js"></script>
+<script type="module" src="js/api-client.js"></script>
+<script type="module" src="js/shared-ui.js"></script>
+<script type="module" src="js/manutenzioni.js?v=1"></script>
+<script src="js/dark-mode.js"></script>
+</body>
+</html>

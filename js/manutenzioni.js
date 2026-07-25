@@ -1,0 +1,466 @@
+// js/manutenzioni.js — Logica pagina gestione manutenzioni
+import { apiFetch } from './api-client.js';
+import { IsAdmin, CurrentUser } from './core-init.js';
+
+const App = {
+    state: {
+        list: [],
+        selectedId: null,
+        detail: null,
+        searchTimeout: null,
+        includeCompleted: false,
+        searchTerm: '',
+        editChoicesCliente: null,
+    },
+
+    dom: {},
+
+    async init() {
+        // Verifica accesso: solo Admin o Impiegato
+        const ruolo = CurrentUser?.ruoli?.[0]?.nome_ruolo || CurrentUser?.ruolo || '';
+        const isImpiegato = ruolo.toLowerCase().trim() === 'impiegato';
+        if (!IsAdmin && !isImpiegato) {
+            window.location.replace('index.html');
+            return;
+        }
+
+        this._bindDom();
+        this._bindEvents();
+
+        // Admin-only elements
+        if (IsAdmin) {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+        }
+
+        await this._loadList();
+
+        // Se arriva da nuova-commessa con ?new=id, seleziona quella commessa
+        const params = new URLSearchParams(window.location.search);
+        const newId = params.get('new');
+        if (newId) setTimeout(() => this._selectCard(parseInt(newId)), 500);
+    },
+
+    _bindDom() {
+        this.dom = {
+            list: document.getElementById('manutenzioniList'),
+            listLoader: document.getElementById('listLoader'),
+            countBadge: document.getElementById('countBadge'),
+            searchInput: document.getElementById('searchInput'),
+            showCompletedToggle: document.getElementById('showCompletedToggle'),
+            addBtn: document.getElementById('addBtn'),
+            detailPlaceholder: document.getElementById('detailPlaceholder'),
+            detailContent: document.getElementById('detailContent'),
+            detCodice: document.getElementById('detCodice'),
+            detStatus: document.getElementById('detStatus'),
+            detCliente: document.getElementById('detCliente'),
+            detImpianto: document.getElementById('detImpianto'),
+            detVO: document.getElementById('detVO'),
+            detData: document.getElementById('detData'),
+            detOfficina: document.getElementById('detOfficina'),
+            detNote: document.getElementById('detNote'),
+            btnModifica: document.getElementById('btnModifica'),
+            btnElimina: document.getElementById('btnElimina'),
+            btnCompleta: document.getElementById('btnCompleta'),
+            btnInserisciOp: document.getElementById('btnInserisciOp'),
+            oreTotal: document.getElementById('oreTotal'),
+            oreAperte: document.getElementById('oreAperte'),
+            oreContat: document.getElementById('oreContat'),
+            oreTableBody: document.getElementById('oreTableBody'),
+            opTableBody: document.getElementById('opTableBody'),
+            taskDetail: document.getElementById('taskDetail'),
+            // Edit modal
+            editModalOverlay: document.getElementById('editModalOverlay'),
+            editModal: document.getElementById('editModal'),
+            editClose: document.getElementById('editClose'),
+            editCancel: document.getElementById('editCancel'),
+            editForm: document.getElementById('editForm'),
+            editCommessaId: document.getElementById('editCommessaId'),
+            editImpianto: document.getElementById('editImpianto'),
+            editVo: document.getElementById('editVo'),
+            editVoFeedback: document.getElementById('editVoFeedback'),
+            editNote: document.getElementById('editNote'),
+            editVisibileOfficina: document.getElementById('editVisibileOfficina'),
+            editCliente: document.getElementById('editCliente'),
+            // Completa modal
+            completaModalOverlay: document.getElementById('completaModalOverlay'),
+            completaModal: document.getElementById('completaModal'),
+            completaTitolo: document.getElementById('completaTitolo'),
+            completaOpTot: document.getElementById('completaOpTot'),
+            completaOpChiusi: document.getElementById('completaOpChiusi'),
+            completaOreTot: document.getElementById('completaOreTot'),
+            completaOreContat: document.getElementById('completaOreContat'),
+            completaOreDaContat: document.getElementById('completaOreDaContat'),
+            completaAnnulla: document.getElementById('completaAnnulla'),
+            completaConferma: document.getElementById('completaConferma'),
+            // Layout
+            layout: document.getElementById('appLayout'),
+            mobileBack: document.getElementById('mobileBack'),
+        };
+    },
+
+    _bindEvents() {
+        // Ricerca con debounce
+        this.dom.searchInput.addEventListener('input', () => {
+            clearTimeout(this.state.searchTimeout);
+            this.state.searchTimeout = setTimeout(() => {
+                this.state.searchTerm = this.dom.searchInput.value.trim();
+                this._loadList();
+            }, 400);
+        });
+
+        // Toggle completate
+        this.dom.showCompletedToggle.addEventListener('change', () => {
+            this.state.includeCompleted = this.dom.showCompletedToggle.checked;
+            this._loadList();
+        });
+
+        // + Nuova
+        this.dom.addBtn.addEventListener('click', () => {
+            const url = IsAdmin
+                ? 'nuova-commessa.html?tipo=manutenzione&from=manutenzioni'
+                : 'nuova-commessa.html?tipo=manutenzione&locked=true&from=manutenzioni';
+            window.location.href = url;
+        });
+
+        // Modifica
+        this.dom.btnModifica.addEventListener('click', () => this._openEditModal());
+
+        // Elimina (admin only)
+        this.dom.btnElimina.addEventListener('click', () => this._handleDelete());
+
+        // Completa
+        this.dom.btnCompleta.addEventListener('click', () => this._openCompletaModal());
+
+        // Edit modal chiusura
+        this.dom.editClose.addEventListener('click', () => this._closeEditModal());
+        this.dom.editCancel.addEventListener('click', () => this._closeEditModal());
+        this.dom.editModalOverlay.addEventListener('click', () => this._closeEditModal());
+        this.dom.editForm.addEventListener('submit', e => { e.preventDefault(); this._submitEdit(); });
+
+        // Completa modal
+        this.dom.completaAnnulla.addEventListener('click', () => this._closeCompletaModal());
+        this.dom.completaModalOverlay.addEventListener('click', () => this._closeCompletaModal());
+        this.dom.completaConferma.addEventListener('click', () => this._confirmCompleta());
+
+        // Mobile back
+        this.dom.mobileBack.addEventListener('click', () => {
+            this.dom.layout.classList.remove('detail-open');
+            this.dom.mobileBack.style.display = 'none';
+        });
+    },
+
+    async _loadList() {
+        this.dom.listLoader.style.display = '';
+        try {
+            const params = new URLSearchParams({
+                include_completed: this.state.includeCompleted ? 'true' : 'false',
+            });
+            if (this.state.searchTerm) params.set('search', this.state.searchTerm);
+
+            const res = await apiFetch(`/api/manutenzioni/?${params}`);
+            const data = await res.json();
+            this.state.list = data || [];
+            this._renderList();
+        } catch (e) {
+            console.error('Errore caricamento manutenzioni:', e);
+            this.dom.list.innerHTML = '<div class="man-no-results"><div class="man-no-results-icon">❌</div><p>Errore di caricamento</p></div>';
+        } finally {
+            this.dom.listLoader.style.display = 'none';
+        }
+    },
+
+    _renderList() {
+        this.dom.countBadge.textContent = this.state.list.length;
+
+        if (this.state.list.length === 0) {
+            this.dom.list.innerHTML = '<div class="man-no-results"><div class="man-no-results-icon">🔧</div><p>Nessuna manutenzione trovata</p></div>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        this.state.list.forEach(m => {
+            const card = document.createElement('div');
+            const isDone = m.nome_status?.toLowerCase().includes('complet') || m.nome_status?.toLowerCase().includes('chiuso');
+            card.className = `man-card${isDone ? ' completed' : ''}${m.id_commessa === this.state.selectedId ? ' active' : ''}`;
+            card.dataset.id = m.id_commessa;
+
+            const oreDaVal = parseFloat(m.ore_da_validare || 0);
+            const totalOre = parseFloat(m.total_ore || 0);
+            const openOp = parseInt(m.count_op_aperti || 0);
+            const totOp = parseInt(m.count_op || 0);
+
+            const data = m.data_commessa ? new Date(m.data_commessa).toLocaleDateString('it-IT') : '—';
+
+            card.innerHTML = `
+                <div class="man-card-top">
+                    <span class="man-card-vo">${m.vo || 'N/D'}</span>
+                    <span class="man-card-status-pill ${isDone ? 'done' : ''}">${m.nome_status || 'In Lavorazione'}</span>
+                </div>
+                <div class="man-card-cliente">${m.ragione_sociale || '—'}</div>
+                <div class="man-card-impianto">${m.impianto || '—'}</div>
+                <div class="man-card-meta">
+                    <span class="man-card-meta-item">📅 ${data}</span>
+                    ${totOp > 0 ? `<span class="man-card-meta-item${openOp > 0 ? ' warn' : ''}">⚙️ ${totOp} OdP${openOp > 0 ? ` (${openOp} ✗)` : ' ✓'}</span>` : ''}
+                    ${totalOre > 0 ? `<span class="man-card-meta-item${oreDaVal > 0 ? ' warn' : ''}">🕐 ${totalOre}h${oreDaVal > 0 ? ` (${oreDaVal}h aperte)` : ''}</span>` : ''}
+                </div>
+            `;
+
+            card.addEventListener('click', () => this._selectCard(m.id_commessa));
+            fragment.appendChild(card);
+        });
+
+        this.dom.list.innerHTML = '';
+        this.dom.list.appendChild(fragment);
+    },
+
+    async _selectCard(id) {
+        this.state.selectedId = id;
+
+        // Aggiorna active state nelle card
+        document.querySelectorAll('.man-card').forEach(c => {
+            c.classList.toggle('active', parseInt(c.dataset.id) === id);
+        });
+
+        // Mobile: mostra dettaglio
+        this.dom.layout.classList.add('detail-open');
+        this.dom.mobileBack.style.display = 'flex';
+
+        // Mostra content, nasconde placeholder
+        this.dom.detailPlaceholder.style.display = 'none';
+        this.dom.detailContent.style.display = 'flex';
+
+        // Carica dettaglio
+        try {
+            const res = await apiFetch(`/api/manutenzioni/${id}`);
+            const data = await res.json();
+            this.state.detail = data;
+            this._renderDetail(data);
+        } catch (e) {
+            console.error('Errore dettaglio manutenzione:', e);
+        }
+    },
+
+    _renderDetail(data) {
+        const c = data.commessa;
+        const riepilogo = data.riepilogo;
+        const isDone = c.status_commessa?.nome_status?.toLowerCase().includes('complet') ||
+                       c.status_commessa?.nome_status?.toLowerCase().includes('chiuso');
+
+        // Header
+        this.dom.detCodice.textContent = c.codice_commessa || '—';
+        this.dom.detStatus.textContent = c.status_commessa?.nome_status || 'In Lavorazione';
+        this.dom.detStatus.className = `man-detail-status${isDone ? ' done' : ''}`;
+
+        // Info
+        this.dom.detCliente.textContent = c.clienti?.ragione_sociale || '—';
+        this.dom.detImpianto.textContent = c.impianto || '—';
+        this.dom.detVO.textContent = c.vo || '—';
+        this.dom.detData.textContent = c.data_commessa ? new Date(c.data_commessa).toLocaleDateString('it-IT') : '—';
+        this.dom.detOfficina.textContent = c.visibile_officina ? '✅ Sì' : '❌ No';
+        this.dom.detNote.textContent = c.note || '—';
+
+        // Pulsante Completa (solo se In Lavorazione)
+        this.dom.btnCompleta.style.display = !isDone ? '' : 'none';
+
+        // Ore summary
+        this.dom.oreTotal.textContent = `${riepilogo.total_ore}h totali`;
+        this.dom.oreAperte.textContent = `${riepilogo.ore_da_validare}h da validare`;
+        this.dom.oreContat.textContent = `${riepilogo.ore_contabilizzate}h contabilizzate 🔒`;
+
+        // Ore table
+        const ore = data.ore || [];
+        if (ore.length === 0) {
+            this.dom.oreTableBody.innerHTML = '<tr class="man-table-empty"><td colspan="6">Nessuna ora registrata</td></tr>';
+        } else {
+            this.dom.oreTableBody.innerHTML = ore.map(o => {
+                const locked = o.stato === 1;
+                const data_str = o.data_lavoro ? new Date(o.data_lavoro).toLocaleDateString('it-IT') : '—';
+                return `
+                    <tr>
+                        <td>${data_str}</td>
+                        <td>${o.personale?.nome_cognome || '—'}</td>
+                        <td><strong>${o.ore}h</strong></td>
+                        <td>${o.macro_categorie?.nome || o.componenti?.nome_componente || '—'}</td>
+                        <td>${o.note || '—'}</td>
+                        <td>${locked ? '<span class="man-ore-locked-icon" title="Contabilizzato">🔒</span>' : ''}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        // OdP table
+        const op = data.ordini_produzione || [];
+        if (op.length === 0) {
+            this.dom.opTableBody.innerHTML = '<tr class="man-table-empty"><td colspan="5">Nessun ordine di produzione</td></tr>';
+        } else {
+            this.dom.opTableBody.innerHTML = op.map(o => {
+                const aperto = !o.data_invio;
+                return `
+                    <tr>
+                        <td><strong>${o.numero_op || '—'}</strong></td>
+                        <td>${o.codice_articolo || '—'}</td>
+                        <td>${o.descrizione || '—'}</td>
+                        <td>${o.qta_richiesta || '—'}</td>
+                        <td class="${aperto ? 'man-op-aperto' : 'man-op-chiuso'}">${aperto ? '⚙️ Aperto' : '✓ Inviato'}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        // Link inserisci OdP
+        this.dom.btnInserisciOp.href = `inserimento-ordini.html?commessaId=${c.id_commessa}`;
+
+        // Task
+        if (data.task) {
+            const t = data.task;
+            const isDoneTask = t.stato?.toLowerCase() === 'completato';
+            this.dom.taskDetail.innerHTML = `
+                <div class="man-task-title">${t.titolo || '—'}</div>
+                <div class="man-task-meta">
+                    <span class="man-task-chip ${isDoneTask ? 'done' : 'todo'}">${t.stato || 'Da Fare'}</span>
+                    <span class="man-task-chip">${t.priorita || 'Media'}</span>
+                    ${t.personale_assegnatario?.nome_cognome ? `<span class="man-task-chip">👤 ${t.personale_assegnatario.nome_cognome}</span>` : ''}
+                </div>
+            `;
+        } else {
+            this.dom.taskDetail.innerHTML = '<div class="man-task-placeholder">Nessuna task associata</div>';
+        }
+    },
+
+    // ── EDIT MODAL ──
+    async _openEditModal() {
+        if (!this.state.detail) return;
+        const c = this.state.detail.commessa;
+
+        // Carica clienti se non ancora
+        if (!this.dom.editCliente.options.length || this.dom.editCliente.options[0].value === '') {
+            try {
+                const res = await apiFetch('/api/commesse/init-data');
+                const data = await res.json();
+                if (data.clienti) {
+                    this.dom.editCliente.innerHTML = data.clienti
+                        .sort((a,b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
+                        .map(cl => `<option value="${cl.id_cliente}">${cl.ragione_sociale}</option>`).join('');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        this.dom.editCommessaId.value = c.id_commessa;
+        this.dom.editImpianto.value = c.impianto || '';
+        this.dom.editVo.value = c.vo || '';
+        this.dom.editNote.value = c.note || '';
+        this.dom.editVisibileOfficina.checked = !!c.visibile_officina;
+        if (c.id_cliente_fk) this.dom.editCliente.value = c.id_cliente_fk;
+        this.dom.editVoFeedback.textContent = '';
+        this.dom.editVoFeedback.className = 'nc-vo-feedback';
+
+        this.dom.editModalOverlay.style.display = '';
+        this.dom.editModal.style.display = '';
+    },
+
+    _closeEditModal() {
+        this.dom.editModalOverlay.style.display = 'none';
+        this.dom.editModal.style.display = 'none';
+    },
+
+    async _submitEdit() {
+        const id = this.dom.editCommessaId.value;
+        const payload = {
+            id_cliente_fk: parseInt(this.dom.editCliente.value) || null,
+            impianto: this.dom.editImpianto.value.trim(),
+            vo: this.dom.editVo.value.trim(),
+            note: this.dom.editNote.value.trim(),
+            visibile_officina: this.dom.editVisibileOfficina.checked
+        };
+
+        try {
+            const res = await apiFetch(`/api/manutenzioni/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Errore aggiornamento');
+            this._closeEditModal();
+            await this._loadList();
+            await this._selectCard(parseInt(id));
+        } catch(e) {
+            alert(`Errore: ${e.message}`);
+        }
+    },
+
+    // ── ELIMINA ──
+    async _handleDelete() {
+        if (!IsAdmin || !this.state.selectedId) return;
+        if (!confirm('Eliminare definitivamente questa manutenzione?')) return;
+
+        try {
+            const res = await apiFetch(`/api/commesse/${this.state.selectedId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Errore eliminazione');
+            this.state.selectedId = null;
+            this.state.detail = null;
+            this.dom.detailContent.style.display = 'none';
+            this.dom.detailPlaceholder.style.display = '';
+            await this._loadList();
+        } catch(e) {
+            alert(`Errore: ${e.message}`);
+        }
+    },
+
+    // ── COMPLETA MODAL ──
+    async _openCompletaModal() {
+        if (!this.state.selectedId) return;
+        try {
+            const res = await apiFetch(`/api/manutenzioni/${this.state.selectedId}/summary`);
+            const summary = await res.json();
+
+            if (summary.open_op > 0) {
+                alert(`Impossibile completare: ci sono ancora ${summary.open_op} ordini di produzione aperti.`);
+                return;
+            }
+
+            const c = this.state.detail?.commessa;
+            this.dom.completaTitolo.textContent = `${c?.codice_commessa || ''} — ${c?.clienti?.ragione_sociale || ''} — ${c?.impianto || ''}`;
+            this.dom.completaOpTot.textContent = summary.total_op || '0';
+            this.dom.completaOpChiusi.textContent = summary.closed_op || '0';
+            this.dom.completaOreTot.textContent = `${summary.total_ore || 0}h`;
+            this.dom.completaOreContat.textContent = `${summary.ore_contabilizzate || 0}h`;
+            this.dom.completaOreDaContat.textContent = `${summary.ore_da_validare || 0}h`;
+
+            this.dom.completaModalOverlay.style.display = '';
+            this.dom.completaModal.style.display = '';
+        } catch(e) {
+            alert(`Errore: ${e.message}`);
+        }
+    },
+
+    _closeCompletaModal() {
+        this.dom.completaModalOverlay.style.display = 'none';
+        this.dom.completaModal.style.display = 'none';
+    },
+
+    async _confirmCompleta() {
+        if (!this.state.selectedId) return;
+        this.dom.completaConferma.disabled = true;
+        this.dom.completaConferma.textContent = 'Elaborazione...';
+
+        try {
+            const res = await apiFetch(`/api/manutenzioni/${this.state.selectedId}/complete`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Errore completamento');
+
+            this._closeCompletaModal();
+            await this._loadList();
+            await this._selectCard(this.state.selectedId);
+            // Piccolo feedback
+            alert(`✅ Manutenzione completata!\n${result.ore_contabilizzate} registrazioni ore contabilizzate.\nTotale ore: ${result.total_ore}h`);
+        } catch(e) {
+            alert(`Errore: ${e.message}`);
+        } finally {
+            this.dom.completaConferma.disabled = false;
+            this.dom.completaConferma.textContent = '✓ Conferma Completamento';
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());

@@ -1294,9 +1294,39 @@ const MobileHoursApp = {
         });
 
         // Caricamento Dati Iniziali Commessa (SWR Cache)
-        const ETICHETTE_CACHE_KEY = 'etichette_ore_v1';
+        const ETICHETTE_CACHE_KEY = 'etichette_ore_v2'; // v2 = include tipo+visibile_officina
         const ETICHETTE_TS_KEY = 'etichette_ore_ts';
         const ETICHETTE_MAX_AGE = 30 * 60 * 1000; // 30 minuti
+
+        // Helper: converte array grezzo in Choices.js choices raggruppate per tipo
+        const buildChoicesData = (data) => {
+            // Determina se l'utente corrente può vedere le manutenzioni non-officina
+            const profile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+            const rawAdmin = profile.is_admin;
+            const isAdminUser = (rawAdmin === true || rawAdmin === 'true' || rawAdmin === 1 || rawAdmin === '1');
+            const ruolo = (profile.ruolo || (Array.isArray(profile.ruoli) && profile.ruoli[0]?.nome_ruolo) || '').toLowerCase().trim();
+            const isImpiegato = ruolo === 'impiegato';
+            const canSeeAllManutenzioni = isAdminUser || isImpiegato;
+
+            const commesse = [];
+            const manutenzioni = [];
+            data.forEach(c => {
+                const safeId = c.id || c.id_commessa;
+                this.state.commesseMap[safeId] = c.label;
+                if (c.tipo === 'MANUTENZIONE') {
+                    if (c.visibile_officina || canSeeAllManutenzioni) {
+                        manutenzioni.push({ value: safeId, label: `🔧 ${c.label}`, customProperties: { tipo: 'MANUTENZIONE' } });
+                    }
+                } else {
+                    commesse.push({ value: safeId, label: c.label, customProperties: { tipo: 'COMPLETA' } });
+                }
+            });
+
+            const groups = [];
+            if (commesse.length > 0) groups.push({ label: 'Commesse', id: 'grp-commesse', choices: commesse });
+            if (manutenzioni.length > 0) groups.push({ label: 'Manutenzioni', id: 'grp-manutenzioni', choices: manutenzioni });
+            return groups;
+        };
 
         // 1. Render immediato da cache (se presente e valida)
         const cachedEtichette = localStorage.getItem(ETICHETTE_CACHE_KEY);
@@ -1308,12 +1338,9 @@ const MobileHoursApp = {
             try {
                 const cached = JSON.parse(cachedEtichette);
                 this.state.commesseMap = {};
-                const choicesData = cached.map(c => {
-                    const safeId = c.id || c.id_commessa;
-                    this.state.commesseMap[safeId] = c.label;
-                    return { value: safeId, label: c.label };
-                });
-                this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
+                const groups = buildChoicesData(cached);
+                this.state.choicesInstance.clearChoices();
+                groups.forEach(g => this.state.choicesInstance.setChoices(g.choices, 'value', 'label', false));
                 renderedFromEtichetteCache = true;
                 console.log("⚡ CACHE HIT: Etichette commesse da localStorage");
             } catch (e) {
@@ -1332,14 +1359,11 @@ const MobileHoursApp = {
                 localStorage.setItem(ETICHETTE_CACHE_KEY, JSON.stringify(data));
                 localStorage.setItem(ETICHETTE_TS_KEY, Date.now().toString());
 
-                // Aggiorna dropdown solo se i dati sono diversi dalla cache
+                // Aggiorna dropdown
                 this.state.commesseMap = {};
-                const choicesData = data.map(c => {
-                    const safeId = c.id || c.id_commessa;
-                    this.state.commesseMap[safeId] = c.label;
-                    return { value: safeId, label: c.label };
-                });
-                this.state.choicesInstance.setChoices(choicesData, 'value', 'label', true);
+                const groups = buildChoicesData(data);
+                this.state.choicesInstance.clearChoices();
+                groups.forEach(g => this.state.choicesInstance.setChoices(g.choices, 'value', 'label', false));
                 console.log("📡 Etichette aggiornate da server");
             } catch (e) { console.error("Errore caricamento etichette:", e); }
         };
