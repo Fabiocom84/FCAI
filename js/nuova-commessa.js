@@ -247,26 +247,17 @@ const App = {
             // ── PATTERN CORRETTO: init Choices vuoto, poi setChoices() ──
             // (inizializzare Choices DOPO innerHTML causa la lista vuota)
 
-            // 1. Clienti
+            // 1. Clienti — endpoint dedicato (init-data restituisce clienti:[] per ottimizzazione)
             const clienteSelect = document.getElementById('clienteSelect');
-            clienteSelect.innerHTML = ''; // svuota prima
+            clienteSelect.innerHTML = '';
             this.state.choicesCliente = new Choices(clienteSelect, {
                 searchEnabled: true,
                 itemSelectText: '',
                 placeholderValue: 'Cerca cliente...',
                 shouldSort: false,
                 noResultsText: 'Nessun cliente trovato',
-                noChoicesText: 'Nessun cliente disponibile',
+                noChoicesText: 'Caricamento...',
             });
-            if (data.clienti && data.clienti.length > 0) {
-                const clientiChoices = data.clienti
-                    .sort((a, b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
-                    .map(c => ({ value: String(c.id_cliente), label: c.ragione_sociale }));
-                this.state.choicesCliente.setChoices(
-                    [{ value: '', label: 'Seleziona cliente...', placeholder: true }, ...clientiChoices],
-                    'value', 'label', true
-                );
-            }
 
             // 2. Macro categorie
             const macroSelect = document.getElementById('macroSelect');
@@ -326,8 +317,51 @@ const App = {
                 }
             }
 
+            // 5. Clienti — caricamento SEPARATO da /clienti-options
+            //    (init-data restituisce intenzionalmente clienti:[] per performance)
+            this._loadClientiOptions();
+
         } catch (e) {
             console.error('Errore caricamento init-data:', e);
+        }
+    },
+
+    // Carica clienti dall'endpoint dedicato (lazy, non blocca init)
+    async _loadClientiOptions() {
+        try {
+            const res = await apiFetch('/api/commesse/clienti-options');
+            if (!res.ok) throw new Error('Errore clienti-options');
+            const clients = await res.json();
+
+            if (this.state.choicesCliente && clients && clients.length > 0) {
+                const sorted = clients
+                    .slice()
+                    .sort((a, b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
+                    .map(c => ({ value: String(c.id_cliente), label: c.ragione_sociale }));
+
+                this.state.choicesCliente.setChoices(
+                    [{ value: '', label: 'Seleziona cliente...', placeholder: true }, ...sorted],
+                    'value', 'label', true
+                );
+
+                // Se siamo in modalità edit, ri-applica la selezione ora che le opzioni esistono
+                if (this.state.mode === 'edit' && this._pendingClienteId) {
+                    try {
+                        this.state.choicesCliente.setChoiceByValue(
+                            [this._pendingClienteId, String(this._pendingClienteId)]
+                        );
+                    } catch(e) { /* ignora */ }
+                    this._pendingClienteId = null;
+                }
+            }
+        } catch (e) {
+            console.error('Errore caricamento clienti:', e);
+            if (this.state.choicesCliente) {
+                this.state.choicesCliente.setChoices(
+                    [{ value: '', label: 'Errore caricamento clienti', placeholder: true }],
+                    'value', 'label', true
+                );
+            }
         }
     },
 
@@ -500,11 +534,19 @@ const App = {
             const visEl = document.getElementById('visibileOfficina');
             if (visEl) visEl.checked = data.visibile_officina !== false;
 
-            // Cliente (Choices.js)
-            if (this.state.choicesCliente && data.id_cliente_fk) {
-                try { this.state.choicesCliente.setChoiceByValue([data.id_cliente_fk, String(data.id_cliente_fk)]); }
-                catch(e) { console.warn('Errore set cliente:', e); }
+            // Cliente (Choices.js) — potrebbe non essere ancora caricato (clienti-options è asincrono)
+            if (data.id_cliente_fk) {
+                const clientId = data.id_cliente_fk;
+                if (this.state.choicesCliente) {
+                    try {
+                        // Prova subito (se i clienti sono già stati caricati)
+                        this.state.choicesCliente.setChoiceByValue([clientId, String(clientId)]);
+                    } catch(e) { /* opzioni non ancora disponibili */ }
+                }
+                // Salva l'ID in attesa che _loadClientiOptions completi
+                this._pendingClienteId = clientId;
             }
+
 
             // Modello (Choices.js)
             if (this.state.choicesModello && data.id_modello_fk) {
