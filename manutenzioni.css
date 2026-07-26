@@ -1,19 +1,17 @@
 /* manutenzioni.css */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+/* body gestito da std-app-shell in style-v2.css */
+body.internal-page {
     font-family: 'Inter', sans-serif;
-    background: #f0f2f5;
     color: #1a1a2e;
-    height: 100vh;
-    overflow: hidden;
 }
 
 /* ── LAYOUT SPLIT VIEW ── */
 .man-layout {
     display: grid;
     grid-template-columns: 360px 1fr;
-    height: 100vh;
+    height: 100%;      /* riempie std-app-content */
     overflow: hidden;
 }
 @media (max-width: 900px) {
@@ -27,11 +25,29 @@ body {
 .man-sidebar {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;      /* riempie il layout grid row */
     background: #fff;
     border-right: 1px solid #e0e4ea;
     overflow: hidden;
 }
+
+/* ── BOTTONE + NUOVA nell'header standard ── */
+.man-add-btn-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #e67e22, #f39c12);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+}
+.man-add-btn-header:hover { opacity: 0.88; transform: scale(1.02); }
 
 .man-sidebar-header {
     padding: 16px;
