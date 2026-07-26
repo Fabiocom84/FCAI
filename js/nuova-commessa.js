@@ -473,9 +473,8 @@ const App = {
                     ? `/api/commesse/${id}`
                     : `/api/commesse/`;
 
-                res = await fetch(`${window._API_BASE_URL || ''}${url}`, {
+                res = await apiFetch(url, {
                     method,
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('session_token')}` },
                     body: formData
                 });
             }
@@ -496,7 +495,7 @@ const App = {
             console.error('Errore submit:', e);
             alert(`Errore: ${e.message}`);
             this.dom.saveBtn.disabled = false;
-            this.dom.saveBtn.innerHTML = `<img src="img/save.png" alt="Salva" style="width:18px; filter:brightness(0) invert(1);"><span>SALVA</span>`;
+            this.dom.saveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>SALVA</span>`;
         }
     },
 
@@ -585,7 +584,7 @@ const App = {
     },
 
     _goBack() {
-        if (this.state.returnTo === 'manutenzioni' || this.state.tipo === 'MANUTENZIONE') {
+        if (this.state.returnTo === 'manutenzioni') {
             window.location.href = this.state.editId
                 ? `manutenzioni.html?selected=${this.state.editId}`
                 : 'manutenzioni.html';

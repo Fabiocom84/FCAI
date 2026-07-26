@@ -106,11 +106,11 @@ function setupUI() {
         // ADMIN: Show EVERYTHING
         adminElements.forEach(el => {
             el.classList.remove('admin-only');
-            el.style.display = 'flex'; // Ensure flex layout for buttons
+            el.style.display = ''; // Reset inline style
         });
         employeeElements.forEach(el => {
             el.classList.remove('employee-access');
-            el.style.display = 'flex';
+            el.style.display = ''; // Reset inline style
         });
     } else {
         // NON-ADMIN
@@ -122,7 +122,7 @@ function setupUI() {
             // IMPIEGATO: Show only Employee access items
             employeeElements.forEach(el => {
                 el.classList.remove('employee-access');
-                el.style.display = 'flex';
+                el.style.display = ''; // Reset inline style
             });
         }
         // GUEST: Sees only what is not hidden by default (Basic buttons)

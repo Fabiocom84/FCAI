@@ -300,12 +300,12 @@ async function loadOrphanNotes() {
     if (!section || !list) return;
 
     try {
-        // Recupera registrazioni senza commessa
-        const res = await apiFetch('/api/registrazioni?id_commessa_fk=null&sortBy=data_creazione&sortOrder=desc&limit=50');
+        // Usa endpoint dedicato che filtra correttamente per IS NULL
+        const res = await apiFetch('/api/registrazioni/orfane');
         if (!res.ok) return;
 
         const data = await res.json();
-        const notes = (data.data || []).filter(n => n.id_commessa_fk === null);
+        const notes = data.data || [];
 
         if (notes.length === 0) {
             section.style.display = 'none';
