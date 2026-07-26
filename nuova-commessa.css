@@ -1,59 +1,6 @@
-/* nuova-commessa.css — Stile pagina creazione commessa standalone */
+/* nuova-commessa.css — Stili specifici della form, compatibili con std-app-shell */
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
-    min-height: 100vh;
-}
-
-/* ── PAGE LAYOUT ── */
-.nc-page {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-/* ── HEADER ── */
-.nc-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 24px;
-    background: #fff;
-    border-bottom: 1px solid #e0e4ea;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.nc-back-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: #f0f2f5;
-    border: 1px solid #d0d4db;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #444;
-    transition: all 0.2s;
-}
-.nc-back-btn:hover { background: #e2e6ea; color: #222; }
-
-.nc-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #1a1a2e;
-    flex: 1;
-}
-
+/* ── HEADER BADGE TIPO ── */
 .nc-header-badge {
     padding: 6px 16px;
     border-radius: 20px;
@@ -63,16 +10,15 @@ body {
     background: #3498db;
     color: #fff;
     transition: background 0.3s;
+    white-space: nowrap;
 }
 .nc-header-badge.manutenzione { background: #e67e22; }
 
-/* ── BODY ── */
-.nc-body {
-    flex: 1;
-    max-width: 1000px;
-    width: 100%;
+/* ── FORM WRAPPER (dentro std-app-content) ── */
+#nuovaCommessaForm {
+    max-width: 960px;
     margin: 0 auto;
-    padding: 32px 24px 80px;
+    padding: 24px 16px 80px;
 }
 
 /* ── SECTIONS ── */
@@ -84,6 +30,10 @@ body {
     box-shadow: 0 1px 6px rgba(0,0,0,0.06);
     border: 1px solid #e8eaf0;
 }
+body.dark-mode .nc-section {
+    background: #1a1a2e;
+    border-color: #2a2a42;
+}
 
 .nc-section-header {
     display: flex;
@@ -93,14 +43,18 @@ body {
     padding-bottom: 12px;
     border-bottom: 2px solid #f0f2f5;
 }
+body.dark-mode .nc-section-header { border-color: #2a2a42; }
+
 .nc-section-icon { font-size: 1.2rem; }
 .nc-section-header h2 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: #1a1a2e;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    margin: 0;
 }
+body.dark-mode .nc-section-header h2 { color: #e8eaf0; }
 
 /* ── TIPO TOGGLE ── */
 .nc-tipo-toggle {
@@ -121,22 +75,21 @@ body {
     cursor: pointer;
     text-align: left;
     transition: all 0.25s;
+    font-family: inherit;
 }
 .tipo-btn:hover { border-color: #aab0be; background: #f0f2f5; }
-.tipo-btn.active {
-    border-color: #3498db;
-    background: #ebf5fb;
-}
-.tipo-btn.active[data-tipo="MANUTENZIONE"] {
-    border-color: #e67e22;
-    background: #fef9f0;
-}
+.tipo-btn.active { border-color: #3498db; background: #ebf5fb; }
+.tipo-btn.active[data-tipo="MANUTENZIONE"] { border-color: #e67e22; background: #fef9f0; }
 .tipo-btn.locked { cursor: not-allowed; opacity: 0.65; }
-.tipo-icon { font-size: 1.8rem; }
-.tipo-btn strong { display: block; font-size: 1rem; color: #1a1a2e; }
-.tipo-btn small { font-size: 0.8rem; color: #666; margin-top: 2px; }
+.tipo-icon { font-size: 1.8rem; line-height: 1; }
+.tipo-btn strong { display: block; font-size: 1rem; color: #1a1a2e; font-weight: 600; }
+.tipo-btn small { font-size: 0.8rem; color: #666; margin-top: 2px; display: block; }
 .tipo-btn.active strong { color: #2980b9; }
 .tipo-btn.active[data-tipo="MANUTENZIONE"] strong { color: #d35400; }
+body.dark-mode .tipo-btn { background: #0f0f1a; border-color: #2a2a42; }
+body.dark-mode .tipo-btn strong { color: #e8eaf0; }
+body.dark-mode .tipo-btn.active { background: #1a2535; border-color: #3498db; }
+body.dark-mode .tipo-btn.active[data-tipo="MANUTENZIONE"] { background: #2a1a0a; border-color: #e67e22; }
 
 .nc-locked-note {
     margin-top: 12px;
@@ -148,7 +101,7 @@ body {
     color: #8a5c00;
 }
 
-/* ── GRID ── */
+/* ── GRIDS ── */
 .nc-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -159,12 +112,14 @@ body {
 /* ── FORM GROUPS ── */
 .nc-form-group { display: flex; flex-direction: column; gap: 6px; }
 .nc-form-group label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #555;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
 }
+body.dark-mode .nc-form-group label { color: #aaa; }
+
 .nc-form-group input,
 .nc-form-group select,
 .nc-form-group textarea {
@@ -172,11 +127,12 @@ body {
     border: 1.5px solid #d0d4db;
     border-radius: 8px;
     font-size: 0.95rem;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     color: #1a1a2e;
     background: #fff;
     transition: border-color 0.2s, box-shadow 0.2s;
     width: 100%;
+    box-sizing: border-box;
 }
 .nc-form-group input:focus,
 .nc-form-group select:focus,
@@ -185,7 +141,13 @@ body {
     border-color: #3498db;
     box-shadow: 0 0 0 3px rgba(52,152,219,0.12);
 }
-.nc-form-group input.error { border-color: #e74c3c; }
+body.dark-mode .nc-form-group input,
+body.dark-mode .nc-form-group select,
+body.dark-mode .nc-form-group textarea {
+    background: #0f0f1a;
+    border-color: #2a2a42;
+    color: #e8eaf0;
+}
 
 /* ── VO FEEDBACK ── */
 .nc-vo-feedback {
@@ -195,13 +157,20 @@ body {
     transition: all 0.2s;
 }
 .nc-vo-feedback.checking { color: #888; }
-.nc-vo-feedback.blocked { color: #e74c3c; font-weight: 600; }
-.nc-vo-feedback.warning { color: #e67e22; font-weight: 600; }
-.nc-vo-feedback.ok { color: #27ae60; }
+.nc-vo-feedback.blocked  { color: #e74c3c; font-weight: 600; }
+.nc-vo-feedback.warning  { color: #e67e22; font-weight: 600; }
+.nc-vo-feedback.ok       { color: #27ae60; }
 
-/* ── MANUTENZIONE TOGGLE SWITCH ── */
+/* ── TOGGLE SWITCH (visibile officina) ── */
 .nc-toggle-row { display: flex; flex-direction: column; gap: 12px; }
-.nc-toggle-group { padding: 16px; background: #f8f9fb; border-radius: 10px; border: 1px solid #e0e4ea; }
+.nc-toggle-group {
+    padding: 16px;
+    background: #f8f9fb;
+    border-radius: 10px;
+    border: 1px solid #e0e4ea;
+}
+body.dark-mode .nc-toggle-group { background: #0f0f1a; border-color: #2a2a42; }
+
 .nc-toggle-label {
     display: flex;
     align-items: center;
@@ -209,7 +178,8 @@ body {
     cursor: pointer;
 }
 .nc-toggle-label strong { font-size: 0.95rem; color: #1a1a2e; display: block; }
-.nc-toggle-label small { font-size: 0.82rem; color: #666; }
+.nc-toggle-label small  { font-size: 0.82rem; color: #666; }
+body.dark-mode .nc-toggle-label strong { color: #e8eaf0; }
 
 .nc-toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
 .nc-toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -259,8 +229,9 @@ body {
     background: #f8f9fb;
 }
 .nc-upload-area:hover { border-color: #3498db; background: #ebf5fb; }
-.nc-upload-area .upload-icon { font-size: 2rem; }
+.nc-upload-icon { font-size: 2rem; }
 .nc-upload-area span { font-size: 0.9rem; color: #666; }
+body.dark-mode .nc-upload-area { background: #0f0f1a; border-color: #2a2a42; }
 
 .nc-remove-img-btn {
     width: 100%;
@@ -277,44 +248,44 @@ body {
 }
 .nc-remove-img-btn:hover { background: #fdecea; }
 
-/* ── FOOTER ── */
+/* ── FOOTER AZIONI ── */
 .nc-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 20px 24px;
-    margin-top: 8px;
+    padding: 20px 0 8px;
 }
 
-.nc-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 28px;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
+/* Variante save per manutenzione (arancione) */
+.nc-save-btn.manutenzione {
+    background: linear-gradient(135deg, #e67e22, #d35400) !important;
 }
-.nc-btn-cancel {
-    background: #f0f2f5;
-    color: #555;
-    border: 1px solid #d0d4db;
-}
-.nc-btn-cancel:hover { background: #e2e6ea; color: #333; }
-.nc-btn-save {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(52,152,219,0.3);
-}
-.nc-btn-save:hover { background: linear-gradient(135deg, #2980b9, #1f6da8); box-shadow: 0 6px 16px rgba(52,152,219,0.4); transform: translateY(-1px); }
-.nc-btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.nc-btn-save.manutenzione { background: linear-gradient(135deg, #e67e22, #d35400); box-shadow: 0 4px 12px rgba(230,126,34,0.3); }
 
-/* ── CONFIRM MODAL ── */
-.nc-modal-overlay {
+/* ── CHOICES.JS OVERRIDES ── */
+.choices__inner {
+    border: 1.5px solid #d0d4db !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    min-height: 44px !important;
+    font-family: inherit !important;
+    padding-top: 4px !important;
+}
+body.dark-mode .choices__inner {
+    background: #0f0f1a !important;
+    border-color: #2a2a42 !important;
+    color: #e8eaf0 !important;
+}
+.choices__list--dropdown {
+    border-radius: 8px !important;
+    border: 1px solid #d0d4db !important;
+    z-index: 100 !important;
+}
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background: #3498db !important;
+}
+
+/* ── UNIVERSAL MODAL (override per coerenza) ── */
+.universal-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.5);
@@ -324,38 +295,3 @@ body {
     justify-content: center;
     backdrop-filter: blur(4px);
 }
-.nc-confirm-modal {
-    background: #fff;
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 480px;
-    width: 90%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-}
-.nc-confirm-modal h3 { font-size: 1.2rem; margin-bottom: 12px; color: #e67e22; }
-.nc-confirm-modal p { font-size: 0.95rem; color: #444; line-height: 1.6; margin-bottom: 24px; }
-.nc-confirm-btns { display: flex; gap: 10px; justify-content: flex-end; }
-
-/* ── CHOICES.JS OVERRIDES ── */
-.choices__inner {
-    border: 1.5px solid #d0d4db !important;
-    border-radius: 8px !important;
-    background: #fff !important;
-    min-height: 44px !important;
-    font-family: 'Inter', sans-serif !important;
-}
-.choices__list--dropdown { border-radius: 8px !important; border: 1px solid #d0d4db !important; }
-
-/* ── DARK MODE ── */
-body.dark-mode {
-    background: #0f0f1a;
-    color: #e8eaf0;
-}
-body.dark-mode .nc-header { background: #1a1a2e; border-color: #2a2a42; }
-body.dark-mode .nc-section { background: #1a1a2e; border-color: #2a2a42; }
-body.dark-mode .nc-form-group input,
-body.dark-mode .nc-form-group select,
-body.dark-mode .nc-form-group textarea { background: #0f0f1a; border-color: #2a2a42; color: #e8eaf0; }
-body.dark-mode .tipo-btn { background: #0f0f1a; border-color: #2a2a42; }
-body.dark-mode .tipo-btn strong { color: #e8eaf0; }
-body.dark-mode .nc-back-btn { background: #0f0f1a; border-color: #2a2a42; color: #aaa; }

@@ -324,7 +324,7 @@ const App = {
 
     async _submitForm() {
         this.dom.saveBtn.disabled = true;
-        this.dom.saveBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Salvataggio...`;
+        this.dom.saveBtn.innerHTML = `<span>⏳ Salvataggio...</span>`;
 
         try {
             const formData = new FormData(this.dom.form);
@@ -363,7 +363,7 @@ const App = {
             console.error('Errore submit:', e);
             alert(`Errore: ${e.message}`);
             this.dom.saveBtn.disabled = false;
-            this.dom.saveBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> SALVA`;
+            this.dom.saveBtn.innerHTML = `<img src="img/save.png" alt="Salva" style="width:18px; filter:brightness(0) invert(1);"><span>SALVA</span>`;
         }
     },
 
