@@ -34,10 +34,12 @@ const App = {
 
         await this._loadList();
 
-        // Se arriva da nuova-commessa con ?new=id, seleziona quella commessa
+        // Gestione parametri URL in ingresso
         const params = new URLSearchParams(window.location.search);
-        const newId = params.get('new');
-        if (newId) setTimeout(() => this._selectCard(parseInt(newId)), 500);
+        const newId      = params.get('new');       // da nuova-commessa (creazione)
+        const selectedId = params.get('selected');  // da nuova-commessa (ritorno da modifica)
+        const autoId = newId || selectedId;
+        if (autoId) setTimeout(() => this._selectCard(parseInt(autoId)), 500);
     },
 
     _bindDom() {
@@ -122,8 +124,12 @@ const App = {
             window.location.href = url;
         });
 
-        // Modifica
-        this.dom.btnModifica.addEventListener('click', () => this._openEditModal());
+        // Modifica → redirige a nuova-commessa in modalità edit
+        this.dom.btnModifica.addEventListener('click', () => {
+            const id = this.state.selectedId;
+            if (!id) return;
+            window.location.href = `nuova-commessa.html?id=${id}&tipo=MANUTENZIONE&mode=edit&from=manutenzioni`;
+        });
 
         // Elimina (admin only)
         this.dom.btnElimina.addEventListener('click', () => this._handleDelete());
@@ -131,16 +137,11 @@ const App = {
         // Completa
         this.dom.btnCompleta.addEventListener('click', () => this._openCompletaModal());
 
-        // Edit modal chiusura
-        this.dom.editClose.addEventListener('click', () => this._closeEditModal());
-        this.dom.editCancel.addEventListener('click', () => this._closeEditModal());
-        this.dom.editModalOverlay.addEventListener('click', () => this._closeEditModal());
-        this.dom.editForm.addEventListener('submit', e => { e.preventDefault(); this._submitEdit(); });
-
         // Completa modal
         this.dom.completaAnnulla.addEventListener('click', () => this._closeCompletaModal());
         this.dom.completaModalOverlay.addEventListener('click', () => this._closeCompletaModal());
         this.dom.completaConferma.addEventListener('click', () => this._confirmCompleta());
+
 
         // Mobile back
         this.dom.mobileBack.addEventListener('click', () => {

@@ -11,9 +11,11 @@ const App = {
     state: {
         tipo: 'COMPLETA',       // tipo corrente
         locked: false,          // tipo non modificabile
-        returnTo: 'commesse',   // pagina di ritorno (commesse|manutenzioni)
-        preCommessaId: null,    // pre-select commessa in manutenzioni (N/A qui)
-        voValid: null,          // null=non verificato, true=ok, 'warn'=cross-type, false=blocked
+        mode: 'new',            // 'new' | 'edit'
+        editId: null,           // ID commessa in modifica
+        returnTo: 'commesse',   // pagina di ritorno
+        preCommessaId: null,
+        voValid: null,
         voCheckTimeout: null,
         choicesCliente: null,
         choicesMacro: null,
@@ -46,6 +48,13 @@ const App = {
         const tipoParam = (params.get('tipo') || 'COMPLETA').toUpperCase();
         this.state.locked = params.get('locked') === 'true';
         this.state.returnTo = params.get('from') || 'commesse';
+        this.state.mode = params.get('mode') || 'new';
+        this.state.editId = params.get('id') ? parseInt(params.get('id')) : null;
+
+        // In modalità edit, il tipo è sempre locked
+        if (this.state.mode === 'edit') {
+            this.state.locked = true;
+        }
 
         // Se non admin e tipo non locked come manutenzione → redirect
         if (!IsAdmin) {
@@ -55,7 +64,7 @@ const App = {
                 window.location.replace('index.html');
                 return;
             }
-            // Impiegato può solo creare manutenzioni
+            // Impiegato può solo creare/modificare manutenzioni
             if (tipoParam === 'COMPLETA') {
                 this.state.locked = true;
                 this.state.tipo = 'MANUTENZIONE';
@@ -70,7 +79,12 @@ const App = {
         this._bindDom();
         this._bindEvents();
         await this._loadInitData();
-        this._applyTipo(this.state.tipo, false); // false = non animate on first load
+        this._applyTipo(this.state.tipo, false);
+
+        // Carica dati in modifica
+        if (this.state.mode === 'edit' && this.state.editId) {
+            await this._loadEditData(this.state.editId);
+        }
     },
 
     _bindDom() {
@@ -191,6 +205,14 @@ const App = {
         this.dom.typeBadge.textContent = tipo === 'COMPLETA' ? 'COMPLETA' : 'MANUTENZIONE';
         this.dom.typeBadge.classList.toggle('manutenzione', tipo === 'MANUTENZIONE');
 
+        // Titolo pagina (h1 + document.title)
+        const isEdit = this.state.mode === 'edit';
+        const verb = isEdit ? 'MODIFICA' : 'NUOVA';
+        const noun = tipo === 'COMPLETA' ? 'COMMESSA' : 'MANUTENZIONE';
+        const pageTitle = document.getElementById('pageTitle');
+        if (pageTitle) pageTitle.textContent = `${verb} ${noun}`;
+        document.title = `${verb.charAt(0) + verb.slice(1).toLowerCase()} ${noun.charAt(0) + noun.slice(1).toLowerCase()} — Segretario AI`;
+
         // Save button color
         this.dom.saveBtn.classList.toggle('manutenzione', tipo === 'MANUTENZIONE');
 
@@ -201,19 +223,19 @@ const App = {
         onlyCompleta.forEach(el => el.style.display = tipo === 'COMPLETA' ? '' : 'none');
         onlyManutenzione.forEach(el => el.style.display = tipo === 'MANUTENZIONE' ? '' : 'none');
 
-        // Se manutenzione, impianto placeholder cambia
+        // Placeholder impianto adattivo
         const impiantoInput = document.getElementById('nomeImpianto');
-        if (tipo === 'MANUTENZIONE') {
-            impiantoInput.placeholder = 'Es. Ricambi pompa / Assistenza valvole';
-        } else {
-            impiantoInput.placeholder = 'Es. Magazzino Automatico';
+        if (impiantoInput) {
+            impiantoInput.placeholder = tipo === 'MANUTENZIONE'
+                ? 'Es. Ricambi pompa / Assistenza valvole'
+                : 'Es. Magazzino Automatico';
         }
 
         // Locked state
         if (this.state.locked) {
             this.dom.btnCompleta.classList.add('locked');
             this.dom.btnManutenzione.classList.add('locked');
-            this.dom.lockedNote.style.display = 'block';
+            this.dom.lockedNote.style.display = this.state.mode === 'edit' ? 'none' : 'block';
         }
     },
 
@@ -222,60 +244,88 @@ const App = {
             const res = await apiFetch('/api/commesse/init-data');
             const data = await res.json();
 
-            // Clienti
-            if (data.clienti) {
-                const clienteSelect = document.getElementById('clienteSelect');
-                clienteSelect.innerHTML = '<option value="">Seleziona cliente...</option>' +
-                    data.clienti.sort((a,b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
-                    .map(c => `<option value="${c.id_cliente}">${c.ragione_sociale}</option>`).join('');
-                this.state.choicesCliente = new Choices(clienteSelect, {
-                    searchEnabled: true, itemSelectText: '',
-                    placeholderValue: 'Cerca cliente...', shouldSort: false
-                });
-            }
+            // ── PATTERN CORRETTO: init Choices vuoto, poi setChoices() ──
+            // (inizializzare Choices DOPO innerHTML causa la lista vuota)
 
-            // Macro categorie
-            if (data.macros) {
-                const macroSelect = document.getElementById('macroSelect');
-                macroSelect.innerHTML = data.macros
-                    .map(m => `<option value="${m.id_macro_categoria}">${m.nome}</option>`).join('');
-                this.state.choicesMacro = new Choices(macroSelect, {
-                    searchEnabled: true, itemSelectText: '',
-                    removeItemButton: true, placeholderValue: 'Seleziona...'
-                });
-            }
-
-            // Modelli (solo per COMPLETA)
-            if (data.modelli) {
-                const modelloSelect = document.getElementById('modelloSelect');
-                modelloSelect.innerHTML = '<option value="">Nessun modello</option>' +
-                    data.modelli.map(m => `<option value="${m.id_modello}">${m.nome_modello}</option>`).join('');
-                this.state.choicesModello = new Choices(modelloSelect, {
-                    searchEnabled: true, itemSelectText: '', placeholderValue: 'Cerca modello...'
-                });
-            }
-
-            // Ubicazioni (solo per COMPLETA)
-            if (data.ubicazioni) {
-                const ubicazioneSelect = document.getElementById('ubicazioneSelect');
-                ubicazioneSelect.innerHTML = '<option value="">Seleziona...</option>' +
-                    data.ubicazioni.map(u => `<option value="${u.id_ubicazione}">${u.nome_ubicazione}</option>`).join('');
-
-                // Default: pre-seleziona "armadio" se esiste
-                const armadioOpt = Array.from(ubicazioneSelect.options).find(
-                    o => o.text.toLowerCase().includes('armadio')
+            // 1. Clienti
+            const clienteSelect = document.getElementById('clienteSelect');
+            clienteSelect.innerHTML = ''; // svuota prima
+            this.state.choicesCliente = new Choices(clienteSelect, {
+                searchEnabled: true,
+                itemSelectText: '',
+                placeholderValue: 'Cerca cliente...',
+                shouldSort: false,
+                noResultsText: 'Nessun cliente trovato',
+                noChoicesText: 'Nessun cliente disponibile',
+            });
+            if (data.clienti && data.clienti.length > 0) {
+                const clientiChoices = data.clienti
+                    .sort((a, b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
+                    .map(c => ({ value: String(c.id_cliente), label: c.ragione_sociale }));
+                this.state.choicesCliente.setChoices(
+                    [{ value: '', label: 'Seleziona cliente...', placeholder: true }, ...clientiChoices],
+                    'value', 'label', true
                 );
-                if (armadioOpt) ubicazioneSelect.value = armadioOpt.value;
+            }
 
-                this.state.choicesUbicazione = new Choices(ubicazioneSelect, {
-                    searchEnabled: false, itemSelectText: ''
+            // 2. Macro categorie
+            const macroSelect = document.getElementById('macroSelect');
+            macroSelect.innerHTML = '';
+            this.state.choicesMacro = new Choices(macroSelect, {
+                searchEnabled: true,
+                itemSelectText: '',
+                removeItemButton: true,
+                placeholderValue: 'Seleziona...',
+                shouldSort: false,
+            });
+            if (data.macros && data.macros.length > 0) {
+                this.state.choicesMacro.setChoices(
+                    data.macros.map(m => ({ value: String(m.id_macro_categoria), label: m.nome })),
+                    'value', 'label', true
+                );
+            }
+
+            // 3. Modelli (solo per COMPLETA)
+            const modelloSelect = document.getElementById('modelloSelect');
+            if (modelloSelect) {
+                modelloSelect.innerHTML = '';
+                this.state.choicesModello = new Choices(modelloSelect, {
+                    searchEnabled: true, itemSelectText: '', placeholderValue: 'Nessun modello', shouldSort: false
                 });
-
-                // Ri-seleziona dopo Choices init
-                if (armadioOpt && this.state.choicesUbicazione) {
-                    this.state.choicesUbicazione.setChoiceByValue(armadioOpt.value);
+                if (data.modelli && data.modelli.length > 0) {
+                    this.state.choicesModello.setChoices(
+                        [{ value: '', label: 'Nessun modello', placeholder: true },
+                         ...data.modelli.map(m => ({ value: String(m.id_modello), label: m.nome_modello }))],
+                        'value', 'label', true
+                    );
                 }
             }
+
+            // 4. Ubicazioni (solo per COMPLETA) — default: armadio
+            const ubicazioneSelect = document.getElementById('ubicazioneSelect');
+            if (ubicazioneSelect) {
+                ubicazioneSelect.innerHTML = '';
+                this.state.choicesUbicazione = new Choices(ubicazioneSelect, {
+                    searchEnabled: false, itemSelectText: '', shouldSort: false
+                });
+                if (data.ubicazioni && data.ubicazioni.length > 0) {
+                    const ubicChoices = data.ubicazioni.map(u => ({
+                        value: String(u.id_ubicazione), label: u.nome_ubicazione
+                    }));
+                    this.state.choicesUbicazione.setChoices(
+                        [{ value: '', label: 'Seleziona...', placeholder: true }, ...ubicChoices],
+                        'value', 'label', true
+                    );
+                    // Default: prima opzione che contiene 'armadio'
+                    const armadio = data.ubicazioni.find(
+                        u => u.nome_ubicazione?.toLowerCase().includes('armadio')
+                    );
+                    if (armadio) {
+                        this.state.choicesUbicazione.setChoiceByValue(String(armadio.id_ubicazione));
+                    }
+                }
+            }
+
         } catch (e) {
             console.error('Errore caricamento init-data:', e);
         }
@@ -346,35 +396,64 @@ const App = {
         this.dom.saveBtn.disabled = true;
         this.dom.saveBtn.innerHTML = `<span>⏳ Salvataggio...</span>`;
 
+        const isEdit = this.state.mode === 'edit';
+        const id = this.state.editId;
+
         try {
-            const formData = new FormData(this.dom.form);
+            let res;
 
-            // Macro: Choices serializza su hidden, ma con multiple select dobbiamo gestirlo
-            const macroSelect = document.getElementById('macroSelect');
-            const macroValues = Array.from(macroSelect.selectedOptions).map(o => parseInt(o.value));
-            formData.delete('ids_macro_categorie_attive');
-            formData.append('ids_macro_categorie_attive', JSON.stringify(macroValues));
+            if (isEdit && this.state.tipo === 'MANUTENZIONE') {
+                // ── MANUTENZIONE EDIT: JSON PUT su /api/manutenzioni/{id} ──
+                const payload = {
+                    id_cliente_fk: parseInt(document.getElementById('clienteSelect').value) || null,
+                    impianto:      document.getElementById('nomeImpianto').value.trim(),
+                    vo:            document.getElementById('voInput').value.trim(),
+                    note:          document.getElementById('noteTextarea').value.trim(),
+                    visibile_officina: document.getElementById('visibileOfficina')?.checked ?? true,
+                    ids_macro_categorie_attive: this.state.choicesMacro
+                        ? this.state.choicesMacro.getValue(true).map(Number)
+                        : [],
+                };
+                res = await apiFetch(`/api/manutenzioni/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // ── COMMESSA COMPLETA (new o edit): FormData POST/PUT su /api/commesse ──
+                const formData = new FormData(this.dom.form);
 
-            // Nome cliente (per titolo task manutenzione)
-            const clienteSelect = document.getElementById('clienteSelect');
-            const nomeCliente = clienteSelect.options[clienteSelect.selectedIndex]?.text || '';
-            formData.append('nome_cliente', nomeCliente);
+                // Macro: ricava dal Choices multi-select
+                const macroValues = this.state.choicesMacro
+                    ? this.state.choicesMacro.getValue(true).map(Number)
+                    : Array.from(document.getElementById('macroSelect').selectedOptions).map(o => parseInt(o.value));
+                formData.delete('ids_macro_categorie_attive');
+                formData.append('ids_macro_categorie_attive', JSON.stringify(macroValues));
 
-            const res = await fetch(`${window._API_BASE_URL || ''}/api/commesse/`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('session_token')}` },
-                body: formData
-            });
+                // Nome cliente (per titolo task manutenzione)
+                const nomeCliente = this.state.choicesCliente?.getValue()?.label || '';
+                formData.set('nome_cliente', nomeCliente);
+
+                const method = isEdit ? 'PUT' : 'POST';
+                const url = isEdit
+                    ? `/api/commesse/${id}`
+                    : `/api/commesse/`;
+
+                res = await fetch(`${window._API_BASE_URL || ''}${url}`, {
+                    method,
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('session_token')}` },
+                    body: formData
+                });
+            }
 
             const result = await res.json();
-
-            if (!res.ok) {
-                throw new Error(result.error || 'Errore durante il salvataggio');
-            }
+            if (!res.ok) throw new Error(result.error || 'Errore durante il salvataggio');
 
             // Successo → redirect
             if (this.state.tipo === 'MANUTENZIONE') {
-                window.location.href = `manutenzioni.html?new=${result.id_commessa}`;
+                window.location.href = isEdit
+                    ? `manutenzioni.html?selected=${id}`
+                    : `manutenzioni.html?new=${result.id_commessa}`;
             } else {
                 window.location.href = 'commesse.html';
             }
@@ -387,9 +466,87 @@ const App = {
         }
     },
 
+    // ── CARICAMENTO DATI IN MODIFICA ──
+    async _loadEditData(id) {
+        try {
+            const endpoint = this.state.tipo === 'MANUTENZIONE'
+                ? `/api/manutenzioni/${id}`
+                : `/api/commesse/${id}`;
+            const res = await apiFetch(endpoint);
+            if (!res.ok) throw new Error('Commessa non trovata');
+            const raw = await res.json();
+
+            // Le API di manutenzioni wrappano in {commessa: {...}}
+            const data = raw.commessa ?? raw;
+
+            // Campi testuali
+            const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val ?? ''; };
+            set('nomeImpianto',  data.nome_commessa ?? data.impianto ?? '');
+            set('voInput',       data.vo ?? data.vo_offerta ?? '');
+            set('matricolaInput',   data.matricola ?? '');
+            set('rifTecnicoInput',  data.riferimento_tecnico ?? '');
+            set('luogoInput',    data.paese ?? data.luogo ?? '');
+            set('provinciaInput',data.provincia ?? '');
+            set('annoInput',     data.anno ?? '');
+            set('noteTextarea',  data.note ?? data.descrizione ?? '');
+            set('latitudine',    data.latitudine ?? '');
+            set('longitudine',   data.longitudine ?? '');
+
+            // Posizione esatta
+            const posEl = document.getElementById('posizione_esatta');
+            if (posEl) posEl.checked = !!data.posizione_esatta;
+
+            // Visibile officina (solo manutenzioni)
+            const visEl = document.getElementById('visibileOfficina');
+            if (visEl) visEl.checked = data.visibile_officina !== false;
+
+            // Cliente (Choices.js)
+            if (this.state.choicesCliente && data.id_cliente_fk) {
+                try { this.state.choicesCliente.setChoiceByValue([data.id_cliente_fk, String(data.id_cliente_fk)]); }
+                catch(e) { console.warn('Errore set cliente:', e); }
+            }
+
+            // Modello (Choices.js)
+            if (this.state.choicesModello && data.id_modello_fk) {
+                try { this.state.choicesModello.setChoiceByValue([data.id_modello_fk, String(data.id_modello_fk)]); }
+                catch(e) { console.warn('Errore set modello:', e); }
+            }
+
+            // Macro (Choices.js multi-select)
+            if (this.state.choicesMacro && data.ids_macro_categorie_attive) {
+                try {
+                    const vals = Array.isArray(data.ids_macro_categorie_attive)
+                        ? data.ids_macro_categorie_attive
+                        : [data.ids_macro_categorie_attive];
+                    this.state.choicesMacro.setChoiceByValue(vals.flatMap(v => [v, String(v)]));
+                } catch(e) { console.warn('Errore set macro:', e); }
+            }
+
+            // Ubicazione (Choices.js)
+            if (this.state.choicesUbicazione && data.id_ubicazione_fk) {
+                try { this.state.choicesUbicazione.setChoiceByValue(String(data.id_ubicazione_fk)); }
+                catch(e) { console.warn('Errore set ubicazione:', e); }
+            }
+
+            // Se c'è immagine, mostra info nel widget upload
+            if (data.immagine) {
+                const uploadText = document.getElementById('uploadText');
+                const previewContainer = document.getElementById('imagePreviewContainer');
+                if (uploadText) uploadText.textContent = 'Immagine presente (caricare per sostituire)';
+                if (previewContainer) previewContainer.style.display = 'block';
+            }
+
+        } catch(e) {
+            console.error('Errore caricamento dati modifica:', e);
+            showModal({ title: 'Errore', message: `Impossibile caricare i dati: ${e.message}` });
+        }
+    },
+
     _goBack() {
-        if (this.state.returnTo === 'manutenzioni') {
-            window.location.href = 'manutenzioni.html';
+        if (this.state.returnTo === 'manutenzioni' || this.state.tipo === 'MANUTENZIONE') {
+            window.location.href = this.state.editId
+                ? `manutenzioni.html?selected=${this.state.editId}`
+                : 'manutenzioni.html';
         } else {
             window.location.href = 'commesse.html';
         }

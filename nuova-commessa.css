@@ -16,9 +16,11 @@
 
 /* ── FORM WRAPPER (dentro std-app-content) ── */
 #nuovaCommessaForm {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 24px 16px 80px;
+    width: 100%;
+    padding: 24px 24px 80px;
+    box-sizing: border-box;
+    /* overflow-x visibile per non tagliare i dropdown Choices.js */
+    overflow: visible;
 }
 
 /* ── SECTIONS ── */
@@ -262,6 +264,15 @@ body.dark-mode .nc-upload-area { background: #0f0f1a; border-color: #2a2a42; }
 }
 
 /* ── CHOICES.JS OVERRIDES ── */
+
+/* Permette al dropdown di uscire dal container (altrimenti overflow-x:hidden lo taglia) */
+.nc-section,
+.nc-grid-3,
+.nc-form-group,
+.choices {
+    overflow: visible !important;
+}
+
 .choices__inner {
     border: 1.5px solid #d0d4db !important;
     border-radius: 8px !important;
@@ -269,6 +280,7 @@ body.dark-mode .nc-upload-area { background: #0f0f1a; border-color: #2a2a42; }
     min-height: 44px !important;
     font-family: inherit !important;
     padding-top: 4px !important;
+    box-sizing: border-box !important;
 }
 body.dark-mode .choices__inner {
     background: #0f0f1a !important;
@@ -277,12 +289,15 @@ body.dark-mode .choices__inner {
 }
 .choices__list--dropdown {
     border-radius: 8px !important;
-    border: 1px solid #d0d4db !important;
-    z-index: 100 !important;
+    border: 1.5px solid #d0d4db !important;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+    overflow: hidden !important;  /* solo il dropdown stesso: nasconde il contenuto eccedente */
 }
 .choices__list--dropdown .choices__item--selectable.is-highlighted {
     background: #3498db !important;
 }
+
 
 /* ── UNIVERSAL MODAL (override per coerenza) ── */
 .universal-modal-overlay {

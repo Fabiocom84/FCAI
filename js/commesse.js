@@ -1068,7 +1068,8 @@ const App = {
     },
 
     handleEdit: function (id) {
-        this.openModal(true, id);
+        // Redirige alla pagina standalone nuova-commessa in modalità modifica
+        window.location.href = `nuova-commessa.html?id=${id}&tipo=COMPLETA&mode=edit&from=commesse`;
     },
 
     handleDelete: async function (id) {
