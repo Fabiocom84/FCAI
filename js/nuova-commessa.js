@@ -1,6 +1,11 @@
 // js/nuova-commessa.js — Logica pagina creazione commessa standalone
 import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser } from './core-init.js';
+import { showModal } from './shared-ui.js';
+
+// ── Mappa Leaflet (geocoding sezione) ──
+let _map = null;
+let _currentMarker = null;
 
 const App = {
     state: {
@@ -154,6 +159,9 @@ const App = {
             this._submitForm();
         });
 
+        // Setup Geocodifica (solo sezione COMPLETA)
+        this._setupGeocodingControls();
+
         // Form submit
         this.dom.form.addEventListener('submit', async e => {
             e.preventDefault();
@@ -252,9 +260,21 @@ const App = {
                 const ubicazioneSelect = document.getElementById('ubicazioneSelect');
                 ubicazioneSelect.innerHTML = '<option value="">Seleziona...</option>' +
                     data.ubicazioni.map(u => `<option value="${u.id_ubicazione}">${u.nome_ubicazione}</option>`).join('');
+
+                // Default: pre-seleziona "armadio" se esiste
+                const armadioOpt = Array.from(ubicazioneSelect.options).find(
+                    o => o.text.toLowerCase().includes('armadio')
+                );
+                if (armadioOpt) ubicazioneSelect.value = armadioOpt.value;
+
                 this.state.choicesUbicazione = new Choices(ubicazioneSelect, {
                     searchEnabled: false, itemSelectText: ''
                 });
+
+                // Ri-seleziona dopo Choices init
+                if (armadioOpt && this.state.choicesUbicazione) {
+                    this.state.choicesUbicazione.setChoiceByValue(armadioOpt.value);
+                }
             }
         } catch (e) {
             console.error('Errore caricamento init-data:', e);
@@ -373,6 +393,127 @@ const App = {
         } else {
             window.location.href = 'commesse.html';
         }
+    },
+
+    // ── GEOCODIFICA ──
+    _setupGeocodingControls() {
+        const btnCalc = document.getElementById('btn-calc-geo');
+        const btnMap  = document.getElementById('btn-open-map');
+        const btnConfirm = document.getElementById('confirmMapBtn');
+        const btnClose   = document.getElementById('closeMapBtn');
+        const mapModal   = document.getElementById('mapModal');
+        const mapOverlay = document.getElementById('mapModalOverlay');
+
+        const openMap = () => {
+            if (mapModal) { mapModal.style.display = 'flex'; }
+            if (mapOverlay) { mapOverlay.style.display = 'block'; }
+            setTimeout(() => this._initMap(), 120);
+        };
+        const closeMap = () => {
+            if (mapModal) mapModal.style.display = 'none';
+            if (mapOverlay) mapOverlay.style.display = 'none';
+        };
+
+        // Calcola coordinate da Città/Provincia
+        if (btnCalc) {
+            btnCalc.addEventListener('click', async () => {
+                const city = document.getElementById('luogoInput')?.value?.trim();
+                const prov = document.getElementById('provinciaInput')?.value?.trim() || '';
+                if (!city) {
+                    showModal({ title: 'Attenzione', message: 'Inserisci almeno il Luogo (Città) per calcolare le coordinate.' });
+                    return;
+                }
+                const orig = btnCalc.innerHTML;
+                btnCalc.innerHTML = '<span>⏳...</span>';
+                btnCalc.disabled = true;
+                try {
+                    const res = await apiFetch(`/api/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov)}`);
+                    if (res.ok) {
+                        const d = await res.json();
+                        openMap();
+                        setTimeout(() => {
+                            if (_map) { _map.invalidateSize(); }
+                            const ll = [d.lat, d.lon];
+                            if (_map) _map.setView(ll, 15);
+                            this._placeMarker(ll);
+                            // Geocodifica = posizione approssimativa
+                            const chk = document.getElementById('posizione_esatta');
+                            if (chk) chk.checked = false;
+                        }, 150);
+                    } else {
+                        showModal({ title: 'Non trovato', message: 'Impossibile trovare le coordinate per questo luogo.' });
+                    }
+                } catch(e) {
+                    showModal({ title: 'Errore', message: 'Errore durante la geocodifica.' });
+                } finally {
+                    btnCalc.innerHTML = orig;
+                    btnCalc.disabled = false;
+                }
+            });
+        }
+
+        // Apri mappa manualmente
+        if (btnMap) btnMap.addEventListener('click', openMap);
+
+        // Chiudi mappa
+        if (btnClose) btnClose.addEventListener('click', closeMap);
+        if (mapOverlay) mapOverlay.addEventListener('click', closeMap);
+
+        // Conferma posizione da mappa
+        if (btnConfirm) {
+            btnConfirm.addEventListener('click', () => {
+                if (_currentMarker) {
+                    const ll = _currentMarker.getLatLng();
+                    document.getElementById('latitudine').value = ll.lat.toFixed(6);
+                    document.getElementById('longitudine').value = ll.lng.toFixed(6);
+                    const chk = document.getElementById('posizione_esatta');
+                    if (chk) chk.checked = true; // selezione manuale = esatta
+                    closeMap();
+                } else {
+                    showModal({ title: 'Info', message: 'Seleziona un punto sulla mappa cliccando.' });
+                }
+            });
+        }
+    },
+
+    _initMap() {
+        if (typeof L === 'undefined') { console.error('Leaflet non caricato'); return; }
+        if (_map) { _map.invalidateSize(); this._updateMapFromInputs(); return; }
+
+        _map = L.map('mapContainer').setView([41.8719, 12.5674], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '© OpenStreetMap'
+        }).addTo(_map);
+        _map.on('click', (e) => this._placeMarker(e.latlng));
+        this._updateMapFromInputs();
+    },
+
+    _updateMapFromInputs() {
+        const lat = parseFloat(document.getElementById('latitudine')?.value);
+        const lon = parseFloat(document.getElementById('longitudine')?.value);
+        if (!isNaN(lat) && !isNaN(lon) && _map) {
+            _map.setView([lat, lon], 13);
+            this._placeMarker([lat, lon]);
+        }
+    },
+
+    _placeMarker(latlng) {
+        if (!_map) return;
+        if (_currentMarker) {
+            _currentMarker.setLatLng(latlng);
+        } else {
+            _currentMarker = L.marker(latlng, { draggable: true }).addTo(_map);
+            _currentMarker.on('dragend', (ev) => this._updateCoordsDisplay(ev.target.getLatLng()));
+        }
+        this._updateCoordsDisplay(latlng);
+    },
+
+    _updateCoordsDisplay(latlng) {
+        const el = document.getElementById('map-coords-display');
+        if (!el) return;
+        const lat = latlng.lat ?? latlng[0];
+        const lng = latlng.lng ?? latlng[1];
+        el.textContent = `Lat: ${parseFloat(lat).toFixed(6)}, Lon: ${parseFloat(lng).toFixed(6)}`;
     }
 };
 
