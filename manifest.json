@@ -10,7 +10,7 @@
   "icons": [
     {
       "src": "img/logo.png",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
     }
@@ -21,14 +21,14 @@
       "short_name": "Nota",
       "description": "Registra o scrivi una nota con commessa opzionale",
       "url": "/quick-note.html",
-      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "img/logo.png", "sizes": "any" }]
     },
     {
       "name": "Registra Vocale",
       "short_name": "Registra",
       "description": "Registrazione vocale super veloce",
       "url": "/quick-record.html",
-      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "img/logo.png", "sizes": "any" }]
     }
   ]
 }
