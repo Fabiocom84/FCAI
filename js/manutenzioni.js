@@ -33,14 +33,6 @@ const App = {
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         }
 
-        // Imposta sessione Supabase con il token dell'utente loggato
-        try {
-            const token = localStorage.getItem('session_token');
-            if (token) {
-                await supabase.auth.setSession({ access_token: token, refresh_token: token });
-            }
-        } catch(e) { /* sessione non Supabase nativa — fallback all'anonimo */ }
-
         await this._loadList();
 
         // Gestione parametri URL in ingresso
@@ -146,66 +138,25 @@ const App = {
         });
     },
 
-    // ── CARICA LISTA (Supabase diretto, più veloce del backend) ──
+    // ── CARICA LISTA via RPC Supabase (ottimizzata con aggregazioni OdP + ore) ──
     async _loadList() {
         this.dom.listLoader.style.display = '';
         try {
-            // ── Query Supabase diretta (lettura) ──
-            let query = supabase
-                .from('commesse')
-                .select(`
-                    id_commessa,
-                    codice_commessa,
-                    impianto,
-                    vo_offerta,
-                    data_commessa,
-                    visibile_officina,
-                    note,
-                    clienti!id_cliente_fk(ragione_sociale),
-                    status_commessa!id_status_fk(nome_status)
-                `)
-                .eq('tipo_commessa', 'MANUTENZIONE')
-                .order('data_commessa', { ascending: false });
+            // ── Supabase RPC diretta: get_manutenzioni_list ──
+            // Ritorna dati piatti compatibili con _renderList (ragione_sociale, nome_status,
+            // count_op, count_op_aperti, total_ore, ore_da_validare già aggregati server-side)
+            const { data, error } = await supabase.rpc('get_manutenzioni_list', {
+                p_include_completed: this.state.includeCompleted,
+                p_search_term: this.state.searchTerm || null
+            });
 
-            if (this.state.searchTerm) {
-                const s = this.state.searchTerm;
-                query = query.or(`impianto.ilike.%${s}%,vo_offerta.ilike.%${s}%`);
-            }
-
-            const { data, error } = await query;
             if (error) throw error;
 
-            // Normalizza i dati nel formato atteso da _renderList
-            let list = (data || []).map(m => ({
-                id_commessa:   m.id_commessa,
-                codice_commessa: m.codice_commessa,
-                impianto:      m.impianto,
-                vo:            m.vo_offerta,
-                ragione_sociale: m.clienti?.ragione_sociale || '—',
-                nome_status:   m.status_commessa?.nome_status || 'In Lavorazione',
-                data_commessa: m.data_commessa,
-                visibile_officina: m.visibile_officina,
-                note:          m.note,
-                // Aggregati ore/OdP (0 di default — caricati nel dettaglio)
-                ore_da_validare: 0,
-                total_ore:       0,
-                count_op:        0,
-                count_op_aperti: 0,
-            }));
-
-            // Filtra completate/annullate lato client (evita JOIN lento)
-            if (!this.state.includeCompleted) {
-                list = list.filter(m => {
-                    const s = (m.nome_status || '').toLowerCase();
-                    return !s.includes('complet') && !s.includes('annullat');
-                });
-            }
-
-            this.state.list = list;
+            this.state.list = data || [];
             this._renderList();
 
         } catch (e) {
-            console.error('Errore Supabase _loadList:', e);
+            console.error('Errore Supabase RPC get_manutenzioni_list:', e);
             // ── Fallback: backend API ──
             try {
                 const params = new URLSearchParams({
