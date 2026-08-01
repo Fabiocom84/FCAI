@@ -678,6 +678,14 @@ const App = {
         if (typeof L === 'undefined') { console.error('Leaflet non caricato'); return; }
         if (_map) { _map.invalidateSize(); this._updateMapFromInputs(); return; }
 
+        // Fix per l'icona di default di Leaflet
+        delete L.Icon.Default.prototype._getIconUrl;
+        L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'img/marker-icon-2x.png',
+            iconUrl: 'img/marker-icon.png',
+            shadowUrl: 'img/marker-shadow.png',
+        });
+
         _map = L.map('mapContainer').setView([41.8719, 12.5674], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19, attribution: '© OpenStreetMap'

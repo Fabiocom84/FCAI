@@ -1,6 +1,7 @@
 // js/manutenzioni.js — Logica pagina gestione manutenzioni
 import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser } from './core-init.js';
+import { supabase } from './supabase-client.js';
 
 const App = {
     state: {
@@ -32,6 +33,14 @@ const App = {
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
         }
 
+        // Imposta sessione Supabase con il token dell'utente loggato
+        try {
+            const token = localStorage.getItem('session_token');
+            if (token) {
+                await supabase.auth.setSession({ access_token: token, refresh_token: token });
+            }
+        } catch(e) { /* sessione non Supabase nativa — fallback all'anonimo */ }
+
         await this._loadList();
 
         // Gestione parametri URL in ingresso
@@ -44,58 +53,45 @@ const App = {
 
     _bindDom() {
         this.dom = {
-            list: document.getElementById('manutenzioniList'),
-            listLoader: document.getElementById('listLoader'),
-            countBadge: document.getElementById('countBadge'),
-            searchInput: document.getElementById('searchInput'),
-            showCompletedToggle: document.getElementById('showCompletedToggle'),
-            addBtn: document.getElementById('addBtn'),
-            detailPlaceholder: document.getElementById('detailPlaceholder'),
-            detailContent: document.getElementById('detailContent'),
-            detCodice: document.getElementById('detCodice'),
-            detStatus: document.getElementById('detStatus'),
-            detCliente: document.getElementById('detCliente'),
-            detImpianto: document.getElementById('detImpianto'),
-            detVO: document.getElementById('detVO'),
-            detData: document.getElementById('detData'),
-            detOfficina: document.getElementById('detOfficina'),
-            detNote: document.getElementById('detNote'),
-            btnModifica: document.getElementById('btnModifica'),
-            btnElimina: document.getElementById('btnElimina'),
-            btnCompleta: document.getElementById('btnCompleta'),
-            btnInserisciOp: document.getElementById('btnInserisciOp'),
-            oreTotal: document.getElementById('oreTotal'),
-            oreAperte: document.getElementById('oreAperte'),
-            oreContat: document.getElementById('oreContat'),
-            oreTableBody: document.getElementById('oreTableBody'),
-            opTableBody: document.getElementById('opTableBody'),
-            taskDetail: document.getElementById('taskDetail'),
-            // Edit modal
-            editModalOverlay: document.getElementById('editModalOverlay'),
-            editModal: document.getElementById('editModal'),
-            editClose: document.getElementById('editClose'),
-            editCancel: document.getElementById('editCancel'),
-            editForm: document.getElementById('editForm'),
-            editCommessaId: document.getElementById('editCommessaId'),
-            editImpianto: document.getElementById('editImpianto'),
-            editVo: document.getElementById('editVo'),
-            editVoFeedback: document.getElementById('editVoFeedback'),
-            editNote: document.getElementById('editNote'),
-            editVisibileOfficina: document.getElementById('editVisibileOfficina'),
-            editCliente: document.getElementById('editCliente'),
+            list:               document.getElementById('manutenzioniList'),
+            listLoader:         document.getElementById('listLoader'),
+            countBadge:         document.getElementById('countBadge'),
+            searchInput:        document.getElementById('searchInput'),
+            showCompletedToggle:document.getElementById('showCompletedToggle'),
+            addBtn:             document.getElementById('addBtn'),
+            detailPlaceholder:  document.getElementById('detailPlaceholder'),
+            detailContent:      document.getElementById('detailContent'),
+            detCodice:          document.getElementById('detCodice'),
+            detStatus:          document.getElementById('detStatus'),
+            detCliente:         document.getElementById('detCliente'),
+            detImpianto:        document.getElementById('detImpianto'),
+            detVO:              document.getElementById('detVO'),
+            detData:            document.getElementById('detData'),
+            detOfficina:        document.getElementById('detOfficina'),
+            detNote:            document.getElementById('detNote'),
+            btnModifica:        document.getElementById('btnModifica'),
+            btnElimina:         document.getElementById('btnElimina'),
+            btnCompleta:        document.getElementById('btnCompleta'),
+            btnInserisciOp:     document.getElementById('btnInserisciOp'),
+            oreTotal:           document.getElementById('oreTotal'),
+            oreAperte:          document.getElementById('oreAperte'),
+            oreContat:          document.getElementById('oreContat'),
+            oreTableBody:       document.getElementById('oreTableBody'),
+            opTableBody:        document.getElementById('opTableBody'),
+            taskDetail:         document.getElementById('taskDetail'),
             // Completa modal
-            completaModalOverlay: document.getElementById('completaModalOverlay'),
-            completaModal: document.getElementById('completaModal'),
-            completaTitolo: document.getElementById('completaTitolo'),
-            completaOpTot: document.getElementById('completaOpTot'),
-            completaOpChiusi: document.getElementById('completaOpChiusi'),
-            completaOreTot: document.getElementById('completaOreTot'),
-            completaOreContat: document.getElementById('completaOreContat'),
-            completaOreDaContat: document.getElementById('completaOreDaContat'),
-            completaAnnulla: document.getElementById('completaAnnulla'),
-            completaConferma: document.getElementById('completaConferma'),
+            completaModalOverlay:   document.getElementById('completaModalOverlay'),
+            completaModal:          document.getElementById('completaModal'),
+            completaTitolo:         document.getElementById('completaTitolo'),
+            completaOpTot:          document.getElementById('completaOpTot'),
+            completaOpChiusi:       document.getElementById('completaOpChiusi'),
+            completaOreTot:         document.getElementById('completaOreTot'),
+            completaOreContat:      document.getElementById('completaOreContat'),
+            completaOreDaContat:    document.getElementById('completaOreDaContat'),
+            completaAnnulla:        document.getElementById('completaAnnulla'),
+            completaConferma:       document.getElementById('completaConferma'),
             // Layout
-            layout: document.getElementById('appLayout'),
+            layout:     document.getElementById('appLayout'),
             mobileBack: document.getElementById('mobileBack'),
         };
     },
@@ -150,21 +146,89 @@ const App = {
         });
     },
 
+    // ── CARICA LISTA (Supabase diretto, più veloce del backend) ──
     async _loadList() {
         this.dom.listLoader.style.display = '';
         try {
-            const params = new URLSearchParams({
-                include_completed: this.state.includeCompleted ? 'true' : 'false',
-            });
-            if (this.state.searchTerm) params.set('search', this.state.searchTerm);
+            // ── Query Supabase diretta (lettura) ──
+            let query = supabase
+                .from('commesse')
+                .select(`
+                    id_commessa,
+                    codice_commessa,
+                    impianto,
+                    vo_offerta,
+                    data_commessa,
+                    visibile_officina,
+                    note,
+                    clienti!id_cliente_fk(ragione_sociale),
+                    status_commessa!id_status_fk(nome_status)
+                `)
+                .eq('tipo_commessa', 'MANUTENZIONE')
+                .order('data_commessa', { ascending: false });
 
-            const res = await apiFetch(`/api/manutenzioni/?${params}`);
-            const data = await res.json();
-            this.state.list = data || [];
+            if (this.state.searchTerm) {
+                const s = this.state.searchTerm;
+                query = query.or(`impianto.ilike.%${s}%,vo_offerta.ilike.%${s}%`);
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+
+            // Normalizza i dati nel formato atteso da _renderList
+            let list = (data || []).map(m => ({
+                id_commessa:   m.id_commessa,
+                codice_commessa: m.codice_commessa,
+                impianto:      m.impianto,
+                vo:            m.vo_offerta,
+                ragione_sociale: m.clienti?.ragione_sociale || '—',
+                nome_status:   m.status_commessa?.nome_status || 'In Lavorazione',
+                data_commessa: m.data_commessa,
+                visibile_officina: m.visibile_officina,
+                note:          m.note,
+                // Aggregati ore/OdP (0 di default — caricati nel dettaglio)
+                ore_da_validare: 0,
+                total_ore:       0,
+                count_op:        0,
+                count_op_aperti: 0,
+            }));
+
+            // Filtra completate/annullate lato client (evita JOIN lento)
+            if (!this.state.includeCompleted) {
+                list = list.filter(m => {
+                    const s = (m.nome_status || '').toLowerCase();
+                    return !s.includes('complet') && !s.includes('annullat');
+                });
+            }
+
+            this.state.list = list;
             this._renderList();
+
         } catch (e) {
-            console.error('Errore caricamento manutenzioni:', e);
-            this.dom.list.innerHTML = '<div class="man-no-results"><div class="man-no-results-icon">❌</div><p>Errore di caricamento</p></div>';
+            console.error('Errore Supabase _loadList:', e);
+            // ── Fallback: backend API ──
+            try {
+                const params = new URLSearchParams({
+                    include_completed: this.state.includeCompleted ? 'true' : 'false',
+                });
+                if (this.state.searchTerm) params.set('search', this.state.searchTerm);
+
+                const res = await apiFetch(`/api/manutenzioni/?${params}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!Array.isArray(data)) throw new Error('Risposta non valida');
+
+                this.state.list = data;
+                this._renderList();
+            } catch (fallbackErr) {
+                console.error('Errore fallback _loadList:', fallbackErr);
+                this.dom.list.innerHTML = `
+                    <div class="man-no-results">
+                        <div class="man-no-results-icon">❌</div>
+                        <p>Errore di caricamento</p>
+                        <small style="color:#999;">${fallbackErr.message}</small>
+                    </div>`;
+            }
         } finally {
             this.dom.listLoader.style.display = 'none';
         }
@@ -326,67 +390,9 @@ const App = {
         }
     },
 
-    // ── EDIT MODAL ──
-    async _openEditModal() {
-        if (!this.state.detail) return;
-        const c = this.state.detail.commessa;
+    // ── FUNZIONI EDIT MODALE rimosse: edit avviene su nuova-commessa.html ──
+    // _openEditModal, _closeEditModal, _submitEdit → obsolete dopo la migrazione
 
-        // Carica clienti se non ancora
-        if (!this.dom.editCliente.options.length || this.dom.editCliente.options[0].value === '') {
-            try {
-                const res = await apiFetch('/api/commesse/init-data');
-                const data = await res.json();
-                if (data.clienti) {
-                    this.dom.editCliente.innerHTML = data.clienti
-                        .sort((a,b) => a.ragione_sociale.localeCompare(b.ragione_sociale))
-                        .map(cl => `<option value="${cl.id_cliente}">${cl.ragione_sociale}</option>`).join('');
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        this.dom.editCommessaId.value = c.id_commessa;
-        this.dom.editImpianto.value = c.impianto || '';
-        this.dom.editVo.value = c.vo || '';
-        this.dom.editNote.value = c.note || '';
-        this.dom.editVisibileOfficina.checked = !!c.visibile_officina;
-        if (c.id_cliente_fk) this.dom.editCliente.value = c.id_cliente_fk;
-        this.dom.editVoFeedback.textContent = '';
-        this.dom.editVoFeedback.className = 'nc-vo-feedback';
-
-        this.dom.editModalOverlay.style.display = '';
-        this.dom.editModal.style.display = '';
-    },
-
-    _closeEditModal() {
-        this.dom.editModalOverlay.style.display = 'none';
-        this.dom.editModal.style.display = 'none';
-    },
-
-    async _submitEdit() {
-        const id = this.dom.editCommessaId.value;
-        const payload = {
-            id_cliente_fk: parseInt(this.dom.editCliente.value) || null,
-            impianto: this.dom.editImpianto.value.trim(),
-            vo: this.dom.editVo.value.trim(),
-            note: this.dom.editNote.value.trim(),
-            visibile_officina: this.dom.editVisibileOfficina.checked
-        };
-
-        try {
-            const res = await apiFetch(`/api/manutenzioni/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-            if (!res.ok) throw new Error(result.error || 'Errore aggiornamento');
-            this._closeEditModal();
-            await this._loadList();
-            await this._selectCard(parseInt(id));
-        } catch(e) {
-            alert(`Errore: ${e.message}`);
-        }
-    },
 
     // ── ELIMINA ──
     async _handleDelete() {

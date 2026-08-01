@@ -411,37 +411,113 @@ const App = {
         const fragment = document.createDocumentFragment();
 
         commesse.forEach(c => {
-            // ──── CARD MANUTENZIONE ────
+            // \u2500\u2500\u2500\u2500 CARD MANUTENZIONE \u2500\u2500\u2500\u2500 (struttura identica alle commesse, immagine default)
             if (c.tipo_commessa === 'MANUTENZIONE') {
                 const card = document.createElement('div');
                 card.className = 'commesse-card commesse-card--manutenzione';
-                const isDone = c.status_commessa?.nome_status?.toLowerCase().includes('complet');
-                const statusPill = isDone
-                    ? '<span class="card-mann-status done">✓ Completata</span>'
-                    : '<span class="card-mann-status wip">⚙️ In Lavorazione</span>';
+
+                const isDone = c.status_commessa?.nome_status?.toLowerCase().includes('complet')
+                            || c.status_commessa?.nome_status?.toLowerCase().includes('annullat');
+
+                let mannAdminActions = '';
+                if (IsAdmin) {
+                    mannAdminActions = `
+                        <div class="admin-actions" style="display:flex;gap:6px;margin-top:4px;">
+                            <button class="std-btn std-btn--warning mann-edit-btn" data-id="${c.id_commessa}" style="padding:5px 10px;font-size:0.8em;" onclick="event.stopPropagation()">✏️</button>
+                            <button class="std-btn std-btn--danger del-btn" data-id="${c.id_commessa}" style="padding:5px 10px;font-size:0.8em;" onclick="event.stopPropagation()">🗑️</button>
+                        </div>`;
+                }
+
+                // Stato admin: select dropdown (coerente con COMPLETA)
+                const mannStatusBadge = IsAdmin
+                    ? `<select class="status-select-badge" data-commessa="${c.id_commessa}" onclick="event.stopPropagation()" style="max-width:130px;">
+                            ${(this.state.allStatuses.length > 0 ? this.state.allStatuses : [
+                                { id_status: 1, nome_status: 'Preventivo' },
+                                { id_status: 2, nome_status: 'In Lavorazione' },
+                                { id_status: 3, nome_status: 'Completato' },
+                            ]).map(s => `<option value="${s.id_status}" ${c.id_status_fk == s.id_status ? 'selected' : ''}>${s.nome_status}</option>`).join('')}
+                       </select>`
+                    : `<span class="card-mann-status-badge${isDone ? ' done' : ''}">${c.status_commessa?.nome_status || 'In Lavorazione'}</span>`;
+
                 card.innerHTML = `
-                    <div class="card-mann-header">
-                        <div class="card-mann-icon">🔧</div>
-                        <div class="card-mann-title">
-                            <span class="card-mann-tipo">MANUTENZIONE</span>
-                            ${statusPill}
+                    <div class="card-image card-mann-img-wrapper" style="cursor:pointer;" title="Apri dettaglio manutenzione">
+                        <img src="img/maintenance-default.png" alt="Manutenzione" loading="lazy">
+                        <div class="card-mann-img-overlay">
+                            <span class="card-mann-tipo-badge">🔧 MANUTENZIONE</span>
                         </div>
                     </div>
                     <div class="card-details">
                         <div class="card-header">
-                            <h3>${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
+                            <div style="display:flex;justify-content:space-between;align-items:start;gap:6px;">
+                                <h3 style="margin:0;flex:1;">${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
+                                ${mannStatusBadge}
+                            </div>
+                            <span style="color:#666;font-size:0.88rem;">${c.impianto || '—'}</span>
                         </div>
-                        <div class="card-mann-body">
-                            <div class="card-info-item"><span class="info-label">Oggetto</span><span class="info-value">${c.impianto || '—'}</span></div>
-                            <div class="card-info-item"><span class="info-label">VO</span><span class="info-value card-mann-vo">${c.vo || '—'}</span></div>
+
+                        <div class="card-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Ordine (VO)</span>
+                                <span class="info-value" style="font-family:monospace;font-weight:700;color:#d35400;">${c.vo || '—'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Anno</span>
+                                <span class="info-value">${c.anno || (c.data_commessa ? new Date(c.data_commessa).getFullYear() : '—')}</span>
+                            </div>
                         </div>
+
+                        ${c.note ? `<div class="commessa-note" style="margin:8px 0;padding:7px 10px;background:#fff3e0;border-left:3px solid #e67e22;font-size:0.79em;color:#666;border-radius:0 4px 4px 0;"><strong>Note:</strong> ${c.note}</div>` : ''}
+
                         <div class="card-footer-actions">
-                            <a href="manutenzioni.html#${c.id_commessa}" class="std-btn std-btn--secondary" style="font-size:0.82rem;padding:6px 14px;text-decoration:none;">Dettaglio →</a>
+                            <div style="display:flex;gap:8px;margin-bottom:6px;">
+                                <a href="manutenzioni.html?selected=${c.id_commessa}" class="std-btn std-btn--secondary" style="flex:1;padding:8px;font-size:0.85em;text-decoration:none;text-align:center;" onclick="event.stopPropagation()">
+                                    🔧 Dettaglio
+                                </a>
+                                <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1;padding:8px;font-size:0.85em;text-decoration:none;text-align:center;" onclick="event.stopPropagation()">
+                                    ⏱️ Ore
+                                </a>
+                            </div>
+                            <div style="display:flex;justify-content:flex-end;">
+                                ${mannAdminActions}
+                            </div>
                         </div>
                     </div>`;
-                // Nessun event listener su card body (nessun click-to-zoom)
+
+                // Click immagine \u2192 apri manutenzioni.html
+                const cardImg = card.querySelector('.card-mann-img-wrapper');
+                if (cardImg) {
+                    cardImg.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.location.href = `manutenzioni.html?selected=${c.id_commessa}`;
+                    });
+                }
+
+                // Status select (coerente con COMPLETA)
+                const mannStatusSel = card.querySelector('.status-select-badge');
+                if (mannStatusSel) {
+                    mannStatusSel.addEventListener('change', (e) => {
+                        e.stopPropagation();
+                        this.updateStatusCommesse(c.id_commessa, e.target.value);
+                    });
+                    this.styleStatusSelect(mannStatusSel);
+                }
+
+                // Admin: edit \u2192 nuova-commessa (tipo MANUTENZIONE), delete
+                if (IsAdmin) {
+                    const mannEdit = card.querySelector('.mann-edit-btn');
+                    const mannDel  = card.querySelector('.del-btn');
+                    if (mannEdit) mannEdit.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.location.href = `nuova-commessa.html?id=${c.id_commessa}&tipo=MANUTENZIONE&mode=edit&from=commesse`;
+                    });
+                    if (mannDel) mannDel.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.handleDelete(c.id_commessa);
+                    });
+                }
+
                 fragment.appendChild(card);
-                return; // skip il resto
+                return;
             }
 
             // ──── CARD COMMESSA COMPLETA ────

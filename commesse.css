@@ -1289,34 +1289,75 @@
 .std-btn--orange { background-color: #f39c12; color: #fff; border: none; }
 .std-btn--orange:hover { background-color: #e67e22; filter: brightness(1.1); }
 
-/* ── CARD MANUTENZIONE (appare nella griglia commesse) ── */
+/* ── CARD MANUTENZIONE - struttura allineata alle commesse ── */
 .commesse-card--manutenzione {
-    border-left: 5px solid #e67e22 !important;
-    background: linear-gradient(135deg, #fffdf9 0%, #fff 100%);
-    cursor: default !important;
-    min-height: 220px;
+    border: 1px solid #f0a85a;
+    border-top: 4px solid #e67e22;
+    background: linear-gradient(160deg, #fff9f4 0%, #fff 70%);
+    cursor: default;
 }
 .commesse-card--manutenzione:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(230, 126, 34, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(230, 126, 34, 0.22);
+    border-color: #e67e22;
 }
-.card-mann-header {
+
+/* Immagine default manutenzione */
+.card-mann-img-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+.card-mann-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    filter: brightness(0.82) saturate(0.9);
+}
+.commesse-card--manutenzione:hover .card-mann-img-wrapper img {
+    transform: scale(1.03);
+    filter: brightness(0.75) saturate(1);
+}
+
+/* Overlay con badge MANUTENZIONE in basso sull'immagine */
+.card-mann-img-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 18px 10px 8px;
+    background: linear-gradient(to top, rgba(10,20,40,0.82) 0%, transparent 100%);
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
-    border-radius: 10px 10px 0 0;
+    align-items: flex-end;
 }
-.card-mann-icon { font-size: 1.8rem; }
-.card-mann-tipo { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.5px; color: rgba(255,255,255,0.85); text-transform: uppercase; display: block; }
-.card-mann-status { font-size: 0.78rem; font-weight: 700; color: #fff; }
-.card-mann-status.done { color: #d5f5e3; }
-.card-mann-body { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
-.card-info-item { display: flex; flex-direction: column; gap: 2px; }
-.info-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
-.info-value { font-size: 0.9rem; color: #333; }
-.card-mann-vo { font-family: monospace; font-weight: 700; color: #d35400; }
+.card-mann-tipo-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    color: #f39c12;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Badge status per utenti non-admin */
+.card-mann-status-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(230, 126, 34, 0.85);
+    padding: 3px 9px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.card-mann-status-badge.done {
+    background: rgba(39, 174, 96, 0.85);
+}
+
+/* Stili legacy (non più usati, mantenuti per compatibilità) */
+.card-mann-header, .card-mann-icon, .card-mann-tipo, .card-mann-status,
+.card-mann-body, .card-mann-vo { display: none; }
+
 
 /* ── FILTRI TIPO ── */
 .tipo-filters { border-left: 2px solid #e8eaf0; padding-left: 12px; }
