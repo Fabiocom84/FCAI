@@ -254,20 +254,26 @@ const App = {
         this._loadOrdiniSupabase(id);
     },
 
-    // ── Carica OdP direttamente da Supabase con il campo PK corretto ──
+    // ── Carica OdP via RPC Supabase (SECURITY DEFINER → bypassa RLS) ──
     async _loadOrdiniSupabase(commessa_id) {
         try {
             const { data: op, error } = await supabase
-                .from('registro_produzione')
-                .select('id, numero_op, codice_articolo, descrizione, qta_richiesta, data_ricezione, data_invio')
-                .eq('id_commessa', commessa_id)
-                .order('data_ricezione', { ascending: false });
+                .rpc('get_odp_for_commessa', { p_id_commessa: commessa_id });
 
-            if (error) throw error;
+            if (error) {
+                console.warn('RPC OdP error:', error.message);
+                // Prova fallback query diretta (se RLS lo permette)
+                const { data: op2, error: err2 } = await supabase
+                    .from('registro_produzione')
+                    .select('id, numero_op, codice_articolo, descrizione, qta_richiesta, data_ricezione, data_invio')
+                    .eq('id_commessa', commessa_id)
+                    .order('data_ricezione', { ascending: false });
+                if (!err2 && op2?.length > 0) this._renderOrdini(op2);
+                return;
+            }
             this._renderOrdini(op || []);
         } catch (e) {
-            console.warn('Supabase OdP query:', e.message);
-            // lascia il rendering esistente dal backend
+            console.warn('Supabase OdP query fallita:', e.message);
         }
     },
 
