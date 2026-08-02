@@ -260,7 +260,7 @@ body.internal-page {
 .man-detail {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;      /* usa 100% per rispettare l'header della shell */
     overflow-y: auto;
     background: #f0f2f5;
 }
@@ -432,6 +432,18 @@ body.internal-page {
 .man-task-chip.done { background: #d5f5e3; color: #1e8449; }
 .man-task-chip.todo { background: #fdebd0; color: #d35400; }
 
+/* Descrizione task = nota commessa */
+.man-task-desc {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.55;
+    margin: 8px 0 10px;
+    padding: 8px 12px;
+    background: #fff3e0;
+    border-left: 3px solid #e67e22;
+    border-radius: 0 6px 6px 0;
+}
+
 /* ── EDIT MODAL ── */
 .man-modal-overlay {
     position: fixed;
@@ -532,23 +544,7 @@ body.internal-page {
     padding: 0 28px 24px;
 }
 
-/* ── MOBILE BACK ── */
-.man-mobile-back {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 28px;
-    background: #1a1a2e;
-    color: #fff;
-    border: none;
-    border-radius: 24px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
+/* .man-mobile-back rimosso (non necessario su desktop) */
 
 /* ── DARK MODE ── */
 body.dark-mode {

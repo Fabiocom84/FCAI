@@ -84,7 +84,6 @@ const App = {
             completaConferma:       document.getElementById('completaConferma'),
             // Layout
             layout:     document.getElementById('appLayout'),
-            mobileBack: document.getElementById('mobileBack'),
         };
     },
 
@@ -131,11 +130,7 @@ const App = {
         this.dom.completaConferma.addEventListener('click', () => this._confirmCompleta());
 
 
-        // Mobile back
-        this.dom.mobileBack.addEventListener('click', () => {
-            this.dom.layout.classList.remove('detail-open');
-            this.dom.mobileBack.style.display = 'none';
-        });
+
     },
 
     // ── CARICA LISTA via RPC Supabase (ottimizzata con aggregazioni OdP + ore) ──
@@ -237,9 +232,8 @@ const App = {
             c.classList.toggle('active', parseInt(c.dataset.id) === id);
         });
 
-        // Mobile: mostra dettaglio
+        // Mobile: mostra dettaglio (gestito dal CSS tramite detail-open)
         this.dom.layout.classList.add('detail-open');
-        this.dom.mobileBack.style.display = 'flex';
 
         // Mostra content, nasconde placeholder
         this.dom.detailPlaceholder.style.display = 'none';
@@ -328,8 +322,11 @@ const App = {
         if (data.task) {
             const t = data.task;
             const isDoneTask = t.stato?.toLowerCase() === 'completato';
+            // La descrizione della task coincide con la nota della commessa
+            const noteDesc = c.note || t.descrizione || '';
             this.dom.taskDetail.innerHTML = `
                 <div class="man-task-title">${t.titolo || '—'}</div>
+                ${noteDesc ? `<div class="man-task-desc">${noteDesc}</div>` : ''}
                 <div class="man-task-meta">
                     <span class="man-task-chip ${isDoneTask ? 'done' : 'todo'}">${t.stato || 'Da Fare'}</span>
                     <span class="man-task-chip">${t.priorita || 'Media'}</span>
