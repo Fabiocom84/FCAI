@@ -27,22 +27,19 @@
     <!-- GUSCIO STANDARD -->
     <div class="std-app-shell">
 
-        <!-- HEADER STANDARD (Identico a Inserisci Dati) -->
+        <!-- HEADER STANDARD -->
         <header class="page-header">
-            <div class="header-left">
-                <a href="index.html" class="header-button">
-                    <i class="fas fa-home"></i> Home
-                </a>
-            </div>
+            <a href="index.html" class="header-button">
+                <img src="img/log-out.png" alt="Home"
+                     style="transform: rotate(180deg); filter: brightness(0) invert(1);">
+                <span>Home</span>
+            </a>
 
             <h1>GESTIONE ATTIVITÀ</h1>
 
-            <div class="header-right">
-                <!-- Il filtro admin eredita lo stile flex -->
-                <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
-                    <label for="adminUserFilter">Utente:</label>
-                    <select id="adminUserFilter" class="header-select"></select>
-                </div>
+            <div id="adminFilterContainer" class="header-filter-wrapper" style="display: none;">
+                <label for="adminUserFilter">Utente:</label>
+                <select id="adminUserFilter" class="header-select"></select>
             </div>
         </header>
 
