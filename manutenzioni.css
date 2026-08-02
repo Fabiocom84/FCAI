@@ -108,28 +108,18 @@ body.internal-page {
     position: relative;
     margin-bottom: 10px;
 }
-.man-search-icon {
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    pointer-events: none;   /* non intercetta i click */
-    z-index: 1;
-}
+/* Icona incorporata come background-image: nessun problema di z-index o sovrapposizione */
 .man-search-input {
     width: 100%;
-    padding: 9px 12px 9px 38px;   /* 38px garantisce spazio dopo l'icona 16px + 11px left + gap */
+    padding: 9px 12px 9px 36px;
     border: 1.5px solid #d0d4db;
     border-radius: 8px;
     font-size: 0.9rem;
     font-family: 'Inter', sans-serif;
-    background: #f8f9fb;
+    background: #f8f9fb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center;
     transition: border-color 0.2s;
-    position: relative;
-    z-index: 0;
 }
-.man-search-input:focus { outline: none; border-color: #e67e22; background: #fff; }
+.man-search-input:focus { outline: none; border-color: #e67e22; background-color: #fff; }
 
 .man-sidebar-filters {
     display: flex;
