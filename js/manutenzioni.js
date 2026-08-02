@@ -248,6 +248,27 @@ const App = {
         } catch (e) {
             console.error('Errore dettaglio manutenzione:', e);
         }
+
+        // ── OdP direttamente da Supabase (bypass bug backend id_registro → id) ──
+        // Caricamento asincrono indipendente: non blocca il render del dettaglio
+        this._loadOrdiniSupabase(id);
+    },
+
+    // ── Carica OdP direttamente da Supabase con il campo PK corretto ──
+    async _loadOrdiniSupabase(commessa_id) {
+        try {
+            const { data: op, error } = await supabase
+                .from('registro_produzione')
+                .select('id, numero_op, codice_articolo, descrizione, qta_richiesta, data_ricezione, data_invio')
+                .eq('id_commessa', commessa_id)
+                .order('data_ricezione', { ascending: false });
+
+            if (error) throw error;
+            this._renderOrdini(op || []);
+        } catch (e) {
+            console.warn('Supabase OdP query:', e.message);
+            // lascia il rendering esistente dal backend
+        }
     },
 
     _renderDetail(data) {
@@ -297,23 +318,8 @@ const App = {
             }).join('');
         }
 
-        // OdP table
-        const op = data.ordini_produzione || [];
-        if (op.length === 0) {
-            this.dom.opTableBody.innerHTML = '<tr class="man-table-empty"><td colspan="5">Nessun ordine di produzione</td></tr>';
-        } else {
-            this.dom.opTableBody.innerHTML = op.map(o => {
-                const aperto = !o.data_invio;
-                return `
-                    <tr>
-                        <td><strong>${o.numero_op || '—'}</strong></td>
-                        <td>${o.codice_articolo || '—'}</td>
-                        <td>${o.descrizione || '—'}</td>
-                        <td>${o.qta_richiesta || '—'}</td>
-                        <td class="${aperto ? 'man-op-aperto' : 'man-op-chiuso'}">${aperto ? '⚙️ Aperto' : '✓ Inviato'}</td>
-                    </tr>`;
-            }).join('');
-        }
+        // OdP table (placeholder — verrà aggiornato da _loadOrdiniSupabase)
+        this._renderOrdini(data.ordini_produzione || []);
 
         // Link inserisci OdP
         this.dom.btnInserisciOp.href = `inserimento-ordini.html?commessaId=${c.id_commessa}`;
@@ -335,6 +341,26 @@ const App = {
             `;
         } else {
             this.dom.taskDetail.innerHTML = '<div class="man-task-placeholder">Nessuna task associata</div>';
+        }
+    },
+
+    // ── Renderizza tabella Ordini di Produzione (richiamato anche da _loadOrdiniSupabase) ──
+    _renderOrdini(op) {
+        if (!this.dom.opTableBody) return;
+        if (op.length === 0) {
+            this.dom.opTableBody.innerHTML = '<tr class="man-table-empty"><td colspan="5">Nessun ordine di produzione</td></tr>';
+        } else {
+            this.dom.opTableBody.innerHTML = op.map(o => {
+                const aperto = !o.data_invio;
+                return `
+                    <tr>
+                        <td><strong>${o.numero_op || '—'}</strong></td>
+                        <td>${o.codice_articolo || '—'}</td>
+                        <td>${o.descrizione || '—'}</td>
+                        <td>${o.qta_richiesta || '—'}</td>
+                        <td class="${aperto ? 'man-op-aperto' : 'man-op-chiuso'}">${aperto ? '⚙️ Aperto' : '✓ Inviato'}</td>
+                    </tr>`;
+            }).join('');
         }
     },
 
