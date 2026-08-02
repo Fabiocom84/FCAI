@@ -458,7 +458,7 @@ const App = {
                         <div class="card-info-grid">
                             <div class="info-item">
                                 <span class="info-label">Ordine (VO)</span>
-                                <span class="info-value" style="font-family:monospace;font-weight:700;color:#d35400;">${c.vo || '—'}</span>
+                                <span class="info-value">${c.vo || '—'}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Anno</span>
