@@ -1564,12 +1564,15 @@ const App = {
 
         try {
             // Scarica TUTTI i dati (senza paginazione)
+            // Usa il 'count' totale restituito dal server per decidere quando fermarsi,
+            // evitando il bug dove chunk.length < limit anche se ci sono altri dati
+            // (causato dal cap del backend inferiore al limit richiesto).
             let allData = [];
             let page = 1;
-            const limit = 500;
-            let hasMore = true;
+            const limit = 1000;
+            let totalCount = null; // sarà valorizzato alla prima risposta
 
-            while (hasMore) {
+            while (true) {
                 const params = new URLSearchParams({
                     page: page,
                     limit: limit,
@@ -1587,13 +1590,19 @@ const App = {
 
                 const res = await apiFetch(`${config.apiEndpoint}?${params.toString()}`);
                 const json = await res.json();
-                const chunk = json.data || json || [];
+                const chunk = json.data || (Array.isArray(json) ? json : []);
+
+                // Al primo chunk, leggi il totale dal server
+                if (totalCount === null) {
+                    totalCount = (json.count !== undefined && json.count !== null) ? json.count : chunk.length;
+                }
 
                 allData = allData.concat(chunk);
-                hasMore = chunk.length === limit;
-                page++;
+                if (btn) btn.textContent = `⏳ ${allData.length} / ${totalCount}`;
 
-                if (btn) btn.textContent = `⏳ ${allData.length}`;
+                // Ci fermiamo se abbiamo raggiunto il totale o se il chunk era vuoto
+                if (chunk.length === 0 || allData.length >= totalCount) break;
+                page++;
             }
 
             if (allData.length === 0) {
