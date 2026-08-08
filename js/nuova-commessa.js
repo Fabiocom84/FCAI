@@ -3,6 +3,24 @@ import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser } from './core-init.js';
 import { showModal } from './shared-ui.js';
 
+// Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
+let _leafletLoadPromise = null;
+function loadLeafletLazy() {
+    if (_leafletLoadPromise) return _leafletLoadPromise;
+    _leafletLoadPromise = new Promise((resolve) => {
+        if (typeof L !== 'undefined') { resolve(); return; }
+        const link = document.createElement('link');
+        link.rel  = 'stylesheet';
+        link.href = 'css/libs/leaflet.css';
+        document.head.appendChild(link);
+        const script = document.createElement('script');
+        script.src = 'js/libs/leaflet.min.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+    });
+    return _leafletLoadPromise;
+}
+
 // ── Mappa Leaflet (geocoding sezione) ──
 let _map = null;
 let _currentMarker = null;
@@ -602,9 +620,10 @@ const App = {
         const mapModal   = document.getElementById('mapModal');
         const mapOverlay = document.getElementById('mapModalOverlay');
 
-        const openMap = () => {
+        const openMap = async () => {
             if (mapModal) { mapModal.style.display = 'flex'; }
             if (mapOverlay) { mapOverlay.style.display = 'block'; }
+            await loadLeafletLazy();
             setTimeout(() => this._initMap(), 120);
         };
         const closeMap = () => {

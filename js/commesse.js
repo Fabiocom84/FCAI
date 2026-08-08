@@ -33,7 +33,7 @@ const App = {
     dom: {},
 
     init: async function () {
-        console.log("🚀 Init Commesse Module");
+
 
         // 1. Mappatura DOM
         this.dom = {
@@ -98,77 +98,58 @@ const App = {
     },
 
     loadUnifiedData: async function () {
-        // --- SWR PATTERN (Stale-While-Revalidate) — Solo metadati ---
-        // I dati commesse vengono sempre caricati dall'endpoint paginato /api/commesse/view
+        // SWR: i metadati (status, fasi, macros) vivono in localStorage con TTL 1h.
+        // Le card commesse vengono sempre ricaricate da server (dati live).
         const cachedInit = localStorage.getItem('commesse_init_v3');
         const cacheTimestamp = localStorage.getItem('commesse_cache_ts');
         const now = Date.now();
-        const MAX_AGE = 3600 * 1000; // 1 ora
+        const MAX_AGE = 3600 * 1000;
 
-        // Pulizia cache obsoleta (v2 e commesse_list_cache non più usati)
-        localStorage.removeItem('commesse_init_v2');
-        localStorage.removeItem('commesse_init_v1');
-        localStorage.removeItem('commesse_list_cache');
+        // Pulizia versioni obsolete della cache
+        ['commesse_init_v2', 'commesse_init_v1', 'commesse_list_cache'].forEach(k => localStorage.removeItem(k));
 
-        // 1. Render immediato da cache metadati (se valida)
-        let metadataCached = false;
-        if (cachedInit) {
+        // 1. Applica cache metadati se valida (render immediato dei select/fasi)
+        if (cachedInit && cacheTimestamp && (now - parseInt(cacheTimestamp) < MAX_AGE)) {
             try {
                 const initData = JSON.parse(cachedInit);
-                if (cacheTimestamp && (now - parseInt(cacheTimestamp) < MAX_AGE)) {
-                    console.log("⚡ CACHE HIT: Metadati da Storage");
-                    this.state.allStatuses = initData.status || [];
-                    this.state.allMacros = initData.macros || [];
-                    this.state.allPhases = initData.fasi || [];
-                    this.state.allUbicazioni = initData.ubicazioni || [];
-                    if (IsAdmin) this.initModalChoices(initData.clienti || [], initData.modelli || [], initData.macros || []);
-                    if (IsAdmin) this.populateUbicazioniSelect(this.state.allUbicazioni);
-                    metadataCached = true;
-                }
+                this._applyMetadata(initData);
             } catch (e) {
-                console.warn("Cache metadati corrotta", e);
                 localStorage.removeItem('commesse_init_v3');
             }
         }
 
-        // 2. Fetch metadati freschi (in parallelo con le card)
+        // 2. Fetch metadati freschi + card commesse IN PARALLELO.
+        // Non si aspetta mai l'uno prima dell'altro: il render delle card
+        // usa i metadati della cache (se presenti) o i fallback hardcoded inline.
         const metadataPromise = apiFetch('/api/commesse/init-data')
             .then(res => res.json())
             .then(data => {
-                // Aggiorna cache metadati
+                this._applyMetadata(data);
                 localStorage.setItem('commesse_init_v3', JSON.stringify({
                     status: data.status, macros: data.macros,
-                    fasi: data.fasi, clienti: data.clienti, modelli: data.modelli,
-                    ubicazioni: data.ubicazioni
+                    fasi: data.fasi, clienti: data.clienti,
+                    modelli: data.modelli, ubicazioni: data.ubicazioni
                 }));
                 localStorage.setItem('commesse_cache_ts', now.toString());
-
-                // Aggiorna state
-                this.state.allStatuses = data.status || [];
-                this.state.allMacros = data.macros || [];
-                this.state.allPhases = data.fasi || [];
-                this.state.allUbicazioni = data.ubicazioni || [];
-
-                if (IsAdmin) {
-                    this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
-                    this.populateUbicazioniSelect(this.state.allUbicazioni);
-                }
-                console.log("📡 Metadati aggiornati da server");
             })
-            .catch(e => console.warn("Errore fetch metadati (non bloccante):", e));
+            .catch(e => console.warn('Fetch metadati fallita (non bloccante):', e));
 
-        // 3. Carica commesse dall'endpoint paginato (filtro server-side)
-        // Se i metadati non erano in cache, aspettiamo prima quelli per avere allPhases/allStatuses
-        if (!metadataCached) {
-            await metadataPromise;
-        }
+        await Promise.all([metadataPromise, this.fetchCommesse(true)]);
+    },
 
-        // Fetch commesse paginato — sempre server-side
-        await this.fetchCommesse(true);
-
-        // Se i metadati erano in cache, aspettiamo il revalidate in background
-        if (metadataCached) {
-            await metadataPromise;
+    // Applica i metadati allo state e inizializza i componenti dipendenti
+    _applyMetadata: function (data) {
+        this.state.allStatuses  = data.status    || [];
+        this.state.allMacros    = data.macros    || [];
+        this.state.allPhases    = data.fasi      || [];
+        this.state.allUbicazioni = data.ubicazioni || [];
+        // Lookup Map O(1) per risolvere ID macro → nome nel render delle card
+        this.state.macroMap = new Map(
+            (data.macros || []).map(m => [m.id_macro_categoria, m.nome || m.nome_macro || String(m.id_macro_categoria)])
+        );
+        if (IsAdmin) {
+            this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
+            this.populateUbicazioniSelect(this.state.allUbicazioni);
         }
     },
 
@@ -696,21 +677,18 @@ const App = {
                     </div>
 
                     ${(() => {
+                    // Risoluzione macro O(1) via Map pre-computata in _applyMetadata
                     let macrosToDisplay = [];
                     if (c.macro_categorie && c.macro_categorie.length) {
                         macrosToDisplay = c.macro_categorie.map(m => m.nome || m.nome_macro || m);
-                    } else if (c.ids_macro_categorie_attive && this.state.allMacros && this.state.allMacros.length) {
-                        macrosToDisplay = (Array.isArray(c.ids_macro_categorie_attive) ? c.ids_macro_categorie_attive : [c.ids_macro_categorie_attive]).map(id => {
-                            const match = this.state.allMacros.find(m => m.id_macro_categoria == id);
-                            return match ? (match.nome || match.nome_macro) : id;
-                        });
+                    } else if (c.ids_macro_categorie_attive && this.state.macroMap?.size) {
+                        const ids = Array.isArray(c.ids_macro_categorie_attive)
+                            ? c.ids_macro_categorie_attive : [c.ids_macro_categorie_attive];
+                        macrosToDisplay = ids.map(id => this.state.macroMap.get(id) ?? String(id));
                     }
-
                     if (macrosToDisplay.length === 0) return '';
-
-                    return `
-                        <div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
-                            ${macrosToDisplay.map(name => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${name}</span>`).join('')}
+                    return `<div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
+                            ${macrosToDisplay.map(n => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${n}</span>`).join('')}
                         </div>`;
                 })()}
 
@@ -801,7 +779,7 @@ const App = {
                     // Ricalcola Progress Bar locale
                     this.updateLocalProgressBar(card, c.status_commessa?.nome_status === 'Completato');
 
-                    console.log(`Toggle Fase: Commessa ${commId}, Fase ${faseId}, SetActive: ${!isCurrentlyActive}`);
+
 
                     this.togglePhase(commId, faseId, !isCurrentlyActive);
                 });
@@ -841,13 +819,20 @@ const App = {
     },
 
     // --- OP STATS ASYNC LOADING ---
+    // Set degli ID già caricati: evita chiamate duplicate sullo scroll infinito
+    _opStatsLoaded: new Set(),
+
     loadOpStatsBatch: async function () {
-        // Raccogli tutti i placeholder visibili
         const placeholders = this.dom.grid.querySelectorAll('.op-badge-placeholder[data-op-commessa]');
         if (!placeholders.length) return;
 
-        const ids = Array.from(placeholders).map(el => parseInt(el.dataset.opCommessa)).filter(id => !isNaN(id));
+        // Filtra solo i placeholder non ancora risolti
+        const ids = Array.from(placeholders)
+            .map(el => parseInt(el.dataset.opCommessa))
+            .filter(id => !isNaN(id) && !this._opStatsLoaded.has(id));
         if (!ids.length) return;
+
+        ids.forEach(id => this._opStatsLoaded.add(id));
 
         try {
             const res = await apiFetch('/api/commesse/op-stats', {
@@ -858,35 +843,25 @@ const App = {
 
             const statsMap = await res.json();
 
-            // Aggiorna ogni badge placeholder
             placeholders.forEach(el => {
-                const cId = el.dataset.opCommessa;
+                const cId = parseInt(el.dataset.opCommessa);
+                if (!ids.includes(cId)) return; // Salta quelli non in questo batch
                 const stats = statsMap[cId] || { open: 0, closed: 0 };
-                const open = stats.open;
-                const closed = stats.closed;
+                const { open, closed } = stats;
                 const total = open + closed;
 
                 let badgeHtml;
                 if (open > 0) {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">
-                        ⚙️ <b>${open}</b> / ${total} OP
-                    </a>`;
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
                 } else if (closed > 0) {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
-                        ✅ ${closed} OP
-                    </a>`;
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">✅ ${closed} OP</a>`;
                 } else {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
-                        ⚙️ 0 OP
-                    </a>`;
+                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
                 }
-
                 el.innerHTML = badgeHtml;
             });
-
-            console.log(`🏷️ OP Stats aggiornati per ${ids.length} commesse`);
         } catch (e) {
-            console.warn("OP Stats async load fallito (non bloccante):", e.message);
+            console.warn('OP Stats load fallito (non bloccante):', e.message);
         }
     },
 
@@ -1015,8 +990,6 @@ const App = {
             this.dom.fullImage.src = "";
         }
     },
-
-    // --- MODALE CREAZIONE / MODIFICA ---
 
     // --- MODALE CREAZIONE / MODIFICA ---
 
@@ -1292,18 +1265,49 @@ const App = {
 };
 
 // ==========================================
-// [NEW] GEOLOCALIZZAZIONE LOGIC
+// GEOLOCALIZZAZIONE LOGIC
 // ==========================================
 let map = null;
 let currentMarker = null;
 
-// FIX: Leaflet default marker icons path (locale)
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'img/marker-icon-2x.png',
-    iconUrl: 'img/marker-icon.png',
-    shadowUrl: 'img/marker-shadow.png',
-});
+// Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
+// Risparmia ~198KB di parsing JS/CSS dal critical path di caricamento pagina.
+let _leafletLoadPromise = null;
+function loadLeafletLazy() {
+    if (_leafletLoadPromise) return _leafletLoadPromise;
+    _leafletLoadPromise = new Promise((resolve) => {
+        if (typeof L !== 'undefined') { resolve(); return; }
+        const link = document.createElement('link');
+        link.rel  = 'stylesheet';
+        link.href = 'css/libs/leaflet.css';
+        document.head.appendChild(link);
+        const script = document.createElement('script');
+        script.src = 'js/libs/leaflet.min.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+    });
+    return _leafletLoadPromise;
+}
+
+// SVG inline per il marker: non dipende da PNG esterni che Leaflet non riesce a
+// risolvere in contesto vanilla (no bundler). Creato lazy al primo utilizzo.
+let _leafletMarkerIcon = null;
+function getMarkerIcon() {
+    if (!_leafletMarkerIcon && typeof L !== 'undefined') {
+        _leafletMarkerIcon = L.divIcon({
+            className: '',
+            html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
+                <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
+                      fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
+                <circle cx="12.5" cy="12.5" r="5" fill="white"/>
+            </svg>`,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
+    }
+    return _leafletMarkerIcon;
+}
 
 function setupGeocodingControls() {
     const btnCalc = document.getElementById('btn-calc-geo');
@@ -1320,40 +1324,29 @@ function setupGeocodingControls() {
             const prov = document.getElementById('provincia').value;
 
             if (!city) {
-                showModal({ title: "Attenzione", message: "Inserisci almeno il Luogo (Città) per calcolare le coordinate." });
+                showModal({ title: 'Attenzione', message: 'Inserisci almeno il Luogo (Città) per calcolare le coordinate.' });
                 return;
             }
 
-            // Show loading state on button
             const originalText = btnCalc.innerHTML;
-            btnCalc.innerHTML = "<span>⏳...</span>";
+            btnCalc.innerHTML = '<span>⏳...</span>';
             btnCalc.disabled = true;
 
             try {
-                const token = localStorage.getItem('access_token');
-                // Fix: apiFetch handles base URL internally. Use relative path.
                 const url = `/api/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
-
                 const response = await apiFetch(url, { method: 'GET' });
-                // apiFetch already handles auth, but we need strictly GET here. 
-                // Note: apiFetch usually returns the response object.
 
                 if (response.ok) {
                     const data = await response.json();
                     const newLatLng = [data.lat, data.lon];
 
-                    // Apri Modale Mappa per Conferma
                     if (mapModal) mapModal.style.display = 'block';
                     if (mapOverlay) mapOverlay.style.display = 'block';
 
-                    // Inizializza/Aggiorna Mappa con i nuovi dati
+                    await loadLeafletLazy();
                     setTimeout(() => {
-                        if (!map) {
-                            initMap();
-                        } else {
-                            map.invalidateSize();
-                        }
-                        // Forza vista e marker sui dati calcolati (senza toccare ancora gli input)
+                        if (!map) initMap();
+                        else map.invalidateSize();
                         map.setView(newLatLng, 15);
                         placeMarker(newLatLng);
                     }, 100);
@@ -1377,14 +1370,11 @@ function setupGeocodingControls() {
 
     // 2. MAPPA INTERATTIVA
     if (btnMap) {
-        btnMap.addEventListener('click', () => {
+        btnMap.addEventListener('click', async () => {
             if (mapModal) mapModal.style.display = 'block';
             if (mapOverlay) mapOverlay.style.display = 'block';
-
-            // Inizializza mappa solo se visibile
-            setTimeout(() => {
-                initMap();
-            }, 100);
+            await loadLeafletLazy();
+            setTimeout(() => initMap(), 100);
         });
     }
 
@@ -1459,11 +1449,8 @@ function placeMarker(latlng) {
     if (currentMarker) {
         currentMarker.setLatLng(latlng);
     } else {
-        currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
-        currentMarker.on('dragend', function (event) {
-            const position = event.target.getLatLng();
-            updateCoordsDisplay(position);
-        });
+        currentMarker = L.marker(latlng, { icon: getMarkerIcon(), draggable: true }).addTo(map);
+        currentMarker.on('dragend', ev => updateCoordsDisplay(ev.target.getLatLng()));
     }
     updateCoordsDisplay(latlng);
 }
@@ -1492,15 +1479,11 @@ function setupGeoMapControls() {
     const btnCloseGeo = document.getElementById('closeGeoMapBtn');
 
     if (btnOpenGeoMap) {
-        btnOpenGeoMap.addEventListener('click', () => {
+        btnOpenGeoMap.addEventListener('click', async () => {
             if (geoModal) geoModal.style.display = 'block';
             if (geoOverlay) geoOverlay.style.display = 'block';
-
-            // Init Map after transition
-            setTimeout(() => {
-                initGeoMap();
-                loadGeoMapData();
-            }, 200);
+            await loadLeafletLazy();
+            setTimeout(() => { initGeoMap(); loadGeoMapData(); }, 200);
         });
     }
 
@@ -1601,19 +1584,22 @@ function renderGeoMapMarkers(list) {
 
     const bounds = L.latLngBounds();
 
-    const defaultIcon = new L.Icon.Default();
-    const orangeIcon = new L.Icon({
-        iconUrl: 'img/marker-icon-orange.png',
-        shadowUrl: 'img/marker-shadow.png',
+    // Icona arancione per posizioni approssimative (SVG inline, no PNG esterni)
+    const orangeIcon = L.divIcon({
+        className: '',
+        html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
+            <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
+                  fill="#e67e22" stroke="#d35400" stroke-width="1.5"/>
+            <circle cx="12.5" cy="12.5" r="5" fill="white"/>
+        </svg>`,
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowSize: [41, 41]
     });
 
     list.forEach(c => {
         if (c.latitudine && c.longitudine) {
-            const markerOptions = c.posizione_esatta ? {} : { icon: orangeIcon };
+            const markerOptions = c.posizione_esatta ? { icon: getMarkerIcon() } : { icon: orangeIcon };
             const marker = L.marker([c.latitudine, c.longitudine], markerOptions);
 
             // Build Popup
@@ -1747,7 +1733,8 @@ function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
             setTimeout(() => {
                 if (geoMarkersLayer) {
                     const highlightMarker = L.marker([lat, lon], {
-                        zIndexOffset: 1000 // Ensure it's on top
+                        icon: getMarkerIcon(),
+                        zIndexOffset: 1000
                     }).addTo(geoMap);
 
                     let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
