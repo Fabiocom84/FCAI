@@ -678,14 +678,6 @@ const App = {
         if (typeof L === 'undefined') { console.error('Leaflet non caricato'); return; }
         if (_map) { _map.invalidateSize(); this._updateMapFromInputs(); return; }
 
-        // Fix per l'icona di default di Leaflet
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-            iconRetinaUrl: 'img/marker-icon-2x.png',
-            iconUrl: 'img/marker-icon.png',
-            shadowUrl: 'img/marker-shadow.png',
-        });
-
         _map = L.map('mapContainer').setView([41.8719, 12.5674], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19, attribution: '© OpenStreetMap'
@@ -703,12 +695,31 @@ const App = {
         }
     },
 
+
+    // SVG inline: elimina la dipendenza dai PNG di Leaflet (non risolvibili in contesto vanilla)
+    _getMarkerIcon() {
+        if (!this._markerIcon) {
+            this._markerIcon = L.divIcon({
+                className: '',
+                html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
+                    <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
+                          fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
+                    <circle cx="12.5" cy="12.5" r="5" fill="white"/>
+                </svg>`,
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+            });
+        }
+        return this._markerIcon;
+    },
+
     _placeMarker(latlng) {
         if (!_map) return;
         if (_currentMarker) {
             _currentMarker.setLatLng(latlng);
         } else {
-            _currentMarker = L.marker(latlng, { draggable: true }).addTo(_map);
+            _currentMarker = L.marker(latlng, { icon: this._getMarkerIcon(), draggable: true }).addTo(_map);
             _currentMarker.on('dragend', (ev) => this._updateCoordsDisplay(ev.target.getLatLng()));
         }
         this._updateCoordsDisplay(latlng);
