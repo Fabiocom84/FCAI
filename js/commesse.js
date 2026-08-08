@@ -118,10 +118,10 @@ const App = {
             }
         }
 
-        // 2. Fetch metadati freschi + card commesse IN PARALLELO.
-        // Non si aspetta mai l'uno prima dell'altro: il render delle card
-        // usa i metadati della cache (se presenti) o i fallback hardcoded inline.
-        const metadataPromise = apiFetch('/api/commesse/init-data')
+        // 2. Fetch metadati freschi in background (non bloccante).
+        // Non si usa await: se Cloud Run è in cold start, questa richiesta
+        // non congela il caricamento delle card che hanno il proprio loader visibile.
+        apiFetch('/api/commesse/init-data')
             .then(res => res.json())
             .then(data => {
                 this._applyMetadata(data);
@@ -134,7 +134,8 @@ const App = {
             })
             .catch(e => console.warn('Fetch metadati fallita (non bloccante):', e));
 
-        await Promise.all([metadataPromise, this.fetchCommesse(true)]);
+        // 3. Carica le card: questa è l'unica fetch bloccante, gestisce il loader visibile.
+        await this.fetchCommesse(true);
     },
 
     // Applica i metadati allo state e inizializza i componenti dipendenti

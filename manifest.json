@@ -10,9 +10,15 @@
   "icons": [
     {
       "src": "img/logo.png",
-      "sizes": "any",
+      "sizes": "315x114",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
