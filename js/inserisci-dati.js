@@ -300,12 +300,17 @@ async function loadOrphanNotes() {
     if (!section || !list) return;
 
     try {
-        // Usa endpoint dedicato che filtra correttamente per IS NULL
         const res = await apiFetch('/api/registrazioni/orfane');
-        if (!res.ok) return;
+
+        if (!res.ok) {
+            // Log esplicito per diagnostica (visibile in DevTools → Console)
+            const errBody = await res.text().catch(() => '(nessun body)');
+            console.warn(`[Note Orfane] Endpoint ha risposto ${res.status}: ${errBody}`);
+            return;
+        }
 
         const data = await res.json();
-        const notes = data.data || [];
+        const notes = Array.isArray(data) ? data : (data.data || []);
 
         if (notes.length === 0) {
             section.style.display = 'none';
@@ -322,7 +327,7 @@ async function loadOrphanNotes() {
         });
 
     } catch (error) {
-        console.error('Errore caricamento note orfane:', error);
+        console.error('[Note Orfane] Errore caricamento:', error);
     }
 }
 
