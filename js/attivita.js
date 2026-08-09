@@ -1035,90 +1035,29 @@ const TaskApp = {
                 }
             };
 
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
-    },
-
-    // =================================================================
-    // == FILTRO COMMESSA DA URL (?commessa_id=X)                      ==
+        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento arc    // =================================================================
+    // == APERTURA DIRETTA TASK DA URL (?commessa_id=X)               ==
     // =================================================================
 
     highlightCommessaTasks: function (commessaId) {
         const cId = String(commessaId);
 
-        // Trova tutte le task nei dati flat che appartengono a questa commessa
+        // Trova la task corrispondente alla commessa in tutti i bucket del board
         const allTasks = [
             ...this.state.boardData.todo,
             ...this.state.boardData.doing,
             ...this.state.boardData.review,
             ...this.state.boardData.done
         ];
-        const matchingIds = new Set(
-            allTasks
-                .filter(t => String(t.id_commessa_fk) === cId)
-                .map(t => String(t.id_task))
-        );
 
-        if (matchingIds.size === 0) return; // Nessuna task → niente da evidenziare
+        const matchingTask = allTasks.find(t => String(t.id_commessa_fk) === cId);
 
-        // Recupera il nome commessa per il banner
-        const sampleTask = allTasks.find(t => String(t.id_commessa_fk) === cId);
-        const commessaLabel = sampleTask?.commessa
-            ? `${sampleTask.commessa.codice_commessa || ''} ${sampleTask.commessa.impianto || ''}`.trim()
-            : `Commessa #${cId}`;
+        if (!matchingTask) return; // Nessuna task associata → non fare nulla
 
-        // --- BANNER AVVISO ---
-        const existingBanner = document.getElementById('commessa-filter-banner');
-        if (existingBanner) existingBanner.remove();
-
-        const banner = document.createElement('div');
-        banner.id = 'commessa-filter-banner';
-        banner.style.cssText = `
-            background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px;
-            padding: 8px 16px; margin-bottom: 12px; display: flex;
-            align-items: center; justify-content: space-between; gap: 12px;
-            font-size: 0.9em; color: #3730a3; flex-shrink: 0;
-        `;
-        banner.innerHTML = `
-            <span>📋 Filtro attivo: <strong>${commessaLabel}</strong> — ${matchingIds.size} task associate evidenziate</span>
-            <button id="clearCommessaFilter" style="background:#3730a3; color:white; border:none; border-radius:5px; padding:4px 12px; cursor:pointer; font-size:0.85em;">
-                Mostra tutte
-            </button>
-        `;
-
-        // Inserisce il banner sopra il board
-        const boardWrapper = this.dom.taskView.parentElement;
-        boardWrapper.insertBefore(banner, this.dom.taskView);
-
-        document.getElementById('clearCommessaFilter').addEventListener('click', () => {
-            this.state.urlCommessaId = null;
-            banner.remove();
-            // Ripristina tutte le card alla visibilità normale
-            document.querySelectorAll('.task-card').forEach(card => {
-                card.style.outline = '';
-                card.style.opacity = '';
-            });
-        });
-
-        // --- EVIDENZIA / ATTENUA CARD ---
-        let firstCard = null;
-        document.querySelectorAll('.task-card').forEach(card => {
-            const taskId = String(card.dataset.taskId);
-            if (matchingIds.has(taskId)) {
-                card.style.outline = '2px solid #3F51B5';
-                card.style.boxShadow = '0 0 0 3px rgba(63,81,181,0.15)';
-                if (!firstCard) firstCard = card;
-            } else {
-                card.style.opacity = '0.35';
-            }
-        });
-
-        // Scrolla alla prima card evidenziata
-        if (firstCard) {
-            setTimeout(() => {
-                firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-        }
+        // Apre direttamente il pannello dettaglio sulla destra
+        this.renderInspectorView(matchingTask.id_task);
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => TaskApp.init());
+ntListener('DOMContentLoaded', () => TaskApp.init());
