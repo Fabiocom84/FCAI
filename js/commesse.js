@@ -562,7 +562,7 @@ const App = {
             if (canViewBadge) {
                 // Placeholder grigio con data attribute — verrà aggiornato da loadOpStatsBatch
                 opBadge = `<span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}">
-                    <a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
                         ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
                     </a>
                 </span>`;
@@ -853,11 +853,11 @@ const App = {
 
                 let badgeHtml;
                 if (open > 0) {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
                 } else if (closed > 0) {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">✅ ${closed} OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">✅ ${closed} OP</a>`;
                 } else {
-                    badgeHtml = `<a href="registro-ordini.html" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
                 }
                 el.innerHTML = badgeHtml;
             });

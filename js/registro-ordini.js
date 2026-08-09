@@ -5,7 +5,9 @@ const App = {
     data: {
         allOrders: [],
         filteredOrders: [],
-        currentOrder: null
+        currentOrder: null,
+        // Parametro URL: pre-filtra su una commessa specifica all'apertura
+        urlCommessaId: new URLSearchParams(window.location.search).get('commessa_id') || null
     },
 
     // Helper: etichetta commessa standard (4 campi)
@@ -77,6 +79,21 @@ const App = {
             this.data.allOrders = await res.json();
 
             this.populateCommessaFilter();
+
+            // Se arrivati da commesse.html con ?commessa_id=X, pre-imposta il filtro
+            if (this.data.urlCommessaId) {
+                const select = document.getElementById('commessaFilter');
+                // Trova l'option il cui data-id corrisponde o cerca nell'oggetto dati
+                const matchingOrder = this.data.allOrders.find(
+                    o => String(o.id_commessa) === String(this.data.urlCommessaId)
+                );
+                if (matchingOrder) {
+                    const label = this.buildCommessaLabel(matchingOrder.commesse);
+                    // Imposta il valore del select sulla label trovata
+                    select.value = label;
+                }
+            }
+
             this.applyFilters();
 
         } catch (e) {
