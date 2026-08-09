@@ -763,7 +763,8 @@ textarea:focus {
 }
 
 /* Custom Modals */
-#custom-modal-overlay {
+#custom-modal-overlay,
+#universal-modal-overlay {
     z-index: 1000;
     background-color: rgba(0, 0, 0, 0.65);
     display: flex;

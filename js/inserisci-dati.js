@@ -373,6 +373,7 @@ function createOrphanNoteCard(note) {
 
     // Pulsante Associa
     const btn = document.createElement('button');
+    btn.type = 'button';  // Evita submit del form genitore
     btn.className = 'orphan-associate-btn';
     btn.textContent = '✓ Associa';
     btn.addEventListener('click', () => associateNote(note.id_registrazione, select, card));
@@ -380,6 +381,7 @@ function createOrphanNoteCard(note) {
 
     // Pulsante Elimina
     const delBtn = document.createElement('button');
+    delBtn.type = 'button';  // Evita submit del form genitore
     delBtn.className = 'orphan-delete-btn';
     delBtn.textContent = '🗑';
     delBtn.title = 'Elimina nota';
