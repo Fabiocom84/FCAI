@@ -12,12 +12,16 @@ export function showModal(options) {
         const titleEl = document.getElementById('universal-modal-title');
         const messageEl = document.getElementById('universal-modal-message');
         const buttonsEl = document.getElementById('universal-modal-buttons');
-        const headerEl = modal.querySelector('.modal-header') || titleEl.parentElement; // Fallback
 
-        if (!modal || !overlay) {
-            console.error("Elementi del modale custom non trovati.");
-            return resolve(false);
+        // Guard PRIMA di usare modal.querySelector — evita crash se markup mancante
+        if (!modal || !overlay || !titleEl || !messageEl || !buttonsEl) {
+            console.error('[showModal] Elementi del modale universale non trovati nel DOM.');
+            // Fallback: usa confirm nativo del browser
+            const ok = window.confirm((options.title ? options.title + '\n' : '') + (options.message || ''));
+            return resolve(ok);
         }
+
+        const headerEl = modal.querySelector('.modal-header') || titleEl.parentElement;
 
         // 1. Reset Stili Base
         if (headerEl !== modal) {
