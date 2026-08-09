@@ -736,6 +736,9 @@ const App = {
                             <a href="${linkReg}" class="btn-registrazioni" style="flex:1; text-align:center;">
                                 <img src="img/table.png" style="width:16px; opacity:0.8;">
                                 Reg.
+                            </a>
+                            <a href="attivita.html?commessa_id=${c.id_commessa}" class="btn-registrazioni" style="flex:1; text-align:center; background:#eef2ff;" onclick="event.stopPropagation()" title="Vai alla task di questa commessa">
+                                📋 Attività
                             </a>` : ''}
                             
                             ${adminActions}
