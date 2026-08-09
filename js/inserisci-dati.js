@@ -251,7 +251,14 @@ async function handleFormSubmit(e) {
 
         showSuccessFeedbackModal("Dati Salvati!", "Il contenuto è stato archiviato.", null);
 
-        setTimeout(() => { window.location.href = "index.html"; }, 1500);
+        // Reset del form per permettere un nuovo inserimento senza redirect
+        document.getElementById('voiceTranscription').value = '';
+        document.getElementById('fileUpload').value = '';
+        document.querySelector('.file-name').textContent = 'Nessun file selezionato';
+        // Ricarica le note orfane (potrebbe essersi aggiunta una nuova nota senza commessa)
+        loadOrphanNotes();
+        btn.disabled = false;
+        btn.innerHTML = originalBtnContent;
 
     } catch (error) {
         console.error("Errore salvataggio:", error);
