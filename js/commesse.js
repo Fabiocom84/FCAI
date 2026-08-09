@@ -401,14 +401,7 @@ const App = {
                 const isDone = c.status_commessa?.nome_status?.toLowerCase().includes('complet')
                             || c.status_commessa?.nome_status?.toLowerCase().includes('annullat');
 
-                let mannAdminActions = '';
-                if (IsAdmin) {
-                    mannAdminActions = `
-                        <div class="admin-actions" style="display:flex;gap:6px;margin-top:4px;">
-                            <button class="std-btn std-btn--warning mann-edit-btn" data-id="${c.id_commessa}" style="padding:5px 10px;font-size:0.8em;" onclick="event.stopPropagation()">✏️</button>
-                            <button class="std-btn std-btn--danger del-btn" data-id="${c.id_commessa}" style="padding:5px 10px;font-size:0.8em;" onclick="event.stopPropagation()">🗑️</button>
-                        </div>`;
-                }
+                let mannAdminActions = ''; // Edit/Delete ora integrati nella riga 3 del footer
 
                 // Stato admin: select dropdown (coerente con COMPLETA)
                 const mannStatusBadge = IsAdmin
@@ -451,7 +444,9 @@ const App = {
                         ${c.note ? `<div class="commessa-note" style="margin:8px 0;padding:7px 10px;background:#fff3e0;border-left:3px solid #e67e22;font-size:0.79em;color:#666;border-radius:0 4px 4px 0;"><strong>Note:</strong> ${c.note}</div>` : ''}
 
                         <div class="card-footer-actions">
-                            <div style="display:flex;gap:8px;margin-bottom:6px;">
+
+                            <!-- RIGA 1: DETTAGLIO + ORE -->
+                            <div style="display:flex;gap:8px;margin-bottom:8px;">
                                 <a href="manutenzioni.html?selected=${c.id_commessa}" class="std-btn std-btn--secondary" style="flex:1;padding:8px;font-size:0.85em;text-decoration:none;text-align:center;" onclick="event.stopPropagation()">
                                     🔧 Dettaglio
                                 </a>
@@ -459,9 +454,39 @@ const App = {
                                     ⏱️ Ore
                                 </a>
                             </div>
-                            <div style="display:flex;justify-content:flex-end;">
-                                ${mannAdminActions}
-                            </div>
+
+                            <!-- RIGA 2: OP BADGE - piena larghezza (admin + impiegato) -->
+                            ${(IsAdmin || (() => {
+                                if (!CurrentUser || IsAdmin) return false;
+                                let r = '';
+                                if (CurrentUser.ruoli) {
+                                    if (Array.isArray(CurrentUser.ruoli) && CurrentUser.ruoli.length > 0) r = CurrentUser.ruoli[0].nome_ruolo;
+                                    else if (typeof CurrentUser.ruoli === 'object') r = CurrentUser.ruoli.nome_ruolo;
+                                }
+                                if ((!r || r === 'Nessuno') && CurrentUser.ruolo) r = CurrentUser.ruolo;
+                                return r && r.trim().toLowerCase() === 'impiegato';
+                            })()) ? `
+                            <div style="margin-bottom:8px; width:100%;">
+                                <span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}" style="display:block; width:100%;">
+                                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:#ecf0f1; color:#95a5a6; font-size:0.82em; padding:6px 8px; border-radius:4px; border:1px solid #bdc3c7; text-decoration:none;" onclick="event.stopPropagation()">
+                                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                                    </a>
+                                </span>
+                            </div>` : ''}
+
+                            <!-- RIGA 3: 4 bottoni uguali (solo admin) -->
+                            ${IsAdmin ? `
+                            <div style="display:flex;gap:6px;width:100%;">
+                                <a href="gestione.html?view=registrazioni&filterKey=id_commessa_fk&filterValue=${c.id_commessa}" class="btn-registrazioni" style="flex:1;text-align:center;padding:6px 4px;font-size:0.8em;" onclick="event.stopPropagation()">
+                                    <img src="img/table.png" style="width:14px;opacity:0.8;vertical-align:middle;"> Reg.
+                                </a>
+                                <a href="attivita.html?commessa_id=${c.id_commessa}" class="btn-registrazioni" style="flex:1;text-align:center;background:#eef2ff;padding:6px 4px;font-size:0.8em;" onclick="event.stopPropagation()" title="Gestione Attività di questa manutenzione">
+                                    📋 Attività
+                                </a>
+                                <button class="std-btn std-btn--warning mann-edit-btn" data-id="${c.id_commessa}" style="flex:1;padding:6px 4px;font-size:0.8em;" onclick="event.stopPropagation()">✏️</button>
+                                <button class="std-btn std-btn--danger del-btn" data-id="${c.id_commessa}" style="flex:1;padding:6px 4px;font-size:0.8em;" onclick="event.stopPropagation()">🗑️</button>
+                            </div>` : ''}
+
                         </div>
                     </div>`;
 
