@@ -718,31 +718,38 @@ const App = {
 
                     <div class="card-footer-actions">
                         
-                        <!-- QUICK ACTIONS (Visible to All) -->
-                        <div class="quick-actions" style="display:flex; gap:10px; margin-bottom:10px;">
+                        <!-- RIGA 1: MAPPA + ORE -->
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
                              <button class="std-btn ${c.posizione_esatta ? 'std-btn--blue' : 'std-btn--orange'}" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}, '${encodeURIComponent(c.impianto || 'Impianto')}', '${encodeURIComponent(c.clienti?.ragione_sociale || '')}'); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;" title="${c.posizione_esatta ? 'Posizione Esatta' : 'Posizione Approssimativa'}">
-                                ${c.posizione_esatta ? '🗺️ Mappa' : '⚠️ Mappa'}
+                                 ${c.posizione_esatta ? '🗺️ Mappa' : '⚠️ Mappa'}
                              </button>
-                             <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none;">
+                             <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none; text-align:center;">
                                 ⏱️ Ore
                              </a>
                         </div>
                         
-                        <!-- NEW OP BADGE & OTHER ACTIONS -->
-                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:5px;">
-                            ${opBadge}
-                            
-                            ${IsAdmin ? `
-                            <a href="${linkReg}" class="btn-registrazioni" style="flex:1; text-align:center;">
-                                <img src="img/table.png" style="width:16px; opacity:0.8;">
-                                Reg.
+                        <!-- RIGA 2: OP BADGE - piena larghezza -->
+                        ${canViewBadge ? `
+                        <div style="margin-bottom:8px; width:100%;" id="op-row-${c.id_commessa}">
+                            <span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}" style="display:block; width:100%;">
+                                <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:6px 8px; border-radius:4px; border:1px solid #bdc3c7; text-decoration:none;" onclick="event.stopPropagation()">
+                                    ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                                </a>
+                            </span>
+                        </div>` : ''}
+
+                        <!-- RIGA 3: 4 bottoni uguali (solo admin) -->
+                        ${IsAdmin ? `
+                        <div style="display:flex; gap:6px; width:100%;">
+                            <a href="${linkReg}" class="btn-registrazioni" style="flex:1; text-align:center; padding:6px 4px; font-size:0.8em;" onclick="event.stopPropagation()">
+                                <img src="img/table.png" style="width:14px; opacity:0.8; vertical-align:middle;"> Reg.
                             </a>
-                            <a href="attivita.html?commessa_id=${c.id_commessa}" class="btn-registrazioni" style="flex:1; text-align:center; background:#eef2ff;" onclick="event.stopPropagation()" title="Vai alla task di questa commessa">
+                            <a href="attivita.html?commessa_id=${c.id_commessa}" class="btn-registrazioni" style="flex:1; text-align:center; background:#eef2ff; padding:6px 4px; font-size:0.8em;" onclick="event.stopPropagation()" title="Gestione Attività di questa commessa">
                                 📋 Attività
-                            </a>` : ''}
-                            
-                            ${adminActions}
-                        </div>
+                            </a>
+                            <button class="std-btn std-btn--warning edit-btn" data-id="${c.id_commessa}" style="flex:1; padding:6px 4px; font-size:0.8em;" onclick="event.stopPropagation()">✏️</button>
+                            <button class="std-btn std-btn--danger del-btn" data-id="${c.id_commessa}" style="flex:1; padding:6px 4px; font-size:0.8em;" onclick="event.stopPropagation()">🗑️</button>
+                        </div>` : ''}
 
                     </div>
                 </div>
@@ -855,12 +862,13 @@ const App = {
                 const total = open + closed;
 
                 let badgeHtml;
+                const FULL_W = 'display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; font-size:0.82em; padding:6px 8px; border-radius:4px; text-decoration:none;';
                 if (open > 0) {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#e67e22; color:white; font-size:0.8em; padding:5px 10px; text-decoration:none; display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#e67e22; color:white;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
                 } else if (closed > 0) {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#e8f8f5; color:#27ae60; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #27ae60; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">✅ ${closed} OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#e8f8f5; color:#27ae60; border:1px solid #27ae60;" onclick="event.stopPropagation()">✅ ${closed} OP chiusi</a>`;
                 } else {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#ecf0f1; color:#95a5a6; border:1px solid #bdc3c7;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
                 }
                 el.innerHTML = badgeHtml;
             });
