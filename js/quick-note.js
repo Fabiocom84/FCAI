@@ -224,7 +224,10 @@ async function saveOnline(text, hasAudio, commessaId) {
         body: saveForm
     });
 
-    if (!res.ok) throw new Error('Salvataggio fallito');
+    if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(errBody.error || `Salvataggio fallito (${res.status})`);
+    }
 
     showToast('Nota salvata ✓', 'success');
 }
