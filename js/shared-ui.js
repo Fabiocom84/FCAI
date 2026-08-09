@@ -92,7 +92,7 @@ export function showSuccessFeedbackModal(title, message, parentModalId) {
     feedbackModal.style.display = 'block';
     if (modalOverlay) modalOverlay.style.display = 'block';
 
-    let seconds = 2;
+    let seconds = 1;
     const countdownElement = feedbackModal.querySelector('#feedback-modal-countdown');
     countdownElement.textContent = `Questo messaggio si chiuderà tra ${seconds} secondi...`;
 
@@ -102,7 +102,7 @@ export function showSuccessFeedbackModal(title, message, parentModalId) {
         if (seconds <= 0) clearInterval(countdownInterval);
     }, 1000);
 
-    closeTimeout = setTimeout(closeSuccessFeedbackModal, 2000);
+    closeTimeout = setTimeout(closeSuccessFeedbackModal, 1000);
 
     feedbackModal.querySelector('#feedback-modal-close-btn').onclick = closeSuccessFeedbackModal;
     feedbackModal.querySelector('[data-close-feedback]').onclick = closeSuccessFeedbackModal;
