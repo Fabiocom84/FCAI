@@ -299,27 +299,30 @@ async function loadOrphanNotes() {
     const countEl = document.getElementById('orphanCount');
     if (!section || !list) return;
 
+    // Mostra sempre la sezione (anche vuota)
+    section.style.display = 'block';
+    list.innerHTML = '<div class="orphan-empty">⏳ Caricamento...</div>';
+
     try {
         const res = await apiFetch('/api/registrazioni/orfane');
 
         if (!res.ok) {
-            // Log esplicito per diagnostica (visibile in DevTools → Console)
             const errBody = await res.text().catch(() => '(nessun body)');
             console.warn(`[Note Orfane] Endpoint ha risposto ${res.status}: ${errBody}`);
+            list.innerHTML = '<div class="orphan-empty">⚠️ Errore caricamento note</div>';
             return;
         }
 
         const data = await res.json();
         const notes = Array.isArray(data) ? data : (data.data || []);
 
+        countEl.textContent = notes.length;
+        list.innerHTML = '';
+
         if (notes.length === 0) {
-            section.style.display = 'none';
+            list.innerHTML = '<div class="orphan-empty">✅ Nessuna nota in attesa di associazione</div>';
             return;
         }
-
-        countEl.textContent = notes.length;
-        section.style.display = 'block';
-        list.innerHTML = '';
 
         notes.forEach(note => {
             const card = createOrphanNoteCard(note);
@@ -328,6 +331,7 @@ async function loadOrphanNotes() {
 
     } catch (error) {
         console.error('[Note Orfane] Errore caricamento:', error);
+        list.innerHTML = '<div class="orphan-empty">⚠️ Errore: ' + error.message + '</div>';
     }
 }
 
@@ -453,11 +457,12 @@ function removeOrphanCard(cardEl) {
         cardEl.remove();
 
         const countEl = document.getElementById('orphanCount');
+        const list = document.getElementById('orphanNotesList');
         const remaining = document.querySelectorAll('.orphan-note-card').length;
         countEl.textContent = remaining;
 
         if (remaining === 0) {
-            document.getElementById('orphanNotesSection').style.display = 'none';
+            list.innerHTML = '<div class="orphan-empty">✅ Nessuna nota in attesa di associazione</div>';
         }
     }, 300);
 }
