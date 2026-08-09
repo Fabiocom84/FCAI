@@ -423,11 +423,10 @@ async function associateNote(noteId, selectEl, cardEl) {
 
 async function deleteOrphanNote(noteId, cardEl) {
     const confirmed = await showModal({
-        title: 'Conferma Eliminazione',
-        message: 'Vuoi eliminare questa nota? L\'azione è irreversibile.',
-        confirmText: 'Elimina',
-        cancelText: 'Annulla',
-        type: 'error'
+        title: 'Elimina Nota',
+        message: "Sei sicuro? L'operazione è irreversibile.",
+        confirmText: 'ELIMINA',
+        cancelText: 'Annulla'
     });
 
     if (!confirmed) return;

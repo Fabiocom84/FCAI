@@ -1620,6 +1620,8 @@ body.internal-page {
     color: #2c3e50;
     font-size: 1.5rem;
     font-weight: 600;
+    text-transform: none;      /* Sovrascrive h2 { text-transform: uppercase } globale */
+    letter-spacing: normal;
 }
 
 .universal-modal p {
