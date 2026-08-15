@@ -620,14 +620,25 @@ const App = {
         const mapModal   = document.getElementById('mapModal');
         const mapOverlay = document.getElementById('mapModalOverlay');
 
-        const openMap = async () => {
-            if (mapModal) { mapModal.style.display = 'flex'; }
-            if (mapOverlay) { mapOverlay.style.display = 'block'; }
-            await loadLeafletLazy();
-            setTimeout(() => this._initMap(), 120);
-        };
+        // openMap restituisce una Promise che si risolve solo dopo che Leaflet
+        // è caricato e la mappa è completamente inizializzata nel DOM.
+        const openMap = () => new Promise(resolve => {
+            if (mapModal)  mapModal.style.display  = 'flex';
+            if (mapOverlay) mapOverlay.style.display = 'block';
+            loadLeafletLazy().then(() => {
+                // Il contenitore diventa visibile solo ora: aspettiamo un tick
+                // affinché il browser calcoli le dimensioni prima di init Leaflet.
+                setTimeout(() => {
+                    this._initMap();
+                    // _initMap è sincrono: dopo questo _map è garantito non-null
+                    if (_map) _map.invalidateSize();
+                    resolve();
+                }, 120);
+            });
+        });
+
         const closeMap = () => {
-            if (mapModal) mapModal.style.display = 'none';
+            if (mapModal)  mapModal.style.display  = 'none';
             if (mapOverlay) mapOverlay.style.display = 'none';
         };
 
@@ -647,16 +658,18 @@ const App = {
                     const res = await apiFetch(`/api/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov)}`);
                     if (res.ok) {
                         const d = await res.json();
-                        openMap();
-                        setTimeout(() => {
-                            if (_map) { _map.invalidateSize(); }
-                            const ll = [d.lat, d.lon];
-                            if (_map) _map.setView(ll, 15);
-                            this._placeMarker(ll);
-                            // Geocodifica = posizione approssimativa
-                            const chk = document.getElementById('posizione_esatta');
-                            if (chk) chk.checked = false;
-                        }, 150);
+                        // Prima apriamo la mappa e aspettiamo che sia pronta,
+                        // poi posizioniamo il marker — nessuna race condition.
+                        await openMap();
+                        const ll = [d.lat, d.lon];
+                        if (_map) {
+                            _map.setView(ll, 15);
+                            _map.invalidateSize();
+                        }
+                        this._placeMarker(ll);
+                        // Geocodifica = posizione approssimativa
+                        const chk = document.getElementById('posizione_esatta');
+                        if (chk) chk.checked = false;
                     } else {
                         showModal({ title: 'Non trovato', message: 'Impossibile trovare le coordinate per questo luogo.' });
                     }
