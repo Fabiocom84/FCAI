@@ -533,6 +533,12 @@ const MobileHoursApp = {
             this.dom.absFields.style.display = 'block';
             if (this.dom.prodTravelToggle) this.dom.prodTravelToggle.style.display = 'none';
             if (this.dom.hoursLabel) this.dom.hoursLabel.textContent = "Ore Assenza";
+            // Preseleziona "Permesso (Ore)" come default quando si entra nella tab
+            // in modalità creazione (non sovrascrive se stiamo modificando un record esistente)
+            if (this.dom.absType && !this.state.editMode) {
+                this.dom.absType.value = 'Permesso';
+                this.handleAbsencePreset('Permesso');
+            }
         }
 
         this.checkOvertimeLogic();
