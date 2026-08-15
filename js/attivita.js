@@ -1035,7 +1035,10 @@ const TaskApp = {
                 }
             };
 
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento arc    // =================================================================
+        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
+    },
+
+    // =================================================================
     // == APERTURA DIRETTA TASK DA URL (?commessa_id=X)               ==
     // =================================================================
 
@@ -1059,5 +1062,4 @@ const TaskApp = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => TaskApp.init());
-ntListener('DOMContentLoaded', () => TaskApp.init());
+document.addEventListener('DOMContentLoaded', () => TaskApp.init());
