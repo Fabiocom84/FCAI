@@ -1,6 +1,6 @@
 // js/manutenzioni.js — Logica pagina gestione manutenzioni
 import { apiFetch } from './api-client.js';
-import { IsAdmin, CurrentUser } from './core-init.js';
+import { IsAdmin, CurrentUser, HasAccessoImpiegato } from './core-init.js';
 
 const App = {
     state: {
@@ -16,10 +16,11 @@ const App = {
     dom: {},
 
     async init() {
-        // Verifica accesso: solo Admin o Impiegato
-        const ruolo = CurrentUser?.ruoli?.[0]?.nome_ruolo || CurrentUser?.ruolo || '';
-        const isImpiegato = ruolo.toLowerCase().trim() === 'impiegato';
-        if (!IsAdmin && !isImpiegato) {
+        // Verifica accesso: solo Admin o Impiegato.
+        // La derivazione del ruolo è centralizzata in core-init.js: la versione
+        // precedente leggeva `ruoli[0]`, ma la relazione è molti-a-uno e PostgREST
+        // restituisce un oggetto — quindi respingeva gli impiegati.
+        if (!HasAccessoImpiegato) {
             window.location.replace('index.html');
             return;
         }

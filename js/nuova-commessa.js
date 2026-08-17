@@ -1,6 +1,6 @@
 // js/nuova-commessa.js — Logica pagina creazione commessa standalone
 import { apiFetch } from './api-client.js';
-import { IsAdmin, CurrentUser } from './core-init.js';
+import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
 import { showModal } from './shared-ui.js';
 
 // Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
@@ -76,9 +76,10 @@ const App = {
 
         // Se non admin e tipo non locked come manutenzione → redirect
         if (!IsAdmin) {
-            const ruolo = CurrentUser?.ruoli?.[0]?.nome_ruolo || CurrentUser?.ruolo || '';
-            const isImpiegato = ruolo.toLowerCase().trim() === 'impiegato';
-            if (!isImpiegato) {
+            // Ruolo derivato in core-init.js: la versione precedente leggeva
+            // `ruoli[0]`, che è sempre undefined essendo la relazione molti-a-uno,
+            // quindi respingeva anche gli impiegati legittimi.
+            if (!IsImpiegato) {
                 window.location.replace('index.html');
                 return;
             }

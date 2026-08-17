@@ -2,7 +2,7 @@
 
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
-import { IsAdmin, CurrentUser } from './core-init.js';
+import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
 
 const App = {
     state: {
@@ -72,10 +72,10 @@ const App = {
             // Mostra filtro tipo per admin
             if (this.dom.tipoFiltersGroup) this.dom.tipoFiltersGroup.style.display = 'flex';
         } else {
-            const ruolo = CurrentUser?.ruoli?.[0]?.nome_ruolo || CurrentUser?.ruolo || '';
-            const isImpiegato = ruolo.toLowerCase().trim() === 'impiegato';
             // Impiegato: mostra filtro tipo ma non il bottone +Aggiungi
-            if (isImpiegato && this.dom.tipoFiltersGroup) {
+            // (ruolo derivato una sola volta in core-init.js — la versione
+            // precedente leggeva `ruoli[0]` e non riconosceva mai l'impiegato)
+            if (IsImpiegato && this.dom.tipoFiltersGroup) {
                 this.dom.tipoFiltersGroup.style.display = 'flex';
             }
             // Nascondi deep search per non-admin
