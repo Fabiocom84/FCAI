@@ -4,6 +4,7 @@
 
 import { apiFetch, publicApiFetch } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
+import { TEMPLATE_PRESENZE_URL } from './config.js';
 
 const PrintPage = {
     state: {
@@ -386,7 +387,7 @@ const PrintPage = {
         try {
             // Carica template PDF e font Roboto in parallelo
             const [templateRes, fontRegRes, fontBoldRes] = await Promise.all([
-                fetch("https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf"),
+                fetch(TEMPLATE_PRESENZE_URL),
                 fetch("fonts/Roboto-Regular.ttf"),
                 fetch("fonts/Roboto-Bold.ttf")
             ]);

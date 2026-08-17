@@ -1,7 +1,6 @@
 // js/manutenzioni.js — Logica pagina gestione manutenzioni
 import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser } from './core-init.js';
-import { supabase } from './supabase-client.js';
 
 const App = {
     state: {
@@ -133,48 +132,35 @@ const App = {
 
     },
 
-    // ── CARICA LISTA via RPC Supabase (ottimizzata con aggregazioni OdP + ore) ──
+    // ── CARICA LISTA dal backend ──
+    // Prima passava da una RPC Supabase diretta con questa chiamata come
+    // fallback. La RPC è stata rimossa (task 0.4): usava la anon key esposta nel
+    // frontend, ignorava i controlli di ruolo centralizzati nel backend e —
+    // essendo la chiave cablata sulla produzione — su staging leggeva i dati di
+    // produzione. L'endpoint verifica il ruolo con _check_manutenzione_access.
     async _loadList() {
         this.dom.listLoader.style.display = '';
         try {
-            // ── Supabase RPC diretta: get_manutenzioni_list ──
-            // Ritorna dati piatti compatibili con _renderList (ragione_sociale, nome_status,
-            // count_op, count_op_aperti, total_ore, ore_da_validare già aggregati server-side)
-            const { data, error } = await supabase.rpc('get_manutenzioni_list', {
-                p_include_completed: this.state.includeCompleted,
-                p_search_term: this.state.searchTerm || null
+            const params = new URLSearchParams({
+                include_completed: this.state.includeCompleted ? 'true' : 'false',
             });
+            if (this.state.searchTerm) params.set('search', this.state.searchTerm);
 
-            if (error) throw error;
+            const res = await apiFetch(`/api/manutenzioni/?${params}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (!Array.isArray(data)) throw new Error('Risposta non valida');
 
-            this.state.list = data || [];
+            this.state.list = data;
             this._renderList();
-
         } catch (e) {
-            console.error('Errore Supabase RPC get_manutenzioni_list:', e);
-            // ── Fallback: backend API ──
-            try {
-                const params = new URLSearchParams({
-                    include_completed: this.state.includeCompleted ? 'true' : 'false',
-                });
-                if (this.state.searchTerm) params.set('search', this.state.searchTerm);
-
-                const res = await apiFetch(`/api/manutenzioni/?${params}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (!Array.isArray(data)) throw new Error('Risposta non valida');
-
-                this.state.list = data;
-                this._renderList();
-            } catch (fallbackErr) {
-                console.error('Errore fallback _loadList:', fallbackErr);
-                this.dom.list.innerHTML = `
-                    <div class="man-no-results">
-                        <div class="man-no-results-icon">❌</div>
-                        <p>Errore di caricamento</p>
-                        <small style="color:#999;">${fallbackErr.message}</small>
-                    </div>`;
-            }
+            console.error('Errore caricamento manutenzioni:', e);
+            this.dom.list.innerHTML = `
+                <div class="man-no-results">
+                    <div class="man-no-results-icon">❌</div>
+                    <p>Errore di caricamento</p>
+                    <small style="color:#999;">${e.message}</small>
+                </div>`;
         } finally {
             this.dom.listLoader.style.display = 'none';
         }
@@ -248,33 +234,11 @@ const App = {
         } catch (e) {
             console.error('Errore dettaglio manutenzione:', e);
         }
-
-        // ── OdP direttamente da Supabase (bypass bug backend id_registro → id) ──
-        // Caricamento asincrono indipendente: non blocca il render del dettaglio
-        this._loadOrdiniSupabase(id);
-    },
-
-    // ── Carica OdP via RPC Supabase (SECURITY DEFINER → bypassa RLS) ──
-    async _loadOrdiniSupabase(commessa_id) {
-        try {
-            const { data: op, error } = await supabase
-                .rpc('get_odp_for_commessa', { p_id_commessa: commessa_id });
-
-            if (error) {
-                console.warn('RPC OdP error:', error.message);
-                // Prova fallback query diretta (se RLS lo permette)
-                const { data: op2, error: err2 } = await supabase
-                    .from('registro_produzione')
-                    .select('id, numero_op, codice_articolo, descrizione, qta_richiesta, data_ricezione, data_invio')
-                    .eq('id_commessa', commessa_id)
-                    .order('data_ricezione', { ascending: false });
-                if (!err2 && op2?.length > 0) this._renderOrdini(op2);
-                return;
-            }
-            this._renderOrdini(op || []);
-        } catch (e) {
-            console.warn('Supabase OdP query fallita:', e.message);
-        }
+        // Gli OdP arrivano dentro la risposta del dettaglio (campo
+        // ordini_produzione) e li rende _renderDetail: non serve una seconda
+        // chiamata. Prima il frontend li ricaricava con una RPC diretta perché
+        // il backend restituiva sempre una lista vuota — causa vera: chiedeva a
+        // registro_produzione due colonne che stanno in anagrafica_articoli.
     },
 
     _renderDetail(data) {
@@ -324,7 +288,7 @@ const App = {
             }).join('');
         }
 
-        // OdP table (placeholder — verrà aggiornato da _loadOrdiniSupabase)
+        // OdP: unica sorgente, arrivano col dettaglio
         this._renderOrdini(data.ordini_produzione || []);
 
         // Link inserisci OdP
@@ -350,7 +314,7 @@ const App = {
         }
     },
 
-    // ── Renderizza tabella Ordini di Produzione (richiamato anche da _loadOrdiniSupabase) ──
+    // ── Renderizza tabella Ordini di Produzione ──
     _renderOrdini(op) {
         if (!this.dom.opTableBody) return;
         if (op.length === 0) {

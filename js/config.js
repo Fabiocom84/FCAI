@@ -11,3 +11,17 @@ else if (window.location.hostname === 'localhost' || window.location.hostname ==
 }
 
 export const API_BASE_URL = baseUrl;
+
+// Template PDF del modulo presenze, servito da un bucket Storage pubblico.
+//
+// Punta al progetto di PRODUZIONE anche quando il sito gira su staging: il
+// bucket `templates` esiste solo là. È una dipendenza incrociata nota e
+// deliberata, non una dimenticanza — modificare il template in produzione lo
+// cambia anche su staging.
+//
+// Per chiuderla servono due cose: creare il bucket `templates` su staging con
+// una copia del modulo, e rendere questa costante dipendente dall'ambiente come
+// baseUrl qui sopra. Rientra nella stessa famiglia del task 2.9 (riferimenti a
+// file indipendenti dall'ambiente).
+export const TEMPLATE_PRESENZE_URL =
+    'https://mqfhsiezsorpdnskcsgw.supabase.co/storage/v1/object/public/templates/modello_presenze.pdf';
