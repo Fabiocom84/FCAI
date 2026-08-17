@@ -18,6 +18,9 @@ const PrintPage = {
         currentPdfBlob: null,
         currentPdfMonth: null,
         currentPdfYear: null,
+        // Path assegnato dal backend in anteprima e riusato in upload:
+        // deve coincidere con l'URL codificato nel QR del PDF generato.
+        reservedPath: null,
 
         // --- STATO ADMIN ---
         adminMode: false,
@@ -645,27 +648,41 @@ const PrintPage = {
                 }
             }
 
-            // C. Calcolo Versione e ID Univoco
+            // C. Prenotazione path/versione e ID Univoco
             // ---------------------------------------------------------
+            // Il QR va disegnato dentro il PDF prima di caricarlo, quindi serve
+            // l'URL di un file che non esiste ancora. Il path lo decide il
+            // backend (unica autorità sul naming) e lo restituisce qui: il
+            // frontend non lo ricostruisce più e non conosce l'URL Supabase.
             let nextVersion = 1;
-            try {
-                // [FIX] Recuperiamo la versione reale dal server per evitare disallineamenti
-                let vUrl = `/api/report/latest?mese=${month}&anno=${year}`;
-                if (this.state.adminMode) {
-                    vUrl += `&userId=${this.state.targetUserId}`;
-                }
-                const vRes = await apiFetch(vUrl);
-                const vData = await vRes.json();
+            let publicUrl = null;
+            this.state.reservedPath = null;
 
-                if (vData.exists && vData.version) {
-                    nextVersion = parseInt(vData.version) + 1;
+            try {
+                const reserveBody = { mese: month, anno: year };
+                if (this.state.adminMode) {
+                    reserveBody.id_personale_override = this.state.targetUserId;
                 }
+
+                // apiFetch imposta da sé Content-Type: application/json
+                // quando il body non è FormData
+                const rRes = await apiFetch('/api/report/reserve', {
+                    method: 'POST',
+                    body: JSON.stringify(reserveBody)
+                });
+
+                if (!rRes.ok) throw new Error(`Reserve fallita (${rRes.status})`);
+
+                const rData = await rRes.json();
+                nextVersion = parseInt(rData.version) || 1;
+                publicUrl = rData.url;
+                this.state.reservedPath = rData.path;
             } catch (e) {
-                console.warn("Impossibile recuperare versione remota, uso fallback stima", e);
-                // Fallback UI
+                // Degradazione controllata: il PDF si genera comunque, senza QR.
+                // Meglio un documento privo di QR che un QR che punta al nulla.
+                console.error("Prenotazione path report fallita, QR omesso:", e);
                 if (this.dom.existingReportAlert.style.display !== 'none') {
-                    const txt = this.dom.foundVersion.textContent;
-                    nextVersion = parseInt(txt) + 1;
+                    nextVersion = parseInt(this.dom.foundVersion.textContent) + 1;
                 }
             }
 
@@ -675,12 +692,6 @@ const PrintPage = {
             // Dati Utente & Data Creazione
             const creatorName = this.state.currentUser.nome_cognome;
             const creationDate = new Date().toLocaleString('it-IT');
-            const targetId = this.state.adminMode ? this.state.targetUserId : this.state.currentUser.id_personale;
-
-            // Costruzione URL Previsto (Hardcoded base URL per coerenza con backend)
-            const SUPABASE_PROJECT_URL = "https://mqfhsiezsorpdnskcsgw.supabase.co";
-            const fileNameStub = `${targetId}_${year}_${month}_v${nextVersion}.pdf`;
-            const publicUrl = `${SUPABASE_PROJECT_URL}/storage/v1/object/public/archivio-presenze/${year}/${month}/${fileNameStub}`;
 
             // ---------------------------------------------------------
             // D. Disegno Footer & QR
@@ -699,8 +710,10 @@ const PrintPage = {
                 color: PDFLib.rgb(0.4, 0.4, 0.4), // Grigio scuro
             });
 
-            // 2. QR Code
+            // 2. QR Code (solo se il path è stato prenotato: senza URL non ha senso)
             try {
+                if (!publicUrl) throw new Error("URL del report non disponibile");
+
                 // Genera QR come DataURL
                 const qrDataUrl = await new Promise((resolve) => {
                     // QRCode di qrcodejs
@@ -776,6 +789,12 @@ const PrintPage = {
             formData.append('pdf_file', this.state.currentPdfBlob, 'report.pdf');
             formData.append('mese', this.state.currentPdfMonth);
             formData.append('anno', this.state.currentPdfYear);
+
+            // Path prenotato in fase di anteprima: è lo stesso URL codificato nel
+            // QR disegnato sul PDF, quindi il file DEVE finire esattamente lì.
+            if (this.state.reservedPath) {
+                formData.append('path', this.state.reservedPath);
+            }
 
             // --- FIX ADMIN MODE: Override Utente ---
             if (this.state.adminMode) {
