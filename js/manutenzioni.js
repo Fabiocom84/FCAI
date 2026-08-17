@@ -147,6 +147,21 @@ const App = {
             if (this.state.searchTerm) params.set('search', this.state.searchTerm);
 
             const res = await apiFetch(`/api/manutenzioni/?${params}`);
+
+            // L'endpoint richiede il ruolo Impiegato o Admin. Prima della Fase 0
+            // la lista arrivava da una RPC che ignorava i ruoli, quindi la vedevano
+            // tutti: ora chi non ha il permesso riceve 403 e va informato, non
+            // disconnesso (vedi la nota sul 403 in api-client.js).
+            if (res.status === 403) {
+                this.dom.list.innerHTML = `
+                    <div class="man-no-results">
+                        <div class="man-no-results-icon">🔒</div>
+                        <p>Non hai i permessi per consultare le manutenzioni</p>
+                        <small style="color:#999;">Richiesto il ruolo Impiegato o Amministratore.</small>
+                    </div>`;
+                return;
+            }
+
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (!Array.isArray(data)) throw new Error('Risposta non valida');

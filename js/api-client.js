@@ -38,11 +38,49 @@ export async function apiFetch(endpoint, options = {}) {
             const response = await fetch(url, config);
 
             // --- GESTIONE DISCONNESSIONE FORZATA ---
-            if (response.status === 401 || response.status === 403) {
-                console.warn("Sessione non valida o accesso revocato. Eseguo Logout.");
+            //
+            // 401 = non autenticato: la sessione non vale più, il logout è corretto.
+            //
+            // 403 = autenticato ma non autorizzato: la sessione è valida e va
+            // CONSERVATA. Fino al 17/08/2026 anche il 403 provocava il logout, e
+            // il difetto era invisibile perché il frontend chiamava Supabase
+            // direttamente e i 403 non arrivavano quasi mai. Con i controlli di
+            // ruolo introdotti nella Fase 0, ogni diniego legittimo di permesso
+            // buttava fuori l'utente: chi apriva la pagina manutenzioni con un
+            // ruolo diverso da Impiegato o Admin veniva disconnesso invece di
+            // leggere "non autorizzato". Gli impiegati, che quel ruolo lo hanno,
+            // accedono regolarmente.
+            //
+            // Unica eccezione: l'account disabilitato, che il middleware segnala
+            // con 403 e `code: ACCOUNT_DISABLED`. Lì il logout è corretto, perché
+            // la sessione non deve più valere. Si riconosce dal codice e non dal
+            // testo del messaggio, che può cambiare senza preavviso.
+            if (response.status === 401) {
+                console.warn("Sessione non valida. Eseguo Logout.");
                 localStorage.clear();
                 window.location.replace('login.html');
-                throw new Error("Accesso revocato");
+                throw new Error("Sessione scaduta");
+            }
+
+            if (response.status === 403) {
+                let codice = null;
+                try {
+                    codice = (await response.clone().json())?.code || null;
+                } catch (e) {
+                    // corpo non JSON: si tratta come un normale diniego di permesso
+                }
+
+                if (codice === 'ACCOUNT_DISABLED') {
+                    console.warn("Account disabilitato. Eseguo Logout.");
+                    localStorage.clear();
+                    window.location.replace('login.html');
+                    throw new Error("Accesso revocato");
+                }
+
+                // Diniego di permesso: si restituisce la risposta al chiamante,
+                // che deciderà come informare l'utente.
+                console.warn(`Operazione non autorizzata: ${response.status} su ${endpoint}`);
+                return response;
             }
 
             // Se è un errore gateway temporaneo (502, 503, 504), lanciamo eccezione per fare retry
