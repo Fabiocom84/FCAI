@@ -3,7 +3,6 @@
 import { apiFetch } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin, CurrentUser } from './core-init.js';
-import { supabase } from './supabase-client.js';
 
 const App = {
     state: {

@@ -1,7 +1,9 @@
 // sw.js — Service Worker per Segretario AI
 // Strategia: Cache-First per assets statici, Network-Only per API
 
-const CACHE_VERSION = 'v3';
+// Incrementato con il task 0.4: essendo cambiato l'elenco dei file in precache,
+// i client con la cache v3 continuerebbero a servire la vecchia shell.
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `segretario-ai-${CACHE_VERSION}`;
 
 // Assets da pre-cachare all'installazione (shell minima)
@@ -11,8 +13,9 @@ const PRECACHE_ASSETS = [
     'js/api-client.js',
     'js/core-init.js',
     'js/auth-guard.js',
-    'js/supabase-client.js',
     'js/shared-ui.js',
+    // La libreria resta in precache finché manutenzioni.js accede al database
+    // direttamente (punto 5 del task 0.4): il client la legge da window.
     'js/libs/supabase.min.js',
     'js/libs/choices.min.js',
     'dark-mode.css',
