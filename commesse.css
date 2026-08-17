@@ -1366,3 +1366,18 @@
 .filter-tipo.active[data-tipo="COMPLETA"] { background: #9b59b6; border-color: #8e44ad; }
 .filter-tipo.active[data-tipo="ALL"] { background: #2c3e50; border-color: #1a252f; }
 .manutenzioni-tipo-btn.active { background: linear-gradient(135deg, #e67e22, #f39c12); border-color: #d35400; }
+
+/* Task 0.5 — le fasi di produzione le modifica solo l'admin.
+   Agli altri ruoli restano visibili in sola lettura: nasconderle toglierebbe
+   un'informazione utile, ma cursore e hover non devono suggerire un'interazione
+   che il server rifiuta.
+   Nota: le regole .phase-pill sono duplicate in due punti di questo file
+   (L889 e L1097) — debito da sciogliere in Fase 3, per ora si aggiunge in coda
+   così la regola vince per ordine di cascata senza !important. */
+.phase-pill--readonly {
+    cursor: default;
+}
+
+.phase-pill--readonly:hover:not(.active) {
+    background-color: #fff;
+}

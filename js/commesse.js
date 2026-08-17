@@ -793,8 +793,14 @@ const App = {
                 this.styleStatusSelect(statusSelect);
             }
 
-            // 2. Phase Toggle
+            // 2. Phase Toggle — solo admin (task 0.5: l'endpoint ora risponde 403
+            // agli altri ruoli, e un click che non produce effetti è peggio di un
+            // controllo assente)
             card.querySelectorAll('.phase-pill').forEach(pill => {
+                if (!IsAdmin) {
+                    pill.classList.add('phase-pill--readonly');
+                    return;
+                }
                 pill.addEventListener('click', (e) => {
                     e.stopPropagation(); // BLOCCA PROPAGAZIONE
                     e.preventDefault();
@@ -816,7 +822,10 @@ const App = {
 
 
 
-                    this.togglePhase(commId, faseId, !isCurrentlyActive);
+                    // Il pill è già stato aggiornato in modo ottimistico: se la
+                    // chiamata falla va rimesso com'era, altrimenti l'interfaccia
+                    // mostra uno stato che il database non ha.
+                    this.togglePhase(commId, faseId, !isCurrentlyActive, pill, card, c);
                 });
             });
 
@@ -956,7 +965,7 @@ const App = {
         }
     },
 
-    togglePhase: async function (commessaId, faseId, setActive) {
+    togglePhase: async function (commessaId, faseId, setActive, pill = null, card = null, commessaCard = null) {
         // Trova la commessa nello stato attuale (per avere l'array fasi corrente)
         // Nota: state.data non è salvato globalmente in raw, ma i dati sono renderizzati.
         // Tuttavia, per fare toggle dobbiamo sapere lo stato attuale completo o fidarci del parametro.
@@ -980,16 +989,31 @@ const App = {
             }
 
             // Update Backend
-            await apiFetch(`/api/commesse/${commessaId}/fasi`, {
+            const putRes = await apiFetch(`/api/commesse/${commessaId}/fasi`, {
                 method: 'PUT',
                 body: JSON.stringify({ ids_fasi_attive: currentFasi })
             });
-
-            // Refresh UI (senza reset scroll)
-            // this.fetchCommesse(false);
+            if (!putRes.ok) throw new Error(`HTTP ${putRes.status}`);
 
         } catch (e) {
             console.error("Errore toggle fase", e);
+
+            // Annulla l'aggiornamento ottimistico: senza questo l'interfaccia
+            // resterebbe a mostrare una fase attiva che il database non ha, e
+            // l'utente lo scoprirebbe solo ricaricando la pagina.
+            if (pill) {
+                pill.classList.toggle('active', !setActive);
+                if (card) {
+                    this.updateLocalProgressBar(
+                        card,
+                        commessaCard?.status_commessa?.nome_status === 'Completato'
+                    );
+                }
+            }
+            showModal({
+                title: "Modifica non applicata",
+                message: "Non è stato possibile aggiornare le fasi di produzione."
+            });
         }
     },
 
