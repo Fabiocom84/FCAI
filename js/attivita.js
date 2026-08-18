@@ -2,6 +2,7 @@
 // Versione 9.0 - Logic: Delegation Flow, Read-Only Locks, Incoming Highlights
 
 import { apiFetch } from './api-client.js';
+import { IsAdmin } from './core-init.js';
 
 const TaskApp = {
     state: {
@@ -361,16 +362,27 @@ const TaskApp = {
             this.state.currentTask = task;
 
             // --- LOGICA PERMESSI TOOLBAR ---
+            //
+            // `IsAdmin` arriva da core-init.js, che deriva il profilo una volta
+            // sola. Qui c'era una settima interpretazione locale di `is_admin`
+            // (true / "true" / 1): è la forma di difetto che il 17/08/2026 ha
+            // buttato gli impiegati fuori dalle manutenzioni, dove sei
+            // derivazioni del ruolo convivevano e tre erano sbagliate.
             const myId = this.state.currentUserProfile.id_personale;
             const isAssignee = (task.id_assegnatario_fk === myId);
-            // Calcolo Admin sicuro
-            const isAdmin = (this.state.currentUserProfile.is_admin === true ||
-                this.state.currentUserProfile.is_admin === "true" ||
-                this.state.currentUserProfile.is_admin === 1);
-
-            const canEdit = isAssignee || isAdmin;
+            const canEdit = isAssignee || IsAdmin;
 
             this.toggleToolbar(canEdit);
+
+            // Eliminazione: solo il creatore, o un amministratore (task 1.2b).
+            // Il backend applica la stessa regola e risponde 403; qui il pulsante
+            // si disabilita perché un'interfaccia non deve offrire un'azione
+            // destinata a essere rifiutata.
+            const sonoIlCreatore = (task.id_creatore_fk === myId);
+            this.dom.btnDelete.disabled = !(IsAdmin || sonoIlCreatore);
+            this.dom.btnDelete.title = this.dom.btnDelete.disabled
+                ? "Solo chi ha creato la task può eliminarla"
+                : "Elimina task";
 
             const isDone = task.stato === 'Completato';
             this.dom.btnComplete.innerHTML = isDone ? '<i class="fas fa-undo"></i> Riapri' : '<i class="fas fa-check"></i> Chiudi';
