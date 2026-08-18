@@ -1192,7 +1192,23 @@ const App = {
         if (!confirmDelete) return;
 
         try {
-            await apiFetch(`/api/commesse/${id}`, { method: 'DELETE' });
+            // `apiFetch` NON solleva sui 4xx: restituisce la risposta. Senza
+            // questo controllo il ramo `catch` non scattava mai e la griglia si
+            // ricaricava come se la cancellazione fosse riuscita — la commessa
+            // restava al suo posto e l'utente non vedeva nulla. Il backend
+            // risponde 409 con il motivo (es. "sono collegate 12 ore
+            // registrate"), che è proprio l'informazione che serve.
+            const res = await apiFetch(`/api/commesse/${id}`, { method: 'DELETE' });
+
+            if (!res.ok) {
+                const corpo = await res.json().catch(() => ({}));
+                showModal({
+                    title: "Impossibile eliminare",
+                    message: corpo.error || `La cancellazione è stata rifiutata (HTTP ${res.status}).`
+                });
+                return;
+            }
+
             this.fetchCommesse(true);
         } catch (e) {
             showModal({ title: "Errore", message: "Impossibile eliminare: " + e.message });

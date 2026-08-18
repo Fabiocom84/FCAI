@@ -3,7 +3,7 @@
 
 // Incrementato con il task 0.4: essendo cambiato l'elenco dei file in precache,
 // i client con la cache precedente continuerebbero a servire la vecchia shell.
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `segretario-ai-${CACHE_VERSION}`;
 
 // Assets da pre-cachare all'installazione (shell minima)
