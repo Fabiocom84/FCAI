@@ -1,0 +1,31 @@
+# Il repository del frontend al 18/08/2026 è pulito — nessun artefatto tracciato
+# per sbaglio. Questo file serve a mantenerlo tale: le cartelle qui sotto
+# compaiono al primo `npm install` o al primo `vercel dev`, e una volta entrate
+# nella storia del repository non se ne vanno più con una semplice rimozione.
+
+# Dipendenze
+node_modules/
+package-lock.json.bak
+
+# Vercel
+.vercel/
+
+# Segreti e configurazioni locali.
+# Nota: nel frontend le variabili finiscono comunque nel bundle servito al
+# browser, quindi qui NON vanno mai chiavi segrete — solo valori pubblici come
+# la publishable key di Supabase. Questa esclusione evita che una configurazione
+# locale di prova venga pubblicata per errore, non sostituisce quella regola.
+.env
+.env.*
+!.env.example
+
+# Log e artefatti di build
+*.log
+dist/
+build/
+
+# Editor e sistema operativo
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
