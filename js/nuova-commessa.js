@@ -1,7 +1,7 @@
 // js/nuova-commessa.js — Logica pagina creazione commessa standalone
 import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
-import { showModal } from './shared-ui.js';
+import { showModal, rinviaAvvisi } from './shared-ui.js';
 
 // Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
 let _leafletLoadPromise = null;
@@ -500,6 +500,13 @@ const App = {
 
             const result = await res.json();
             if (!res.ok) throw new Error(result.error || 'Errore durante il salvataggio');
+
+            // La commessa è salvata, ma qualche operazione accessoria può non
+            // essere riuscita: il backend le segnala in `avvisi` (task 1.4).
+            // Il caso che conta è la task automatica mancante, cioè lavoro che
+            // nessuno sta tracciando. Vanno mostrati DOPO il redirect qui sotto,
+            // altrimenti la navigazione li porterebbe via prima che si leggano.
+            rinviaAvvisi(result.avvisi);
 
             // Successo → redirect
             if (this.state.tipo === 'MANUTENZIONE') {
