@@ -295,7 +295,7 @@
     background: var(--col-e2e8f0);
     border-radius: 10px;
     padding: 4px;
-    margin-bottom: 2px !important;
+    margin-bottom: 2px;
     /* ULTRA COMPATTO */
     width: 100%;
     box-sizing: border-box;
@@ -522,9 +522,9 @@ input:focus {
 
 /* Rimuoviamo il padding bottom esagerato perché il footer non è più fixed sopra */
 .full-screen-body {
-    padding: 10px 20px !important;
+    padding: 10px 20px;
     /* RIDOTTO PADDING */
-    padding-bottom: 100px !important;
+    padding-bottom: 100px;
     /* Spazio per dropdown 10 voci */
     flex: 1;
     display: flex;
@@ -544,7 +544,7 @@ input:focus {
     font-size: 0.85rem;
     text-transform: uppercase;
     color: var(--col-8898aa);
-    margin: 10px 0 5px 0 !important;
+    margin: 10px 0 5px 0;
     /* Forzato margine ridotto */
     border-bottom: 1px solid var(--col-e2e8f0);
     padding-bottom: 5px;
@@ -552,7 +552,7 @@ input:focus {
 }
 
 .mobile-insert-form {
-    margin-top: 5px !important;
+    margin-top: 5px;
     /* Forzato margine ridotto */
     background: white;
     /* Assicuriamoci che i bordi non siano tagliati */
@@ -633,17 +633,17 @@ input:focus {
 .cantiere-mode #mobileHoursForm {
     display: flex;
     flex-direction: column;
-    gap: 0 !important;
+    gap: 0;
     /* Niente gap automatici */
-    margin-top: 0 !important;
+    margin-top: 0;
     /* Niente margine sopra il form */
-    padding-top: 0 !important;
+    padding-top: 0;
 }
 
 /* 3. Nascondi elementi inutili */
 .cantiere-mode #group-commessa,
 .cantiere-mode #dynamic-fields-container {
-    display: none !important;
+    display: none;
 }
 
 /* 4. Primo elemento (Ore): Tira su ulteriormente se necessario */
@@ -871,7 +871,7 @@ input:focus {
 /* --- FIX SPAZIATURA CANTIERE --- */
 /* Nascondi completamente il container "vuoto" in modalità cantiere per evitare spazi fantasma */
 .mobile-insert-form.cantiere-mode #dynamic-fields-container {
-    display: none !important;
+    display: none;
 }
 
 .mobile-insert-form.cantiere-mode .simple-hours-group {
@@ -884,11 +884,11 @@ input:focus {
 
 /* Nascondi anche commessa per sicurezza */
 .mobile-insert-form.cantiere-mode #group-commessa {
-    display: none !important;
+    display: none;
 }
 
 .mobile-insert-form.cantiere-mode #mobileHoursForm {
-    margin-top: 0 !important;
+    margin-top: 0;
 }
 
 /* --- PULSANTE COPIA GIORNO PRECEDENTE --- */

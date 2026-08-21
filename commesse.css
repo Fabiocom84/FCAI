@@ -14,7 +14,7 @@
 /* FIX GLOBAL BACKGROUND */
 .std-app-shell,
 .std-app-content {
-    background-color: var(--col-dfe6ed) !important;
+    background-color: var(--col-dfe6ed);
 }
 
 /* --- 1. BARRA FILTRI (Sticky) --- */
@@ -236,11 +236,11 @@
 }
 
 .skeleton-grid {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
-    padding: 0 !important;
-    flex-direction: row !important;
+    padding: 0;
+    flex-direction: row;
 }
 
 .skeleton-card {
@@ -472,12 +472,12 @@
 /* Fix posizionamento modale fisso */
 /* Fix posizionamento modale fisso */
 #commessaModal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    transform: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
     z-index: 9999;
     background-color: rgba(0, 0, 0, 0.5);
     /* Backdrop leggera */
@@ -489,7 +489,7 @@
 }
 
 #commessaModal.active {
-    display: flex !important;
+    display: flex;
 }
 
 /* Contenuto Modale */
@@ -506,7 +506,7 @@
     /* Ombra più contenuta */
     display: flex;
     flex-direction: column;
-    margin: 0 !important;
+    margin: 0;
     position: relative;
     overflow: hidden;
     animation: fadeInModal 0.2s ease-out;
@@ -1013,12 +1013,12 @@
     /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
 
     .view-map .geomap-sidebar {
-        display: none !important;
+        display: none;
     }
 
     .view-map #geoMapFullContainer {
-        display: block !important;
-        height: 100% !important;
+        display: block;
+        height: 100%;
     }
 
     .view-list .geomap-sidebar {
@@ -1029,7 +1029,7 @@
     }
 
     .view-list #geoMapFullContainer {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -1208,12 +1208,12 @@
     /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
 
     .view-map .geomap-sidebar {
-        display: none !important;
+        display: none;
     }
 
     .view-map #geoMapFullContainer {
-        display: block !important;
-        height: 100% !important;
+        display: block;
+        height: 100%;
     }
 
     .view-list .geomap-sidebar {
@@ -1224,7 +1224,7 @@
     }
 
     .view-list #geoMapFullContainer {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -1373,7 +1373,7 @@
    che il server rifiuta.
    Nota: le regole .phase-pill sono duplicate in due punti di questo file
    (L889 e L1097) — debito da sciogliere in Fase 3, per ora si aggiunge in coda
-   così la regola vince per ordine di cascata senza !important. */
+   così la regola vince per ordine di cascata senza. */
 .phase-pill--readonly {
     cursor: default;
 }

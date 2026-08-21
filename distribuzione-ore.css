@@ -463,14 +463,14 @@
 .totals-label {
     font-weight: 700;
     font-size: 0.95em;
-    text-align: right !important;
+    text-align: right;
     color: var(--col-2c3e50);
 }
 
 .totals-value {
     font-weight: 700;
     font-size: 1.2em;
-    text-align: center !important;
+    text-align: center;
     color: var(--col-2c3e50);
 }
 

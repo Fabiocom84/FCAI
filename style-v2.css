@@ -1350,7 +1350,7 @@ textarea:focus {
 
 /* 1. Reset del Body per le pagine interne */
 body.internal-page {
-    display: block !important;
+    display: block;
     margin: 0;
     padding: 8px;
     /* Bordo ridotto a 8px per massimizzare spazio */
@@ -1399,7 +1399,7 @@ body.internal-page {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: white !important;
+    color: white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1598,9 +1598,9 @@ body.internal-page {
 }
 
 .universal-modal {
-    display: block !important;
+    display: block;
     /* Forces block layout */
-    background: white !important;
+    background: white;
     padding: 30px;
     border-radius: 12px;
     width: 90%;
@@ -1688,13 +1688,13 @@ body.internal-page {
     text-transform: uppercase;
     text-decoration: none;
     background-color: var(--col-3498db);
-    color: white !important;
+    color: white;
     border: 1px solid var(--col-3498db);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 2px 4px rgba(52,152,219,0.2);
-    width: auto !important;   /* Override eventuali style inline */
+    width: auto;   /* Override eventuali style inline */
 }
 .std-app-header .header-button:hover {
     background-color: var(--col-2980b9);
@@ -1702,7 +1702,7 @@ body.internal-page {
     opacity: 1;
 }
 .std-app-header .header-button img {
-    width: 16px !important;
+    width: 16px;
     height: 16px;
     object-fit: contain;
     filter: brightness(0) invert(1);

@@ -19,8 +19,8 @@
 .std-app-content {
     display: flex;
     flex-direction: column;
-    padding-bottom: 0 !important;
-    overflow: hidden !important;
+    padding-bottom: 0;
+    overflow: hidden;
     /* Disabilita scroll esterno, vogliamo solo scroll tabella */
 }
 
@@ -207,7 +207,7 @@
 
 /* REGOLA DEFINITIVA PER IL FILTRO ATTIVO */
 .agile-table thead th.filter-active {
-    background-color: var(--col-dbeafe) !important;
+    background-color: var(--col-dbeafe);
 }
 
 .column-header-content {

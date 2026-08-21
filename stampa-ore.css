@@ -4,7 +4,7 @@
 
 /* Spaziatura specifica per il contenuto del report */
 .report-body {
-    padding: 15px 20px !important;
+    padding: 15px 20px;
 }
 
 /* --- SEZIONE PDF UFFICIALE --- */
@@ -74,9 +74,9 @@
 
 /* MENU DATE */
 .pdf-select {
-    height: 36px !important;
-    padding: 0 8px !important;
-    font-size: 0.9rem !important;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 0.9rem;
     border-radius: 6px;
     border: 1px solid var(--col-cccccc);
     background: white;
@@ -86,27 +86,27 @@
 
 /* STILE UNICO PER TUTTI I BOTTONI PDF */
 .pdf-btn {
-    height: 36px !important;
-    min-height: unset !important;
-    padding: 0 15px !important;
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
+    height: 36px;
+    min-height: unset;
+    padding: 0 15px;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 
     flex: 1;
     min-width: 100px;
     max-width: 200px;
 
-    color: white !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
     border: none;
     border-radius: 6px;
     white-space: nowrap;
     cursor: pointer;
-    margin: 0 !important;
-    box-shadow: none !important;
+    margin: 0;
+    box-shadow: none;
 }
 
 .pdf-btn:active {
@@ -164,29 +164,29 @@
 
 /* FIX PULSANTE CARICA DATI (Full Width) */
 #btnLoadData {
-    height: 42px !important;
-    min-height: unset !important;
+    height: 42px;
+    min-height: unset;
 
-    width: 100% !important;
+    width: 100%;
     /* Forza larghezza 100% */
-    max-width: none !important;
+    max-width: none;
     /* FONDAMENTALE: Rimuove limiti ereditati (es. 200px o 300px) */
-    flex: 1 1 auto !important;
+    flex: 1 1 auto;
     /* Si espande in flex */
 
-    padding: 0 15px !important;
-    margin-top: 15px !important;
+    padding: 0 15px;
+    margin-top: 15px;
     /* Spazio dai campi data */
     box-sizing: border-box;
 
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    background-color: var(--col-3498db) !important;
-    color: white !important;
-    font-size: 1rem !important;
-    font-weight: 600 !important;
+    background-color: var(--col-3498db);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
     border-radius: 8px;
     border: none;
     cursor: pointer;
@@ -200,31 +200,31 @@
 /* FIX PULSANTI FILTRI (Reset e Applica) */
 #btnResetFilters,
 #btnApplyFilters {
-    height: 36px !important;
-    min-height: unset !important;
-    padding: 0 20px !important;
-    width: auto !important;
+    height: 36px;
+    min-height: unset;
+    padding: 0 20px;
+    width: auto;
 
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
+    font-size: 0.9rem;
+    font-weight: 500;
     border-radius: 6px;
-    margin: 0 !important;
+    margin: 0;
     cursor: pointer;
-    box-shadow: none !important;
+    box-shadow: none;
 }
 
 #btnResetFilters {
-    background-color: var(--col-95a5a6) !important;
-    color: white !important;
+    background-color: var(--col-95a5a6);
+    color: white;
 }
 
 #btnApplyFilters {
-    background-color: var(--col-007bff) !important;
-    color: white !important;
+    background-color: var(--col-007bff);
+    color: white;
 }
 
 /* --- 4. ACCORDION --- */
@@ -264,7 +264,7 @@
 }
 
 .accordion-content.open {
-    display: block !important;
+    display: block;
 }
 
 .filter-inner-padding {
@@ -283,24 +283,24 @@
     padding: 10px;
     border-radius: 8px;
     text-align: center;
-    color: white !important;
+    color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .kpi-box.blue {
-    background: var(--col-3498db) !important;
+    background: var(--col-3498db);
 }
 
 .kpi-box.purple {
-    background: var(--col-9b59b6) !important;
+    background: var(--col-9b59b6);
 }
 
 .kpi-box.orange {
-    background: var(--col-e67e22) !important;
+    background: var(--col-e67e22);
 }
 
 .kpi-box.green {
-    background: var(--col-27ae60) !important;
+    background: var(--col-27ae60);
 }
 
 .kpi-value {

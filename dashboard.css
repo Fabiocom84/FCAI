@@ -714,9 +714,9 @@
 
 /* Bottoni Modale (Forzati per evitare trasparenza) */
 .btn-secondary {
-    background-color: var(--col-e2e6ea) !important;
-    color: var(--col-495057) !important;
-    border: 1px solid var(--col-ced4da) !important;
+    background-color: var(--col-e2e6ea);
+    color: var(--col-495057);
+    border: 1px solid var(--col-ced4da);
     padding: 8px 16px;
     border-radius: 4px;
     font-weight: 600;
@@ -728,10 +728,10 @@
 }
 
 .btn-confirm-action {
-    background-color: var(--col-2ecc71) !important;
+    background-color: var(--col-2ecc71);
     /* Verde pieno */
-    color: white !important;
-    border: none !important;
+    color: white;
+    border: none;
     padding: 8px 20px;
     border-radius: 4px;
     font-weight: 700;
@@ -815,7 +815,7 @@
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 
     /* MODIFICA: Larghezza ridotta */
-    max-width: 320px !important;
+    max-width: 320px;
     width: 90%;
     margin: auto;
 }
@@ -846,9 +846,9 @@
 
 /* 4. Footer Pulsanti: Compatto */
 #custom-modal-buttons {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     /* MODIFICA: Padding ridotto */
     padding: 10px 15px 15px 15px;
@@ -860,36 +860,36 @@
 
 /* 5. Il Pulsante OK: Rettangolare e Sottile */
 #custom-modal-buttons .button {
-    background-color: var(--col-2ecc71) !important;
-    color: white !important;
-    border: none !important;
+    background-color: var(--col-2ecc71);
+    color: white;
+    border: none;
 
     /* FORZA DIMENSIONI STANDARD */
-    height: 36px !important;
+    height: 36px;
     /* Altezza fissa standard */
-    min-height: 0 !important;
+    min-height: 0;
     /* Azzera eredità home page */
-    width: auto !important;
+    width: auto;
     min-width: 90px;
     /* Larghezza minima */
 
     /* PADDING RIDOTTO */
-    padding: 0 20px !important;
+    padding: 0 20px;
     /* Solo orizzontale, verticale gestito da height */
-    margin: 0 !important;
+    margin: 0;
 
-    border-radius: 4px !important;
-    font-size: 0.9rem !important;
-    font-weight: 700 !important;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     /* FLEX PER CENTRARE IL TESTO PERFETTAMENTE */
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
 }
 
 #custom-modal-buttons .button:hover {
@@ -1488,19 +1488,19 @@
 
 /* Jaccard Score Colors */
 .score-high {
-    color: var(--col-27ae60) !important;
+    color: var(--col-27ae60);
     background: var(--col-eaffea);
     border-radius: 4px;
 }
 
 .score-mid {
-    color: var(--col-f39c12) !important;
+    color: var(--col-f39c12);
     background: var(--col-fff8e1);
     border-radius: 4px;
 }
 
 .score-low {
-    color: var(--col-e74c3c) !important;
+    color: var(--col-e74c3c);
     background: var(--col-fdecea);
     border-radius: 4px;
 }

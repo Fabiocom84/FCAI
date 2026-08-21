@@ -260,7 +260,7 @@ body.dark-mode .nc-upload-area { background: var(--col-0f0f1a); border-color: va
 
 /* Variante save per manutenzione (arancione) */
 .nc-save-btn.manutenzione {
-    background: linear-gradient(135deg, var(--col-e67e22), var(--col-d35400)) !important;
+    background: linear-gradient(135deg, var(--col-e67e22), var(--col-d35400));
 }
 
 /* ── CHOICES.JS OVERRIDES ── */
@@ -270,17 +270,17 @@ body.dark-mode .nc-upload-area { background: var(--col-0f0f1a); border-color: va
 .nc-grid-3,
 .nc-form-group,
 .choices {
-    overflow: visible !important;
+    overflow: visible;
 }
 
 .choices__inner {
-    border: 1.5px solid var(--col-d0d4db) !important;
-    border-radius: 8px !important;
-    background: var(--col-ffffff) !important;
-    min-height: 44px !important;
-    font-family: inherit !important;
-    padding-top: 4px !important;
-    box-sizing: border-box !important;
+    border: 1.5px solid var(--col-d0d4db);
+    border-radius: 8px;
+    background: var(--col-ffffff);
+    min-height: 44px;
+    font-family: inherit;
+    padding-top: 4px;
+    box-sizing: border-box;
 }
 body.dark-mode .choices__inner {
     background: var(--col-0f0f1a) !important;

@@ -89,26 +89,26 @@
 
 /* FIX DIMENSIONE BOTTONE AGGIUNGI */
 .input-group .button {
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 25px !important;
-    margin: 0 !important;
-    width: auto !important;
-    min-width: unset !important;
-    flex-basis: auto !important;
-    flex-grow: 0 !important;
-    font-size: 0.95em !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    background-color: var(--col-28a745) !important;
-    color: white !important;
-    border-radius: 5px !important;
-    box-shadow: none !important;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0 25px;
+    margin: 0;
+    width: auto;
+    min-width: unset;
+    flex-basis: auto;
+    flex-grow: 0;
+    font-size: 0.95em;
+    line-height: 1;
+    white-space: nowrap;
+    background-color: var(--col-28a745);
+    color: white;
+    border-radius: 5px;
+    box-shadow: none;
 }
 
 .input-group .button:hover {
