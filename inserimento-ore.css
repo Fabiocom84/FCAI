@@ -73,7 +73,7 @@
 }
 
 .mobile-content-wrapper::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--col-00000033);
     border-radius: 4px;
 }
 
@@ -83,7 +83,7 @@
     border-radius: 10px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px var(--col-0000000d);
     cursor: pointer;
     min-height: 70px;
     border: 1px solid var(--col-edf2f7);
@@ -205,7 +205,7 @@
     background: white;
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 3px 6px var(--col-0000000a);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -323,7 +323,7 @@
     background: white;
     color: var(--col-2d3748);
     font-weight: 700;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--col-0000001a);
 }
 
 /* 2. Inputs & Selects */
@@ -400,7 +400,7 @@ input:focus {
     background: white;
     border: 1px solid var(--col-cbd5e0);
     border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px var(--col-00000026);
     margin-top: 5px;
     max-height: 400px;
     /* 10 voci (ca. 40px l'una) */
@@ -493,7 +493,7 @@ input:focus {
     width: 100%;
     background: white;
     padding: 15px 20px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px var(--col-00000014);
     display: flex;
     gap: 10px;
     box-sizing: border-box;
@@ -572,7 +572,7 @@ input:focus {
     font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
-    box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 4px 6px var(--col-27ae604c);
     cursor: pointer;
 }
 
@@ -709,7 +709,7 @@ input:focus {
 .toggle-travel-label:has(input:checked) {
     background: var(--col-e1bee7);
     border-color: var(--col-8e24aa);
-    box-shadow: 0 0 0 2px rgba(142, 36, 170, 0.15);
+    box-shadow: 0 0 0 2px var(--col-8e24aa26);
 }
 .toggle-travel-label input[type="checkbox"] {
     width: 20px;

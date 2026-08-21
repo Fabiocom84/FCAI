@@ -29,7 +29,7 @@
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 20px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 6px var(--col-0000000f);
     border: 1px solid var(--col-e8eaf0);
 }
 body.dark-mode .nc-section {
@@ -141,7 +141,7 @@ body.dark-mode .nc-form-group label { color: var(--col-aaaaaa); }
 .nc-form-group textarea:focus {
     outline: none;
     border-color: var(--col-3498db);
-    box-shadow: 0 0 0 3px rgba(52,152,219,0.12);
+    box-shadow: 0 0 0 3px var(--col-3498db1f);
 }
 body.dark-mode .nc-form-group input,
 body.dark-mode .nc-form-group select,
@@ -201,7 +201,7 @@ body.dark-mode .nc-toggle-label strong { color: var(--col-e8eaf0); }
     background: var(--col-ffffff);
     border-radius: 50%;
     transition: transform 0.3s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px var(--col-00000033);
 }
 .nc-toggle-switch input:checked + .nc-toggle-slider { background: var(--col-e67e22); }
 .nc-toggle-switch input:checked + .nc-toggle-slider::before { transform: translateX(20px); }
@@ -291,7 +291,7 @@ body.dark-mode .choices__inner {
     border-radius: 8px !important;
     border: 1.5px solid var(--col-d0d4db) !important;
     z-index: 9999 !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+    box-shadow: 0 4px 16px var(--col-0000001f) !important;
     overflow: hidden !important;  /* solo il dropdown stesso: nasconde il contenuto eccedente */
 }
 .choices__list--dropdown .choices__item--selectable.is-highlighted {
@@ -303,7 +303,7 @@ body.dark-mode .choices__inner {
 .universal-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: var(--col-00000080);
     z-index: 1000;
     display: flex;
     align-items: center;

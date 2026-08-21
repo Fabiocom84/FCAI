@@ -6,7 +6,7 @@
 
 /* Switch Inbox/Archivio (Specifica per Dashboard) */
 .mode-switch {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--col-0000004c);
     border-radius: 20px;
     padding: 3px;
     display: flex;
@@ -33,7 +33,7 @@
 .mode-btn.active {
     background: var(--col-3498db);
     color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px var(--col-00000033);
 }
 
 /* --- LAYOUT INTERNO (Sidebar + Main) --- */
@@ -129,7 +129,7 @@
     border-radius: 6px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 2px var(--col-00000008);
     flex-shrink: 0;
     overflow: hidden;
 }
@@ -225,7 +225,7 @@
     padding: 15px;
     border-top: 1px solid var(--col-dddddd);
     background: white;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -2px 10px var(--col-0000000d);
     flex-shrink: 0;
 }
 
@@ -368,7 +368,7 @@
     background: white;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px var(--col-0000000d);
     border-left: 4px solid var(--col-cccccc);
     text-align: center;
 }
@@ -410,7 +410,7 @@
     padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--col-dddddd);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--col-0000000d);
 }
 
 .chart-container h4 {
@@ -601,7 +601,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: var(--col-00000099);
     /* Sfondo scuro */
     z-index: 9999;
     display: flex;
@@ -615,7 +615,7 @@
     width: 90%;
     max-width: 450px;
     border-radius: 8px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 15px 40px var(--col-0000004c);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -737,7 +737,7 @@
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--col-0000001a);
 }
 
 .btn-confirm-action:hover {
@@ -812,7 +812,7 @@
     text-align: center;
     padding: 0;
     border: none;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 40px var(--col-00000066);
 
     /* MODIFICA: Larghezza ridotta */
     max-width: 320px !important;
@@ -883,7 +883,7 @@
     font-weight: 700 !important;
     text-transform: uppercase;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 4px var(--col-0000001a) !important;
 
     /* FLEX PER CENTRARE IL TESTO PERFETTAMENTE */
     display: inline-flex !important;
@@ -918,7 +918,7 @@
     padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--col-dddddd);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--col-0000000d);
     display: flex;
     flex-direction: column;
 }
@@ -1087,7 +1087,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 4px var(--col-00000005);
 }
 
 .g-title {
@@ -1217,7 +1217,7 @@
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px var(--col-0000000d);
     border: 1px solid var(--col-eeeeee);
 }
 
@@ -1253,7 +1253,7 @@
     border: 1px solid var(--col-e9ecef);
     border-radius: 8px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 4px var(--col-00000008);
     position: sticky;
     top: 0;
     z-index: 5;
@@ -1294,7 +1294,7 @@
 .ca-search-input:focus {
     outline: none;
     border-color: var(--col-3498db);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    box-shadow: 0 0 0 3px var(--col-3498db26);
     background: white;
 }
 
@@ -1310,7 +1310,7 @@
     max-height: 320px;
     overflow-y: auto;
     z-index: 100;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 20px var(--col-0000001f);
 }
 
 .ca-dropdown-item {
@@ -1402,7 +1402,7 @@
 .ca-toggle-btn.active {
     background: white;
     color: var(--col-3498db);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px var(--col-0000001a);
 }
 
 .ca-toggle-btn:hover:not(.active) {
@@ -1536,7 +1536,7 @@
 }
 
 .gantt-legend-color.shadow {
-    background: rgba(149, 165, 166, 0.3);
+    background: var(--col-95a5a64c);
     border: 1.5px dashed var(--col-95a5a6);
 }
 
@@ -1620,7 +1620,7 @@
 }
 
 .gantt-week-cell:nth-child(even) {
-    background: rgba(0, 0, 0, 0.008);
+    background: var(--col-00000002);
 }
 
 /* Actual Bar */
@@ -1650,7 +1650,7 @@
     font-size: 0.65rem;
     font-weight: 700;
     color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 2px var(--col-0000004c);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1664,8 +1664,8 @@
     top: 50%;
     transform: translateY(-50%);
     border-radius: 5px;
-    background: rgba(149, 165, 166, 0.15);
-    border: 1.5px dashed rgba(149, 165, 166, 0.5);
+    background: var(--col-95a5a626);
+    border: 1.5px dashed var(--col-95a5a680);
     z-index: 1;
     pointer-events: none;
     min-width: 8px;
@@ -1710,7 +1710,7 @@
     opacity: 0;
     transition: opacity 0.15s;
     z-index: 10;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px var(--col-00000033);
 }
 
 .gantt-tooltip::after {

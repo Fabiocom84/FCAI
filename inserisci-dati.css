@@ -64,7 +64,7 @@
     background: white; 
     border-radius: 12px; 
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    box-shadow: 0 4px 12px var(--col-0000000d); 
     border: 1px solid var(--col-e0e0e0);
     display: flex; 
     flex-direction: column;
@@ -131,14 +131,14 @@ textarea#voiceTranscription {
     resize: vertical;
     box-sizing: border-box;
 }
-textarea#voiceTranscription:focus { outline: none; border-color: var(--col-3498db); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+textarea#voiceTranscription:focus { outline: none; border-color: var(--col-3498db); box-shadow: 0 0 0 3px var(--col-3498db1a); }
 
 /* Pulsante Salva */
 .save-btn-container { margin-top: auto; }
 .big-save-btn {
     width: 100%; background-color: var(--col-28a745); color: white; font-size: 1.1em; font-weight: 700;
     padding: 15px; border: none; border-radius: 8px; cursor: pointer;
-    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3); transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 6px var(--col-28a7454c); transition: transform 0.2s, background-color 0.2s;
     display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .big-save-btn:hover { background-color: var(--col-218838); transform: translateY(-2px); }
@@ -213,7 +213,7 @@ textarea#voiceTranscription:focus { outline: none; border-color: var(--col-3498d
     transition: box-shadow 0.2s;
 }
 .orphan-note-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px var(--col-00000014);
 }
 
 .orphan-note-text {

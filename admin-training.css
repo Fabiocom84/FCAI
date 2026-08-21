@@ -19,7 +19,7 @@
     /* Centra verticalmente se c'è spazio, altrimenti scrollabile */
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px var(--col-0000000d);
     text-align: center;
 }
 
@@ -27,7 +27,7 @@
     width: 64px;
     height: 64px;
     margin-bottom: 20px;
-    filter: drop-shadow(0 4px 6px rgba(52, 152, 219, 0.2));
+    filter: drop-shadow(0 4px 6px var(--col-3498db33));
 }
 
 .training-card h2 {
@@ -172,7 +172,7 @@
     overflow-y: auto;
     text-align: left;
     font-size: 0.9rem;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 2px 10px var(--col-00000080);
     border: 1px solid var(--col-333333);
     margin-top: 20px;
 }

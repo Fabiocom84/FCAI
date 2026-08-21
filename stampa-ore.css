@@ -190,7 +190,7 @@
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--col-0000001a);
 }
 
 #btnLoadData:active {
@@ -233,7 +233,7 @@
     border-radius: 10px;
     overflow: hidden;
     margin: 10px 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px var(--col-0000001a);
     border: 1px solid var(--col-eeeeee);
 }
 
@@ -284,7 +284,7 @@
     border-radius: 8px;
     text-align: center;
     color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px var(--col-0000001a);
 }
 
 .kpi-box.blue {

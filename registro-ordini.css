@@ -26,7 +26,7 @@
     background: white;
     padding: 15px 20px;
     border-bottom: 1px solid var(--col-cccccc);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 5px var(--col-00000008);
     z-index: 10;
 }
 
@@ -106,7 +106,7 @@
     background: white;
     color: var(--col-2c3e50);
     font-weight: bold;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px var(--col-0000001a);
 }
 
 /* Search Input e Reset */
@@ -147,7 +147,7 @@
     background: white;
     border-radius: 8px;
     margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--col-0000000d);
     border: 1px solid var(--col-dddddd);
     overflow: hidden;
 }
@@ -399,7 +399,7 @@ textarea {
     font-size: 0.95rem;
     cursor: pointer;
     margin-top: 5px;
-    box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 2px 5px var(--col-27ae604c);
 }
 
 .action-button:hover {

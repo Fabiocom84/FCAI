@@ -12,7 +12,7 @@
     /* Arrotonda gli angoli interni al guscio */
     overflow: hidden;
     /* Mantiene il contenuto dentro i bordi arrotondati */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px var(--col-0000000d);
 }
 
 /* OVERRIDE LOCALE per std-app-content in questa pagina specificamente */
@@ -34,12 +34,12 @@
 .styled-select {
     outline: none;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--col-ffffffe6);
 }
 
 .styled-select:focus {
     background-color: white;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 0 2px var(--col-3498db80);
 }
 
 /* 2. BARRA DEGLI STRUMENTI (TOOLBAR)
@@ -249,7 +249,7 @@
     position: absolute;
     background-color: white;
     border: 1px solid var(--col-cccccc);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px var(--col-0000001a);
     border-radius: 4px;
     padding: 10px;
     z-index: 100;
@@ -400,7 +400,7 @@
 .column-filter-popup {
     background-color: white;
     border: 1px solid var(--col-cccccc);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--col-00000026);
     border-radius: 8px;
     z-index: 100;
     display: flex;
@@ -485,7 +485,7 @@
     /* Fondamentale per renderlo un popup */
     background-color: white;
     border: 1px solid var(--col-cccccc);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--col-00000026);
     border-radius: 8px;
     z-index: 100;
     display: flex;

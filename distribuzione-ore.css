@@ -12,7 +12,7 @@
     background: var(--col-ffffff);
     border-radius: 10px;
     padding: 20px 25px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px var(--col-0000000f);
     margin-bottom: 15px;
 }
 
@@ -83,7 +83,7 @@
 }
 .dist-btn--ai:hover:not(:disabled) {
     background: linear-gradient(135deg, var(--col-7d3c98), var(--col-2c81ba));
-    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+    box-shadow: 0 4px 12px var(--col-8e44ad4c);
 }
 
 .dist-btn--success {
@@ -101,7 +101,7 @@
     background: var(--col-ffffff);
     border-radius: 10px;
     padding: 20px 25px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px var(--col-0000000f);
     margin-bottom: 15px;
 }
 
@@ -197,7 +197,7 @@
     padding: 12px 20px;
     background: var(--col-ffffff);
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px var(--col-0000000f);
 }
 
 .actions-spacer {
@@ -232,7 +232,7 @@
 .dist-table-container {
     background: var(--col-ffffff);
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px var(--col-0000000f);
     overflow: hidden;
 }
 

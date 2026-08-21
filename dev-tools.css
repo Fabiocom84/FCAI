@@ -57,7 +57,7 @@
     border-radius: 10px;
     padding: 20px 24px;
     margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px var(--col-0000000f);
 }
 
 .dev-panel h3 {
@@ -381,12 +381,12 @@
     color: var(--col-334155);
     outline: none;
     transition: all 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px var(--col-0000000d);
 }
 
 .mapping-select:focus {
     border-color: var(--col-3498db);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    box-shadow: 0 0 0 3px var(--col-3498db26);
 }
 
 .mapping-select.mapped {
@@ -428,7 +428,7 @@
 
 .global-mapping-search:focus {
     border-color: var(--col-3498db);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    box-shadow: 0 0 0 3px var(--col-3498db26);
 }
 
 .mapping-search-input {
@@ -443,7 +443,7 @@
 
 .mapping-search-input:focus {
     border-color: var(--col-3498db);
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15);
+    box-shadow: 0 0 0 2px var(--col-3498db26);
 }
 
 .badge-status {

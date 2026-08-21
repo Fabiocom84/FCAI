@@ -56,6 +56,7 @@ BASE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 VARIABILI = os.path.join(BASE, 'css', 'variables.css')
 
 HEX = re.compile(r'#([0-9a-fA-F]{3,6})\b')
+RGB = re.compile(r'rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*(?:,\s*([0-9.]+)\s*)?\)')
 COMMENTO = re.compile(r'/\*.*?\*/', re.S)
 DICHIARAZIONE = re.compile(r'([a-zA-Z-]+)\s*:\s*([^;{}]+)')
 
@@ -67,11 +68,44 @@ def normalizza(cifre):
     return cifre if len(cifre) == 6 else None
 
 
+def da_rgb(m):
+    """
+    `rgb()`/`rgba()` -> stessa chiave dei colori esadecimali.
+
+    PERCHÉ CONVERTIRE INVECE DI INVENTARE UN SECONDO SCHEMA DI NOMI
+    `rgb(255,255,255)` e `#ffffff` sono lo stesso colore scritto in due modi: se
+    ricevessero token diversi, il consolidamento della tavolozza (task 6.6)
+    dovrebbe accorgersi da solo che sono la stessa cosa, e non lo farebbe.
+    Convertendo, confluiscono in `--col-ffffff` senza alcuna decisione.
+
+    Con canale alfa il nome diventa a otto cifre (`--col-00000033`), ma **il
+    VALORE resta la scrittura originale**: l'esadecimale a otto cifre è
+    supportato ovunque, ma non c'è motivo di cambiare ciò che il browser già
+    riceve, e questo passaggio deve essere invisibile per costruzione.
+    """
+    r, g, b, a = m.group(1), m.group(2), m.group(3), m.group(4)
+    try:
+        canali = [int(round(float(x))) for x in (r, g, b)]
+    except ValueError:
+        return None, None
+    if any(c < 0 or c > 255 for c in canali):
+        return None, None
+    base = ''.join(f'{c:02x}' for c in canali)
+    if a is None or float(a) >= 1:
+        return base, None                      # opaco: stesso token dell'esadecimale
+    alfa = int(round(float(a) * 255))
+    return base + f'{alfa:02x}', m.group(0)
+
+
 def file_css():
     return sorted(f for f in os.listdir(BASE) if f.endswith('.css'))
 
 
-USO_TOKEN = re.compile(r'var\(\s*--col-([0-9a-f]{6})\s*\)')
+# {6,8}: i colori con canale alfa hanno token a otto cifre. Con {6} la
+# rigenerazione successiva non li vedrebbe e li cancellerebbe da
+# variables.css, lasciando orfani i var() che li usano — lo stesso
+# guasto del 21/08/2026, in una forma nuova.
+USO_TOKEN = re.compile(r'var\(\s*--col-([0-9a-f]{6,8})\s*\)')
 
 
 def inventario():
@@ -97,28 +131,35 @@ def inventario():
     conta = collections.Counter()
     proprieta = collections.defaultdict(collections.Counter)
     file_di = collections.defaultdict(set)
+    scrittura = {}          # token -> testo da mettere in variables.css
 
     for nome in file_css():
         testo = open(os.path.join(BASE, nome), encoding='utf-8', errors='replace').read()
         # I commenti contengono valori vecchi: non vanno né contati né sostituiti.
         testo = COMMENTO.sub(lambda m: ' ' * len(m.group(0)), testo)
         for prop, valore in DICHIARAZIONE.findall(testo):
+            def registra(c, testo_valore=None):
+                conta[c] += 1
+                proprieta[c][prop.lower()] += 1
+                file_di[c].add(nome)
+                if testo_valore and c not in scrittura:
+                    scrittura[c] = testo_valore
+
             for m in HEX.finditer(valore):
                 c = normalizza(m.group(1))
-                if not c:
-                    continue
-                conta[c] += 1
-                proprieta[c][prop.lower()] += 1
-                file_di[c].add(nome)
+                if c:
+                    registra(c)
+            for m in RGB.finditer(valore):
+                c, originale = da_rgb(m)
+                if c:
+                    registra(c, originale)
             for m in USO_TOKEN.finditer(valore):
-                c = m.group(1)
-                conta[c] += 1
-                proprieta[c][prop.lower()] += 1
-                file_di[c].add(nome)
-    return conta, proprieta, file_di
+                registra(m.group(1))
+    return conta, proprieta, file_di, scrittura
 
 
-def genera_variabili(conta, proprieta, file_di):
+def genera_variabili(conta, proprieta, file_di, scrittura=None):
+    scrittura = scrittura or {}
     righe = [
         "/*",
         " * Token di colore — task 3.1 della roadmap.",
@@ -142,7 +183,10 @@ def genera_variabili(conta, proprieta, file_di):
     for colore, n in sorted(conta.items(), key=lambda x: (-x[1], x[0])):
         props = ', '.join(f"{p}×{q}" for p, q in proprieta[colore].most_common(2))
         nfile = len(file_di[colore])
-        righe.append(f"    --col-{colore}: #{colore};"
+        # I colori con canale alfa conservano la scrittura originale: il token
+        # cambia il PUNTO in cui il valore è deciso, non il valore.
+        valore = scrittura.get(colore, f"#{colore}")
+        righe.append(f"    --col-{colore}: {valore};"
                      f"  /* {n} usi in {nfile} file — {props} */")
     righe.append("}")
     righe.append("")
@@ -200,8 +244,17 @@ def riscrivi(nome, conta):
     #
     # Limitarsi alle dichiarazioni `proprieta: valore` elimina la classe intera
     # di questi errori invece di rincorrerne i casi noti.
+    def sostituisci_rgb(m):
+        c, _ = da_rgb(m)
+        if not c or c not in conta:
+            return m.group(0)
+        sostituzioni[0] += 1
+        return f"var(--col-{c})"
+
     def dentro_dichiarazione(m):
-        return m.group(1) + HEX.sub(sostituisci, m.group(2))
+        valore = HEX.sub(sostituisci, m.group(2))
+        valore = RGB.sub(sostituisci_rgb, valore)
+        return m.group(1) + valore
 
     testo = re.sub(r'([a-zA-Z-]+\s*:\s*)([^;{}]+)', dentro_dichiarazione, testo)
     testo = re.sub(r'\x00(\d+)\x00', lambda m: protetti[int(m.group(1))], testo)
@@ -210,7 +263,7 @@ def riscrivi(nome, conta):
 
 def main():
     if '--analizza' in sys.argv:
-        conta, proprieta, file_di = inventario()
+        conta, proprieta, file_di, _ = inventario()
         print(f"token: {len(conta)}   occorrenze: {sum(conta.values())}")
         print(f"\n{'token':<18} {'usi':>4}  {'file':>4}  proprieta' prevalenti")
         for colore, n in sorted(conta.items(), key=lambda x: (-x[1], x[0]))[:30]:
@@ -226,11 +279,11 @@ def main():
             print("ERRORE: indicare almeno un file da riscrivere.")
             return 2
 
-        conta, proprieta, file_di = inventario()
+        conta, proprieta, file_di, scrittura = inventario()
 
         os.makedirs(os.path.dirname(VARIABILI), exist_ok=True)
         with open(VARIABILI, 'w', encoding='utf-8', newline='\n') as f:
-            f.write(genera_variabili(conta, proprieta, file_di))
+            f.write(genera_variabili(conta, proprieta, file_di, scrittura))
         print(f"scritto {VARIABILI}  ({len(conta)} token)")
 
         for nome in bersagli:

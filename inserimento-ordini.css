@@ -15,7 +15,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px var(--col-0000000a);
     margin-bottom: 20px;
     margin-top: 30px;
     /* Added spacing from header */
@@ -101,7 +101,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px var(--col-0000000a);
     margin-bottom: 20px;
 }
 
@@ -190,7 +190,7 @@ body {
     /* z-index: 10; REMOVED */
     /* width: 400px !important; REMOVED */
     /* background-color: #fff; */
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 0 0 3px var(--col-3498db4c);
     /* Standard accessible focus ring */
     border-color: var(--col-3498db);
     /* white-space: normal; REMOVED */
@@ -255,7 +255,7 @@ body {
     /* Reset fixed positioning to be sticky relative to container, or keeping it fixed but matching shell width */
     background: white;
     padding: 15px 20px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px var(--col-00000014);
     display: flex;
     gap: 10px;
     box-sizing: border-box;
@@ -286,7 +286,7 @@ body {
     font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
-    box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 4px 6px var(--col-27ae604c);
     cursor: pointer;
 }
 

@@ -100,9 +100,9 @@ body.internal-page {
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(230,126,34,0.3);
+    box-shadow: 0 2px 8px var(--col-e67e224c);
 }
-.man-add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,126,34,0.4); }
+.man-add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--col-e67e2266); }
 
 .man-search-bar {
     position: relative;
@@ -153,7 +153,7 @@ body.internal-page {
     background: var(--col-ffffff);
     border-radius: 50%;
     transition: transform 0.3s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px var(--col-00000033);
 }
 .man-toggle-label input:checked + .man-toggle-slider-small { background: var(--col-e67e22); }
 .man-toggle-label input:checked + .man-toggle-slider-small::before { transform: translateX(16px); }
@@ -197,8 +197,8 @@ body.internal-page {
     cursor: pointer;
     transition: all 0.2s;
 }
-.man-card:hover { border-color: var(--col-e67e22); box-shadow: 0 3px 12px rgba(230,126,34,0.15); transform: translateX(2px); }
-.man-card.active { background: var(--col-fef9f0); border-color: var(--col-e67e22); border-left-color: var(--col-d35400); box-shadow: 0 3px 16px rgba(230,126,34,0.2); }
+.man-card:hover { border-color: var(--col-e67e22); box-shadow: 0 3px 12px var(--col-e67e2226); transform: translateX(2px); }
+.man-card.active { background: var(--col-fef9f0); border-color: var(--col-e67e22); border-left-color: var(--col-d35400); box-shadow: 0 3px 16px var(--col-e67e2233); }
 .man-card.completed { border-left-color: var(--col-27ae60); opacity: 0.7; }
 .man-card.completed:hover { border-left-color: var(--col-219a52); opacity: 1; }
 
@@ -279,7 +279,7 @@ body.internal-page {
     background: var(--col-ffffff);
     border-radius: 12px;
     padding: 16px 20px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 6px var(--col-0000000f);
     border: 1px solid var(--col-e8eaf0);
     flex-wrap: wrap;
 }
@@ -312,15 +312,15 @@ body.internal-page {
 .man-detail-btn--secondary:hover { background: var(--col-e2e6ea); }
 .man-detail-btn--danger { background: var(--col-fdecea); color: var(--col-e74c3c); border: 1px solid var(--col-f5b7b1); }
 .man-detail-btn--danger:hover { background: var(--col-e74c3c); color: var(--col-ffffff); }
-.man-detail-btn--primary { background: linear-gradient(135deg, var(--col-27ae60), var(--col-219a52)); color: var(--col-ffffff); box-shadow: 0 3px 10px rgba(39,174,96,0.3); }
-.man-detail-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(39,174,96,0.4); }
+.man-detail-btn--primary { background: linear-gradient(135deg, var(--col-27ae60), var(--col-219a52)); color: var(--col-ffffff); box-shadow: 0 3px 10px var(--col-27ae604c); }
+.man-detail-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 5px 16px var(--col-27ae6066); }
 
 /* ── SECTIONS ── */
 .man-detail-section {
     background: var(--col-ffffff);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 6px var(--col-0000000f);
     border: 1px solid var(--col-e8eaf0);
 }
 .man-section-header {
@@ -438,7 +438,7 @@ body.internal-page {
 .man-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: var(--col-00000080);
     z-index: 500;
     backdrop-filter: blur(4px);
 }
@@ -450,7 +450,7 @@ body.internal-page {
     z-index: 501;
     background: var(--col-ffffff);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px var(--col-00000033);
     width: min(700px, 95vw);
     max-height: 90vh;
     overflow-y: auto;
@@ -489,7 +489,7 @@ body.internal-page {
     z-index: 501;
     background: var(--col-ffffff);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px var(--col-00000033);
     width: min(520px, 95vw);
 }
 .man-completa-header {
@@ -580,7 +580,7 @@ body.dark-mode .man-completa-value { color: var(--col-e8eaf0); }
     background: var(--col-ffffff); transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
 }
 .nc-form-group input:focus, .nc-form-group select:focus, .nc-form-group textarea:focus {
-    outline: none; border-color: var(--col-e67e22); box-shadow: 0 0 0 3px rgba(230,126,34,0.12);
+    outline: none; border-color: var(--col-e67e22); box-shadow: 0 0 0 3px var(--col-e67e221f);
 }
 .nc-vo-feedback { font-size: 0.8rem; margin-top: 4px; min-height: 16px; }
 .nc-vo-feedback.blocked { color: var(--col-e74c3c); font-weight: 600; }
@@ -589,8 +589,8 @@ body.dark-mode .man-completa-value { color: var(--col-e8eaf0); }
 .nc-btn { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
 .nc-btn-cancel { background: var(--col-f0f2f5); color: var(--col-555555); border: 1px solid var(--col-d0d4db); }
 .nc-btn-cancel:hover { background: var(--col-e2e6ea); }
-.nc-btn-save { background: linear-gradient(135deg, var(--col-e67e22), var(--col-d35400)); color: var(--col-ffffff); box-shadow: 0 4px 12px rgba(230,126,34,0.3); }
-.nc-btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(230,126,34,0.4); }
+.nc-btn-save { background: linear-gradient(135deg, var(--col-e67e22), var(--col-d35400)); color: var(--col-ffffff); box-shadow: 0 4px 12px var(--col-e67e224c); }
+.nc-btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 16px var(--col-e67e2266); }
 .nc-toggle-label { display: flex; align-items: center; gap: 14px; cursor: pointer; }
 .nc-toggle-label strong { display: block; font-size: 0.95rem; color: var(--col-1a1a2e); }
 .nc-toggle-label small { font-size: 0.82rem; color: var(--col-666666); }
@@ -601,7 +601,7 @@ body.dark-mode .man-completa-value { color: var(--col-e8eaf0); }
 }
 .nc-toggle-switch .nc-toggle-slider::before {
     content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
-    background: var(--col-ffffff); border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    background: var(--col-ffffff); border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 4px var(--col-00000033);
 }
 .nc-toggle-switch input:checked + .nc-toggle-slider { background: var(--col-e67e22); }
 .nc-toggle-switch input:checked + .nc-toggle-slider::before { transform: translateX(20px); }
