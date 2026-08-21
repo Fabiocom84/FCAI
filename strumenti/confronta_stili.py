@@ -73,6 +73,15 @@ def confrontabili(prima, dopo, nome):
     if prima.get('pagina') != dopo.get('pagina'):
         motivi.append(
             f"pagina diversa: {prima.get('pagina')} contro {dopo.get('pagina')}")
+    # Un rilievo di soli colori contro uno che include l'impaginazione
+    # produrrebbe centinaia di differenze inesistenti, e a prima vista
+    # sembrerebbero un disastro invece che un errore di metodo.
+    ga, gb = prima.get('gruppi', 'colore'), dopo.get('gruppi', 'colore')
+    if ga != gb:
+        motivi.append(
+            f"gruppi di proprietà diversi: '{ga}' contro '{gb}' — un rilievo "
+            f"di soli colori non è confrontabile con uno che include anche "
+            f"l'impaginazione")
     return motivi
 
 

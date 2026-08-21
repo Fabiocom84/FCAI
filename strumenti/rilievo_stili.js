@@ -47,7 +47,7 @@
 function rilievoStili(opzioni) {
     opzioni = opzioni || {};
 
-    var PROPRIETA = [
+    var COLORE = [
         'color',
         'background-color',
         'border-top-color',
@@ -59,6 +59,32 @@ function rilievoStili(opzioni) {
         'fill',
         'stroke'
     ];
+
+    // IMPAGINAZIONE — serve al task 3.4, dove i 296 `!important` residui sono
+    // su proprieta' di disposizione e non di colore. Un colore sbagliato si
+    // vede; un `display` sbagliato sposta le cose, ed e' un difetto peggiore.
+    //
+    // COSA E' ESCLUSO, E PERCHE'
+    // `width` e `height` calcolati dipendono dal CONTENUTO: una tabella con
+    // due righe in piu' e' piu' alta. Registrarli renderebbe ogni confronto
+    // rosso per motivi che non c'entrano col CSS — lo stesso errore che il
+    // raggruppamento per firma evita sui colori.
+    //
+    // Restano le proprieta' che descrivono una SCELTA e non un risultato:
+    // categoriche (`display`, `position`) o fissate dal foglio di stile
+    // (spaziature, spessori, allineamenti).
+    var IMPAGINAZIONE = [
+        'display', 'position', 'float', 'overflow', 'box-sizing', 'visibility',
+        'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+        'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+        'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
+        'border-radius', 'flex-direction', 'align-items', 'justify-content',
+        'text-align', 'font-size', 'font-weight', 'z-index'
+    ];
+
+    // Predefinito: solo colore, come per i task 3.1 e 3.2. Con
+    // `{impaginazione: true}` si aggiunge il secondo gruppo.
+    var PROPRIETA = opzioni.impaginazione ? COLORE.concat(IMPAGINAZIONE) : COLORE;
 
     // I valori completamente trasparenti sono la condizione predefinita di
     // quasi ogni elemento: registrarli riempirebbe il rilievo di righe che non
@@ -112,6 +138,11 @@ function rilievoStili(opzioni) {
     var risultato = {
         pagina: location.pathname.replace(/^.*\//, '') || 'index.html',
         tema: document.documentElement.getAttribute('data-theme') || 'chiaro',
+        // Va registrato: confrontare un rilievo di soli colori con uno che
+        // include l'impaginazione produrrebbe centinaia di differenze
+        // inesistenti, e sembrerebbero un disastro invece che un errore di
+        // metodo. `confronta_stili.py` puo' rifiutare la coppia leggendolo.
+        gruppi: opzioni.impaginazione ? 'colore+impaginazione' : 'colore',
         larghezzaFinestra: window.innerWidth,
         firme: chiavi.length,
         elementiVisibili: elementi.length,

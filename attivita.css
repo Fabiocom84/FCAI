@@ -20,17 +20,17 @@ body {
 
 /* Override della Shell Standard per occupare tutta la finestra */
 .std-app-shell {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100% !important;
+    width: 100%;
     /* Usa % per evitare overflow scrollbar */
-    height: 100% !important;
-    max-width: none !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
     z-index: 10;
     /* Assicura che stia sopra a tutto */
 }
@@ -41,9 +41,9 @@ body {
     flex-direction: column;
     height: 100%;
     width: 100%;
-    overflow: hidden !important;
+    overflow: hidden;
     /* Scroll gestito dalle colonne interne */
-    padding: 0 !important;
+    padding: 0;
     /* Reset padding container */
 }
 
@@ -90,11 +90,11 @@ body {
     flex: 1;
     height: 100%;
     overflow: hidden;
-    padding: 20px !important;
+    padding: 20px;
     gap: 20px;
     background-color: var(--col-eef2f5);
     width: 100%;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
 }
 
 .task-view-grid {
@@ -205,42 +205,42 @@ body {
 
 .toolbar-btn {
     flex: 1;
-    height: 32px !important;
-    border-radius: 4px !important;
-    border: none !important;
+    height: 32px;
+    border-radius: 4px;
+    border: none;
     cursor: pointer;
-    font-size: 0.8em !important;
-    font-weight: 600 !important;
-    color: white !important;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     white-space: nowrap;
-    margin: 0 !important;
-    min-width: unset !important;
-    padding: 0 2px !important;
+    margin: 0;
+    min-width: unset;
+    padding: 0 2px;
 }
 
 .btn-new {
-    background-color: var(--col-28a745) !important;
+    background-color: var(--col-28a745);
 }
 
 .btn-complete {
-    background-color: var(--col-17a2b8) !important;
+    background-color: var(--col-17a2b8);
 }
 
 .btn-transfer {
-    background-color: var(--col-6c757d) !important;
+    background-color: var(--col-6c757d);
 }
 
 .btn-edit {
-    background-color: var(--col-ffc107) !important;
-    color: var(--col-333333) !important;
+    background-color: var(--col-ffc107);
+    color: var(--col-333333);
 }
 
 .btn-delete {
-    background-color: var(--col-dc3545) !important;
+    background-color: var(--col-dc3545);
 }
 
 .btn-bell {
@@ -326,44 +326,44 @@ body {
 
     html,
     body {
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
     }
 
     .std-app-shell {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        z-index: 10 !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        z-index: 10;
     }
 
     .std-app-content {
-        width: 100% !important;
-        height: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
     }
 
     .task-view-wrapper {
-        width: 100% !important;
-        height: 100% !important;
-        padding: 30px !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: row !important;
-        background-color: var(--col-eef2f5) !important;
-        overflow: hidden !important;
+        width: 100%;
+        height: 100%;
+        padding: 30px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        background-color: var(--col-eef2f5);
+        overflow: hidden;
     }
 }
 
@@ -470,7 +470,7 @@ body {
 }
 
 .task-card.incoming-task {
-    border-left: 5px solid var(--col-3498db) !important;
+    border-left: 5px solid var(--col-3498db);
     background-color: var(--col-f0f7ff);
     box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }
@@ -531,7 +531,7 @@ body {
 }
 
 #archiveModal {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
@@ -544,12 +544,12 @@ body {
     justify-content: center;
     align-items: center;
     /* OVERRIDES for .modal class conflict */
-    transform: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    max-width: none !important;
-    max-height: none !important;
+    transform: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none;
+    max-height: none;
 }
 
 #archiveModal .modal-content {
