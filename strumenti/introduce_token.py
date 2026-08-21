@@ -188,7 +188,22 @@ def riscrivi(nome, conta):
         sostituzioni[0] += 1
         return f"var(--col-{c})"
 
-    testo = HEX.sub(sostituisci, testo)
+    # SI SOSTITUISCE SOLO DENTRO LE DICHIARAZIONI, MAI NEI SELETTORI.
+    #
+    # La prima versione applicava la sostituzione all'intero testo. Il
+    # 21/08/2026 questo ha incontrato `#add-commessa-btn`, un selettore di ID
+    # che inizia con `add` — tre cifre esadecimali valide. Quel caso si è
+    # salvato perché `aadddd` non corrisponde a nessun colore esistente, ma
+    # `#face`, `#dad`, `#beef`, `#cab` sarebbero stati trasformati in `var(...)`
+    # distruggendo il selettore, e nulla lo avrebbe segnalato: la regola
+    # semplicemente non si applicherebbe più.
+    #
+    # Limitarsi alle dichiarazioni `proprieta: valore` elimina la classe intera
+    # di questi errori invece di rincorrerne i casi noti.
+    def dentro_dichiarazione(m):
+        return m.group(1) + HEX.sub(sostituisci, m.group(2))
+
+    testo = re.sub(r'([a-zA-Z-]+\s*:\s*)([^;{}]+)', dentro_dichiarazione, testo)
     testo = re.sub(r'\x00(\d+)\x00', lambda m: protetti[int(m.group(1))], testo)
     return testo, sostituzioni[0]
 
@@ -225,7 +240,16 @@ def main():
                 continue
             eol = fine_riga(percorso)
             testo, n = riscrivi(nome, conta)
-            rimasti = len([m for m in HEX.finditer(COMMENTO.sub(' ', testo))])
+
+            # I residui si contano SOLO dentro le dichiarazioni, come la
+            # sostituzione. Contandoli su tutto il file, `#add-commessa-btn` e
+            # `#deep-search` — selettori di ID che iniziano con cifre
+            # esadecimali valide — risultavano "non sostituiti" e producevano un
+            # avviso su un file perfettamente convertito. Un allarme che suona
+            # senza motivo insegna a ignorare gli allarmi.
+            pulito = COMMENTO.sub(' ', testo)
+            rimasti = sum(len(HEX.findall(v))
+                          for _, v in DICHIARAZIONE.findall(pulito))
             with open(percorso, 'w', encoding='utf-8', newline=eol) as f:
                 f.write(testo)
             # `rimasti` deve essere zero: se non lo e', esiste una forma di

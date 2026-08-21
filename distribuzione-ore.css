@@ -9,7 +9,7 @@
 
 /* === SELETTORE COMMESSA === */
 .dist-selector-panel {
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 10px;
     padding: 20px 25px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -29,7 +29,7 @@
 .selector-group label {
     display: block;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     margin-bottom: 6px;
     font-size: 0.95em;
 }
@@ -37,16 +37,16 @@
 .dist-select {
     width: 100%;
     padding: 10px 14px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--col-e0e0e0);
     border-radius: 8px;
     font-size: 0.95em;
-    background: #fff;
-    color: #2c3e50;
+    background: var(--col-ffffff);
+    color: var(--col-2c3e50);
     transition: border-color 0.2s;
 }
 
 .dist-select:focus {
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     outline: none;
 }
 
@@ -68,37 +68,37 @@
 }
 
 .dist-btn--primary {
-    background: #3498db;
-    color: #fff;
+    background: var(--col-3498db);
+    color: var(--col-ffffff);
 }
 .dist-btn--primary:hover:not(:disabled) {
-    background: #2980b9;
+    background: var(--col-2980b9);
 }
 
 .dist-btn--ai {
-    background: linear-gradient(135deg, #8e44ad, #3498db);
-    color: #fff;
+    background: linear-gradient(135deg, var(--col-8e44ad), var(--col-3498db));
+    color: var(--col-ffffff);
     font-size: 1em;
     padding: 12px 28px;
 }
 .dist-btn--ai:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7d3c98, #2c81ba);
+    background: linear-gradient(135deg, var(--col-7d3c98), var(--col-2c81ba));
     box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
 }
 
 .dist-btn--success {
-    background: #27ae60;
-    color: #fff;
+    background: var(--col-27ae60);
+    color: var(--col-ffffff);
     font-size: 1em;
     padding: 12px 28px;
 }
 .dist-btn--success:hover:not(:disabled) {
-    background: #219a52;
+    background: var(--col-219a52);
 }
 
 /* === RIEPILOGO === */
 .dist-summary-panel {
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 10px;
     padding: 20px 25px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -114,21 +114,21 @@
 .summary-card {
     flex: 1;
     min-width: 120px;
-    background: #f8f9fa;
+    background: var(--col-f8f9fa);
     border-radius: 8px;
     padding: 14px 18px;
     text-align: center;
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
 }
 
 .summary-card.accent {
-    background: #e8f4fc;
-    border-color: #b8daff;
+    background: var(--col-e8f4fc);
+    border-color: var(--col-b8daff);
 }
 
 .summary-label {
     font-size: 0.8em;
-    color: #888;
+    color: var(--col-888888);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
@@ -137,24 +137,24 @@
 .summary-value {
     font-size: 1.6em;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
 }
 
 .summary-value.highlight {
-    color: #e67e22;
+    color: var(--col-e67e22);
 }
 
 /* Ore per mese */
 .ore-mesi-container {
     margin-top: 15px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--col-eeeeee);
     padding-top: 12px;
 }
 
 .ore-mesi-container h4 {
     margin: 0 0 10px;
     font-size: 0.9em;
-    color: #555;
+    color: var(--col-555555);
     font-weight: 500;
 }
 
@@ -165,8 +165,8 @@
 }
 
 .ore-mese-badge {
-    background: #f0f4f8;
-    border: 1px solid #dde;
+    background: var(--col-f0f4f8);
+    border: 1px solid var(--col-ddddee);
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 0.85em;
@@ -178,13 +178,13 @@
 
 .ore-mese-badge .mese-label {
     font-size: 0.75em;
-    color: #888;
+    color: var(--col-888888);
     text-transform: uppercase;
 }
 
 .ore-mese-badge .mese-value {
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-size: 1.05em;
 }
 
@@ -195,7 +195,7 @@
     gap: 12px;
     margin-bottom: 15px;
     padding: 12px 20px;
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
@@ -211,15 +211,15 @@
     gap: 8px;
     cursor: pointer;
     font-size: 0.9em;
-    color: #555;
+    color: var(--col-555555);
     padding: 6px 12px;
     border-radius: 6px;
-    background: #f0f0f0;
+    background: var(--col-f0f0f0);
     transition: background 0.2s;
 }
 
 .toggle-chiusi:hover {
-    background: #e0e0e0;
+    background: var(--col-e0e0e0);
 }
 
 .toggle-chiusi input {
@@ -230,7 +230,7 @@
 
 /* === TABELLA OP === */
 .dist-table-container {
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     overflow: hidden;
@@ -243,8 +243,8 @@
 }
 
 .dist-table thead {
-    background: #2c3e50;
-    color: #fff;
+    background: var(--col-2c3e50);
+    color: var(--col-ffffff);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -261,12 +261,12 @@
 
 .dist-table td {
     padding: 10px 14px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--col-f0f0f0);
     vertical-align: top;
 }
 
 .dist-table tbody tr:hover {
-    background: #f8f9fc;
+    background: var(--col-f8f9fc);
 }
 
 /* Colonne */
@@ -280,7 +280,7 @@
 /* Righe chiuse */
 .row-closed {
     opacity: 0.55;
-    background: #f9f9f9;
+    background: var(--col-f9f9f9);
 }
 
 .row-closed:hover {
@@ -297,7 +297,7 @@
 
 .storico-list li {
     padding: 2px 0;
-    border-bottom: 1px dotted #eee;
+    border-bottom: 1px dotted var(--col-eeeeee);
     display: flex;
     justify-content: space-between;
     gap: 6px;
@@ -308,7 +308,7 @@
 }
 
 .storico-label {
-    color: #555;
+    color: var(--col-555555);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -317,12 +317,12 @@
 
 .storico-ore {
     font-weight: 600;
-    color: #27ae60;
+    color: var(--col-27ae60);
     white-space: nowrap;
 }
 
 .storico-empty {
-    color: #ccc;
+    color: var(--col-cccccc);
     font-style: italic;
     font-size: 0.82em;
 }
@@ -342,12 +342,12 @@
 
 .op-numero {
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-size: 0.95em;
 }
 
 .op-descrizione {
-    color: #555;
+    color: var(--col-555555);
     font-size: 0.85em;
     line-height: 1.3;
 }
@@ -356,7 +356,7 @@
     display: flex;
     gap: 10px;
     font-size: 0.78em;
-    color: #888;
+    color: var(--col-888888);
     margin-top: 2px;
 }
 
@@ -368,8 +368,8 @@
 
 .op-badge-closed {
     display: inline-block;
-    background: #d4edda;
-    color: #155724;
+    background: var(--col-d4edda);
+    color: var(--col-155724);
     font-size: 0.72em;
     padding: 2px 6px;
     border-radius: 4px;
@@ -382,11 +382,11 @@
     text-align: center;
     font-weight: 600;
     font-size: 1.05em;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
 }
 
 .ore-cell.empty {
-    color: #ccc;
+    color: var(--col-cccccc);
     font-style: italic;
     font-weight: 400;
 }
@@ -394,23 +394,23 @@
 .ore-input {
     width: 80px;
     padding: 6px 8px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--col-e0e0e0);
     border-radius: 6px;
     text-align: center;
     font-size: 1em;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     transition: border-color 0.2s;
 }
 
 .ore-input:focus {
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     outline: none;
 }
 
 .ore-input:not(:placeholder-shown) {
-    background: #fef9e7;
-    border-color: #f39c12;
+    background: var(--col-fef9e7);
+    border-color: var(--col-f39c12);
 }
 
 /* Dettaglio lavorazioni */
@@ -423,8 +423,8 @@
 
 .dettaglio-list li {
     padding: 3px 0;
-    color: #555;
-    border-bottom: 1px dotted #eee;
+    color: var(--col-555555);
+    border-bottom: 1px dotted var(--col-eeeeee);
     display: flex;
     justify-content: space-between;
 }
@@ -435,24 +435,24 @@
 
 .dettaglio-lav {
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
 }
 
 .dettaglio-persona {
-    color: #888;
+    color: var(--col-888888);
     font-size: 0.9em;
 }
 
 .dettaglio-ore {
     font-weight: 600;
-    color: #8e44ad;
+    color: var(--col-8e44ad);
     white-space: nowrap;
 }
 
 /* Footer Totali */
 .totals-row {
-    background: #f0f4f8;
-    border-top: 2px solid #2c3e50;
+    background: var(--col-f0f4f8);
+    border-top: 2px solid var(--col-2c3e50);
 }
 
 .totals-row td {
@@ -464,14 +464,14 @@
     font-weight: 700;
     font-size: 0.95em;
     text-align: right !important;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
 }
 
 .totals-value {
     font-weight: 700;
     font-size: 1.2em;
     text-align: center !important;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
 }
 
 /* Sticky footer */

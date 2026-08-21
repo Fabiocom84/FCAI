@@ -9,8 +9,8 @@
 
 /* --- SEZIONE PDF UFFICIALE --- */
 .pdf-official-section {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--col-f8fafc);
+    border: 1px solid var(--col-e2e8f0);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 20px;
@@ -27,14 +27,14 @@
 .title-container h1 {
     margin: 0;
     font-size: 1.1rem;
-    color: #3498db;
+    color: var(--col-3498db);
     text-transform: uppercase;
     text-align: center;
 }
 
 .header-username {
     font-size: 0.8rem;
-    color: #bdc3c7;
+    color: var(--col-bdc3c7);
     margin-top: 2px;
 }
 
@@ -44,8 +44,8 @@
 
 /* --- 2. SEZIONE PDF (Box Azzurro) --- */
 .pdf-official-section {
-    background-color: #e8f4f8;
-    border: 2px dashed #b3e5fc;
+    background-color: var(--col-e8f4f8);
+    border: 2px dashed var(--col-b3e5fc);
     padding: 10px;
     border-radius: 12px;
     text-align: center;
@@ -53,13 +53,13 @@
 
 .pdf-official-section h3 {
     margin: 0 0 5px 0;
-    color: #0277bd;
+    color: var(--col-0277bd);
     font-size: 1rem;
 }
 
 .info-text {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--col-666666);
     margin-bottom: 10px;
 }
 
@@ -78,7 +78,7 @@
     padding: 0 8px !important;
     font-size: 0.9rem !important;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     background: white;
     flex: 1;
     min-width: 80px;
@@ -124,7 +124,7 @@
 
 .section-label {
     margin: 0 0 10px 0;
-    color: #555;
+    color: var(--col-555555);
     font-size: 0.9rem;
     text-transform: uppercase;
     font-weight: bold;
@@ -148,7 +148,7 @@
 
 .form-group label {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--col-666666);
     margin-bottom: 4px;
 }
 
@@ -156,7 +156,7 @@
     height: 36px !important;
     padding: 5px 10px !important;
     font-size: 0.9rem !important;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
@@ -183,7 +183,7 @@
     justify-content: center !important;
     align-items: center !important;
 
-    background-color: #3498db !important;
+    background-color: var(--col-3498db) !important;
     color: white !important;
     font-size: 1rem !important;
     font-weight: 600 !important;
@@ -218,12 +218,12 @@
 }
 
 #btnResetFilters {
-    background-color: #95a5a6 !important;
+    background-color: var(--col-95a5a6) !important;
     color: white !important;
 }
 
 #btnApplyFilters {
-    background-color: #007bff !important;
+    background-color: var(--col-007bff) !important;
     color: white !important;
 }
 
@@ -234,19 +234,19 @@
     overflow: hidden;
     margin: 10px 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
 }
 
 .accordion-header {
     width: 100%;
     padding: 10px 15px;
-    background: #fff;
+    background: var(--col-ffffff);
     border: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9rem;
-    color: #34495e;
+    color: var(--col-34495e);
     cursor: pointer;
     font-weight: 500;
     position: relative;
@@ -254,13 +254,13 @@
 }
 
 .accordion-header:active {
-    background-color: #f9f9f9;
+    background-color: var(--col-f9f9f9);
 }
 
 .accordion-content {
     display: none;
-    border-top: 1px solid #eee;
-    background: #fdfdfd;
+    border-top: 1px solid var(--col-eeeeee);
+    background: var(--col-fdfdfd);
 }
 
 .accordion-content.open {
@@ -288,19 +288,19 @@
 }
 
 .kpi-box.blue {
-    background: #3498db !important;
+    background: var(--col-3498db) !important;
 }
 
 .kpi-box.purple {
-    background: #9b59b6 !important;
+    background: var(--col-9b59b6) !important;
 }
 
 .kpi-box.orange {
-    background: #e67e22 !important;
+    background: var(--col-e67e22) !important;
 }
 
 .kpi-box.green {
-    background: #27ae60 !important;
+    background: var(--col-27ae60) !important;
 }
 
 .kpi-value {
@@ -318,7 +318,7 @@
 .preview-section h4 {
     margin: 5px 0 10px 0;
     font-size: 0.9rem;
-    color: #555;
+    color: var(--col-555555);
     text-transform: uppercase;
 }
 
@@ -330,7 +330,7 @@
 }
 
 .toggle-view {
-    background: #e0e0e0;
+    background: var(--col-e0e0e0);
     border-radius: 15px;
     padding: 3px;
     display: flex;
@@ -347,7 +347,7 @@
 
 .view-btn.active {
     background: white;
-    color: #3498db;
+    color: var(--col-3498db);
     font-weight: bold;
 }
 
@@ -355,7 +355,7 @@
     border-radius: 8px;
     max-height: 350px;
     overflow-y: auto;
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
     background: white;
 }
 
@@ -368,13 +368,13 @@ table {
 th,
 td {
     padding: 10px 8px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--col-eeeeee);
     text-align: left;
 }
 
 thead {
     position: sticky;
     top: 0;
-    background: #f8f9fa;
+    background: var(--col-f8f9fa);
     z-index: 5;
 }

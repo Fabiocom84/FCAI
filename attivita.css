@@ -79,7 +79,7 @@ body {
 }
 
 .header-select option {
-    color: #333;
+    color: var(--col-333333);
 }
 
 /* --- 3. LAYOUT DESKTOP (Larghezza > 1366px) --- */
@@ -92,7 +92,7 @@ body {
     overflow: hidden;
     padding: 20px !important;
     gap: 20px;
-    background-color: #eef2f5;
+    background-color: var(--col-eef2f5);
     width: 100%;
     box-sizing: border-box !important;
 }
@@ -111,13 +111,13 @@ body {
     flex: 1 1 0px;
     /* Forza larghezza uguale */
     min-width: 0;
-    background-color: #ebecf0;
+    background-color: var(--col-ebecf0);
     border-radius: 6px;
     padding: 6px;
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--col-dcdcdc);
 }
 
 /* ISPETTORE (Colonna 5) */
@@ -130,7 +130,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid var(--col-dddddd);
     overflow: hidden;
     z-index: 15;
 }
@@ -140,7 +140,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 4px 8px 4px;
-    border-bottom: 2px solid #dcdcdc;
+    border-bottom: 2px solid var(--col-dcdcdc);
     margin-bottom: 6px;
     flex-shrink: 0;
 }
@@ -148,7 +148,7 @@ body {
 .task-column-header h2 {
     font-size: 0.85em;
     margin: 0;
-    color: #444;
+    color: var(--col-444444);
     font-weight: 700;
     text-transform: uppercase;
     white-space: nowrap;
@@ -157,7 +157,7 @@ body {
 }
 
 .column-count {
-    background-color: #d1d5db;
+    background-color: var(--col-d1d5db);
     padding: 1px 6px;
     border-radius: 10px;
     font-size: 0.7em;
@@ -180,7 +180,7 @@ body {
 }
 
 .tasks-container::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: var(--col-cccccc);
     border-radius: 3px;
 }
 
@@ -188,14 +188,14 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background-color: #fff;
+    background-color: var(--col-ffffff);
 }
 
 /* --- 4. TOOLBAR ISPETTORE --- */
 .inspector-header-toolbar {
     padding: 8px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #eee;
+    background-color: var(--col-f8f9fa);
+    border-bottom: 1px solid var(--col-eeeeee);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -223,30 +223,30 @@ body {
 }
 
 .btn-new {
-    background-color: #28a745 !important;
+    background-color: var(--col-28a745) !important;
 }
 
 .btn-complete {
-    background-color: #17a2b8 !important;
+    background-color: var(--col-17a2b8) !important;
 }
 
 .btn-transfer {
-    background-color: #6c757d !important;
+    background-color: var(--col-6c757d) !important;
 }
 
 .btn-edit {
-    background-color: #ffc107 !important;
-    color: #333 !important;
+    background-color: var(--col-ffc107) !important;
+    color: var(--col-333333) !important;
 }
 
 .btn-delete {
-    background-color: #dc3545 !important;
+    background-color: var(--col-dc3545) !important;
 }
 
 .btn-bell {
     background-color: transparent !important;
-    color: #555 !important;
-    border: 1px solid #ddd !important;
+    color: var(--col-555555) !important;
+    border: 1px solid var(--col-dddddd) !important;
     flex: 0 0 32px !important;
 }
 
@@ -307,7 +307,7 @@ body {
         margin-top: 25px;
         margin-bottom: 25px;
         border-left: none;
-        border-top: 2px solid #ddd;
+        border-top: 2px solid var(--col-dddddd);
     }
 
     .page-header h1 {
@@ -362,7 +362,7 @@ body {
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: row !important;
-        background-color: #eef2f5 !important;
+        background-color: var(--col-eef2f5) !important;
         overflow: hidden !important;
     }
 }
@@ -405,7 +405,7 @@ body {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     /* Generic border first */
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     /* Specific left border override */
     border-left: 5px solid transparent;
     transition: transform 0.1s;
@@ -415,25 +415,25 @@ body {
 .task-card:hover {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
-    border-color: #ccc;
+    border-color: var(--col-cccccc);
 }
 
 .task-card.priority-alta {
-    border-left-color: #dc3545;
+    border-left-color: var(--col-dc3545);
 }
 
 .task-card.priority-media {
-    border-left-color: #ffc107;
+    border-left-color: var(--col-ffc107);
 }
 
 .task-card.priority-bassa {
-    border-left-color: #28a745;
+    border-left-color: var(--col-28a745);
 }
 
 .task-card h4 {
     margin: 6px 0;
     font-size: 0.95em;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-weight: 500;
     line-height: 1.3;
 }
@@ -453,30 +453,30 @@ body {
 }
 
 .cat-tag {
-    background-color: #f1f3f5;
-    color: #555;
+    background-color: var(--col-f1f3f5);
+    color: var(--col-555555);
 }
 
 .commessa-tag {
-    background-color: #e3f2fd;
-    color: #0d47a1;
+    background-color: var(--col-e3f2fd);
+    color: var(--col-0d47a1);
 }
 
 .task-card.delegated-out {
     opacity: 0.6;
-    background-color: #f3f3f3;
-    border: 1px dashed #bbb;
+    background-color: var(--col-f3f3f3);
+    border: 1px dashed var(--col-bbbbbb);
     cursor: default;
 }
 
 .task-card.incoming-task {
-    border-left: 5px solid #3498db !important;
-    background-color: #f0f7ff;
+    border-left: 5px solid var(--col-3498db) !important;
+    background-color: var(--col-f0f7ff);
     box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }
 
 .incoming-alert {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
     font-size: 0.75em;
     font-weight: bold;
@@ -489,7 +489,7 @@ body {
 
 /* --- 7. NOTIFICHE & MODALI EXTRA --- */
 .notification-list {
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
     border-radius: 6px;
     overflow: hidden;
     margin-bottom: 15px;
@@ -498,13 +498,13 @@ body {
 .notification-item-wrapper {
     display: flex;
     align-items: stretch;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--col-eeeeee);
     background: white;
     transition: background 0.2s;
 }
 
 .notification-item-wrapper.unread {
-    background-color: #e3f2fd;
+    background-color: var(--col-e3f2fd);
 }
 
 .notification-content {
@@ -517,17 +517,17 @@ body {
     width: 40px;
     background: transparent;
     border: none;
-    border-left: 1px solid #eee;
+    border-left: 1px solid var(--col-eeeeee);
     cursor: pointer;
-    color: #ccc;
+    color: var(--col-cccccc);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .btn-go-to-task:hover {
-    background: #f1f3f5;
-    color: #3498db;
+    background: var(--col-f1f3f5);
+    color: var(--col-3498db);
 }
 
 #archiveModal {
@@ -575,7 +575,7 @@ body {
 
 /* --- ARCHIVE MODAL PREMIUM STYLES --- */
 #archiveModal .modal-header {
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     color: white;
     padding: 15px 20px;
     border-radius: 8px 8px 0 0;
@@ -606,7 +606,7 @@ body {
 
 .archive-task-item {
     padding: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--col-eeeeee);
     display: flex;
     /* Changed from grid to flex for better alignment */
     align-items: center;
@@ -615,7 +615,7 @@ body {
 }
 
 .archive-task-item:hover {
-    background-color: #f9f9f9;
+    background-color: var(--col-f9f9f9);
 }
 
 .archive-task-item:last-child {
@@ -624,7 +624,7 @@ body {
 
 .archive-task-title {
     font-weight: 500;
-    color: #333;
+    color: var(--col-333333);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -632,8 +632,8 @@ body {
 
 .archive-task-date {
     font-size: 0.85em;
-    color: #888;
-    background: #f1f1f1;
+    color: var(--col-888888);
+    background: var(--col-f1f1f1);
     padding: 3px 8px;
     border-radius: 4px;
 }
@@ -641,7 +641,7 @@ body {
 .empty-archive {
     text-align: center;
     padding: 40px;
-    color: #999;
+    color: var(--col-999999);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -652,14 +652,14 @@ body {
 .detail-title {
     margin: 10px 0 15px 0;
     font-size: 1.2em;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-weight: 700;
     text-transform: uppercase;
 }
 
 .read-only-box {
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background-color: var(--col-f9f9f9);
+    border: 1px solid var(--col-e0e0e0);
     border-radius: 6px;
     padding: 15px;
     margin-bottom: 20px;
@@ -675,14 +675,14 @@ body {
 .detail-item strong {
     display: block;
     font-size: 0.75em;
-    color: #888;
+    color: var(--col-888888);
     text-transform: uppercase;
     margin-bottom: 3px;
     font-weight: 600;
 }
 
 .detail-item span {
-    color: #333;
+    color: var(--col-333333);
     font-weight: 500;
 }
 
@@ -690,30 +690,30 @@ body {
     grid-column: 1 / -1;
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px dashed #ccc;
+    border-top: 1px dashed var(--col-cccccc);
 }
 
 .description-text {
     font-size: 0.95em;
-    color: #444;
+    color: var(--col-444444);
     line-height: 1.5;
-    background: #fff;
+    background: var(--col-ffffff);
     padding: 10px;
     border-radius: 4px;
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
     margin-top: 5px;
 }
 
 .history-section {
     margin-top: 20px;
-    border-top: 2px solid #f0f0f0;
+    border-top: 2px solid var(--col-f0f0f0);
     padding-top: 15px;
 }
 
 .history-section h4 {
     font-size: 1em;
     margin: 0 0 10px 0;
-    color: #555;
+    color: var(--col-555555);
 }
 
 .comment-box {
@@ -725,7 +725,7 @@ body {
 .comment-box textarea {
     flex: 1;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 4px;
     resize: vertical;
     min-height: 40px;
@@ -733,7 +733,7 @@ body {
 }
 
 .btn-send {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
     border: none;
     border-radius: 4px;
@@ -742,7 +742,7 @@ body {
 }
 
 .btn-send:hover {
-    background-color: #2980b9;
+    background-color: var(--col-2980b9);
 }
 
 .history-list {
@@ -755,24 +755,24 @@ body {
     font-size: 0.85em;
     padding: 8px;
     border-radius: 4px;
-    border-left: 3px solid #ccc;
-    background: #fdfdfd;
+    border-left: 3px solid var(--col-cccccc);
+    background: var(--col-fdfdfd);
 }
 
 .history-item.action {
-    border-left-color: #f39c12;
-    background: #fffdf5;
+    border-left-color: var(--col-f39c12);
+    background: var(--col-fffdf5);
 }
 
 .history-item.comment {
-    border-left-color: #3498db;
-    background: #f0f7ff;
+    border-left-color: var(--col-3498db);
+    background: var(--col-f0f7ff);
 }
 
 .inspector-form label {
     display: block;
     font-size: 0.85em;
-    color: #666;
+    color: var(--col-666666);
     font-weight: 600;
     margin: 10px 0 4px 0;
 }
@@ -783,7 +783,7 @@ body {
 .inspector-form .inp-area {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 4px;
     font-size: 0.95em;
     box-sizing: border-box;
@@ -809,5 +809,5 @@ body {
     gap: 10px;
     margin-top: 20px;
     padding-top: 10px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--col-eeeeee);
 }
