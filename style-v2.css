@@ -13,7 +13,7 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    background-color: #f0f2f5;
+    background-color: var(--col-f0f2f5);
     overflow-x: hidden;
 }
 
@@ -75,7 +75,7 @@ body::after {
 h1 {
     font-weight: 700;
     font-size: 2.2em;
-    color: #2A76B8;
+    color: var(--col-2a76b8);
     margin-bottom: 0;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -83,7 +83,7 @@ h1 {
 
 h2 {
     font-weight: 500;
-    color: #333333;
+    color: var(--col-333333);
     margin-bottom: 15px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -117,7 +117,7 @@ h2 {
 }
 
 .page-header {
-    background-color: #2c3e50;   /* identico a std-app-header */
+    background-color: var(--col-2c3e50);   /* identico a std-app-header */
     color: white;
     display: flex;
     justify-content: space-between;
@@ -143,7 +143,7 @@ h2 {
 }
 
 .header-button {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
     padding: 8px 16px;
     font-size: 0.9em;
@@ -157,7 +157,7 @@ h2 {
 }
 
 .header-button:hover {
-    background-color: #2980b9;
+    background-color: var(--col-2980b9);
 }
 
 .header-button img {
@@ -236,95 +236,95 @@ h2 {
 
 /* Colori Pulsanti */
 .insert-data-button {
-    background-color: #2ecc71;
+    background-color: var(--col-2ecc71);
 }
 
 .insert-data-button:hover {
-    background-color: #27ae60;
+    background-color: var(--col-27ae60);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .chat-ai-button {
-    background-color: #f1c40f;
+    background-color: var(--col-f1c40f);
 }
 
 .chat-ai-button:hover {
-    background-color: #f39c12;
+    background-color: var(--col-f39c12);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .commesse-button,
 .dashboard-button {
-    background-color: #9b59b6;
+    background-color: var(--col-9b59b6);
 }
 
 .commesse-button:hover,
 .dashboard-button:hover {
-    background-color: #8e44ad;
+    background-color: var(--col-8e44ad);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* ── PULSANTE MANUTENZIONI ── */
 .manutenzioni-button {
-    background: linear-gradient(135deg, #e67e22, #f39c12);
+    background: linear-gradient(135deg, var(--col-e67e22), var(--col-f39c12));
 }
 .manutenzioni-button:hover {
-    background: linear-gradient(135deg, #d35400, #e67e22);
+    background: linear-gradient(135deg, var(--col-d35400), var(--col-e67e22));
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(230, 126, 34, 0.3);
 }
 
 .insert-orders-button {
-    background-color: #e67e22;
+    background-color: var(--col-e67e22);
 }
 
 .insert-orders-button:hover {
-    background-color: #d35400;
+    background-color: var(--col-d35400);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .insert-hours-button {
-    background-color: #ff7f50;
+    background-color: var(--col-ff7f50);
 }
 
 .insert-hours-button:hover {
-    background-color: #ff8c00;
+    background-color: var(--col-ff8c00);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .print-button {
-    background-color: #00838F;
+    background-color: var(--col-00838f);
 }
 
 .print-button:hover {
-    background-color: #006064;
+    background-color: var(--col-006064);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .attendance-button,
 .orders-view-button {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
 }
 
 .attendance-button:hover,
 .orders-view-button:hover {
-    background-color: #2980b9;
+    background-color: var(--col-2980b9);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .dist-ore-button {
-    background: linear-gradient(135deg, #8e44ad, #3498db);
+    background: linear-gradient(135deg, var(--col-8e44ad), var(--col-3498db));
 }
 
 .dist-ore-button:hover {
-    background: linear-gradient(135deg, #7d3c98, #2c81ba);
+    background: linear-gradient(135deg, var(--col-7d3c98), var(--col-2c81ba));
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(142, 68, 173, 0.3);
 }
@@ -332,15 +332,15 @@ h2 {
 .agile-view-button,
 .manage-data-button,
 .config-button {
-    background-color: #34495e;
+    background-color: var(--col-34495e);
 }
 
 .dev-tools-button {
-    background: linear-gradient(135deg, #2c3e50, #7f8c8d);
+    background: linear-gradient(135deg, var(--col-2c3e50), var(--col-7f8c8d));
 }
 
 .dev-tools-button:hover {
-    background: linear-gradient(135deg, #1a252f, #6c7a7d);
+    background: linear-gradient(135deg, var(--col-1a252f), var(--col-6c7a7d));
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
@@ -348,31 +348,31 @@ h2 {
 .agile-view-button:hover,
 .manage-data-button:hover,
 .config-button:hover {
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .task-button {
-    background-color: #00796B;
+    background-color: var(--col-00796b);
 }
 
 .task-button:hover {
-    background-color: #004D40;
+    background-color: var(--col-004d40);
     transform: translateY(-3px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .placeholder-button {
-    background-color: #e0e0e0;
-    color: #999;
+    background-color: var(--col-e0e0e0);
+    color: var(--col-999999);
     cursor: default;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--col-cccccc);
     box-shadow: none;
 }
 
 .placeholder-button:hover {
-    background-color: #e0e0e0;
+    background-color: var(--col-e0e0e0);
     transform: none;
     box-shadow: none;
 }
@@ -396,7 +396,7 @@ h2 {
     font-weight: 500;
     text-decoration: none;
     color: white;
-    background-color: #8c96a3;
+    background-color: var(--col-8c96a3);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-sizing: border-box;
@@ -405,7 +405,7 @@ h2 {
 }
 
 .training-button:hover {
-    background-color: #7a8491;
+    background-color: var(--col-7a8491);
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
@@ -421,7 +421,7 @@ h2 {
 .button.disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: #95a5a6;
+    background-color: var(--col-95a5a6);
 }
 
 .button.disabled:hover {
@@ -430,34 +430,34 @@ h2 {
 }
 
 .button--primary {
-    background-color: #28a745;
-    border-color: #218838;
+    background-color: var(--col-28a745);
+    border-color: var(--col-218838);
     color: white;
 }
 
 .button--primary:hover {
-    background-color: #218838;
+    background-color: var(--col-218838);
 }
 
 .button--secondary {
-    background-color: #007bff;
-    border-color: #0069d9;
+    background-color: var(--col-007bff);
+    border-color: var(--col-0069d9);
     color: white;
 }
 
 .button--secondary:hover {
-    background-color: #0069d9;
+    background-color: var(--col-0069d9);
 }
 
 .button--warning {
-    background-color: #ffc107;
-    border-color: #e0a800;
-    color: #212529;
+    background-color: var(--col-ffc107);
+    border-color: var(--col-e0a800);
+    color: var(--col-212529);
 }
 
 .button--danger {
-    background-color: #dc3545;
-    border-color: #c82333;
+    background-color: var(--col-dc3545);
+    border-color: var(--col-c82333);
     color: white;
 }
 
@@ -465,10 +465,10 @@ h2 {
 .form-group,
 .form-section {
     margin-bottom: 5px;
-    background: #f8f9fa;
+    background: var(--col-f8f9fa);
     padding: 15px;
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--col-e9ecef);
     text-align: left;
 }
 
@@ -489,7 +489,7 @@ h2 {
     margin: 0;
     font-size: 1.1em;
     font-weight: 500;
-    color: #333;
+    color: var(--col-333333);
 }
 
 input[type="text"],
@@ -502,25 +502,25 @@ select,
 textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 6px;
     box-sizing: border-box;
     font-size: 1em;
     font-family: 'Roboto', sans-serif;
-    color: #333;
+    color: var(--col-333333);
     transition: border-color 0.3s;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-    border-color: #2A76B8;
+    border-color: var(--col-2a76b8);
     box-shadow: 0 0 0 3px rgba(42, 118, 184, 0.2);
     outline: none;
 }
 
 .custom-file-upload {
-    border: 2px dashed #e0e0e0;
+    border: 2px dashed var(--col-e0e0e0);
     border-radius: 8px;
     padding: 20px;
     text-align: center;
@@ -532,8 +532,8 @@ textarea:focus {
 }
 
 .custom-file-upload:hover {
-    border-color: #2A76B8;
-    background: #f8faff;
+    border-color: var(--col-2a76b8);
+    background: var(--col-f8faff);
 }
 
 .custom-file-upload.compact {
@@ -556,7 +556,7 @@ textarea:focus {
 
 .styled-choices-container .choices__inner {
     min-height: 45px;
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -565,7 +565,7 @@ textarea:focus {
 /* Stile per il saluto utente in index.html */
 .user-greeting {
     font-size: 1.1em;
-    color: #555;
+    color: var(--col-555555);
     margin-top: -15px;
     /* Lo avvicina al titolo */
     margin-bottom: 25px;
@@ -576,7 +576,7 @@ textarea:focus {
 }
 
 .user-greeting strong {
-    color: #2A76B8;
+    color: var(--col-2a76b8);
     /* Blu come il titolo */
     font-weight: 600;
 }
@@ -629,7 +629,7 @@ textarea:focus {
 }
 
 .close-button {
-    background: #6c757d;
+    background: var(--col-6c757d);
     color: white;
     border-radius: 50%;
     width: 35px;
@@ -644,7 +644,7 @@ textarea:focus {
 
 .close-button:hover {
     transform: rotate(90deg);
-    background: #5a6268;
+    background: var(--col-5a6268);
 }
 
 .modal-body {
@@ -656,7 +656,7 @@ textarea:focus {
 .modal-footer {
     padding-top: 10px;
     margin-top: 10px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--col-f0f0f0);
     display: flex;
     justify-content: center;
 }
@@ -665,7 +665,7 @@ textarea:focus {
     padding: 15px 20px;
     border: none;
     border-radius: 8px;
-    background: #28a745;
+    background: var(--col-28a745);
     color: white;
     font-size: 1.1em;
     cursor: pointer;
@@ -677,7 +677,7 @@ textarea:focus {
 }
 
 .save-button:hover {
-    background: #1e7e34;
+    background: var(--col-1e7e34);
 }
 
 .save-button img {
@@ -703,8 +703,8 @@ textarea:focus {
     align-items: center;
     gap: 8px;
     background: white;
-    border: 1px solid #ccc;
-    color: #333;
+    border: 1px solid var(--col-cccccc);
+    color: var(--col-333333);
 }
 
 .voice-controls-modern button img {
@@ -715,22 +715,22 @@ textarea:focus {
 }
 
 #startButton {
-    border-color: #28a745;
-    color: #28a745;
+    border-color: var(--col-28a745);
+    color: var(--col-28a745);
 }
 
 #startButton:hover {
-    background-color: #28a745;
+    background-color: var(--col-28a745);
     color: white;
 }
 
 #stopButton {
-    border-color: #dc3545;
-    color: #dc3545;
+    border-color: var(--col-dc3545);
+    color: var(--col-dc3545);
 }
 
 #stopButton:hover:not(:disabled) {
-    background-color: #dc3545;
+    background-color: var(--col-dc3545);
     color: white;
 }
 
@@ -742,7 +742,7 @@ textarea:focus {
     padding: 10px;
     height: 300px;
     overflow-y: auto;
-    background: #fff;
+    background: var(--col-ffffff);
 }
 
 .chat-message {
@@ -754,12 +754,12 @@ textarea:focus {
 
 .chat-message.user {
     align-self: flex-end;
-    background: #dcf8c6;
+    background: var(--col-dcf8c6);
 }
 
 .chat-message.ai {
     align-self: flex-start;
-    background: #f1f0f0;
+    background: var(--col-f1f0f0);
 }
 
 /* Custom Modals */
@@ -799,7 +799,7 @@ textarea:focus {
 }
 
 #success-feedback-modal h3 {
-    color: #28a745;
+    color: var(--col-28a745);
 }
 
 #success-feedback-modal h3::after {
@@ -823,16 +823,16 @@ textarea:focus {
 .modal-top-section {
     display: flex;
     gap: 20px;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid var(--col-f0f0f0);
     padding-bottom: 15px;
 }
 
 .personnel-list-container {
     flex: 1.5;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     border-radius: 8px;
     padding: 10px;
-    background: #f8f9fa;
+    background: var(--col-f8f9fa);
 }
 
 #personnel-feedback-list {
@@ -843,7 +843,7 @@ textarea:focus {
 }
 
 .entry-count-badge {
-    background: #2A76B8;
+    background: var(--col-2a76b8);
     color: white;
     font-weight: bold;
     border-radius: 50%;
@@ -905,7 +905,7 @@ textarea:focus {
 #provisional-table th,
 #provisional-table td {
     padding: 10px 12px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--col-dee2e6);
     text-align: left;
 }
 
@@ -954,7 +954,7 @@ textarea:focus {
 .login-container h2 {
     font-size: 1.6em;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     /* RISOLUZIONE TUA RICHIESTA: Più spazio sotto il titolo */
     margin-bottom: 35px;
     letter-spacing: 0.5px;
@@ -966,7 +966,7 @@ textarea:focus {
     text-align: left;
     font-size: 0.9em;
     font-weight: 500;
-    color: #5a6b7c;
+    color: var(--col-5a6b7c);
     margin-bottom: 8px;
     margin-left: 4px;
 }
@@ -976,17 +976,17 @@ textarea:focus {
 .login-container input[type="password"] {
     padding: 14px 16px;
     /* Più alti */
-    background-color: #f7f9fc;
+    background-color: var(--col-f7f9fc);
     /* Grigio chiarissimo invece di bianco puro */
-    border: 1px solid #e1e4e8;
+    border: 1px solid var(--col-e1e4e8);
     border-radius: 10px;
     font-size: 1.05em;
     transition: all 0.3s ease;
 }
 
 .login-container input:focus {
-    background-color: #fff;
-    border-color: #3498db;
+    background-color: var(--col-ffffff);
+    border-color: var(--col-3498db);
     box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
     /* Alone blu morbido */
 }
@@ -1000,7 +1000,7 @@ textarea:focus {
     text-transform: uppercase;
     font-size: 1em;
     border-radius: 10px;
-    background: linear-gradient(135deg, #2A76B8 0%, #2980b9 100%);
+    background: linear-gradient(135deg, var(--col-2a76b8) 0%, var(--col-2980b9) 100%);
     /* Sfumatura sottile */
     box-shadow: 0 4px 15px rgba(42, 118, 184, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
@@ -1052,7 +1052,7 @@ textarea:focus {
 }
 
 .logout-button-horizontal {
-    background: #ef9a9a;
+    background: var(--col-ef9a9a);
     color: white;
     padding: 6px 10px;
     border-radius: 5px;
@@ -1066,7 +1066,7 @@ textarea:focus {
 }
 
 .logout-button-horizontal:hover {
-    background: #e57373;
+    background: var(--col-e57373);
     transform: translateY(-2px);
 }
 
@@ -1083,7 +1083,7 @@ textarea:focus {
 
 /* Help Button & Legend */
 .help-button {
-    background: #6c757d;
+    background: var(--col-6c757d);
     color: white;
     border-radius: 50%;
     width: 35px;
@@ -1101,7 +1101,7 @@ textarea:focus {
     top: 80px;
     right: 20px;
     background: white;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     border-radius: 8px;
     padding: 20px;
     z-index: 1000;
@@ -1137,44 +1137,44 @@ textarea:focus {
 
 .legend-text {
     font-size: 0.9em;
-    color: #555;
+    color: var(--col-555555);
 }
 
 /* Utility Classes per Icone Legenda */
 .legend-icon.insert-data-button {
-    background-color: #2ecc71;
+    background-color: var(--col-2ecc71);
 }
 
 .legend-icon.chat-ai-button {
-    background-color: #f1c40f;
+    background-color: var(--col-f1c40f);
 }
 
 .legend-icon.commesse-button {
-    background-color: #9b59b6;
+    background-color: var(--col-9b59b6);
 }
 
 .legend-icon.agile-view-button {
-    background-color: #34495e;
+    background-color: var(--col-34495e);
 }
 
 .legend-icon.insert-hours-button {
-    background-color: #ff7f50;
+    background-color: var(--col-ff7f50);
 }
 
 .legend-icon.print-button {
-    background-color: #00838F;
+    background-color: var(--col-00838f);
 }
 
 .legend-icon.dashboard-button {
-    background-color: #9b59b6;
+    background-color: var(--col-9b59b6);
 }
 
 .legend-icon.attendance-button {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
 }
 
 .legend-icon.config-button {
-    background-color: #34495e;
+    background-color: var(--col-34495e);
 }
 
 .release-info {
@@ -1182,12 +1182,12 @@ textarea:focus {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #f8f9fa;
-    color: #777;
+    background: var(--col-f8f9fa);
+    color: var(--col-777777);
     text-align: center;
     padding: 12px 0;
     font-size: 0.8em;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--col-e9ecef);
     z-index: 5;
 }
 
@@ -1318,7 +1318,7 @@ textarea:focus {
     #insertHoursModal #provisional-table tr {
         display: block;
         margin-bottom: 15px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--col-e0e0e0);
         border-radius: 8px;
     }
 
@@ -1327,7 +1327,7 @@ textarea:focus {
         justify-content: flex-end;
         align-items: center;
         border: none;
-        border-bottom: 1px dashed #eee;
+        border-bottom: 1px dashed var(--col-eeeeee);
         text-align: right;
         padding-left: 45%;
         position: relative;
@@ -1360,7 +1360,7 @@ body.internal-page {
     height: 100dvh;
     /* FIX MOBILE: Si adatta alla barra di navigazione dinamica */
     box-sizing: border-box;
-    background-color: #f4f7f9;
+    background-color: var(--col-f4f7f9);
     overflow: hidden;
     /* Blocca lo scroll del body */
 }
@@ -1369,7 +1369,7 @@ body.internal-page {
 .std-app-shell {
     width: 100%;
     height: 100%;
-    background-color: #ffffff;
+    background-color: var(--col-ffffff);
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -1382,7 +1382,7 @@ body.internal-page {
 .std-app-header {
     height: 60px;
     min-height: 60px;
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     color: white;
     display: flex;
     align-items: center;
@@ -1470,64 +1470,64 @@ body.internal-page {
 
 /* Primary (Verde - es. Salva, Aggiungi) */
 .std-btn--primary {
-    background-color: #28a745;
+    background-color: var(--col-28a745);
     color: white;
-    border-color: #28a745;
+    border-color: var(--col-28a745);
     box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
 }
 
 .std-btn--primary:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
+    background-color: var(--col-218838);
+    border-color: var(--col-1e7e34);
 }
 
 /* Secondary (Blu - es. Conferma, Filtri attivi) */
 .std-btn--blue {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
 }
 
 .std-btn--blue:hover {
-    background-color: #2980b9;
+    background-color: var(--col-2980b9);
 }
 
 /* Warning (Giallo - es. Modifica) */
 .std-btn--warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border-color: #ffeeba;
+    background-color: var(--col-fff3cd);
+    color: var(--col-856404);
+    border-color: var(--col-ffeeba);
 }
 
 .std-btn--warning:hover {
-    background-color: #ffeeba;
-    border-color: #ffdf7e;
+    background-color: var(--col-ffeeba);
+    border-color: var(--col-ffdf7e);
 }
 
 /* Danger (Rosso - es. Elimina) */
 .std-btn--danger {
-    background-color: #fff5f5;
-    color: #c53030;
-    border-color: #feb2b2;
+    background-color: var(--col-fff5f5);
+    color: var(--col-c53030);
+    border-color: var(--col-feb2b2);
 }
 
 .std-btn--danger:hover {
-    background-color: #fed7d7;
-    border-color: #fc8181;
+    background-color: var(--col-fed7d7);
+    border-color: var(--col-fc8181);
 }
 
 /* Ghost / Neutral (Bianco/Grigio - es. Annulla, Filtri inattivi) */
 .std-btn--ghost {
-    background-color: #ffffff;
-    color: #555;
-    border-color: #dcdcdc;
+    background-color: var(--col-ffffff);
+    color: var(--col-555555);
+    border-color: var(--col-dcdcdc);
 }
 
 .std-btn--ghost:hover {
-    background-color: #f8f9fa;
-    border-color: #ccc;
-    color: #333;
+    background-color: var(--col-f8f9fa);
+    border-color: var(--col-cccccc);
+    color: var(--col-333333);
 }
 
 /* Icone dentro i bottoni (se presenti) */
@@ -1548,7 +1548,7 @@ body.internal-page {
     position: absolute;
     top: -8px;
     right: -8px;
-    background-color: #dc3545;
+    background-color: var(--col-dc3545);
     /* Rosso */
     color: white;
     border-radius: 50%;
@@ -1609,7 +1609,7 @@ body.internal-page {
     text-align: center;
     position: relative;
     animation: fadeIn 0.2s ease-out;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
 }
 
 .universal-modal h3,
@@ -1617,7 +1617,7 @@ body.internal-page {
     display: block;
     margin-top: 0;
     margin-bottom: 20px;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-size: 1.5rem;
     font-weight: 600;
     text-transform: none;      /* Sovrascrive h2 { text-transform: uppercase } globale */
@@ -1626,7 +1626,7 @@ body.internal-page {
 
 .universal-modal p {
     display: block;
-    color: #555;
+    color: var(--col-555555);
     margin-bottom: 30px;
     font-size: 1.1rem;
     line-height: 1.5;
@@ -1662,10 +1662,10 @@ body.internal-page {
 .std-app-shell {
     width: 95vw;
     height: 95vh;
-    background-color: #ffffff;
+    background-color: var(--col-ffffff);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--col-dcdcdc);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1687,9 +1687,9 @@ body.internal-page {
     font-weight: 600;
     text-transform: uppercase;
     text-decoration: none;
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white !important;
-    border: 1px solid #3498db;
+    border: 1px solid var(--col-3498db);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -1697,8 +1697,8 @@ body.internal-page {
     width: auto !important;   /* Override eventuali style inline */
 }
 .std-app-header .header-button:hover {
-    background-color: #2980b9;
-    border-color: #2980b9;
+    background-color: var(--col-2980b9);
+    border-color: var(--col-2980b9);
     opacity: 1;
 }
 .std-app-header .header-button img {

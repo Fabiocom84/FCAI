@@ -71,8 +71,29 @@ def file_css():
     return sorted(f for f in os.listdir(BASE) if f.endswith('.css'))
 
 
+USO_TOKEN = re.compile(r'var\(\s*--col-([0-9a-f]{6})\s*\)')
+
+
 def inventario():
-    """(conteggio per colore, proprietà per colore, file per colore)."""
+    """
+    (conteggio per colore, proprietà per colore, file per colore).
+
+    CONTA ANCHE I `var(--col-...)` GIÀ PRESENTI, e non è un dettaglio.
+
+    Il 21/08/2026 questa funzione guardava solo gli esadecimali. Dopo aver
+    convertito `dark-mode.css`, i suoi colori erano diventati `var()` e quindi
+    invisibili all'inventario: alla conversione successiva `variables.css` è
+    stato rigenerato con 248 token invece di 269, **eliminando i 21 usati solo
+    dal tema scuro**. I `var()` di `dark-mode.css` sarebbero rimasti senza
+    definizione, e un `var()` senza definizione non produce alcun errore: la
+    proprietà risulta non valida e l'elemento eredita. Il tema scuro si sarebbe
+    spento in silenzio.
+
+    È lo stesso guasto contro cui lo strumento mette in guardia, prodotto dallo
+    strumento stesso. La causa: uno strumento rieseguibile che legge il proprio
+    output deve considerare **anche ciò che ha già trasformato**, altrimenti
+    ogni esecuzione dimentica la precedente.
+    """
     conta = collections.Counter()
     proprieta = collections.defaultdict(collections.Counter)
     file_di = collections.defaultdict(set)
@@ -86,6 +107,11 @@ def inventario():
                 c = normalizza(m.group(1))
                 if not c:
                     continue
+                conta[c] += 1
+                proprieta[c][prop.lower()] += 1
+                file_di[c].add(nome)
+            for m in USO_TOKEN.finditer(valore):
+                c = m.group(1)
                 conta[c] += 1
                 proprieta[c][prop.lower()] += 1
                 file_di[c].add(nome)
@@ -121,6 +147,21 @@ def genera_variabili(conta, proprieta, file_di):
     righe.append("}")
     righe.append("")
     return '\n'.join(righe)
+
+
+def fine_riga(percorso):
+    """
+    I fine riga del file, com'erano.
+
+    La prima versione riscriveva tutto con `\\n`. Su un file con `\\r\\n` questo
+    cambia OGNI riga, e git segnala 1736 righe modificate dove ne sono cambiate
+    151: la revisione diventa impossibile, e la modifica vera si nasconde nel
+    rumore. Un cambiamento invisibile nella resa può essere ben visibile in
+    revisione, ed è lì che si trovano gli errori.
+    """
+    with open(percorso, 'rb') as f:
+        grezzo = f.read()
+    return '\r\n' if b'\r\n' in grezzo else '\n'
 
 
 def riscrivi(nome, conta):
@@ -182,15 +223,41 @@ def main():
             if not os.path.isfile(percorso):
                 print(f"  {nome}: NON TROVATO, saltato")
                 continue
+            eol = fine_riga(percorso)
             testo, n = riscrivi(nome, conta)
             rimasti = len([m for m in HEX.finditer(COMMENTO.sub(' ', testo))])
-            with open(percorso, 'w', encoding='utf-8', newline='\n') as f:
+            with open(percorso, 'w', encoding='utf-8', newline=eol) as f:
                 f.write(testo)
             # `rimasti` deve essere zero: se non lo e', esiste una forma di
             # colore che il sostitutore non riconosce, e il file e' rimasto a
             # meta' senza che nulla lo segnali.
             stato = 'ok' if rimasti == 0 else f'ATTENZIONE: {rimasti} non sostituiti'
             print(f"  {nome}: {n} sostituzioni — {stato}")
+
+        # GUARDIA FINALE — aggiunta dopo il guasto del 21/08/2026.
+        #
+        # Ogni `var(--col-...)` presente in QUALUNQUE file deve avere una
+        # definizione. Questo controllo non serve a rassicurare: serve perche'
+        # un `var()` senza definizione NON produce errori. La proprieta' risulta
+        # non valida, l'elemento eredita, e il difetto si vede solo aprendo la
+        # pagina giusta nel tema giusto.
+        definiti = set(conta)
+        orfani = collections.defaultdict(set)
+        for nome in file_css():
+            testo = open(os.path.join(BASE, nome), encoding='utf-8', errors='replace').read()
+            for m in USO_TOKEN.finditer(COMMENTO.sub(' ', testo)):
+                if m.group(1) not in definiti:
+                    orfani[m.group(1)].add(nome)
+
+        if orfani:
+            print(f"\nERRORE: {len(orfani)} token usati ma NON definiti in variables.css.")
+            for c, dove in sorted(orfani.items()):
+                print(f"  --col-{c}  usato in: {', '.join(sorted(dove))}")
+            print("Un var() senza definizione non da' errore: l'elemento eredita "
+                  "e il colore sparisce in silenzio. NON distribuire.")
+            return 2
+
+        print(f"\nverifica: {len(definiti)} token definiti, nessun riferimento orfano.")
         return 0
 
     print(__doc__)
