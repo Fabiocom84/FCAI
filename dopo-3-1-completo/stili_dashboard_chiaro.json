@@ -1,0 +1,3062 @@
+{
+ "elementiVisibili": 484,
+ "firme": 109,
+ "larghezzaFinestra": 1440,
+ "pagina": "dashboard.html",
+ "paginaEffettiva": "dashboard.html",
+ "rilievo": {
+  "a.btn-small": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(227, 242, 253)"
+    ],
+    "border-bottom-color": [
+     "rgb(187, 222, 251)"
+    ],
+    "border-left-color": [
+     "rgb(187, 222, 251)"
+    ],
+    "border-right-color": [
+     "rgb(187, 222, 251)"
+    ],
+    "border-top-color": [
+     "rgb(187, 222, 251)"
+    ],
+    "color": [
+     "rgb(25, 118, 210)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(25, 118, 210)"
+    ]
+   }
+  },
+  "a.header-button": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "box-shadow": [
+     "rgba(52, 152, 219, 0.2) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "aside.control-sidebar": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "b": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(41, 128, 185)"
+    ],
+    "border-left-color": [
+     "rgb(41, 128, 185)"
+    ],
+    "border-right-color": [
+     "rgb(41, 128, 185)"
+    ],
+    "border-top-color": [
+     "rgb(41, 128, 185)"
+    ],
+    "color": [
+     "rgb(41, 128, 185)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(41, 128, 185)"
+    ]
+   }
+  },
+  "button.active.ca-toggle-btn": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px"
+    ],
+    "color": [
+     "rgb(52, 152, 219)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(52, 152, 219)"
+    ]
+   }
+  },
+  "button.active.mode-btn": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.2) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.active.tab-btn": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "color": [
+     "rgb(52, 152, 219)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(52, 152, 219)"
+    ]
+   }
+  },
+  "button.btn-confirm-action": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.1) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.btn-icon-refresh": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.btn-primary-large": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.btn-reset-filters": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(231, 76, 60)"
+    ],
+    "border-left-color": [
+     "rgb(231, 76, 60)"
+    ],
+    "border-right-color": [
+     "rgb(231, 76, 60)"
+    ],
+    "border-top-color": [
+     "rgb(231, 76, 60)"
+    ],
+    "color": [
+     "rgb(231, 76, 60)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(231, 76, 60)"
+    ]
+   }
+  },
+  "button.btn-secondary": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(226, 230, 234)"
+    ],
+    "border-bottom-color": [
+     "rgb(206, 212, 218)"
+    ],
+    "border-left-color": [
+     "rgb(206, 212, 218)"
+    ],
+    "border-right-color": [
+     "rgb(206, 212, 218)"
+    ],
+    "border-top-color": [
+     "rgb(206, 212, 218)"
+    ],
+    "color": [
+     "rgb(73, 80, 87)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(73, 80, 87)"
+    ]
+   }
+  },
+  "button.btn-small": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "button.ca-toggle-btn": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "button.dark-mode-toggle": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-bottom-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-left-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-right-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-top-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.3) 0px 2px 10px 0px"
+    ],
+    "color": [
+     "rgb(241, 196, 15)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(241, 196, 15)"
+    ]
+   }
+  },
+  "button.mode-btn": {
+   "elementi": 1,
+   "stili": {
+    "color": [
+     "rgb(189, 195, 199)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(189, 195, 199)"
+    ]
+   }
+  },
+  "button.tab-btn": {
+   "elementi": 2,
+   "stili": {
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "canvas": {
+   "elementi": 9,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div": {
+   "elementi": 5,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)",
+     "rgb(170, 170, 170)",
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "div.active.view-panel": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.analysis-row": {
+   "elementi": 3,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.analysis-row.full-width": {
+   "elementi": 6,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.blue.kpi-card": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 2px 5px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.ca-search-wrapper": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.ca-selector-left": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.ca-selector-right": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.ca-selector-toolbar": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-left-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-right-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-top-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.03) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.ca-status-toggle": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(241, 242, 246)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.cdm-body": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-left-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-right-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-top-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "color": [
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "div.cdm-content": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.3) 0px 15px 40px 0px",
+     "rgba(0, 0, 0, 0.4) 0px 15px 40px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.cdm-footer": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.cdm-header": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.chart-box": {
+   "elementi": 12,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-right-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-top-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 2px 5px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.chart-wrapper": {
+   "elementi": 7,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.chart-wrapper.large": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.collapsed.grid-group-header": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-top-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.02) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.commessa-header-info": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.confirm-summary-box": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(240, 247, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 229, 255)"
+    ],
+    "border-left-color": [
+     "rgb(204, 229, 255)"
+    ],
+    "border-right-color": [
+     "rgb(204, 229, 255)"
+    ],
+    "border-top-color": [
+     "rgb(204, 229, 255)"
+    ],
+    "color": [
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "div.dashboard-body-wrapper": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.data-grid-container": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-left-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-right-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-top-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.date-filter-container": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.date-inputs-col": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.detail-toolbar": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-accordion": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-actions": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-box": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-left-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-right-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "border-top-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.03) 0px 1px 2px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-header": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(233, 236, 239)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-item": {
+   "elementi": 36,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.filter-list": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.g-stats": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.g-title": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "div.gantt-container": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.gantt-legend": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "div.green.kpi-card": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "border-left-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "border-right-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "border-top-color": [
+     "rgb(46, 204, 113)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 2px 5px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.grouping-controls": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.grow-section.sidebar-section": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(249, 249, 249)"
+    ],
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.kpi-card": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-left-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-right-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-top-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 2px 5px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.kpi-card.orange": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(243, 156, 18)"
+    ],
+    "border-left-color": [
+     "rgb(243, 156, 18)"
+    ],
+    "border-right-color": [
+     "rgb(243, 156, 18)"
+    ],
+    "border-top-color": [
+     "rgb(243, 156, 18)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 2px 5px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.kpi-row": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.kpi-row.kpi-row-4": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.main-content": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(244, 247, 249)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.main-footer-status": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(241, 242, 246)"
+    ],
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "div.mode-switch": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgba(0, 0, 0, 0.3)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "div.phases-tracker-container": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.placeholder-msg": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(170, 170, 170)"
+    ],
+    "border-left-color": [
+     "rgb(170, 170, 170)"
+    ],
+    "border-right-color": [
+     "rgb(170, 170, 170)"
+    ],
+    "border-top-color": [
+     "rgb(170, 170, 170)"
+    ],
+    "color": [
+     "rgb(170, 170, 170)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(170, 170, 170)"
+    ]
+   }
+  },
+  "div.sidebar-footer": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(221, 221, 221)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px -2px 10px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.sidebar-section": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.status-left": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "div.status-right": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "div.std-app-shell": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-left-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-right-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-top-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.1) 0px 10px 30px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.summary-row": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-left-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-right-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-top-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "color": [
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "div.tabs-left": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.toolbar-actions": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.view-tabs-container": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "h1": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "h2": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "h2.cdm-header-title": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "h3": {
+   "elementi": 10,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(149, 165, 166)",
+     "rgb(153, 153, 153)",
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "h4": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(238, 238, 238)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "header.std-app-header": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "img": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "input": {
+   "elementi": 36,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "input.ca-search-input": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "input.group-select-checkbox": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "input.search-input": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "input.sidebar-input-compact": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "label": {
+   "elementi": 36,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(252, 252, 252)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "main.no-padding.std-app-content": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "option": {
+   "elementi": 4,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "p": {
+   "elementi": 3,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)",
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "p.benchmark-desc": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "p.warning-text": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 243, 205)"
+    ],
+    "border-bottom-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "border-left-color": [
+     "rgb(255, 238, 186)"
+    ],
+    "border-right-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "border-top-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "color": [
+     "rgb(133, 100, 4)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(133, 100, 4)"
+    ]
+   }
+  },
+  "select.grouping-select": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "small": {
+   "elementi": 36,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "small.kpi-sub-info": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-left-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-right-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-top-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "color": [
+     "rgb(149, 165, 166)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(149, 165, 166)"
+    ]
+   }
+  },
+  "span": {
+   "elementi": 51,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)",
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "span.actual.gantt-legend-color": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.badge-count": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.badge-hours": {
+   "elementi": 12,
+   "stili": {
+    "background-color": [
+     "rgb(234, 255, 234)"
+    ],
+    "border-bottom-color": [
+     "rgb(212, 239, 223)"
+    ],
+    "border-left-color": [
+     "rgb(212, 239, 223)"
+    ],
+    "border-right-color": [
+     "rgb(212, 239, 223)"
+    ],
+    "border-top-color": [
+     "rgb(212, 239, 223)"
+    ],
+    "color": [
+     "rgb(39, 174, 96)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(39, 174, 96)"
+    ]
+   }
+  },
+  "span.ca-selector-label": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.close-button": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(108, 117, 125)"
+    ],
+    "border-bottom-color": [
+     "rgb(153, 153, 153)"
+    ],
+    "border-left-color": [
+     "rgb(153, 153, 153)"
+    ],
+    "border-right-color": [
+     "rgb(153, 153, 153)"
+    ],
+    "border-top-color": [
+     "rgb(153, 153, 153)"
+    ],
+    "color": [
+     "rgb(153, 153, 153)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(153, 153, 153)"
+    ]
+   }
+  },
+  "span.filter-title": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.gantt-legend-color.shadow": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgba(149, 165, 166, 0.3)"
+    ],
+    "border-bottom-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-left-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-right-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "border-top-color": [
+     "rgb(149, 165, 166)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.gantt-legend-color.today-line": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(231, 76, 60)"
+    ],
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.gantt-legend-item": {
+   "elementi": 3,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "span.grouping-label": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(102, 102, 102)"
+    ],
+    "border-left-color": [
+     "rgb(102, 102, 102)"
+    ],
+    "border-right-color": [
+     "rgb(102, 102, 102)"
+    ],
+    "border-top-color": [
+     "rgb(102, 102, 102)"
+    ],
+    "color": [
+     "rgb(102, 102, 102)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(102, 102, 102)"
+    ]
+   }
+  },
+  "span.status-item": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "span.toggle-icon": {
+   "elementi": 12,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)"
+    ]
+   }
+  },
+  "strong": {
+   "elementi": 3,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-left-color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-right-color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-top-color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ],
+    "color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(133, 100, 4)",
+     "rgb(41, 128, 185)",
+     "rgb(51, 51, 51)"
+    ]
+   }
+  }
+ },
+ "tema": "chiaro"
+}
