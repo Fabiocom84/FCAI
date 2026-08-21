@@ -1598,9 +1598,9 @@ body.internal-page {
 }
 
 .universal-modal {
-    display: block;
+    display: block !important;
     /* Forces block layout */
-    background: white;
+    background: white !important;
     padding: 30px;
     border-radius: 12px;
     width: 90%;
