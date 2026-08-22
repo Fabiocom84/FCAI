@@ -1,0 +1,1234 @@
+{
+ "elementiVisibili": 68,
+ "firme": 43,
+ "larghezzaFinestra": 1440,
+ "pagina": "admin-training.html",
+ "paginaEffettiva": "admin-training.html",
+ "rilievo": {
+  "a.header-button": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-bottom-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "box-shadow": [
+     "rgba(52, 152, 219, 0.2) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "br": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "border-left-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "border-right-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "border-top-color": [
+     "rgb(133, 100, 4)"
+    ],
+    "color": [
+     "rgb(133, 100, 4)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(133, 100, 4)"
+    ]
+   }
+  },
+  "button.close-button": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(108, 117, 125)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.dark-mode-toggle": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-bottom-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-left-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-right-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "border-top-color": [
+     "rgba(255, 255, 255, 0.2)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.3) 0px 2px 10px 0px"
+    ],
+    "color": [
+     "rgb(241, 196, 15)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(241, 196, 15)"
+    ]
+   }
+  },
+  "button.full-width.std-btn.std-btn--primary": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-bottom-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-left-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-right-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-top-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "box-shadow": [
+     "rgba(40, 167, 69, 0.2) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.std-btn.std-btn--danger": {
+   "elementi": 2,
+   "stili": {
+    "background-color": [
+     "rgb(149, 165, 166)",
+     "rgb(192, 57, 43)"
+    ],
+    "border-bottom-color": [
+     "rgb(254, 178, 178)"
+    ],
+    "border-left-color": [
+     "rgb(254, 178, 178)"
+    ],
+    "border-right-color": [
+     "rgb(254, 178, 178)"
+    ],
+    "border-top-color": [
+     "rgb(254, 178, 178)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.std-btn.std-btn--primary": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-bottom-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-left-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-right-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-top-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "box-shadow": [
+     "rgba(40, 167, 69, 0.2) 0px 2px 4px 0px"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "button.std-btn.std-btn--secondary": {
+   "elementi": 2,
+   "stili": {
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div": {
+   "elementi": 4,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "div.actions": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.actions.two-buttons": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.card-icon": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.checkbox-container": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.feedback-body.modal-body": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.info-box": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(248, 249, 250)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.modal-content": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.modal-footer": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(240, 240, 240)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.modal-header": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.modal-header-buttons": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.spinner": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(243, 243, 243)"
+    ],
+    "border-left-color": [
+     "rgb(243, 243, 243)"
+    ],
+    "border-right-color": [
+     "rgb(243, 243, 243)"
+    ],
+    "border-top-color": [
+     "rgb(52, 152, 219)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.std-app-shell": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-left-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-right-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "border-top-color": [
+     "rgb(220, 220, 220)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.1) 0px 10px 30px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.step-container": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.terminal-console": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(30, 30, 30)"
+    ],
+    "border-bottom-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-left-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-right-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "border-top-color": [
+     "rgb(51, 51, 51)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.5) 0px 2px 10px 0px inset"
+    ],
+    "color": [
+     "rgb(0, 255, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 255, 0)"
+    ]
+   }
+  },
+  "div.terminal-cursor": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "color": [
+     "rgb(0, 255, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 255, 0)"
+    ]
+   }
+  },
+  "div.terminal-line": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 255, 0)"
+    ],
+    "color": [
+     "rgb(0, 255, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 255, 0)"
+    ]
+   }
+  },
+  "div.training-card": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "box-shadow": [
+     "rgba(0, 0, 0, 0.05) 0px 4px 15px 0px"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "div.warning-box": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 243, 205)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 238, 186)"
+    ],
+    "border-left-color": [
+     "rgb(255, 238, 186)"
+    ],
+    "border-right-color": [
+     "rgb(255, 238, 186)"
+    ],
+    "border-top-color": [
+     "rgb(255, 238, 186)"
+    ],
+    "color": [
+     "rgb(133, 100, 4)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(133, 100, 4)"
+    ]
+   }
+  },
+  "h1": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "h2": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-left-color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-right-color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "border-top-color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(44, 62, 80)",
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "h3": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-left-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-right-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "border-top-color": [
+     "rgb(40, 167, 69)"
+    ],
+    "color": [
+     "rgb(40, 167, 69)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(40, 167, 69)"
+    ]
+   }
+  },
+  "header.std-app-header": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(44, 62, 80)"
+    ],
+    "border-bottom-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "img": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)",
+     "rgb(255, 255, 255)"
+    ]
+   }
+  },
+  "input": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "input.security-input": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(255, 255, 255)"
+    ],
+    "border-bottom-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-left-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-right-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "border-top-color": [
+     "rgb(204, 204, 204)"
+    ],
+    "color": [
+     "rgb(51, 51, 51)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(51, 51, 51)"
+    ]
+   }
+  },
+  "label": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "li": {
+   "elementi": 3,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-left-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-right-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-top-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "color": [
+     "rgb(52, 73, 94)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(52, 73, 94)"
+    ]
+   }
+  },
+  "main.training-wrapper": {
+   "elementi": 1,
+   "stili": {
+    "background-color": [
+     "rgb(244, 247, 249)"
+    ],
+    "border-bottom-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)"
+    ]
+   }
+  },
+  "p": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(0, 0, 0)",
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "p.description": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)"
+    ]
+   }
+  },
+  "p.input-label": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-left-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-right-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "border-top-color": [
+     "rgb(85, 85, 85)"
+    ],
+    "color": [
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "span": {
+   "elementi": 2,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ],
+    "border-left-color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ],
+    "border-right-color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ],
+    "border-top-color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ],
+    "color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(255, 255, 255)",
+     "rgb(52, 73, 94)"
+    ]
+   }
+  },
+  "strong": {
+   "elementi": 6,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-left-color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-right-color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ],
+    "border-top-color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ],
+    "color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(127, 140, 141)",
+     "rgb(133, 100, 4)",
+     "rgb(52, 73, 94)",
+     "rgb(85, 85, 85)"
+    ]
+   }
+  },
+  "ul": {
+   "elementi": 1,
+   "stili": {
+    "border-bottom-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-left-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-right-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "border-top-color": [
+     "rgb(52, 73, 94)"
+    ],
+    "color": [
+     "rgb(52, 73, 94)"
+    ],
+    "fill": [
+     "rgb(0, 0, 0)"
+    ],
+    "outline-color": [
+     "rgb(52, 73, 94)"
+    ]
+   }
+  }
+ },
+ "tema": "chiaro"
+}

@@ -1,0 +1,324 @@
+/*
+ * Token di colore — task 3.1 della roadmap.
+ *
+ * GENERATO da strumenti/introduce_token.py. Non modificare a mano:
+ * rigenerarlo, altrimenti il file e i CSS divergono in silenzio.
+ *
+ * Un token per ogni colore DISTINTO gia' presente nei CSS. Nessun
+ * accorpamento: questo passaggio non deve cambiare l'aspetto di nulla.
+ * I nomi derivano dal valore e non dal ruolo, perche' un nome semantico
+ * sarebbe un'ipotesi sull'intenzione di chi ha scritto quel colore.
+ *
+ * I commenti riportano usi e proprieta' prevalenti: servono al task 6.6,
+ * dove la tavolozza va consolidata e i nomi diventano semantici.
+ *
+ * Token: 305   Occorrenze sostituite: 1650
+ */
+
+:root {
+    --col-ffffff: #ffffff;  /* 91 usi in 15 file — background×46, background-color×25 */
+    --col-3498db: #3498db;  /* 79 usi in 14 file — border-color×28, background-color×16 */
+    --col-2c3e50: #2c3e50;  /* 65 usi in 10 file — color×45, background-color×8 */
+    --col-cccccc: #cccccc;  /* 50 usi in 12 file — border×28, background×5 */
+    --col-e67e22: #e67e22;  /* 37 usi in 10 file — background×15, color×8 */
+    --col-eeeeee: #eeeeee;  /* 36 usi in 11 file — border-bottom×18, border×9 */
+    --col-f8f9fa: #f8f9fa;  /* 35 usi in 11 file — background-color×18, background×17 */
+    --col-555555: #555555;  /* 34 usi in 12 file — color×33, border-color×1 */
+    --col-27ae60: #27ae60;  /* 31 usi in 11 file — color×11, background×10 */
+    --col-e0e0e0: #e0e0e0;  /* 30 usi in 12 file — border×15, background×6 */
+    --col-f0f0f0: #f0f0f0;  /* 28 usi in 11 file — border-bottom×10, background×9 */
+    --col-00000033: rgba(0, 0, 0, 0.2);  /* 25 usi in 7 file — box-shadow×23, background-color×1 */
+    --col-28a745: #28a745;  /* 23 usi in 8 file — background-color×16, background×2 */
+    --col-333333: #333333;  /* 23 usi in 9 file — color×21, border×1 */
+    --col-7f8c8d: #7f8c8d;  /* 22 usi in 5 file — color×21, background×1 */
+    --col-666666: #666666;  /* 21 usi in 12 file — color×21 */
+    --col-dddddd: #dddddd;  /* 21 usi in 8 file — border×12, border-top×4 */
+    --col-e8eaf0: #e8eaf0;  /* 21 usi in 3 file — color×10, border×7 */
+    --col-e74c3c: #e74c3c;  /* 19 usi in 6 file — color×7, background×6 */
+    --col-f39c12: #f39c12;  /* 19 usi in 8 file — background-color×6, background×4 */
+    --col-2980b9: #2980b9;  /* 18 usi in 8 file — background-color×7, color×5 */
+    --col-0000001a: rgba(0, 0, 0, 0.1);  /* 17 usi in 9 file — box-shadow×17 */
+    --col-1a1a2e: #1a1a2e;  /* 17 usi in 2 file — color×13, background×4 */
+    --col-d35400: #d35400;  /* 17 usi in 5 file — color×9, background×4 */
+    --col-e9ecef: #e9ecef;  /* 17 usi in 5 file — border×7, background-color×6 */
+    --col-0000000d: rgba(0, 0, 0, 0.05);  /* 16 usi in 10 file — box-shadow×16 */
+    --col-dcdcdc: #dcdcdc;  /* 15 usi in 5 file — border×7, border-bottom×2 */
+    --col-2a2a42: #2a2a42;  /* 14 usi in 2 file — border-color×14 */
+    --col-888888: #888888;  /* 14 usi in 8 file — color×14 */
+    --col-cbd5e0: #cbd5e0;  /* 14 usi in 4 file — border×11, background×1 */
+    --col-007bff: #007bff;  /* 13 usi in 4 file — background-color×4, color×4 */
+    --col-2d3748: #2d3748;  /* 13 usi in 4 file — color×12, background-color×1 */
+    --col-e2e8f0: #e2e8f0;  /* 13 usi in 4 file — border×5, border-bottom×4 */
+    --col-218838: #218838;  /* 12 usi in 6 file — background-color×9, border-color×3 */
+    --col-34495e: #34495e;  /* 12 usi in 9 file — color×6, background-color×5 */
+    --col-dc3545: #dc3545;  /* 12 usi in 5 file — background-color×7, border-color×2 */
+    --col-2ecc71: #2ecc71;  /* 11 usi in 5 file — background-color×5, background×4 */
+    --col-95a5a6: #95a5a6;  /* 11 usi in 5 file — color×6, background-color×4 */
+    --col-aaaaaa: #aaaaaa;  /* 11 usi in 7 file — color×11 */
+    --col-00000080: rgba(0, 0, 0, 0.5);  /* 10 usi in 7 file — box-shadow×4, background×4 */
+    --col-0f0f1a: #0f0f1a;  /* 10 usi in 2 file — background×10 */
+    --col-999999: #999999;  /* 10 usi in 5 file — color×9, border×1 */
+    --col-f0f2f5: #f0f2f5;  /* 10 usi in 3 file — background×7, border-bottom×2 */
+    --col-0000000f: rgba(0,0,0,0.06);  /* 9 usi in 5 file — box-shadow×9 */
+    --col-d0d4db: #d0d4db;  /* 9 usi in 2 file — border×9 */
+    --col-dee2e6: #dee2e6;  /* 9 usi in 3 file — border-bottom×5, border×2 */
+    --col-e2e6ea: #e2e6ea;  /* 9 usi in 5 file — background-color×6, background×3 */
+    --col-2a76b8: #2a76b8;  /* 8 usi in 2 file — color×3, border-color×2 */
+    --col-6c757d: #6c757d;  /* 8 usi in 5 file — color×3, background×3 */
+    --col-c0392b: #c0392b;  /* 8 usi in 4 file — background-color×4, color×3 */
+    --col-f8f9fb: #f8f9fb;  /* 8 usi in 3 file — background×8 */
+    --col-f9f9f9: #f9f9f9;  /* 8 usi in 6 file — background×4, background-color×3 */
+    --col-fff3cd: #fff3cd;  /* 8 usi in 4 file — background-color×7, background×1 */
+    --col-4a5568: #4a5568;  /* 7 usi in 4 file — color×6, border×1 */
+    --col-9b59b6: #9b59b6;  /* 7 usi in 5 file — background×3, background-color×3 */
+    --col-f0f7ff: #f0f7ff;  /* 7 usi in 5 file — background-color×5, background×2 */
+    --col-00000026: rgba(0, 0, 0, 0.15);  /* 6 usi in 5 file — box-shadow×6 */
+    --col-0000004c: rgba(0, 0, 0, 0.3);  /* 6 usi in 4 file — box-shadow×4, background×1 */
+    --col-1e8449: #1e8449;  /* 6 usi in 2 file — color×6 */
+    --col-2e7d32: #2e7d32;  /* 6 usi in 2 file — color×4, background-color×2 */
+    --col-718096: #718096;  /* 6 usi in 4 file — color×6 */
+    --col-8e44ad: #8e44ad;  /* 6 usi in 4 file — background×3, border-color×1 */
+    --col-bbbbbb: #bbbbbb;  /* 6 usi in 5 file — color×4, border×1 */
+    --col-c62828: #c62828;  /* 6 usi in 3 file — color×4, background-color×2 */
+    --col-ced4da: #ced4da;  /* 6 usi in 3 file — border×2, border-right×2 */
+    --col-d4edda: #d4edda;  /* 6 usi in 3 file — background×3, background-color×3 */
+    --col-e0e4ea: #e0e4ea;  /* 6 usi in 2 file — border×2, border-right×1 */
+    --col-e3f2fd: #e3f2fd;  /* 6 usi in 5 file — background-color×5, background×1 */
+    --col-ecf0f1: #ecf0f1;  /* 6 usi in 3 file — background×2, background-color×2 */
+    --col-f1f1f1: #f1f1f1;  /* 6 usi in 4 file — background×2, color×2 */
+    --col-00000014: rgba(0,0,0,0.08);  /* 5 usi in 5 file — box-shadow×5 */
+    --col-3498db26: rgba(52, 152, 219, 0.15);  /* 5 usi in 3 file — box-shadow×5 */
+    --col-495057: #495057;  /* 5 usi in 5 file — color×5 */
+    --col-a0aec0: #a0aec0;  /* 5 usi in 4 file — color×5 */
+    --col-c53030: #c53030;  /* 5 usi in 3 file — color×3, border-color×1 */
+    --col-edf2f7: #edf2f7;  /* 5 usi in 2 file — border-bottom×3, border×1 */
+    --col-f4f7f9: #f4f7f9;  /* 5 usi in 5 file — background-color×4, background×1 */
+    --col-f5f5f5: #f5f5f5;  /* 5 usi in 3 file — border-bottom×3, background-color×2 */
+    --col-fef9f0: #fef9f0;  /* 5 usi in 2 file — background×5 */
+    --col-00000008: rgba(0, 0, 0, 0.03);  /* 4 usi in 3 file — box-shadow×4 */
+    --col-00000040: rgba(0,0,0,0.25);  /* 4 usi in 2 file — box-shadow×4 */
+    --col-0069d9: #0069d9;  /* 4 usi in 2 file — border-color×2, background-color×2 */
+    --col-219a52: #219a52;  /* 4 usi in 3 file — background×3, border-left-color×1 */
+    --col-27ae604c: rgba(39, 174, 96, 0.3);  /* 4 usi in 4 file — box-shadow×4 */
+    --col-3498db33: rgba(52, 152, 219, 0.2);  /* 4 usi in 3 file — box-shadow×3, filter×1 */
+    --col-777777: #777777;  /* 4 usi in 4 file — color×4 */
+    --col-c8e6c9: #c8e6c9;  /* 4 usi in 2 file — border×3, background×1 */
+    --col-d1ecf1: #d1ecf1;  /* 4 usi in 1 file — background-color×3, background×1 */
+    --col-dfe6ed: #dfe6ed;  /* 4 usi in 2 file — background-color×2, border×2 */
+    --col-e8e8e8: #e8e8e8;  /* 4 usi in 3 file — border×3, background×1 */
+    --col-e8f5e9: #e8f5e9;  /* 4 usi in 2 file — background-color×3, background×1 */
+    --col-f0f4f8: #f0f4f8;  /* 4 usi in 3 file — background×4 */
+    --col-f1c40f: #f1c40f;  /* 4 usi in 3 file — background-color×4 */
+    --col-f1f3f5: #f1f3f5;  /* 4 usi in 3 file — background-color×3, background×1 */
+    --col-f3f3f3: #f3f3f3;  /* 4 usi in 3 file — border×3, background-color×1 */
+    --col-fdebd0: #fdebd0;  /* 4 usi in 1 file — background×4 */
+    --col-fdfdfd: #fdfdfd;  /* 4 usi in 4 file — background×3, background-color×1 */
+    --col-fef9e7: #fef9e7;  /* 4 usi in 2 file — background×4 */
+    --col-ffc107: #ffc107;  /* 4 usi in 3 file — background-color×2, border-left-color×1 */
+    --col-ffcccc: #ffcccc;  /* 4 usi in 1 file — background-color×3, background×1 */
+    --col-ffcdd2: #ffcdd2;  /* 4 usi in 3 file — border×2, background×2 */
+    --col-ffeeba: #ffeeba;  /* 4 usi in 3 file — border×1, border-left×1 */
+    --col-0000000a: rgba(0, 0, 0, 0.04);  /* 3 usi in 2 file — box-shadow×3 */
+    --col-00000099: rgba(0, 0, 0, 0.6);  /* 3 usi in 3 file — background-color×2, background×1 */
+    --col-1a252f: #1a252f;  /* 3 usi in 2 file — border-bottom×1, border-color×1 */
+    --col-2471a3: #2471a3;  /* 3 usi in 1 file — color×3 */
+    --col-3498db1a: rgba(52, 152, 219, 0.1);  /* 3 usi in 3 file — box-shadow×3 */
+    --col-444444: #444444;  /* 3 usi in 2 file — color×3 */
+    --col-6a1b9a: #6a1b9a;  /* 3 usi in 1 file — color×2, accent-color×1 */
+    --col-856404: #856404;  /* 3 usi in 3 file — color×3 */
+    --col-bdc3c7: #bdc3c7;  /* 3 usi in 2 file — color×3 */
+    --col-c628284c: rgba(198, 40, 40, 0.3);  /* 3 usi in 1 file — box-shadow×3 */
+    --col-cbd5e1: #cbd5e1;  /* 3 usi in 1 file — border×3 */
+    --col-d5f5e3: #d5f5e3;  /* 3 usi in 1 file — background×3 */
+    --col-dbe4ea: #dbe4ea;  /* 3 usi in 2 file — background-color×2, border-color×1 */
+    --col-e1bee7: #e1bee7;  /* 3 usi in 1 file — background×2, border×1 */
+    --col-e53e3e: #e53e3e;  /* 3 usi in 2 file — color×2, background-color×1 */
+    --col-e67e224c: rgba(230,126,34,0.3);  /* 3 usi in 2 file — box-shadow×3 */
+    --col-e8f8ef: #e8f8ef;  /* 3 usi in 1 file — background×3 */
+    --col-edf5fc: #edf5fc;  /* 3 usi in 1 file — background×3 */
+    --col-ef9a9a: #ef9a9a;  /* 3 usi in 3 file — background×2, border×1 */
+    --col-f1f2f6: #f1f2f6;  /* 3 usi in 1 file — background×2, background-color×1 */
+    --col-f8f9fc: #f8f9fc;  /* 3 usi in 2 file — background×3 */
+    --col-fc8181: #fc8181;  /* 3 usi in 2 file — background×1, border×1 */
+    --col-fcfcfc: #fcfcfc;  /* 3 usi in 3 file — background-color×2, border-bottom×1 */
+    --col-fdecea: #fdecea;  /* 3 usi in 3 file — background×3 */
+    --col-fdedec: #fdedec;  /* 3 usi in 1 file — background×3 */
+    --col-feb2b2: #feb2b2;  /* 3 usi in 3 file — border×2, border-color×1 */
+    --col-ffebee: #ffebee;  /* 3 usi in 3 file — background-color×2, background×1 */
+    --col-fff3e0: #fff3e0;  /* 3 usi in 2 file — background-color×2, background×1 */
+    --col-fff5f5: #fff5f5;  /* 3 usi in 3 file — background-color×2, background×1 */
+    --col-ffffff1a: rgba(255, 255, 255, 0.1);  /* 3 usi in 2 file — background×3 */
+    --col-ffffffb2: rgba(255, 255, 255, 0.7);  /* 3 usi in 2 file — color×2, background-color×1 */
+    --col-0000001f: rgba(0,0,0,0.12);  /* 2 usi in 2 file — box-shadow×2 */
+    --col-000000e6: rgba(0, 0, 0, 0.9);  /* 2 usi in 1 file — background-color×2 */
+    --col-00838f: #00838f;  /* 2 usi in 1 file — background-color×2 */
+    --col-00ff00: #00ff00;  /* 2 usi in 1 file — color×1, background-color×1 */
+    --col-0d47a1: #0d47a1;  /* 2 usi in 2 file — color×2 */
+    --col-155724: #155724;  /* 2 usi in 2 file — color×2 */
+    --col-1565c0: #1565c0;  /* 2 usi in 1 file — color×2 */
+    --col-15803d: #15803d;  /* 2 usi in 1 file — color×2 */
+    --col-1e7e34: #1e7e34;  /* 2 usi in 1 file — background×1, border-color×1 */
+    --col-212529: #212529;  /* 2 usi in 2 file — color×2 */
+    --col-28a7454c: rgba(40, 167, 69, 0.3);  /* 2 usi in 2 file — box-shadow×2 */
+    --col-2c81ba: #2c81ba;  /* 2 usi in 2 file — background×2 */
+    --col-475569: #475569;  /* 2 usi in 1 file — color×2 */
+    --col-7d3c98: #7d3c98;  /* 2 usi in 2 file — background×2 */
+    --col-8898aa: #8898aa;  /* 2 usi in 1 file — color×2 */
+    --col-8a5c00: #8a5c00;  /* 2 usi in 2 file — color×2 */
+    --col-8e44ad4c: rgba(142, 68, 173, 0.3);  /* 2 usi in 2 file — box-shadow×2 */
+    --col-90caf9: #90caf9;  /* 2 usi in 1 file — border×2 */
+    --col-92400e: #92400e;  /* 2 usi in 1 file — color×2 */
+    --col-a0a0a0: #a0a0a0;  /* 2 usi in 2 file — background-color×2 */
+    --col-b0b8c1: #b0b8c1;  /* 2 usi in 1 file — border-left×1, border-right×1 */
+    --col-c6282826: rgba(198, 40, 40, 0.15);  /* 2 usi in 1 file — box-shadow×2 */
+    --col-c82333: #c82333;  /* 2 usi in 2 file — border-color×2 */
+    --col-ce93d8: #ce93d8;  /* 2 usi in 1 file — border×2 */
+    --col-d1d9e6: #d1d9e6;  /* 2 usi in 2 file — border-right×1, border×1 */
+    --col-dbeafe: #dbeafe;  /* 2 usi in 1 file — background-color×2 */
+    --col-e65100: #e65100;  /* 2 usi in 1 file — color×2 */
+    --col-e67e2266: rgba(230,126,34,0.4);  /* 2 usi in 1 file — box-shadow×2 */
+    --col-eaf2ff: #eaf2ff;  /* 2 usi in 1 file — background×2 */
+    --col-eaf6ff: #eaf6ff;  /* 2 usi in 1 file — background×2 */
+    --col-eaffea: #eaffea;  /* 2 usi in 1 file — background×2 */
+    --col-ebf5fb: #ebf5fb;  /* 2 usi in 1 file — background×2 */
+    --col-eef2f5: #eef2f5;  /* 2 usi in 1 file — background-color×2 */
+    --col-f3e5f5: #f3e5f5;  /* 2 usi in 1 file — background×2 */
+    --col-f6ad55: #f6ad55;  /* 2 usi in 1 file — border×1, background×1 */
+    --col-f7f7f7: #f7f7f7;  /* 2 usi in 1 file — border-bottom×2 */
+    --col-f8fafc: #f8fafc;  /* 2 usi in 2 file — background-color×2 */
+    --col-f8fbff: #f8fbff;  /* 2 usi in 1 file — background-color×2 */
+    --col-fef3c7: #fef3c7;  /* 2 usi in 2 file — background-color×1, background×1 */
+    --col-ff7f50: #ff7f50;  /* 2 usi in 1 file — background-color×2 */
+    --col-ffe0b2: #ffe0b2;  /* 2 usi in 1 file — border×2 */
+    --col-ffffff80: rgba(255, 255, 255, 0.5);  /* 2 usi in 2 file — border-right×1, border×1 */
+    --col-00000002: rgba(0, 0, 0, 0.008);  /* 1 usi in 1 file — background×1 */
+    --col-00000005: rgba(0, 0, 0, 0.02);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-00000066: rgba(0, 0, 0, 0.4);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-000000a6: rgba(0, 0, 0, 0.65);  /* 1 usi in 1 file — background-color×1 */
+    --col-004d40: #004d40;  /* 1 usi in 1 file — background-color×1 */
+    --col-0056b3: #0056b3;  /* 1 usi in 1 file — color×1 */
+    --col-006064: #006064;  /* 1 usi in 1 file — background-color×1 */
+    --col-00796b: #00796b;  /* 1 usi in 1 file — background-color×1 */
+    --col-0277bd: #0277bd;  /* 1 usi in 1 file — color×1 */
+    --col-0a1428d1: rgba(10,20,40,0.82);  /* 1 usi in 1 file — background×1 */
+    --col-16a085: #16a085;  /* 1 usi in 1 file — background×1 */
+    --col-17a2b8: #17a2b8;  /* 1 usi in 1 file — background-color×1 */
+    --col-1a2535: #1a2535;  /* 1 usi in 1 file — background×1 */
+    --col-1abc9c: #1abc9c;  /* 1 usi in 1 file — background×1 */
+    --col-1e1e1e: #1e1e1e;  /* 1 usi in 1 file — background-color×1 */
+    --col-1e1e30: #1e1e30;  /* 1 usi in 1 file — border-color×1 */
+    --col-1e293b: #1e293b;  /* 1 usi in 1 file — color×1 */
+    --col-212529bf: rgba(33, 37, 41, 0.75);  /* 1 usi in 1 file — background×1 */
+    --col-219150: #219150;  /* 1 usi in 1 file — background×1 */
+    --col-22543d: #22543d;  /* 1 usi in 1 file — color×1 */
+    --col-241a0e: #241a0e;  /* 1 usi in 1 file — background×1 */
+    --col-27ae6066: rgba(39,174,96,0.4);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-27ae60d9: rgba(39, 174, 96, 0.85);  /* 1 usi in 1 file — background×1 */
+    --col-28a74533: rgba(40, 167, 69, 0.2);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-2a1a0a: #2a1a0a;  /* 1 usi in 1 file — background×1 */
+    --col-2a4365: #2a4365;  /* 1 usi in 1 file — color×1 */
+    --col-2a76b833: rgba(42, 118, 184, 0.2);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-2a76b84c: rgba(42, 118, 184, 0.3);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-2a76b866: rgba(42, 118, 184, 0.4);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-2b6cb0: #2b6cb0;  /* 1 usi in 1 file — color×1 */
+    --col-2e7d3233: rgba(46, 125, 50, 0.2);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-2f855a: #2f855a;  /* 1 usi in 1 file — border-color×1 */
+    --col-334155: #334155;  /* 1 usi in 1 file — color×1 */
+    --col-3498db1f: rgba(52,152,219,0.12);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-3498db4c: rgba(52, 152, 219, 0.3);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-3498db80: rgba(52, 152, 219, 0.5);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-38a169: #38a169;  /* 1 usi in 1 file — background-color×1 */
+    --col-4a148c: #4a148c;  /* 1 usi in 1 file — color×1 */
+    --col-5a6268: #5a6268;  /* 1 usi in 1 file — background×1 */
+    --col-5a6b7c: #5a6b7c;  /* 1 usi in 1 file — color×1 */
+    --col-68d391: #68d391;  /* 1 usi in 1 file — background×1 */
+    --col-6c7a7d: #6c7a7d;  /* 1 usi in 1 file — background×1 */
+    --col-721c24: #721c24;  /* 1 usi in 1 file — color×1 */
+    --col-7a8491: #7a8491;  /* 1 usi in 1 file — background-color×1 */
+    --col-7d6608: #7d6608;  /* 1 usi in 1 file — color×1 */
+    --col-8c96a3: #8c96a3;  /* 1 usi in 1 file — background-color×1 */
+    --col-8e24aa: #8e24aa;  /* 1 usi in 1 file — border-color×1 */
+    --col-8e24aa26: rgba(142, 36, 170, 0.15);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-93c5fd: #93c5fd;  /* 1 usi in 1 file — border-color×1 */
+    --col-94a3b8: #94a3b8;  /* 1 usi in 1 file — color×1 */
+    --col-95a5a626: rgba(149, 165, 166, 0.15);  /* 1 usi in 1 file — background×1 */
+    --col-95a5a64c: rgba(149, 165, 166, 0.3);  /* 1 usi in 1 file — background×1 */
+    --col-95a5a680: rgba(149, 165, 166, 0.5);  /* 1 usi in 1 file — border×1 */
+    --col-aab0be: #aab0be;  /* 1 usi in 1 file — border-color×1 */
+    --col-ab47bc: #ab47bc;  /* 1 usi in 1 file — border-color×1 */
+    --col-adb5bd: #adb5bd;  /* 1 usi in 1 file — border×1 */
+    --col-b3e5fc: #b3e5fc;  /* 1 usi in 1 file — border×1 */
+    --col-b45309: #b45309;  /* 1 usi in 1 file — color×1 */
+    --col-b7950b: #b7950b;  /* 1 usi in 1 file — color×1 */
+    --col-b8daff: #b8daff;  /* 1 usi in 1 file — border-color×1 */
+    --col-b91c1c: #b91c1c;  /* 1 usi in 1 file — color×1 */
+    --col-bad9fc: #bad9fc;  /* 1 usi in 1 file — border-color×1 */
+    --col-bbdefb: #bbdefb;  /* 1 usi in 1 file — border-bottom×1 */
+    --col-bbf7d0: #bbf7d0;  /* 1 usi in 1 file — border×1 */
+    --col-bee3f8: #bee3f8;  /* 1 usi in 1 file — background×1 */
+    --col-c3e6cb: #c3e6cb;  /* 1 usi in 1 file — border×1 */
+    --col-c6282814: rgba(198, 40, 40, 0.08);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-c6f6d5: #c6f6d5;  /* 1 usi in 1 file — background×1 */
+    --col-cce5ff: #cce5ff;  /* 1 usi in 1 file — border×1 */
+    --col-cdd6dc: #cdd6dc;  /* 1 usi in 1 file — background-color×1 */
+    --col-cfd8dc: #cfd8dc;  /* 1 usi in 1 file — border×1 */
+    --col-d0d5dd: #d0d5dd;  /* 1 usi in 1 file — border×1 */
+    --col-d0e7ff: #d0e7ff;  /* 1 usi in 1 file — border×1 */
+    --col-d1d5db: #d1d5db;  /* 1 usi in 1 file — background-color×1 */
+    --col-d4efdf: #d4efdf;  /* 1 usi in 1 file — border×1 */
+    --col-d69e2e: #d69e2e;  /* 1 usi in 1 file — color×1 */
+    --col-dbe2e8: #dbe2e8;  /* 1 usi in 1 file — background-color×1 */
+    --col-dce0e6: #dce0e6;  /* 1 usi in 1 file — border×1 */
+    --col-dcf8c6: #dcf8c6;  /* 1 usi in 1 file — background×1 */
+    --col-dcfce7: #dcfce7;  /* 1 usi in 1 file — background-color×1 */
+    --col-ddddee: #ddddee;  /* 1 usi in 1 file — border×1 */
+    --col-e0a800: #e0a800;  /* 1 usi in 1 file — border-color×1 */
+    --col-e0efff: #e0efff;  /* 1 usi in 1 file — background-color×1 */
+    --col-e1e4e8: #e1e4e8;  /* 1 usi in 1 file — border×1 */
+    --col-e57373: #e57373;  /* 1 usi in 1 file — background×1 */
+    --col-e67e221f: rgba(230,126,34,0.12);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-e67e2226: rgba(230,126,34,0.15);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-e67e2233: rgba(230,126,34,0.2);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-e67e2238: rgba(230, 126, 34, 0.22);  /* 1 usi in 1 file — box-shadow×1 */
+    --col-e67e22d9: rgba(230, 126, 34, 0.85);  /* 1 usi in 1 file — background×1 */
+    --col-e7f3ff: #e7f3ff;  /* 1 usi in 1 file — background-color×1 */
+    --col-e8ecef: #e8ecef;  /* 1 usi in 1 file — border×1 */
+    --col-e8f4f8: #e8f4f8;  /* 1 usi in 1 file — background-color×1 */
+    --col-e8f4fc: #e8f4fc;  /* 1 usi in 1 file — background×1 */
+    --col-e9f7ef: #e9f7ef;  /* 1 usi in 1 file — background×1 */
+    --col-eaeaea: #eaeaea;  /* 1 usi in 1 file — border-bottom×1 */
+    --col-ebecf0: #ebecf0;  /* 1 usi in 1 file — background-color×1 */
+    --col-eef2f6: #eef2f6;  /* 1 usi in 1 file — background×1 */
+    --col-eff6fc: #eff6fc;  /* 1 usi in 1 file — background-color×1 */
+    --col-f0a85a: #f0a85a;  /* 1 usi in 1 file — border×1 */
+    --col-f0f8ff: #f0f8ff;  /* 1 usi in 1 file — background-color×1 */
+    --col-f0fdf4: #f0fdf4;  /* 1 usi in 1 file — background-color×1 */
+    --col-f0fff4: #f0fff4;  /* 1 usi in 1 file — background-color×1 */
+    --col-f1f0f0: #f1f0f0;  /* 1 usi in 1 file — background×1 */
+    --col-f1f8ff: #f1f8ff;  /* 1 usi in 1 file — background-color×1 */
+    --col-f4f6f7: #f4f6f7;  /* 1 usi in 1 file — background-color×1 */
+    --col-f5b7b1: #f5b7b1;  /* 1 usi in 1 file — border×1 */
+    --col-f5c6cb: #f5c6cb;  /* 1 usi in 1 file — border×1 */
+    --col-f5f7fa: #f5f7fa;  /* 1 usi in 1 file — background-color×1 */
+    --col-f6e05e: #f6e05e;  /* 1 usi in 1 file — background×1 */
+    --col-f7f9fc: #f7f9fc;  /* 1 usi in 1 file — background-color×1 */
+    --col-f7fafc: #f7fafc;  /* 1 usi in 1 file — background×1 */
+    --col-f8d7da: #f8d7da;  /* 1 usi in 1 file — background×1 */
+    --col-f8faff: #f8faff;  /* 1 usi in 1 file — background×1 */
+    --col-fafafa: #fafafa;  /* 1 usi in 1 file — background×1 */
+    --col-fbd38d: #fbd38d;  /* 1 usi in 1 file — border-bottom×1 */
+    --col-fca5a5: #fca5a5;  /* 1 usi in 1 file — border×1 */
+    --col-fde68a: #fde68a;  /* 1 usi in 1 file — border×1 */
+    --col-fed7d7: #fed7d7;  /* 1 usi in 1 file — background-color×1 */
+    --col-fee2e2: #fee2e2;  /* 1 usi in 1 file — background-color×1 */
+    --col-ff8c00: #ff8c00;  /* 1 usi in 1 file — background-color×1 */
+    --col-ffdf7e: #ffdf7e;  /* 1 usi in 1 file — border-color×1 */
+    --col-fff8e1: #fff8e1;  /* 1 usi in 1 file — background×1 */
+    --col-fff9f4: #fff9f4;  /* 1 usi in 1 file — background×1 */
+    --col-fffaf0: #fffaf0;  /* 1 usi in 1 file — background×1 */
+    --col-fffdf5: #fffdf5;  /* 1 usi in 1 file — background×1 */
+    --col-ffffff33: rgba(255, 255, 255, 0.2);  /* 1 usi in 1 file — background×1 */
+    --col-ffffff99: rgba(255, 255, 255, 0.6);  /* 1 usi in 1 file — background-color×1 */
+    --col-ffffffe6: rgba(255, 255, 255, 0.9);  /* 1 usi in 1 file — background-color×1 */
+    --col-fffffffa: rgba(255, 255, 255, 0.98);  /* 1 usi in 1 file — background×1 */
+}

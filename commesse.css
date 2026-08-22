@@ -14,7 +14,7 @@
 /* FIX GLOBAL BACKGROUND */
 .std-app-shell,
 .std-app-content {
-    background-color: #dfe6ed !important;
+    background-color: var(--col-dfe6ed);
 }
 
 /* --- 1. BARRA FILTRI (Sticky) --- */
@@ -29,10 +29,10 @@
     flex-wrap: wrap;
     gap: 15px;
 
-    background-color: #ffffff;
+    background-color: var(--col-ffffff);
     padding: 12px 20px;
-    border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid var(--col-e0e0e0);
+    box-shadow: 0 2px 8px var(--col-00000008);
 }
 
 .filters-group {
@@ -43,30 +43,30 @@
 
 .filter-label {
     font-weight: 600;
-    color: #555;
+    color: var(--col-555555);
     margin-right: 5px;
     font-size: 0.9em;
 }
 
 .filter-btn {
     padding: 6px 12px;
-    border: 1px solid #dcdcdc;
-    background: #fff;
+    border: 1px solid var(--col-dcdcdc);
+    background: var(--col-ffffff);
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.85em;
-    color: #555;
+    color: var(--col-555555);
     transition: all 0.2s;
 }
 
 .filter-btn:hover {
-    background: #f0f0f0;
+    background: var(--col-f0f0f0);
 }
 
 .filter-btn.active {
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     color: white;
-    border-color: #2c3e50;
+    border-color: var(--col-2c3e50);
     font-weight: 500;
 }
 
@@ -80,7 +80,7 @@
 #search-input {
     width: 280px;
     padding: 8px 12px;
-    border: 1px solid #dfe6ed;
+    border: 1px solid var(--col-dfe6ed);
     border-radius: 6px;
     font-size: 0.9em;
     outline: none;
@@ -88,13 +88,13 @@
 }
 
 #search-input:focus {
-    border-color: #3498db;
+    border-color: var(--col-3498db);
 }
 
 #sort-select {
     width: 180px;
     padding: 8px;
-    border: 1px solid #dfe6ed;
+    border: 1px solid var(--col-dfe6ed);
     border-radius: 6px;
     font-size: 0.9em;
     cursor: pointer;
@@ -106,7 +106,7 @@
     align-items: center;
     gap: 5px;
     font-size: 0.85em;
-    color: #666;
+    color: var(--col-666666);
     cursor: pointer;
 }
 
@@ -166,7 +166,7 @@
         position: sticky;
         top: 0;
         z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px var(--col-0000001a);
     }
 
     .commesse-grid {
@@ -187,7 +187,7 @@
     grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
-    color: #6c757d;
+    color: var(--col-6c757d);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -195,8 +195,8 @@
 }
 
 .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
+    border: 4px solid var(--col-f3f3f3);
+    border-top: 4px solid var(--col-3498db);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -204,8 +204,8 @@
 }
 
 .spinner-small {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
+    border: 3px solid var(--col-f3f3f3);
+    border-top: 3px solid var(--col-3498db);
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -236,18 +236,18 @@
 }
 
 .skeleton-grid {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
-    padding: 0 !important;
-    flex-direction: row !important;
+    padding: 0;
+    flex-direction: row;
 }
 
 .skeleton-card {
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-    border: 1px solid #e8ecef;
+    box-shadow: 0 10px 20px var(--col-00000014);
+    border: 1px solid var(--col-e8ecef);
     overflow: hidden;
     min-height: 380px;
 }
@@ -255,7 +255,7 @@
 .skeleton-img {
     width: 100%;
     height: 200px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, var(--col-f0f0f0) 25%, var(--col-e0e0e0) 50%, var(--col-f0f0f0) 75%);
     background-size: 800px 100%;
     animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -270,7 +270,7 @@
 .skeleton-line {
     height: 14px;
     border-radius: 4px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, var(--col-f0f0f0) 25%, var(--col-e0e0e0) 50%, var(--col-f0f0f0) 75%);
     background-size: 800px 100%;
     animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -290,11 +290,11 @@
 
 /* --- 3. CARD STYLES (MIGLIORATI) --- */
 .commesse-card {
-    background-color: #fff;
+    background-color: var(--col-ffffff);
     border-radius: 12px;
     /* Ombra più morbida GLOBALE */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid #cfd8dc;
+    box-shadow: 0 10px 20px var(--col-00000026);
+    border: 1px solid var(--col-cfd8dc);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -305,15 +305,15 @@
 
 .commesse-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 24px var(--col-0000001a);
 }
 
 .card-image {
     width: 100%;
     height: 200px;
-    background-color: #f1f3f5;
+    background-color: var(--col-f1f3f5);
     position: relative;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 1px solid var(--col-eaeaea);
     overflow: hidden;
     /* Ensure img stays inside */
 }
@@ -330,7 +330,7 @@
     position: absolute;
     top: 10px;
     left: 10px;
-    background: rgba(33, 37, 41, 0.75);
+    background: var(--col-212529bf);
     color: white;
     padding: 3px 8px;
     border-radius: 6px;
@@ -359,13 +359,13 @@
     font-size: 1.25em;
     /* Titolo più grande */
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     line-height: 1.25;
 }
 
 .card-header span {
     font-size: 0.9em;
-    color: #7f8c8d;
+    color: var(--col-7f8c8d);
     font-weight: 500;
 }
 
@@ -384,7 +384,7 @@
 
 .info-label {
     font-size: 0.7em;
-    color: #95a5a6;
+    color: var(--col-95a5a6);
     text-transform: uppercase;
     font-weight: 600;
     margin-bottom: 2px;
@@ -392,7 +392,7 @@
 
 .info-value {
     font-size: 0.95em;
-    color: #34495e;
+    color: var(--col-34495e);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -408,7 +408,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 0.75em;
-    color: #7f8c8d;
+    color: var(--col-7f8c8d);
     margin-bottom: 4px;
     font-weight: 600;
 }
@@ -416,14 +416,14 @@
 .progress-track {
     width: 100%;
     height: 6px;
-    background: #ecf0f1;
+    background: var(--col-ecf0f1);
     border-radius: 3px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     transition: width 0.5s ease;
 }
 
@@ -431,7 +431,7 @@
 .card-footer-actions {
     margin-top: auto;
     padding-top: 15px;
-    border-top: 1px dashed #e0e0e0;
+    border-top: 1px dashed var(--col-e0e0e0);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -444,20 +444,20 @@
     gap: 8px;
     width: 100%;
     padding: 10px;
-    background-color: #f0f7ff;
-    color: #0056b3;
+    background-color: var(--col-f0f7ff);
+    color: var(--col-0056b3);
     text-decoration: none;
     border-radius: 8px;
     font-weight: 600;
     font-size: 0.9em;
-    border: 1px solid #d0e7ff;
+    border: 1px solid var(--col-d0e7ff);
     transition: all 0.2s;
     box-sizing: border-box;
 }
 
 .btn-registrazioni:hover {
-    background-color: #e0efff;
-    border-color: #bad9fc;
+    background-color: var(--col-e0efff);
+    border-color: var(--col-bad9fc);
     transform: translateY(-1px);
 }
 
@@ -479,7 +479,7 @@
     height: 100vh !important;
     transform: none !important;
     z-index: 9999;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--col-00000080);
     /* Backdrop leggera */
     display: none;
     justify-content: center;
@@ -499,10 +499,10 @@
     height: 90vh;
     /* Alto ma con margine */
     max-height: 90vh;
-    background-color: #fff;
+    background-color: var(--col-ffffff);
     border-radius: 8px;
     /* Meno arrotondato */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px var(--col-0000004c);
     /* Ombra più contenuta */
     display: flex;
     flex-direction: column;
@@ -526,9 +526,9 @@
 
 .modal-header {
     padding: 15px 20px;
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     /* Standard Blue */
-    border-bottom: 1px solid #1a252f;
+    border-bottom: 1px solid var(--col-1a252f);
     display: flex;
     justify-content: center;
     /* Center Title */
@@ -560,26 +560,26 @@
 .modal-body {
     padding: 30px;
     overflow-y: auto;
-    background-color: #f4f6f7;
+    background-color: var(--col-f4f6f7);
     /* Sfondo leggermente grigio standard */
 }
 
 .modal-footer {
     padding: 15px 25px;
-    border-top: 1px solid #ddd;
-    background-color: #fff;
+    border-top: 1px solid var(--col-dddddd);
+    background-color: var(--col-ffffff);
     text-align: right;
     flex-shrink: 0;
 }
 
 /* Sezioni Form (Box bianchi con bordo) */
 .form-section {
-    background: #fff;
+    background: var(--col-ffffff);
     padding: 25px;
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     margin-bottom: 25px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--col-0000000d);
 }
 
 .form-section:last-child {
@@ -588,7 +588,7 @@
 
 .form-section-header {
     margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--col-eeeeee);
     padding-bottom: 10px;
 }
 
@@ -596,7 +596,7 @@
     margin: 0;
     font-size: 1em;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     text-transform: uppercase;
 }
 
@@ -652,9 +652,9 @@
 }
 
 .custom-file-upload.drag-over {
-    background-color: #eff6fc;
+    background-color: var(--col-eff6fc);
     /* Light blue tint */
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     border-style: solid;
     transform: scale(1.02);
 }
@@ -665,7 +665,7 @@
     margin-bottom: 6px;
     font-weight: 600;
     font-size: 0.85em;
-    color: #495057;
+    color: var(--col-495057);
 }
 
 .modal-body input[type="text"],
@@ -673,7 +673,7 @@
 .modal-body textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--col-dcdcdc);
     border-radius: 6px;
     font-size: 0.95em;
     box-sizing: border-box;
@@ -683,9 +683,9 @@
 
 .modal-body input:focus,
 .modal-body textarea:focus {
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    box-shadow: 0 0 0 3px var(--col-3498db1a);
 }
 
 /* Choices.js Customization per Modale */
@@ -694,10 +694,10 @@
 }
 
 .choices__inner {
-    background-color: #fcfcfc;
+    background-color: var(--col-fcfcfc);
     min-height: 42px;
     border-radius: 6px;
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--col-dcdcdc);
     font-size: 0.95em;
 }
 
@@ -706,8 +706,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f9f9f9;
-    border: 1px dashed #ccc;
+    background: var(--col-f9f9f9);
+    border: 1px dashed var(--col-cccccc);
     padding: 8px;
     border-radius: 6px;
     cursor: pointer;
@@ -718,13 +718,13 @@
 }
 
 .custom-file-upload.compact:hover {
-    border-color: #3498db;
-    background: #f0f7ff;
+    border-color: var(--col-3498db);
+    background: var(--col-f0f7ff);
 }
 
 /* Pulsante Aggiungi (Header) */
 #add-commessa-btn {
-    background-color: #28a745;
+    background-color: var(--col-28a745);
     color: white;
     border: none;
     padding: 0 16px;
@@ -739,12 +739,12 @@
 }
 
 #add-commessa-btn:hover {
-    background-color: #218838;
+    background-color: var(--col-218838);
 }
 
 /* Pulsante Salva (Footer Modale) */
 .save-button {
-    background-color: #28a745;
+    background-color: var(--col-28a745);
     color: white;
     border: none;
     padding: 10px 25px;
@@ -759,7 +759,7 @@
 }
 
 .save-button:hover {
-    background-color: #218838;
+    background-color: var(--col-218838);
 }
 
 /* Utility Alignment */
@@ -829,11 +829,11 @@
     font-weight: 700;
     text-transform: uppercase;
     color: white;
-    background-color: #95a5a6;
+    background-color: var(--col-95a5a6);
     /* Default gray */
     cursor: pointer;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px var(--col-0000001a);
     transition: transform 0.1s, opacity 0.2s;
     outline: none;
     width: auto;
@@ -851,22 +851,22 @@
 
 /* Varianti Colore Status */
 .status-select-badge.status-new {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
 }
 
 /* Preventivo: Blu */
 .status-select-badge.status-wip {
-    background-color: #f39c12;
+    background-color: var(--col-f39c12);
 }
 
 /* In Lavorazione: Arancio */
 .status-select-badge.status-done {
-    background-color: #27ae60;
+    background-color: var(--col-27ae60);
 }
 
 /* Completato: Verde */
 .status-select-badge.status-cancel {
-    background-color: #c0392b;
+    background-color: var(--col-c0392b);
 }
 
 /* Annullato: Rosso */
@@ -875,9 +875,9 @@
 .phase-toggles-container {
     margin-top: 10px;
     padding: 8px;
-    background: #fafafa;
+    background: var(--col-fafafa);
     border-radius: 6px;
-    border: 1px solid #eee;
+    border: 1px solid var(--col-eeeeee);
 }
 
 .phase-pills-wrapper {
@@ -889,9 +889,9 @@
 .phase-pill {
     font-size: 0.75em;
     padding: 3px 8px;
-    background-color: #fff;
-    border: 1px solid #dcdcdc;
-    color: #7f8c8d;
+    background-color: var(--col-ffffff);
+    border: 1px solid var(--col-dcdcdc);
+    color: var(--col-7f8c8d);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
@@ -900,13 +900,13 @@
 }
 
 .phase-pill.active {
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     color: white;
-    border-color: #2c3e50;
+    border-color: var(--col-2c3e50);
 }
 
 .phase-pill:hover:not(.active) {
-    background-color: #f0f0f0;
+    background-color: var(--col-f0f0f0);
 }
 
 /* --- 6.1 BADGE STATUS SU CARD --- */
@@ -923,19 +923,19 @@
 }
 
 .status-badge.status-new {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
 }
 
 .status-badge.status-wip {
-    background-color: #f39c12;
+    background-color: var(--col-f39c12);
 }
 
 .status-badge.status-done {
-    background-color: #27ae60;
+    background-color: var(--col-27ae60);
 }
 
 .status-badge.status-cancel {
-    background-color: #c0392b;
+    background-color: var(--col-c0392b);
 }
 
 .phase-mini-pills {
@@ -948,8 +948,8 @@
 .phase-mini-pill {
     font-size: 0.7em;
     padding: 2px 6px;
-    background-color: #ecf0f1;
-    color: #7f8c8d;
+    background-color: var(--col-ecf0f1);
+    color: var(--col-7f8c8d);
     border-radius: 4px;
     font-weight: 500;
 }
@@ -968,7 +968,7 @@
     .mobile-toggles {
         display: flex;
         gap: 5px;
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--col-ffffff1a);
         padding: 4px;
         border-radius: 20px;
         margin-left: 10px;
@@ -979,7 +979,7 @@
     .toggle-btn {
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--col-ffffffb2);
         padding: 4px 12px;
         border-radius: 15px;
         font-size: 0.85em;
@@ -990,8 +990,8 @@
 
     .toggle-btn.active {
         background: white;
-        color: #2c3e50;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: var(--col-2c3e50);
+        box-shadow: 0 2px 4px var(--col-00000033);
     }
 
     /* Modifica Header per accomodare i controlli */
@@ -1013,12 +1013,12 @@
     /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
 
     .view-map .geomap-sidebar {
-        display: none !important;
+        display: none;
     }
 
     .view-map #geoMapFullContainer {
-        display: block !important;
-        height: 100% !important;
+        display: block;
+        height: 100%;
     }
 
     .view-list .geomap-sidebar {
@@ -1029,7 +1029,7 @@
     }
 
     .view-list #geoMapFullContainer {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -1040,7 +1040,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: var(--col-000000e6);
     z-index: 10002;
     /* Highest priority */
     display: none;
@@ -1055,7 +1055,7 @@
     max-height: 90%;
     object-fit: contain;
     border-radius: 4px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 25px var(--col-00000080);
     animation: zoomIn 0.3s ease;
 }
 
@@ -1063,7 +1063,7 @@
     position: absolute;
     top: 20px;
     right: 30px;
-    color: #f1f1f1;
+    color: var(--col-f1f1f1);
     font-size: 40px;
     font-weight: bold;
     cursor: pointer;
@@ -1074,7 +1074,7 @@
 
 .close-viewer:hover,
 .close-viewer:focus {
-    color: #bbb;
+    color: var(--col-bbbbbb);
     text-decoration: none;
 }
 
@@ -1095,13 +1095,13 @@
 }
 
 .phase-pill.active {
-    background-color: #2c3e50;
+    background-color: var(--col-2c3e50);
     color: white;
-    border-color: #2c3e50;
+    border-color: var(--col-2c3e50);
 }
 
 .phase-pill:hover:not(.active) {
-    background-color: #f0f0f0;
+    background-color: var(--col-f0f0f0);
 }
 
 /* --- 6.1 BADGE STATUS SU CARD --- */
@@ -1118,19 +1118,19 @@
 }
 
 .status-badge.status-new {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
 }
 
 .status-badge.status-wip {
-    background-color: #f39c12;
+    background-color: var(--col-f39c12);
 }
 
 .status-badge.status-done {
-    background-color: #27ae60;
+    background-color: var(--col-27ae60);
 }
 
 .status-badge.status-cancel {
-    background-color: #c0392b;
+    background-color: var(--col-c0392b);
 }
 
 .phase-mini-pills {
@@ -1143,8 +1143,8 @@
 .phase-mini-pill {
     font-size: 0.7em;
     padding: 2px 6px;
-    background-color: #ecf0f1;
-    color: #7f8c8d;
+    background-color: var(--col-ecf0f1);
+    color: var(--col-7f8c8d);
     border-radius: 4px;
     font-weight: 500;
 }
@@ -1163,7 +1163,7 @@
     .mobile-toggles {
         display: flex;
         gap: 5px;
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--col-ffffff1a);
         padding: 4px;
         border-radius: 20px;
         margin-left: 10px;
@@ -1174,7 +1174,7 @@
     .toggle-btn {
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--col-ffffffb2);
         padding: 4px 12px;
         border-radius: 15px;
         font-size: 0.85em;
@@ -1185,8 +1185,8 @@
 
     .toggle-btn.active {
         background: white;
-        color: #2c3e50;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: var(--col-2c3e50);
+        box-shadow: 0 2px 4px var(--col-00000033);
     }
 
     /* Modifica Header per accomodare i controlli */
@@ -1208,12 +1208,12 @@
     /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
 
     .view-map .geomap-sidebar {
-        display: none !important;
+        display: none;
     }
 
     .view-map #geoMapFullContainer {
-        display: block !important;
-        height: 100% !important;
+        display: block;
+        height: 100%;
     }
 
     .view-list .geomap-sidebar {
@@ -1224,7 +1224,7 @@
     }
 
     .view-list #geoMapFullContainer {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -1235,7 +1235,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: var(--col-000000e6);
     z-index: 10002;
     /* Highest priority */
     display: none;
@@ -1250,7 +1250,7 @@
     max-height: 90%;
     object-fit: contain;
     border-radius: 4px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 25px var(--col-00000080);
     animation: zoomIn 0.3s ease;
 }
 
@@ -1258,7 +1258,7 @@
     position: absolute;
     top: 20px;
     right: 30px;
-    color: #f1f1f1;
+    color: var(--col-f1f1f1);
     font-size: 40px;
     font-weight: bold;
     cursor: pointer;
@@ -1269,7 +1269,7 @@
 
 .close-viewer:hover,
 .close-viewer:focus {
-    color: #bbb;
+    color: var(--col-bbbbbb);
     text-decoration: none;
 }
 
@@ -1286,20 +1286,20 @@
 }
 
 /* Added for approximate location marker */
-.std-btn--orange { background-color: #f39c12; color: #fff; border: none; }
-.std-btn--orange:hover { background-color: #e67e22; filter: brightness(1.1); }
+.std-btn--orange { background-color: var(--col-f39c12); color: var(--col-ffffff); border: none; }
+.std-btn--orange:hover { background-color: var(--col-e67e22); filter: brightness(1.1); }
 
 /* ── CARD MANUTENZIONE - struttura allineata alle commesse ── */
 .commesse-card--manutenzione {
-    border: 1px solid #f0a85a;
-    border-top: 4px solid #e67e22;
-    background: linear-gradient(160deg, #fff9f4 0%, #fff 70%);
+    border: 1px solid var(--col-f0a85a);
+    border-top: 4px solid var(--col-e67e22);
+    background: linear-gradient(160deg, var(--col-fff9f4) 0%, var(--col-ffffff) 70%);
     cursor: default;
 }
 .commesse-card--manutenzione:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(230, 126, 34, 0.22);
-    border-color: #e67e22;
+    box-shadow: 0 8px 28px var(--col-e67e2238);
+    border-color: var(--col-e67e22);
 }
 
 /* Immagine default manutenzione */
@@ -1326,7 +1326,7 @@
     left: 0;
     right: 0;
     padding: 18px 10px 8px;
-    background: linear-gradient(to top, rgba(10,20,40,0.82) 0%, transparent 100%);
+    background: linear-gradient(to top, var(--col-0a1428d1) 0%, transparent 100%);
     display: flex;
     align-items: flex-end;
 }
@@ -1334,9 +1334,9 @@
     font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 1.8px;
-    color: #f39c12;
+    color: var(--col-f39c12);
     text-transform: uppercase;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 3px var(--col-00000080);
 }
 
 /* Badge status per utenti non-admin */
@@ -1344,14 +1344,14 @@
     display: inline-block;
     font-size: 0.72rem;
     font-weight: 700;
-    color: #fff;
-    background: rgba(230, 126, 34, 0.85);
+    color: var(--col-ffffff);
+    background: var(--col-e67e22d9);
     padding: 3px 9px;
     border-radius: 10px;
     white-space: nowrap;
 }
 .card-mann-status-badge.done {
-    background: rgba(39, 174, 96, 0.85);
+    background: var(--col-27ae60d9);
 }
 
 /* Stili legacy (non più usati, mantenuti per compatibilità) */
@@ -1360,12 +1360,12 @@
 
 
 /* ── FILTRI TIPO ── */
-.tipo-filters { border-left: 2px solid #e8eaf0; padding-left: 12px; }
-.filter-tipo { background: #f8f9fb; color: #555; }
-.filter-tipo.active { background: #e67e22; color: #fff; border-color: #d35400; }
-.filter-tipo.active[data-tipo="COMPLETA"] { background: #9b59b6; border-color: #8e44ad; }
-.filter-tipo.active[data-tipo="ALL"] { background: #2c3e50; border-color: #1a252f; }
-.manutenzioni-tipo-btn.active { background: linear-gradient(135deg, #e67e22, #f39c12); border-color: #d35400; }
+.tipo-filters { border-left: 2px solid var(--col-e8eaf0); padding-left: 12px; }
+.filter-tipo { background: var(--col-f8f9fb); color: var(--col-555555); }
+.filter-tipo.active { background: var(--col-e67e22); color: var(--col-ffffff); border-color: var(--col-d35400); }
+.filter-tipo.active[data-tipo="COMPLETA"] { background: var(--col-9b59b6); border-color: var(--col-8e44ad); }
+.filter-tipo.active[data-tipo="ALL"] { background: var(--col-2c3e50); border-color: var(--col-1a252f); }
+.manutenzioni-tipo-btn.active { background: linear-gradient(135deg, var(--col-e67e22), var(--col-f39c12)); border-color: var(--col-d35400); }
 
 /* Task 0.5 — le fasi di produzione le modifica solo l'admin.
    Agli altri ruoli restano visibili in sola lettura: nasconderle toglierebbe
@@ -1373,11 +1373,11 @@
    che il server rifiuta.
    Nota: le regole .phase-pill sono duplicate in due punti di questo file
    (L889 e L1097) — debito da sciogliere in Fase 3, per ora si aggiunge in coda
-   così la regola vince per ordine di cascata senza !important. */
+   così la regola vince per ordine di cascata senza. */
 .phase-pill--readonly {
     cursor: default;
 }
 
 .phase-pill--readonly:hover:not(.active) {
-    background-color: #fff;
+    background-color: var(--col-ffffff);
 }

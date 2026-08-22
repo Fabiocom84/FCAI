@@ -7,20 +7,20 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: var(--col-ffffff);
     border-radius: 8px;
     /* Arrotonda gli angoli interni al guscio */
     overflow: hidden;
     /* Mantiene il contenuto dentro i bordi arrotondati */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px var(--col-0000000d);
 }
 
 /* OVERRIDE LOCALE per std-app-content in questa pagina specificamente */
 .std-app-content {
     display: flex;
     flex-direction: column;
-    padding-bottom: 0 !important;
-    overflow: hidden !important;
+    padding-bottom: 0;
+    overflow: hidden;
     /* Disabilita scroll esterno, vogliamo solo scroll tabella */
 }
 
@@ -34,12 +34,12 @@
 .styled-select {
     outline: none;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--col-ffffffe6);
 }
 
 .styled-select:focus {
     background-color: white;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 0 2px var(--col-3498db80);
 }
 
 /* 2. BARRA DEGLI STRUMENTI (TOOLBAR)
@@ -49,8 +49,8 @@
     display: flex;
     align-items: center;
     padding: 10px 15px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--col-e0e0e0);
+    background-color: var(--col-f8f9fa);
     gap: 15px;
     justify-content: flex-start;
     flex-shrink: 0;
@@ -67,7 +67,7 @@
 .button,
 .toolbar-group input[type="text"] {
     padding: 5px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 4px;
     font-size: 0.9em;
     font-weight: 600;
@@ -79,8 +79,8 @@
 
 .button {
     cursor: pointer;
-    background-color: #f0f0f0;
-    color: #333;
+    background-color: var(--col-f0f0f0);
+    color: var(--col-333333);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -90,7 +90,7 @@
 }
 
 .button:hover {
-    background-color: #e0e0e0;
+    background-color: var(--col-e0e0e0);
 }
 
 .icon-button {
@@ -102,46 +102,46 @@
 
 /* Classi Modificatrici per i Colori dei Pulsanti */
 .button--primary {
-    background-color: #28a745;
-    border-color: #218838;
+    background-color: var(--col-28a745);
+    border-color: var(--col-218838);
     color: white;
 }
 
 .button--primary:hover {
-    background-color: #218838;
+    background-color: var(--col-218838);
 }
 
 .button--secondary {
-    background-color: #007bff;
-    border-color: #0069d9;
+    background-color: var(--col-007bff);
+    border-color: var(--col-0069d9);
     color: white;
 }
 
 .button--secondary:hover {
-    background-color: #0069d9;
+    background-color: var(--col-0069d9);
 }
 
 .button--warning {
-    background-color: #f1c40f;
-    border-color: #f39c12;
+    background-color: var(--col-f1c40f);
+    border-color: var(--col-f39c12);
     color: white;
 }
 
 .button--warning:hover {
-    background-color: #f39c12;
+    background-color: var(--col-f39c12);
 }
 
 .button--danger {
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
     /* A very light gray background */
-    border-color: #dc3545;
+    border-color: var(--col-dc3545);
     /* A red border */
-    color: #dc3545;
+    color: var(--col-dc3545);
     /* The 'X' icon will be red */
 }
 
 .button--danger:hover {
-    background-color: #dc3545;
+    background-color: var(--col-dc3545);
     /* On hover, the background becomes red */
     color: white;
     /* and the 'X' icon becomes white */
@@ -167,9 +167,9 @@
 }
 
 .agile-table thead th {
-    background-color: #e9ecef;
+    background-color: var(--col-e9ecef);
     font-weight: 600;
-    color: #495057;
+    color: var(--col-495057);
     position: sticky;
     top: 0;
     text-transform: uppercase;
@@ -177,7 +177,7 @@
 
 .agile-table th,
 .agile-table td {
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--col-dcdcdc);
     padding: 8px 10px;
     text-align: left;
     font-size: 0.9em;
@@ -194,20 +194,20 @@
 
 /* Stili righe e header con filtri */
 .agile-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
 }
 
 .agile-table tbody tr:hover {
-    background-color: #e2e6ea;
+    background-color: var(--col-e2e6ea);
 }
 
 .agile-table tbody tr.selected-row {
-    background-color: #dbeafe;
+    background-color: var(--col-dbeafe);
 }
 
 /* REGOLA DEFINITIVA PER IL FILTRO ATTIVO */
 .agile-table thead th.filter-active {
-    background-color: #dbeafe !important;
+    background-color: var(--col-dbeafe);
 }
 
 .column-header-content {
@@ -225,11 +225,11 @@
 }
 
 .filter-icon:hover {
-    background-color: #dcdcdc;
+    background-color: var(--col-dcdcdc);
 }
 
 .filter-icon.active {
-    color: #007bff;
+    color: var(--col-007bff);
     font-weight: bold;
 }
 
@@ -240,7 +240,7 @@
 }
 
 .agile-table thead th[data-sortable="true"]:hover {
-    background-color: #e2e6ea;
+    background-color: var(--col-e2e6ea);
 }
 
 /* 5. POPUP FILTRI
@@ -248,8 +248,8 @@
 .filter-popup {
     position: absolute;
     background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--col-cccccc);
+    box-shadow: 0 4px 8px var(--col-0000001a);
     border-radius: 4px;
     padding: 10px;
     z-index: 100;
@@ -280,7 +280,7 @@
 .filter-popup input[type="text"] {
     width: 100%;
     padding: 6px 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 4px;
     margin-bottom: 8px;
     box-sizing: border-box;
@@ -292,18 +292,18 @@
     font-size: 0.8em;
     padding: 2px 4px;
     border-radius: 3px;
-    color: #6c757d;
+    color: var(--col-6c757d);
     /* Grigio neutro per l'icona non attiva */
     transition: background-color 0.2s, color 0.2s;
 }
 
 .filter-icon:hover {
-    background-color: #dcdcdc;
+    background-color: var(--col-dcdcdc);
 }
 
 /* Stile per l'icona quando un filtro per quella colonna è ATTIVO */
 .agile-table thead th.filter-active .filter-icon {
-    color: #007bff;
+    color: var(--col-007bff);
     /* Blu, per indicare che il filtro è attivo */
     font-weight: bold;
 }
@@ -315,7 +315,7 @@
 .error-text {
     padding: 40px;
     text-align: center;
-    color: #666;
+    color: var(--col-666666);
 }
 
 /* 7. SISTEMA DI MODALI PERSONALIZZATO
@@ -326,7 +326,7 @@
    ========================================================================== */
 .pagination-container {
     padding: 15px 25px;
-    border-top: 1px solid #dcdcdc;
+    border-top: 1px solid var(--col-dcdcdc);
     text-align: center;
     flex-shrink: 0;
 }
@@ -334,27 +334,27 @@
 .page-btn {
     padding: 6px 12px;
     margin: 0 3px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 4px;
-    background-color: #fff;
-    color: #007bff;
+    background-color: var(--col-ffffff);
+    color: var(--col-007bff);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .page-btn:hover:not([disabled]) {
-    background-color: #e9ecef;
+    background-color: var(--col-e9ecef);
 }
 
 .page-btn.active {
-    background-color: #007bff;
+    background-color: var(--col-007bff);
     color: white;
-    border-color: #007bff;
+    border-color: var(--col-007bff);
     cursor: default;
 }
 
 .page-btn:disabled {
-    color: #6c757d;
+    color: var(--col-6c757d);
     cursor: not-allowed;
     opacity: 0.5;
 }
@@ -399,8 +399,8 @@
 /* Stile principale del popup del filtro */
 .column-filter-popup {
     background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--col-cccccc);
+    box-shadow: 0 4px 12px var(--col-00000026);
     border-radius: 8px;
     z-index: 100;
     display: flex;
@@ -414,14 +414,14 @@
     width: auto;
     margin: 10px;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--col-dddddd);
     border-radius: 5px;
     font-size: 0.9em;
 }
 
 .filter-search-input:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--col-007bff);
 }
 
 /* Contenitore per le opzioni, con altezza massima e scroll */
@@ -429,8 +429,8 @@
     max-height: 250px;
     overflow-y: auto;
     padding: 0 10px;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
+    border-top: 1px solid var(--col-f0f0f0);
+    border-bottom: 1px solid var(--col-f0f0f0);
 }
 
 /* Stile per ogni singola opzione (checkbox + etichetta) */
@@ -442,7 +442,7 @@
 }
 
 .filter-option:not(:last-child) {
-    border-bottom: 1px solid #f7f7f7;
+    border-bottom: 1px solid var(--col-f7f7f7);
 }
 
 .filter-option label {
@@ -458,7 +458,7 @@
 .filter-no-options {
     padding: 20px;
     text-align: center;
-    color: #888;
+    color: var(--col-888888);
 }
 
 /* Footer del popup con i pulsanti */
@@ -467,7 +467,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
 }
 
 /* Stile specifico per i pulsanti nel footer del popup */
@@ -484,8 +484,8 @@
     position: absolute;
     /* Fondamentale per renderlo un popup */
     background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--col-cccccc);
+    box-shadow: 0 4px 12px var(--col-00000026);
     border-radius: 8px;
     z-index: 100;
     display: flex;
@@ -499,14 +499,14 @@
     width: auto;
     margin: 10px;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--col-dddddd);
     border-radius: 5px;
     font-size: 0.9em;
 }
 
 .filter-search-input:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--col-007bff);
 }
 
 /* Contenitore per le opzioni, con altezza massima e scroll */
@@ -516,8 +516,8 @@
     overflow-y: auto;
     /* Mostra la barra di scorrimento verticale se necessario */
     padding: 0 10px;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
+    border-top: 1px solid var(--col-f0f0f0);
+    border-bottom: 1px solid var(--col-f0f0f0);
 }
 
 /* Stile per ogni singola opzione (checkbox + etichetta) */
@@ -529,7 +529,7 @@
 }
 
 .filter-option:not(:last-child) {
-    border-bottom: 1px solid #f7f7f7;
+    border-bottom: 1px solid var(--col-f7f7f7);
 }
 
 .filter-option label {
@@ -550,7 +550,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
 }
 
 .filter-popup-footer .button {

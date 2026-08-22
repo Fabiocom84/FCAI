@@ -3,20 +3,26 @@
 
 // Incrementato con il task 0.4: essendo cambiato l'elenco dei file in precache,
 // i client con la cache precedente continuerebbero a servire la vecchia shell.
-const CACHE_VERSION = 'v7';
+//
+// v8 (21/08/2026): rimosso il tema scuro (Fase 3). Senza incremento, la cache
+// `segretario-ai-v7` sopravvivrebbe con dentro la shell precedente.
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `segretario-ai-${CACHE_VERSION}`;
 
 // Assets da pre-cachare all'installazione (shell minima)
+//
+// I file del tema scuro (`dark-mode.css`, `js/dark-mode.js`) sono stati rimossi
+// il 21/08/2026. Erano elencati qui, e insieme a `cache.addAll` avrebbero
+// impedito al service worker di installarsi — vedi la nota sull'installazione.
 const PRECACHE_ASSETS = [
     'style-v2.css',
+    'css/variables.css',
     'js/config.js',
     'js/api-client.js',
     'js/core-init.js',
     'js/auth-guard.js',
     'js/shared-ui.js',
     'js/libs/choices.min.js',
-    'dark-mode.css',
-    'js/dark-mode.js',
     // Quick Note & Quick Record (offline-first)
     'quick-note.html',
     'quick-note.css',
@@ -41,11 +47,33 @@ const NO_CACHE_PATTERNS = [
 const CACHEABLE_EXTENSIONS = ['.js', '.css', '.woff', '.woff2', '.ttf', '.png', '.jpg', '.jpeg', '.svg', '.ico'];
 
 // --- INSTALL: Pre-cacha la shell minima ---
+//
+// UN FILE MANCANTE NON DEVE IMPEDIRE L'INSTALLAZIONE.
+// Fino al 21/08/2026 questo blocco usava `cache.addAll()`, che **respinge
+// l'intera promessa se anche una sola richiesta fallisce**. Quel giorno il tema
+// scuro è stato rimosso e i suoi due file sono rimasti nell'elenco: l'effetto
+// sarebbe stato un service worker che non si installa mai. I client avrebbero
+// continuato a usare quello precedente, la cache non sarebbe stata ripulita, e
+// il rilascio non li avrebbe raggiunti — senza alcun errore visibile.
+//
+// Con `allSettled` su singole `cache.add`, un file mancante toglie una voce dal
+// precache invece di annullare l'aggiornamento. È la differenza fra un difetto
+// che si degrada e uno che blocca.
 self.addEventListener('install', (event) => {
     console.log(`[SW] Install ${CACHE_VERSION}`);
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(PRECACHE_ASSETS))
+            .then(async (cache) => {
+                const esiti = await Promise.allSettled(
+                    PRECACHE_ASSETS.map(a => cache.add(a))
+                );
+                const falliti = PRECACHE_ASSETS.filter((a, i) => esiti[i].status === 'rejected');
+                if (falliti.length) {
+                    // Va detto: un file in elenco che non esiste più è comunque
+                    // un errore di manutenzione, anche se non blocca più nulla.
+                    console.warn('[SW] Non pre-cachati (verificare l\'elenco):', falliti);
+                }
+            })
             .then(() => self.skipWaiting()) // Attiva subito senza aspettare
     );
 });

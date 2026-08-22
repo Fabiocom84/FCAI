@@ -1,7 +1,7 @@
 /* inserimento-ordini.css */
 
 body {
-    background-color: #f4f7f9;
+    background-color: var(--col-f4f7f9);
     font-family: 'Roboto', sans-serif;
     margin: 0;
 }
@@ -15,12 +15,12 @@ body {
     background: white;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px var(--col-0000000a);
     margin-bottom: 20px;
     margin-top: 30px;
     /* Added spacing from header */
     text-align: center;
-    border: 2px dashed #cbd5e0;
+    border: 2px dashed var(--col-cbd5e0);
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
@@ -28,8 +28,8 @@ body {
 
 .drop-zone-card:hover,
 .drop-zone-card.dragover {
-    border-color: #3498db;
-    background-color: #f0f8ff;
+    border-color: var(--col-3498db);
+    background-color: var(--col-f0f8ff);
     transform: translateY(-2px);
 }
 
@@ -47,12 +47,12 @@ body {
 
 .drop-content h3 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-size: 1.2rem;
 }
 
 .drop-content p {
-    color: #7f8c8d;
+    color: var(--col-7f8c8d);
     font-size: 0.9rem;
     margin: 0;
 }
@@ -60,28 +60,28 @@ body {
 /* Stato file caricato */
 .drop-zone-card.file-loaded {
     border-style: solid;
-    border-color: #27ae60;
-    background-color: #f0fff4;
+    border-color: var(--col-27ae60);
+    background-color: var(--col-f0fff4);
 }
 
 .drop-zone-card.file-loaded .drop-content h3 {
-    color: #27ae60;
+    color: var(--col-27ae60);
 }
 
 /* Nuovo stile per il nome file grande */
 .filename-display {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--col-2d3748);
     background: white;
     padding: 8px 15px;
     border-radius: 6px;
-    border: 1px solid #cbd5e0;
+    border: 1px solid var(--col-cbd5e0);
     margin-top: 5px;
 }
 
 .file-select-btn {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
     padding: 10px 20px;
     border-radius: 8px;
@@ -93,7 +93,7 @@ body {
 }
 
 .file-select-btn:hover {
-    background-color: #2980b9;
+    background-color: var(--col-2980b9);
 }
 
 /* --- Table Card --- */
@@ -101,7 +101,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px var(--col-0000000a);
     margin-bottom: 20px;
 }
 
@@ -111,20 +111,20 @@ body {
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--col-edf2f7);
 }
 
 .table-header-row h2 {
     margin: 0;
     font-size: 1.1rem;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     text-transform: uppercase;
 }
 
 .add-row-btn {
-    background-color: #fff;
-    border: 1px solid #3498db;
-    color: #3498db;
+    background-color: var(--col-ffffff);
+    border: 1px solid var(--col-3498db);
+    color: var(--col-3498db);
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -136,7 +136,7 @@ body {
 }
 
 .add-row-btn:hover {
-    background-color: #3498db;
+    background-color: var(--col-3498db);
     color: white;
 }
 
@@ -155,23 +155,23 @@ body {
 .preview-table th {
     text-align: left;
     padding: 12px;
-    color: #718096;
+    color: var(--col-718096);
     font-size: 0.85rem;
     text-transform: uppercase;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--col-edf2f7);
 }
 
 .preview-table td {
     position: relative;
     padding: 10px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--col-edf2f7);
     vertical-align: middle;
 }
 
 /* Inputs */
 .input-flat {
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--col-e2e8f0);
     border-radius: 6px;
     padding: 8px;
     font-size: 0.95rem;
@@ -190,9 +190,9 @@ body {
     /* z-index: 10; REMOVED */
     /* width: 400px !important; REMOVED */
     /* background-color: #fff; */
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 0 0 3px var(--col-3498db4c);
     /* Standard accessible focus ring */
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     /* white-space: normal; REMOVED */
     /* overflow: visible; REMOVED */
     /* height: auto; REMOVED */
@@ -202,7 +202,7 @@ body {
 
 .input-select {
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--col-e2e8f0);
     border-radius: 6px;
     padding: 8px;
     background: white;
@@ -211,8 +211,8 @@ body {
 
 /* Badge e Icone */
 .badge-ok {
-    background: #c6f6d5;
-    color: #22543d;
+    background: var(--col-c6f6d5);
+    color: var(--col-22543d);
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: bold;
@@ -220,8 +220,8 @@ body {
 }
 
 .badge-new {
-    background: #bee3f8;
-    color: #2a4365;
+    background: var(--col-bee3f8);
+    color: var(--col-2a4365);
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: bold;
@@ -239,14 +239,14 @@ body {
 
 .btn-icon:hover {
     opacity: 1;
-    color: #e53e3e;
+    color: var(--col-e53e3e);
     transform: scale(1.1);
 }
 
 .empty-state-row td {
     text-align: center;
     padding: 40px;
-    color: #a0aec0;
+    color: var(--col-a0aec0);
     font-style: italic;
 }
 
@@ -255,7 +255,7 @@ body {
     /* Reset fixed positioning to be sticky relative to container, or keeping it fixed but matching shell width */
     background: white;
     padding: 15px 20px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px var(--col-00000014);
     display: flex;
     gap: 10px;
     box-sizing: border-box;
@@ -278,7 +278,7 @@ body {
 
 .save-button {
     flex: 1;
-    background: #27ae60;
+    background: var(--col-27ae60);
     color: white;
     border: none;
     padding: 14px;
@@ -286,7 +286,7 @@ body {
     font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
-    box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 4px 6px var(--col-27ae604c);
     cursor: pointer;
 }
 
@@ -295,8 +295,8 @@ body {
 }
 
 .cancel-button {
-    background: #e2e8f0;
-    color: #4a5568;
+    background: var(--col-e2e8f0);
+    color: var(--col-4a5568);
     border: none;
     border-radius: 10px;
     padding: 0 20px;

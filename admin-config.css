@@ -8,23 +8,23 @@
     max-width: 1800px;
     margin: 0 auto;
     display: flex;
-    background: #fff;
+    background: var(--col-ffffff);
     border-radius: 8px 8px 0 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px var(--col-0000000d);
     overflow: hidden;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--col-e0e0e0);
 }
 
 .config-tab {
     flex: 1;
     padding: 18px 10px;
     border: none;
-    background: #f8f9fa;
+    background: var(--col-f8f9fa);
     cursor: pointer;
     font-size: 1.05em;
     font-weight: 500;
-    color: #666;
-    border-right: 1px solid #e0e0e0;
+    color: var(--col-666666);
+    border-right: 1px solid var(--col-e0e0e0);
     transition: all 0.2s;
     text-align: center;
 }
@@ -34,10 +34,10 @@
 }
 
 .config-tab.active {
-    background-color: #fff;
-    color: #2A76B8;
+    background-color: var(--col-ffffff);
+    color: var(--col-2a76b8);
     font-weight: 700;
-    border-bottom: 3px solid #2A76B8;
+    border-bottom: 3px solid var(--col-2a76b8);
 }
 
 /* --- Contenuto Tab --- */
@@ -45,10 +45,10 @@
     width: 95%;
     max-width: 1800px;
     margin: 0 auto;
-    background: #fff;
+    background: var(--col-ffffff);
     padding: 30px;
     border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px var(--col-0000000d);
     min-height: 400px;
     box-sizing: border-box;
     overflow: visible;
@@ -65,10 +65,10 @@
 
 /* --- Input Panels --- */
 .input-panel {
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
     padding: 20px;
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--col-e9ecef);
     margin-bottom: 25px;
 }
 
@@ -81,7 +81,7 @@
 .input-group input {
     flex-grow: 1;
     padding: 0 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--col-cccccc);
     border-radius: 5px;
     height: 42px;
     font-size: 1em;
@@ -89,37 +89,37 @@
 
 /* FIX DIMENSIONE BOTTONE AGGIUNGI */
 .input-group .button {
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 25px !important;
-    margin: 0 !important;
-    width: auto !important;
-    min-width: unset !important;
-    flex-basis: auto !important;
-    flex-grow: 0 !important;
-    font-size: 0.95em !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    background-color: #28a745 !important;
-    color: white !important;
-    border-radius: 5px !important;
-    box-shadow: none !important;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0 25px;
+    margin: 0;
+    width: auto;
+    min-width: unset;
+    flex-basis: auto;
+    flex-grow: 0;
+    font-size: 0.95em;
+    line-height: 1;
+    white-space: nowrap;
+    background-color: var(--col-28a745);
+    color: white;
+    border-radius: 5px;
+    box-shadow: none;
 }
 
 .input-group .button:hover {
-    background-color: #218838 !important;
+    background-color: var(--col-218838) !important;
     transform: none !important;
 }
 
 /* --- Tabelle --- */
 .table-responsive {
     overflow-x: visible;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     border-radius: 6px;
     min-height: 400px;
 }
@@ -130,14 +130,14 @@
 }
 
 .config-table th {
-    background-color: #e9ecef;
-    color: #495057;
+    background-color: var(--col-e9ecef);
+    color: var(--col-495057);
     font-weight: 700;
     text-transform: uppercase;
     font-size: 0.85em;
     padding: 15px;
     text-align: left;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid var(--col-dee2e6);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -145,7 +145,7 @@
 
 .config-table td {
     padding: 12px 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--col-eeeeee);
     vertical-align: middle;
 }
 
@@ -162,8 +162,8 @@
 
 /* Bottoni Azione */
 .action-btn {
-    background: #fff;
-    border: 1px solid #ced4da;
+    background: var(--col-ffffff);
+    border: 1px solid var(--col-ced4da);
     border-radius: 4px;
     cursor: pointer;
     width: 36px;
@@ -175,7 +175,7 @@
 }
 
 .action-btn:hover {
-    background-color: #e2e6ea;
+    background-color: var(--col-e2e6ea);
 }
 
 @keyframes fadeIn {
@@ -195,16 +195,16 @@
 /* ========================================= */
 
 .exploded-macro-container {
-    border: 1px solid #dce0e6;
+    border: 1px solid var(--col-dce0e6);
     border-radius: 8px;
     margin-bottom: 25px;
     overflow: hidden;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background: var(--col-ffffff);
+    box-shadow: 0 2px 5px var(--col-0000000d);
 }
 
 .exploded-macro-header {
-    background-color: #34495e;
+    background-color: var(--col-34495e);
     /* Grigio/Blu scuro per distinguere la Macro */
     color: white;
     padding: 12px 20px;
@@ -221,12 +221,12 @@
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 15px;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--col-f8f9fa);
 }
 
 .phase-card {
     background: white;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--col-e0e0e0);
     border-radius: 6px;
     overflow: hidden;
     display: flex;
@@ -234,20 +234,20 @@
 }
 
 .phase-header {
-    background-color: #e3f2fd;
+    background-color: var(--col-e3f2fd);
     /* Azzurro chiaro per le Fasi */
-    color: #0d47a1;
+    color: var(--col-0d47a1);
     padding: 8px 12px;
     font-weight: 700;
     font-size: 0.95em;
-    border-bottom: 1px solid #bbdefb;
+    border-bottom: 1px solid var(--col-bbdefb);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .role-block {
     padding: 10px 12px;
-    border-bottom: 1px dashed #eee;
+    border-bottom: 1px dashed var(--col-eeeeee);
 }
 
 .role-block:last-child {
@@ -257,7 +257,7 @@
 .role-title {
     font-size: 0.85em;
     font-weight: 700;
-    color: #555;
+    color: var(--col-555555);
     margin-bottom: 5px;
     display: flex;
     align-items: center;
@@ -269,7 +269,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #28a745;
+    background-color: var(--col-28a745);
     display: inline-block;
 }
 
@@ -281,15 +281,15 @@
 
 .comp-list-mini li {
     font-size: 0.9em;
-    color: #333;
+    color: var(--col-333333);
     line-height: 1.4;
     margin-bottom: 2px;
 }
 
 .comp-code-tag {
     font-size: 0.75em;
-    color: #888;
-    background: #f1f1f1;
+    color: var(--col-888888);
+    background: var(--col-f1f1f1);
     padding: 0 4px;
     border-radius: 3px;
     margin-left: 5px;
@@ -297,7 +297,7 @@
 
 .empty-msg {
     padding: 10px;
-    color: #aaa;
+    color: var(--col-aaaaaa);
     font-style: italic;
     font-size: 0.85em;
     text-align: center;
@@ -314,26 +314,26 @@
 }
 
 .kw-assoc-badge.include {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--col-d4edda);
+    color: var(--col-155724);
+    border: 1px solid var(--col-c3e6cb);
 }
 
 .kw-assoc-badge.exclude {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: var(--col-f8d7da);
+    color: var(--col-721c24);
+    border: 1px solid var(--col-f5c6cb);
 }
 
 /* --- Choices.js styling per Tab 5 (Include/Exclude via wrapper divs) --- */
 .kw-include-wrap .choices__item {
-    background-color: #28a745 !important;
-    border-color: #218838 !important;
+    background-color: var(--col-28a745) !important;
+    border-color: var(--col-218838) !important;
 }
 
 .kw-exclude-wrap .choices__item {
-    background-color: #dc3545 !important;
-    border-color: #c82333 !important;
+    background-color: var(--col-dc3545) !important;
+    border-color: var(--col-c82333) !important;
 }
 
 /* Tab 5: overflow per dropdown Choices */

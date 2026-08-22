@@ -6,7 +6,7 @@
     justify-content: center;
     /* align-items: center;  <-- Rimosso per evitare taglio su schermi piccoli */
     padding: 20px;
-    background-color: #f4f7f9;
+    background-color: var(--col-f4f7f9);
     overflow-y: auto;
     /* Abilita scroll */
 }
@@ -19,7 +19,7 @@
     /* Centra verticalmente se c'è spazio, altrimenti scrollabile */
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px var(--col-0000000d);
     text-align: center;
 }
 
@@ -27,26 +27,26 @@
     width: 64px;
     height: 64px;
     margin-bottom: 20px;
-    filter: drop-shadow(0 4px 6px rgba(52, 152, 219, 0.2));
+    filter: drop-shadow(0 4px 6px var(--col-3498db33));
 }
 
 .training-card h2 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: #2c3e50;
+    color: var(--col-2c3e50);
     font-size: 1.5rem;
 }
 
 .description {
-    color: #7f8c8d;
+    color: var(--col-7f8c8d);
     margin-bottom: 25px;
     line-height: 1.5;
 }
 
 /* BOX INFORMATIVI */
 .info-box {
-    background-color: #f8f9fa;
-    border-left: 4px solid #3498db;
+    background-color: var(--col-f8f9fa);
+    border-left: 4px solid var(--col-3498db);
     text-align: left;
     padding: 15px 20px;
     border-radius: 4px;
@@ -56,7 +56,7 @@
 .info-box ul {
     margin: 0;
     padding-left: 20px;
-    color: #34495e;
+    color: var(--col-34495e);
     font-size: 0.95rem;
 }
 
@@ -65,9 +65,9 @@
 }
 
 .warning-box {
-    background-color: #fff3cd;
-    border: 1px solid #ffeeba;
-    color: #856404;
+    background-color: var(--col-fff3cd);
+    border: 1px solid var(--col-ffeeba);
+    color: var(--col-856404);
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 25px;
@@ -78,7 +78,7 @@
 .input-label {
     text-align: left;
     font-size: 0.9rem;
-    color: #555;
+    color: var(--col-555555);
     margin-bottom: 8px;
     display: block;
 }
@@ -86,7 +86,7 @@
 .security-input {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--col-e0e0e0);
     border-radius: 6px;
     font-size: 1rem;
     margin-bottom: 25px;
@@ -97,7 +97,7 @@
 }
 
 .security-input:focus {
-    border-color: #3498db;
+    border-color: var(--col-3498db);
     outline: none;
 }
 
@@ -120,24 +120,24 @@
 
 /* Varianti Bottoni */
 .std-btn--danger {
-    background-color: #e74c3c;
+    background-color: var(--col-e74c3c);
     color: white;
 }
 
 .std-btn--danger:hover:not(:disabled) {
-    background-color: #c0392b;
+    background-color: var(--col-c0392b);
 }
 
 .std-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background-color: #95a5a6;
+    background-color: var(--col-95a5a6);
 }
 
 /* Spinner Semplice */
 .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
+    border: 4px solid var(--col-f3f3f3);
+    border-top: 4px solid var(--col-3498db);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -163,8 +163,8 @@
 
 /* TERMINALE CONSOLE */
 .terminal-console {
-    background-color: #1e1e1e;
-    color: #00ff00;
+    background-color: var(--col-1e1e1e);
+    color: var(--col-00ff00);
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     padding: 15px;
     border-radius: 6px;
@@ -172,8 +172,8 @@
     overflow-y: auto;
     text-align: left;
     font-size: 0.9rem;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
-    border: 1px solid #333;
+    box-shadow: inset 0 2px 10px var(--col-00000080);
+    border: 1px solid var(--col-333333);
     margin-top: 20px;
 }
 
@@ -200,7 +200,7 @@
     display: inline-block;
     width: 8px;
     height: 15px;
-    background-color: #00ff00;
+    background-color: var(--col-00ff00);
     animation: blink 1s infinite;
     vertical-align: middle;
 }
