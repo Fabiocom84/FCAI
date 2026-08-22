@@ -3,6 +3,7 @@
 
 import { apiFetch } from './api-client.js';
 import { IsAdmin } from './core-init.js';
+import { mostraAvviso } from './shared-ui.js';
 
 const TaskApp = {
     state: {
@@ -946,7 +947,16 @@ const TaskApp = {
     postComment: async function () {
         const txt = document.getElementById('inpComment').value;
         if (!txt) return;
-        await apiFetch(`/api/tasks/${this.state.currentTask.id_task}/commenti`, { method: 'POST', body: JSON.stringify({ testo_commento: txt }) });
+        // Senza questo controllo, un commento rifiutato dal server veniva
+        // seguito comunque dal ridisegno: l'utente vedeva la scheda aggiornarsi
+        // e concludeva che il commento fosse stato salvato.
+        try {
+            await apiFetch(`/api/tasks/${this.state.currentTask.id_task}/commenti`,
+                { method: 'POST', body: JSON.stringify({ testo_commento: txt }) });
+        } catch (e) {
+            mostraAvviso(`Commento non salvato: ${e.message}`, 'errore');
+            return;
+        }
         this.renderInspectorView(this.state.currentTask.id_task);
     },
 
@@ -957,7 +967,16 @@ const TaskApp = {
     },
 
     updateStatus: async function (status) {
-        await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`, { method: 'PUT', body: JSON.stringify({ stato: status }) });
+        // Il cambio di stato è l'operazione più frequente della bacheca: se
+        // fallisce in silenzio, la colonna si ridisegna con il valore vecchio e
+        // sembra che il trascinamento non abbia funzionato, invece che rifiutato.
+        try {
+            await apiFetch(`/api/tasks/${this.state.currentTask.id_task}`,
+                { method: 'PUT', body: JSON.stringify({ stato: status }) });
+        } catch (e) {
+            mostraAvviso(`Stato non aggiornato: ${e.message}`, 'errore');
+            return;
+        }
         this.refreshBoard();
         this.renderInspectorView(this.state.currentTask.id_task);
     },

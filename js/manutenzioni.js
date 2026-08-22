@@ -149,11 +149,21 @@ const App = {
 
             const res = await apiFetch(`/api/manutenzioni/?${params}`);
 
+            const data = await res.json();
+            if (!Array.isArray(data)) throw new Error('Risposta non valida');
+
+            this.state.list = data;
+            this._renderList();
+        } catch (e) {
             // L'endpoint richiede il ruolo Impiegato o Admin. Prima della Fase 0
             // la lista arrivava da una RPC che ignorava i ruoli, quindi la vedevano
             // tutti: ora chi non ha il permesso riceve 403 e va informato, non
             // disconnesso (vedi la nota sul 403 in api-client.js).
-            if (res.status === 403) {
+            //
+            // Il controllo sta nel `catch` e non dopo la chiamata perché dal
+            // 22/08/2026 `apiFetch` solleva sugli esiti non riusciti: il ramo
+            // `if (res.status === 403)` non verrebbe più raggiunto.
+            if (e.status === 403) {
                 this.dom.list.innerHTML = `
                     <div class="man-no-results">
                         <div class="man-no-results-icon">🔒</div>
@@ -163,13 +173,6 @@ const App = {
                 return;
             }
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            if (!Array.isArray(data)) throw new Error('Risposta non valida');
-
-            this.state.list = data;
-            this._renderList();
-        } catch (e) {
             console.error('Errore caricamento manutenzioni:', e);
             this.dom.list.innerHTML = `
                 <div class="man-no-results">
