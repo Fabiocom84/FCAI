@@ -1,0 +1,22 @@
+# File che restano nel repository ma NON vengono distribuiti sul sito.
+#
+# PERCHÉ ESISTE (21/08/2026)
+# I rilievi degli stili sono 212 file JSON per circa 6,5 MB. Servono a
+# confrontare lo stato del CSS prima e dopo una modifica, quindi vanno
+# versionati — ma non c'è motivo di servirli agli utenti né di caricarli a ogni
+# distribuzione. Senza questo file sarebbero raggiungibili da chiunque
+# all'indirizzo del sito.
+#
+# Nessuno di questi percorsi è richiamato da una pagina: escluderli non cambia
+# ciò che il sito serve, solo ciò che viene caricato.
+
+riferimento-stili/
+riferimento-stili-staging/
+dopo-3-1/
+dopo-3-1-completo/
+dopo-3-2a/
+senza-tema-scuro/
+
+# Strumenti di analisi e misura: si eseguono in locale o dalla console del
+# browser, mai dal sito.
+strumenti/
