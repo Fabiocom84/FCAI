@@ -1,5 +1,5 @@
 """
-Il parametro `?v=` dei CSS, derivato dal CONTENUTO invece che dalla memoria.
+Il parametro `?v=` di CSS e JavaScript, derivato dal CONTENUTO.
 
 IL PROBLEMA
 I browser mettono in cache i fogli di stile. Se l'indirizzo non cambia, una
@@ -53,20 +53,60 @@ def file_css():
     return fogli
 
 
-def impronta():
+def file_js():
     """
-    Impronta del contenuto di tutti i CSS del progetto.
+    Gli script del progetto, escluse le librerie di terze parti.
+
+    AGGIUNTO IL 22/08/2026, DOPO UN GUASTO
+    Lo strumento versionava solo i CSS. Rilasciata su staging la modifica ad
+    `api-client.js` — quella che fa sollevare le chiamate fallite — il browser ha
+    continuato a servire **la copia precedente dalla cache**: il codice nuovo non
+    girava, e la pagina sembrava funzionare perché si comportava esattamente come
+    prima. È lo stesso difetto dei CSS del giorno prima, sull'altra metà dei file.
+
+    Le librerie in `js/libs` non cambiano con il nostro lavoro e hanno una loro
+    politica di cache: versionarle costringerebbe a riscaricarle senza motivo.
+    """
+    cartella = os.path.join(BASE, 'js')
+    if not os.path.isdir(cartella):
+        return []
+    return [f'js/{f}' for f in sorted(os.listdir(cartella)) if f.endswith('.js')]
+
+
+def _impronta(nomi):
+    """
+    Impronta del contenuto di un insieme di file.
 
     Include i NOMI oltre al contenuto: se un file venisse rinominato senza che il
-    testo cambi, l'insieme dei fogli sarebbe diverso e la cache andrebbe
-    comunque invalidata.
+    testo cambi, l'insieme sarebbe diverso e la cache andrebbe comunque
+    invalidata.
+
+    I FINE RIGA VENGONO NORMALIZZATI PRIMA DI CALCOLARE L'IMPRONTA.
+    Il progetto ha un `.gitattributes` (18/08/2026) che tiene LF nel repository e
+    converte in locale: lo stesso file ha quindi byte diversi su Windows e su
+    Linux. Senza questa normalizzazione l'impronta dipenderebbe da DOVE viene
+    calcolata — il controllo passerebbe su una macchina e fallirebbe sull'altra,
+    e le pagine verrebbero riscritte a ogni cambio di ambiente.
+
+    Scoperto provando a modificare e ripristinare un file: dopo `git checkout`
+    l'impronta risultava diversa da prima, pur essendo il file «lo stesso».
     """
     h = hashlib.sha256()
-    for nome in file_css():
+    for nome in nomi:
         h.update(nome.encode('utf-8'))
         with open(os.path.join(BASE, nome), 'rb') as f:
-            h.update(f.read())
+            h.update(f.read().replace(b'\r\n', b'\n'))
     return h.hexdigest()[:8]
+
+
+# Due impronte distinte invece di una sola: così una modifica al JavaScript non
+# costringe a riscaricare anche i fogli di stile, e viceversa.
+def impronta():
+    return _impronta(file_css())
+
+
+def impronta_js():
+    return _impronta(file_js())
 
 
 def pagine():
@@ -74,23 +114,27 @@ def pagine():
 
 
 LINK = re.compile(r'(href=")((?:css/)?[a-zA-Z0-9._-]+\.css)(\?[^"]*)?(")')
+SCRIPT = re.compile(r'(src=")(js/[a-zA-Z0-9._-]+\.js)(\?[^"]*)?(")')
 
 
-def scorri(testo, locali, versione, riscrivi):
-    """Restituisce (nuovo_testo, collegamenti_totali, collegamenti_da_aggiornare)."""
+def scorri(testo, locali_css, versione_css, locali_js, versione_js, riscrivi):
+    """Restituisce (nuovo_testo, riferimenti_totali, riferimenti_da_aggiornare)."""
     totali, da_aggiornare = [0], [0]
 
-    def sostituisci(m):
-        percorso = m.group(2)
-        if percorso not in locali:
-            return m.group(0)
-        totali[0] += 1
-        atteso = f'?v={versione}'
-        if m.group(3) != atteso:
-            da_aggiornare[0] += 1
-        return f'{m.group(1)}{percorso}{atteso}{m.group(4)}' if riscrivi else m.group(0)
+    def fabbrica(locali, versione):
+        def sostituisci(m):
+            percorso = m.group(2)
+            if percorso not in locali:
+                return m.group(0)
+            totali[0] += 1
+            atteso = f'?v={versione}'
+            if m.group(3) != atteso:
+                da_aggiornare[0] += 1
+            return f'{m.group(1)}{percorso}{atteso}{m.group(4)}' if riscrivi else m.group(0)
+        return sostituisci
 
-    nuovo = LINK.sub(sostituisci, testo)
+    nuovo = LINK.sub(fabbrica(locali_css, versione_css), testo)
+    nuovo = SCRIPT.sub(fabbrica(locali_js, versione_js), nuovo)
     return nuovo, totali[0], da_aggiornare[0]
 
 
@@ -101,14 +145,16 @@ def main():
 
     riscrivi = '--aggiorna' in sys.argv
     versione = impronta()
+    versione_js = impronta_js()
     locali = set(file_css())
+    locali_js = set(file_js())
 
     totali = fuori_passo = toccate = 0
     disallineate = []
     for nome in pagine():
         percorso = os.path.join(BASE, nome)
         testo = open(percorso, encoding='utf-8', errors='replace').read()
-        nuovo, n, k = scorri(testo, locali, versione, riscrivi)
+        nuovo, n, k = scorri(testo, locali, versione, locali_js, versione_js, riscrivi)
         totali += n
         fuori_passo += k
         if k:
@@ -119,20 +165,23 @@ def main():
             open(percorso, 'w', encoding='utf-8', newline='').write(nuovo)
             toccate += 1
 
-    print(f"impronta dei CSS   : {versione}   ({len(locali)} fogli)")
-    print(f"collegamenti totali: {totali} in {len(pagine())} pagine")
+    print(f"impronta CSS       : {versione}   ({len(locali)} fogli)")
+    print(f"impronta JavaScript: {versione_js}   ({len(locali_js)} script)")
+    print(f"riferimenti totali : {totali} in {len(pagine())} pagine")
 
     if riscrivi:
         print(f"pagine aggiornate  : {toccate}")
         return 0
 
     if fuori_passo:
-        print(f"\nDISALLINEATI: {fuori_passo} collegamenti non portano ?v={versione}")
+        print(f"\nDISALLINEATI: {fuori_passo} riferimenti non portano l'impronta corrente")
         for nome, k in disallineate[:10]:
             print(f"  {nome}: {k}")
-        print("\nI CSS sono cambiati ma le pagine puntano ancora alla versione "
-              "precedente.\nGli utenti con quei file in cache NON riceverebbero "
-              "le modifiche.\nRimedio:  python3 strumenti/versione_css.py --aggiorna")
+        print("\nI file sono cambiati ma le pagine puntano ancora alla versione "
+              "precedente.\nGli utenti con quella copia in cache NON riceverebbero "
+              "le modifiche:\nil codice nuovo non girerebbe, e la pagina sembrerebbe "
+              "funzionare perche'\nsi comporta esattamente come prima.\n"
+              "Rimedio:  python3 strumenti/versione_css.py --aggiorna")
         return 1
 
     print("\nallineati: ogni collegamento porta l'impronta del contenuto attuale.")
