@@ -2,6 +2,89 @@
 
 import { API_BASE_URL } from './config.js';
 
+/**
+ * Errore restituito dall'API: porta con sé codice e corpo.
+ *
+ * PERCHÉ ESISTE (22/08/2026)
+ * Fino a questa data `apiFetch` restituiva la risposta anche sui 400, 404, 409 e
+ * 500, lasciando a ogni chiamante il compito di controllare. Misurato: su 136
+ * chiamate, **70 non controllavano** — e fra queste **26 erano scritture**
+ * (12 PUT, 10 POST, 4 DELETE). Una scrittura fallita e ignorata significa che
+ * l'utente crede di aver salvato qualcosa che non è stato salvato: nessun
+ * messaggio, nessun segnale, il dato semplicemente non c'è.
+ *
+ * PERCHÉ L'ECCEZIONE PORTA IL CORPO
+ * Sessantasei chiamanti mostrano un messaggio ricavato dalla risposta, leggendo
+ * `.error` o `.message` (13 usi ciascuna). Un'eccezione generica trasformerebbe
+ * «Esiste già una manutenzione con questo VO» in «errore imprevisto»: meglio del
+ * silenzio, ma non di molto. Con `status` e `corpo` a bordo, i `catch` esistenti
+ * possono continuare a dire la cosa giusta.
+ */
+export class ErroreApi extends Error {
+    constructor(status, corpo, endpoint) {
+        const testo = (corpo && (corpo.error || corpo.message))
+            || `Richiesta non riuscita (HTTP ${status})`;
+        super(testo);
+        this.name = 'ErroreApi';
+        this.status = status;
+        this.corpo = corpo;
+        this.endpoint = endpoint;
+        // Marcatore per il ciclo di ritentativi: un 409 riprovato tre volte è
+        // tre volte lo stesso rifiuto, con l'utente che aspetta per nulla.
+        this.nonRitentare = true;
+    }
+}
+
+/**
+ * Rete di sicurezza: nessun errore dell'API deve restare invisibile.
+ *
+ * PERCHÉ QUI E NON IN `shared-ui.js`
+ * Da quando `apiFetch` solleva, un chiamante che non intercetta produce una
+ * promessa rifiutata e non gestita: senza rete, si torna al silenzio da cui
+ * volevamo uscire. Il posto giusto è accanto a ciò che solleva — `api-client.js`
+ * arriva a 19 pagine su 21, mentre `shared-ui.js` ne raggiunge 13 e proprio non
+ * `admin-config.html`, che da sola contiene 6 delle 26 scritture non controllate.
+ *
+ * L'avviso si carica con un import dinamico: `shared-ui.js` non importa questo
+ * file, ma un import statico creerebbe comunque un vincolo di caricamento fra
+ * due moduli che devono restare indipendenti.
+ *
+ * NON SOSTITUISCE la gestione nei singoli punti: un messaggio generico è meglio
+ * del nulla, non è la stessa cosa di «Esiste già una manutenzione con questo VO».
+ */
+if (typeof window !== 'undefined' && !window.__reteErroriApi) {
+    window.__reteErroriApi = true;
+    window.addEventListener('unhandledrejection', async (evento) => {
+        const errore = evento.reason;
+        if (!errore || errore.name !== 'ErroreApi') return;
+        console.error(`[API non gestito] ${errore.status} su ${errore.endpoint}`, errore.corpo);
+        try {
+            const { mostraAvviso } = await import('./shared-ui.js');
+            mostraAvviso(errore.message, 'errore');
+            evento.preventDefault();   // gestito: non serve il rumore in console
+        } catch (e) {
+            // `shared-ui.js` non disponibile su questa pagina: meglio un avviso
+            // spartano che nessun avviso.
+            alert(errore.message);
+            evento.preventDefault();
+        }
+    });
+}
+
+/** Legge il corpo dell'errore senza consumare la risposta né sollevare. */
+async function corpoErrore(response) {
+    try {
+        return await response.clone().json();
+    } catch (e) {
+        try {
+            const t = await response.clone().text();
+            return t ? { message: t.slice(0, 300) } : null;
+        } catch (e2) {
+            return null;
+        }
+    }
+}
+
 export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('session_token');
 
@@ -77,10 +160,11 @@ export async function apiFetch(endpoint, options = {}) {
                     throw new Error("Accesso revocato");
                 }
 
-                // Diniego di permesso: si restituisce la risposta al chiamante,
-                // che deciderà come informare l'utente.
+                // Diniego di permesso: la sessione resta valida, ma l'operazione
+                // non si è compiuta. Va segnalato come errore, non restituito
+                // come se fosse un esito qualsiasi.
                 console.warn(`Operazione non autorizzata: ${response.status} su ${endpoint}`);
-                return response;
+                throw new ErroreApi(403, await corpoErrore(response), endpoint);
             }
 
             // Se è un errore gateway temporaneo (502, 503, 504), lanciamo eccezione per fare retry
@@ -94,11 +178,26 @@ export async function apiFetch(endpoint, options = {}) {
                 throw new Error(`Server Error ${response.status}`);
             }
 
-            return response; // Successo o altri codici (es. 404, 500 app logic)
+            // Qualunque altro esito non riuscito diventa un'eccezione: 400, 404,
+            // 409, 422, 500. Prima venivano restituiti come risposte normali, e
+            // metà dei chiamanti non li guardava.
+            if (!response.ok) {
+                throw new ErroreApi(response.status, await corpoErrore(response), endpoint);
+            }
+
+            return response;
 
         } catch (error) {
             if (error.message === "Accesso revocato") {
                 return new Promise(() => { });
+            }
+
+            // Gli errori applicativi non si ritentano: la risposta del server
+            // non cambierebbe, e l'utente aspetterebbe tre volte lo stesso
+            // rifiuto. Si ritenta solo ciò che può riuscire al secondo colpo:
+            // guasti di rete e 502/503/504.
+            if (error.nonRitentare) {
+                throw error;
             }
 
             // Se abbiamo raggiunto i tentativi massimi, rilanciamo l'errore
@@ -146,9 +245,19 @@ export async function publicApiFetch(endpoint, options = {}) {
                 throw new Error(`Server Error ${response.status}`);
             }
 
+            // Stessa regola di `apiFetch`: un esito non riuscito è un errore,
+            // non una risposta da controllare a discrezione del chiamante.
+            if (!response.ok) {
+                throw new ErroreApi(response.status, await corpoErrore(response), endpoint);
+            }
+
             return response;
 
         } catch (error) {
+            if (error.nonRitentare) {
+                throw error;
+            }
+
             // Se abbiamo raggiunto i tentativi massimi, rilanciamo l'errore
             if (attempt >= MAX_RETRIES) {
                 console.error(`Public API Fetch failed after ${MAX_RETRIES} attempts:`, error);
