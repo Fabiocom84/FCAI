@@ -1,6 +1,7 @@
 // js/dev-tools.js — Import massivo commesse con Tabella di Conversione dinamica
 
 import { apiFetch } from './api-client.js';
+import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
 const DevTools = {
@@ -341,6 +342,12 @@ const DevTools = {
         } catch (e) {
             console.warn("Impossibile verificare duplicati:", e);
             this.data.existingRifs = new Set();
+            // Il ripiego a insieme vuoto fa proseguire l'importazione, ed è
+            // corretto. Ma senza avviso l'assenza di segnalazioni si legge come
+            // «nessun duplicato», che è la conclusione opposta a quella vera:
+            // il controllo non è stato fatto.
+            mostraAvviso('Controllo duplicati non riuscito: le righe verranno '
+                + 'importate senza verifica sui riferimenti già presenti.', 'attenzione');
         }
 
         // 5. Check duplicati interni al file con indicazione riga di origine

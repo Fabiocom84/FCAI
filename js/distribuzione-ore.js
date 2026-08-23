@@ -1,6 +1,7 @@
 // js/distribuzione-ore.js — v3: apiFetch per letture (backend bypassa RLS), Supabase RLS blocca anon key
 
 import { apiFetch } from './api-client.js';
+import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
 const App = {
@@ -180,6 +181,11 @@ const App = {
             console.warn("Storico articoli non disponibile:", e);
             this.data.storicoArticoli = {};
             this.fillStoricoColumn();
+            // La colonna resta con i trattini, che è il modo in cui si mostra
+            // «nessuna registrazione precedente». Senza avviso, un guasto di
+            // caricamento sarebbe indistinguibile da un articolo mai lavorato.
+            mostraAvviso('Storico articoli non caricato: la colonna resta vuota '
+                + 'anche dove esistono registrazioni precedenti.', 'attenzione');
         }
     },
 

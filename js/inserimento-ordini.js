@@ -1,7 +1,7 @@
 // js/inserimento-ordini.js
 
 import { apiFetch } from './api-client.js';
-import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
+import { showSuccessFeedbackModal, showModal, mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
 const State = {
@@ -117,10 +117,15 @@ async function handleFiles(files) {
                 method: 'POST',
                 body: JSON.stringify({ codici: uniqueCodes })
             });
-            if (res.ok) {
-                State.knownDefaults = await res.json();
-            }
-        } catch (e) { console.warn(e); }
+            State.knownDefaults = await res.json();
+        } catch (e) {
+            console.warn('Controllo articoli noti non riuscito:', e);
+            // Senza avviso, i valori predefiniti semplicemente non compaiono e
+            // sembra che per quei codici non ce ne siano: l'utente li reinserisce
+            // a mano credendo sia normale.
+            mostraAvviso('Non è stato possibile recuperare i valori predefiniti '
+                + 'degli articoli: andranno compilati a mano.', 'attenzione');
+        }
     }
 
     spinner.style.display = 'none';
