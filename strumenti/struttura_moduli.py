@@ -167,53 +167,54 @@ def analizza(percorso):
     return voci
 
 
-for percorso in [a for a in sys.argv[1:] if not a.startswith('--')]:
-    metodi = analizza(percorso)
-    if not metodi:
-        print(f"{percorso}: nessun metodo riconosciuto (forma diversa?)")
-        continue
+if __name__ == '__main__':
+    for percorso in [a for a in sys.argv[1:] if not a.startswith('--')]:
+        metodi = analizza(percorso)
+        if not metodi:
+            print(f"{percorso}: nessun metodo riconosciuto (forma diversa?)")
+            continue
 
-    nomi = {m['nome'] for m in metodi}
-    n_met = sum(1 for m in metodi if m['genere'] == 'metodo')
-    n_fun = len(metodi) - n_met
-    print(f"\n{'='*74}\n{percorso}  —  {n_met} metodi + {n_fun} funzioni di modulo\n{'='*74}")
-    print(f"{'nome':<34}{'righe':>6}{'stato':>7}{'dom':>5}{'api':>5}  chiama")
-    for m in sorted(metodi, key=lambda x: -x['righe']):
-        interni = [c for c in m['chiama'] if c in nomi]
-        segno = ' ' if m['genere'] == 'metodo' else 'ƒ'
-        print(f"{segno} {m['nome']:<32}{m['righe']:>6}{m['stato']:>7}{m['dom']:>5}{m['api']:>5}  "
-              f"{', '.join(interni[:4])}{'…' if len(interni) > 4 else ''}")
+        nomi = {m['nome'] for m in metodi}
+        n_met = sum(1 for m in metodi if m['genere'] == 'metodo')
+        n_fun = len(metodi) - n_met
+        print(f"\n{'='*74}\n{percorso}  —  {n_met} metodi + {n_fun} funzioni di modulo\n{'='*74}")
+        print(f"{'nome':<34}{'righe':>6}{'stato':>7}{'dom':>5}{'api':>5}  chiama")
+        for m in sorted(metodi, key=lambda x: -x['righe']):
+            interni = [c for c in m['chiama'] if c in nomi]
+            segno = ' ' if m['genere'] == 'metodo' else 'ƒ'
+            print(f"{segno} {m['nome']:<32}{m['righe']:>6}{m['stato']:>7}{m['dom']:>5}{m['api']:>5}  "
+                  f"{', '.join(interni[:4])}{'…' if len(interni) > 4 else ''}")
 
-    # I metodi che NON toccano ne stato ne dom sono i piu facili da estrarre:
-    # funzioni pure travestite da metodi.
-    puri = [m for m in metodi if m['stato'] == 0 and m['dom'] == 0
-            and not [c for c in m['chiama'] if c in nomi]]
-    print(f"\n  metodi SENZA legami (estraibili subito): {len(puri)}")
-    for m in puri:
-        print(f"      {m['nome']} ({m['righe']} righe, riga {m['riga']})")
+        # I metodi che NON toccano ne stato ne dom sono i piu facili da estrarre:
+        # funzioni pure travestite da metodi.
+        puri = [m for m in metodi if m['stato'] == 0 and m['dom'] == 0
+                and not [c for c in m['chiama'] if c in nomi]]
+        print(f"\n  metodi SENZA legami (estraibili subito): {len(puri)}")
+        for m in puri:
+            print(f"      {m['nome']} ({m['righe']} righe, riga {m['riga']})")
 
-    if '--grappoli' in sys.argv:
-        # Un grappolo: metodi che si chiamano fra loro e non altrove.
-        vicini = defaultdict(set)
-        for m in metodi:
-            for c in m['chiama']:
-                if c in nomi:
-                    vicini[m['nome']].add(c)
-                    vicini[c].add(m['nome'])
-        visti, gruppi = set(), []
-        for m in metodi:
-            if m['nome'] in visti:
-                continue
-            coda, gruppo = [m['nome']], set()
-            while coda:
-                n = coda.pop()
-                if n in gruppo:
+        if '--grappoli' in sys.argv:
+            # Un grappolo: metodi che si chiamano fra loro e non altrove.
+            vicini = defaultdict(set)
+            for m in metodi:
+                for c in m['chiama']:
+                    if c in nomi:
+                        vicini[m['nome']].add(c)
+                        vicini[c].add(m['nome'])
+            visti, gruppi = set(), []
+            for m in metodi:
+                if m['nome'] in visti:
                     continue
-                gruppo.add(n); visti.add(n)
-                coda.extend(vicini[n] - gruppo)
-            gruppi.append(gruppo)
-        print(f"\n  GRAPPOLI (insiemi che si chiamano solo fra loro): {len(gruppi)}")
-        for g in sorted(gruppi, key=len, reverse=True):
-            r = sum(m['righe'] for m in metodi if m['nome'] in g)
-            print(f"      {len(g):2d} metodi, {r:5d} righe: {', '.join(sorted(g)[:6])}"
-                  f"{'…' if len(g) > 6 else ''}")
+                coda, gruppo = [m['nome']], set()
+                while coda:
+                    n = coda.pop()
+                    if n in gruppo:
+                        continue
+                    gruppo.add(n); visti.add(n)
+                    coda.extend(vicini[n] - gruppo)
+                gruppi.append(gruppo)
+            print(f"\n  GRAPPOLI (insiemi che si chiamano solo fra loro): {len(gruppi)}")
+            for g in sorted(gruppi, key=len, reverse=True):
+                r = sum(m['righe'] for m in metodi if m['nome'] in g)
+                print(f"      {len(g):2d} metodi, {r:5d} righe: {', '.join(sorted(g)[:6])}"
+                      f"{'…' if len(g) > 6 else ''}")

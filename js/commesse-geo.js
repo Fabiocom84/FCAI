@@ -1,37 +1,30 @@
 // js/commesse-geo.js
 //
-// Sottosistema geografico della pagina commesse, estratto da `commesse.js` il
-// 06/09/2026. Due funzionalita' indipendenti fra loro che condividono il
-// caricamento pigro di Leaflet:
-//
-//   1. GEOCODIFICA DEL FORM  — `setupGeocodingControls()`
-//      Calcola lat/lon da un indirizzo e permette di scegliere il punto su una
-//      mappa. Stato: `map`, `currentMarker`.
-//
-//   2. MAPPA GLOBALE  — `setupGeoMapControls()`, `openGeoMap()`
-//      Mostra tutte le commesse su una mappa a schermo intero, con elenco
-//      laterale filtrabile. Stato: `geoMap`, `geoMarkersLayer`, `allGeoCommesse`.
+// MAPPA GLOBALE delle commesse, estratta da `commesse.js` il 06/09/2026.
+// Mostra tutte le commesse su una mappa a schermo intero con elenco laterale
+// filtrabile. Ingressi: `setupGeoMapControls()` e `openGeoMap()`.
+// Stato di modulo: `geoMap`, `geoMarkersLayer`, `allGeoCommesse`.
 //
 // PERCHE' QUI E NON IN commesse.js
-// Non per lunghezza: perche' questo codice non tocca l'oggetto `App`. Nessun
-// `this`, nessun `App.state`, nessun `App.dom` — ha il proprio stato di modulo,
-// e il legame con la pagina passa da tre punti soli (le due `setup*` chiamate
-// in `App.addEventListeners`, e `window.openGeoMap`). Era gia' un modulo: gli
+// Non per lunghezza: questo codice non tocca l'oggetto `App`. Nessun `this`,
+// nessun `App.state`, nessun `App.dom` — ha il proprio stato, e il legame con
+// la pagina passa da due punti soli (`setupGeoMapControls` chiamata in
+// `App.addEventListeners`, e `window.openGeoMap`). Era gia' un modulo: gli
 // mancava solo il file.
 //
 // `window.openGeoMap` resta un globale perche' l'HTML delle card lo invoca da
 // un attributo `onclick` inline, generato in `renderCards`. Finche' quella
 // stringa esiste, togliere il globale rompe il pulsante Mappa senza che nulla
 // lo segnali: `onclick` fallisce in silenzio se la funzione non c'e'.
+//
+// Il file nasceva con una seconda funzionalita', la geocodifica del form di
+// creazione commessa. E' stata rimossa lo stesso giorno: agiva sui campi
+// lat/lon di un modale che nessuno apriva piu' da quando `nuova-commessa.html`
+// l'ha sostituito. `loadLeafletLazy` e `getMarkerIcon` restano perche' li usa
+// anche la mappa globale.
 
 import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
-
-// ==========================================
-// GEOLOCALIZZAZIONE LOGIC
-// ==========================================
-let map = null;
-let currentMarker = null;
 
 // Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
 // Risparmia ~198KB di parsing JS/CSS dal critical path di caricamento pagina.
@@ -72,161 +65,10 @@ function getMarkerIcon() {
     return _leafletMarkerIcon;
 }
 
-function setupGeocodingControls() {
-    const btnCalc = document.getElementById('btn-calc-geo');
-    const btnMap = document.getElementById('btn-open-map');
-    const btnConfirmMap = document.getElementById('confirmMapBtn');
-    const btnCloseMap = document.getElementById('closeMapBtn');
-    const mapModal = document.getElementById('mapModal');
-    const mapOverlay = document.getElementById('mapModalOverlay');
 
-    // 1. CALCOLA DA INDIRIZZO
-    if (btnCalc) {
-        btnCalc.addEventListener('click', async () => {
-            const city = document.getElementById('luogo').value;
-            const prov = document.getElementById('provincia').value;
 
-            if (!city) {
-                showModal({ title: 'Attenzione', message: 'Inserisci almeno il Luogo (Città) per calcolare le coordinate.' });
-                return;
-            }
 
-            const originalText = btnCalc.innerHTML;
-            btnCalc.innerHTML = '<span>⏳...</span>';
-            btnCalc.disabled = true;
 
-            try {
-                const url = `/api/geocoding/lookup?city=${encodeURIComponent(city)}&province=${encodeURIComponent(prov || '')}`;
-                const response = await apiFetch(url, { method: 'GET' });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const newLatLng = [data.lat, data.lon];
-
-                    if (mapModal) mapModal.style.display = 'block';
-                    if (mapOverlay) mapOverlay.style.display = 'block';
-
-                    await loadLeafletLazy();
-                    setTimeout(() => {
-                        if (!map) initMap();
-                        else map.invalidateSize();
-                        map.setView(newLatLng, 15);
-                        placeMarker(newLatLng);
-                    }, 100);
-
-                    // Calcolo da Città/Provincia = posizione approssimativa
-                    const posCheckbox = document.getElementById('posizione_esatta');
-                    if (posCheckbox) posCheckbox.checked = false;
-
-                } else {
-                    showModal({ title: "Non trovato", message: "Impossibile trovare le coordinate per questo luogo." });
-                }
-            } catch (error) {
-                console.error(error);
-                showModal({ title: "Errore", message: "Errore durante la geocodifica." });
-            } finally {
-                btnCalc.innerHTML = originalText;
-                btnCalc.disabled = false;
-            }
-        });
-    }
-
-    // 2. MAPPA INTERATTIVA
-    if (btnMap) {
-        btnMap.addEventListener('click', async () => {
-            if (mapModal) mapModal.style.display = 'block';
-            if (mapOverlay) mapOverlay.style.display = 'block';
-            await loadLeafletLazy();
-            setTimeout(() => initMap(), 100);
-        });
-    }
-
-    function closeMap() {
-        if (mapModal) mapModal.style.display = 'none';
-        if (mapOverlay) mapOverlay.style.display = 'none';
-    }
-
-    if (btnCloseMap) btnCloseMap.addEventListener('click', closeMap);
-    if (mapOverlay) mapOverlay.addEventListener('click', closeMap);
-
-    if (btnConfirmMap) {
-        btnConfirmMap.addEventListener('click', () => {
-            if (currentMarker) {
-                const latlng = currentMarker.getLatLng();
-                document.getElementById('latitudine').value = latlng.lat.toFixed(6);
-                document.getElementById('longitudine').value = latlng.lng.toFixed(6);
-                // Selezione manuale su mappa = posizione esatta
-                const posCheckbox = document.getElementById('posizione_esatta');
-                if (posCheckbox) posCheckbox.checked = true;
-                closeMap();
-            } else {
-                showModal({ title: "Info", message: "Seleziona un punto sulla mappa." });
-            }
-        });
-    }
-}
-
-function initMap() {
-    if (map) {
-        map.invalidateSize(); // Fix render issues if hidden
-        // Update view based on current inputs
-        updateMapFromInputs();
-        return;
-    }
-
-    // Check if L (Leaflet) is loaded
-    if (typeof L === 'undefined') {
-        console.error("Leaflet not loaded");
-        return;
-    }
-
-    // Default: Italia centrale
-    map = L.map('mapContainer').setView([41.8719, 12.5674], 6);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // Click handler to move marker
-    map.on('click', function (e) {
-        placeMarker(e.latlng);
-    });
-
-    updateMapFromInputs();
-}
-
-function updateMapFromInputs() {
-    const latIn = parseFloat(document.getElementById('latitudine').value);
-    const lonIn = parseFloat(document.getElementById('longitudine').value);
-
-    // Se abbiamo input validi, centriamo la mappa li
-    if (!isNaN(latIn) && !isNaN(lonIn)) {
-        const latlng = [latIn, lonIn];
-        map.setView(latlng, 13);
-        placeMarker(latlng);
-    }
-}
-
-function placeMarker(latlng) {
-    if (currentMarker) {
-        currentMarker.setLatLng(latlng);
-    } else {
-        currentMarker = L.marker(latlng, { icon: getMarkerIcon(), draggable: true }).addTo(map);
-        currentMarker.on('dragend', ev => updateCoordsDisplay(ev.target.getLatLng()));
-    }
-    updateCoordsDisplay(latlng);
-}
-
-function updateCoordsDisplay(latlng) {
-    const display = document.getElementById('map-coords-display');
-    if (display) {
-        // Gestiamo sia oggetto Leaflet ({lat, lng}) che array ([lat, lon])
-        const lat = latlng.lat || latlng[0];
-        const lng = latlng.lng || latlng[1];
-        display.textContent = `Lat: ${parseFloat(lat).toFixed(6)}, Lon: ${parseFloat(lng).toFixed(6)}`;
-    }
-}
 
 // --- GEO MAP FEATURE ---
 let geoMap = null;
@@ -516,4 +358,4 @@ function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
 // Expose to App scope if needed, or window
 window.openGeoMap = openGeoMap;
 
-export { setupGeocodingControls, setupGeoMapControls, openGeoMap };
+export { setupGeoMapControls, openGeoMap };

@@ -3,7 +3,7 @@
 import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
-import { setupGeocodingControls, setupGeoMapControls } from './commesse-geo.js';
+import { setupGeoMapControls } from './commesse-geo.js';
 
 const App = {
     state: {
@@ -18,16 +18,7 @@ const App = {
         sortOrder: 'desc',
         allStatuses: [],
         allPhases: [],
-        allMacros: [], // Cache delle macro categorie
-        allUbicazioni: [], // Cache delle ubicazioni magazzino
-
-        // Istanze Choices.js per poterle resettare/popolare programmaticamente
-        choicesInstances: {
-            cliente: null,
-            modello: null,
-            macro: null
-        },
-        clientsLoaded: false // Flag per lazy loading
+        allMacros: [] // Cache delle macro categorie
     },
 
     dom: {},
@@ -49,22 +40,7 @@ const App = {
             searchInput: document.getElementById('search-input'),
             deepSearchCheckbox: document.getElementById('search-deep'),
             sortSelect: document.getElementById('sort-select'),
-            addBtn: document.getElementById('add-commessa-btn'),
-
-            // Modale
-            modal: document.getElementById('commessaModal'),
-            closeModalBtn: document.getElementById('closeModal'),
-            modalForm: document.getElementById('commessaForm'),
-            modalTitle: document.getElementById('modalTitle'),
-            overlay: document.getElementById('modalOverlay'),
-
-            // Upload
-            imageInput: document.getElementById('imageInput'),
-            uploadWidget: document.getElementById('uploadWidget'),
-            uploadText: document.getElementById('uploadText'),
-            previewContainer: document.getElementById('imagePreviewContainer'),
-            imagePreview: document.getElementById('imagePreview'),
-            removeImageBtn: document.getElementById('removeImageBtn')
+            addBtn: document.getElementById('add-commessa-btn')
         };
 
         // 2. Controllo Permessi Admin (Mostra tasto aggiungi solo se Admin)
@@ -143,106 +119,10 @@ const App = {
         this.state.allStatuses  = data.status    || [];
         this.state.allMacros    = data.macros    || [];
         this.state.allPhases    = data.fasi      || [];
-        this.state.allUbicazioni = data.ubicazioni || [];
         // Lookup Map O(1) per risolvere ID macro → nome nel render delle card
         this.state.macroMap = new Map(
             (data.macros || []).map(m => [m.id_macro_categoria, m.nome || m.nome_macro || String(m.id_macro_categoria)])
         );
-        if (IsAdmin) {
-            this.initModalChoices(data.clienti || [], data.modelli || [], data.macros || []);
-            this.populateUbicazioniSelect(this.state.allUbicazioni);
-        }
-    },
-
-    showSyncIndicator: function (show) {
-        let el = document.getElementById('sync-indicator');
-        if (!el && show) {
-            el = document.createElement('div');
-            el.id = 'sync-indicator';
-            el.style.cssText = "position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:white; padding:5px 10px; border-radius:20px; font-size:12px; z-index:9999; display:flex; align-items:center; gap:5px;";
-            el.innerHTML = '<div class="spinner-small" style="width:12px;height:12px;border-width:2px;"></div> Sync...';
-            document.body.appendChild(el);
-        }
-        if (el) el.style.display = show ? 'flex' : 'none';
-    },
-
-    initModalChoices: function (clienti, modelli, macros) {
-        // Destroy previous instances if any to avoid duplicates
-        if (this.state.choicesInstances.cliente) { try { this.state.choicesInstances.cliente.destroy(); } catch (e) { } }
-        if (this.state.choicesInstances.modello) { try { this.state.choicesInstances.modello.destroy(); } catch (e) { } }
-        if (this.state.choicesInstances.macro) { try { this.state.choicesInstances.macro.destroy(); } catch (e) { } }
-
-        // Configurazione comune
-        const baseConfig = { searchEnabled: true, itemSelectText: '', shouldSort: true, searchResultLimit: 100 };
-
-        // 1. Clienti
-        const clientSelect = document.getElementById('cliente');
-        if (clientSelect) {
-            this.state.choicesInstances.cliente = new Choices(clientSelect, {
-                ...baseConfig,
-                placeholder: true,
-                placeholderValue: 'Seleziona Cliente'
-            });
-            this.state.choicesInstances.cliente.setChoices(
-                clienti.map(c => ({ value: c.id_cliente, label: c.ragione_sociale })),
-                'value', 'label', true
-            );
-        }
-
-        // 2. Modelli
-        const modelSelect = document.getElementById('modello');
-        if (modelSelect) {
-            this.state.choicesInstances.modello = new Choices(modelSelect, {
-                ...baseConfig,
-                placeholder: true,
-                placeholderValue: 'Seleziona Modello'
-            });
-            this.state.choicesInstances.modello.setChoices(
-                modelli.map(m => ({ value: m.id_modello, label: m.nome_modello })),
-                'value', 'label', true
-            );
-        }
-
-        // 3. Macro Categorie (Multipla)
-        const macroSelect = document.getElementById('macro-select');
-        if (macroSelect) {
-            this.state.choicesInstances.macro = new Choices(macroSelect, {
-                ...baseConfig,
-                removeItemButton: true,
-                placeholder: true,
-                placeholderValue: 'Associa Macro Categorie...'
-            });
-            this.state.choicesInstances.macro.setChoices(
-                macros.map(m => ({ value: m.id_macro_categoria, label: m.nome || m.nome_macro })),
-                'value', 'label', true
-            );
-        }
-    },
-
-    loadClientsOptions: async function () {
-        if (this.state.clientsLoaded) return;
-
-        try {
-            // Show loading in dropdown if exists (optional UX)
-            // if (this.state.choicesInstances.cliente) ...
-
-            const res = await apiFetch('/api/commesse/clienti-options');
-            if (res.ok) {
-                const clients = await res.json();
-
-                if (this.state.choicesInstances.cliente) {
-                    this.state.choicesInstances.cliente.setChoices(
-                        clients.map(c => ({ value: c.id_cliente, label: c.ragione_sociale })),
-                        'value', 'label', true
-                    );
-                }
-                this.state.clientsLoaded = true;
-            }
-        } catch (e) {
-            console.error("Errore lazy load clienti", e);
-            segnala(e);
-            showModal({ title: "Errore", message: "Impossibile caricare la lista clienti." });
-        }
     },
 
     addEventListeners: function () {
@@ -291,25 +171,11 @@ const App = {
             this.fetchCommesse(true);
         });
 
-        // Modale Events — il pulsante è ora un <a> link, non ha più il click handler
-        // (navigate to nuova-commessa.html direttamente)
-        if (this.dom.closeModalBtn) this.dom.closeModalBtn.addEventListener('click', () => this.closeModal());
-        if (this.dom.overlay) this.dom.overlay.addEventListener('click', () => this.closeModal());
-        if (this.dom.modalForm) this.dom.modalForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
-
-        // Upload Widget
-        if (this.dom.uploadWidget) this.dom.uploadWidget.addEventListener('click', () => this.dom.imageInput.click());
-        if (this.dom.imageInput) this.dom.imageInput.addEventListener('change', (e) => this.handleImageSelect(e));
-        if (this.dom.removeImageBtn) this.dom.removeImageBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Evita riapertura widget
-            this.resetImage();
-        });
-
-        // Drag & Drop
-        this.setupDragDrop();
-
-        // [NEW] Setup Geocoding Interactions
-        setupGeocodingControls();
+        // Il modale di creazione/modifica in pagina e' stato rimosso il 06/09/2026:
+        // era gia' sostituito da nuova-commessa.html, che riceve tipo e mode dalla
+        // query string. Con lui sono spariti i suoi gestori (invio del form,
+        // upload immagine, drag&drop) e la geocodifica, che agiva sui campi
+        // lat/lon di QUEL form. La mappa globale qui sotto e' un'altra cosa e resta.
         setupGeoMapControls();
     },
 
@@ -1054,130 +920,7 @@ const App = {
         }
     },
 
-    // --- MODALE CREAZIONE / MODIFICA ---
-
-    openModal: async function (isEdit, id = null) {
-        if (!IsAdmin) return;
-
-        // LAZY LOAD: Carica clienti se non ancora fatto
-        if (!this.state.clientsLoaded) {
-            // Possiamo mostrare un micro-loader o cambiare il cursore
-            const btn = this.dom.addBtn;
-            if (btn) { btn.disabled = true; btn.innerHTML = "⏳..." }
-
-            await this.loadClientsOptions();
-
-            if (btn) { btn.disabled = false; btn.innerHTML = "+ AGGIUNGI" }
-        }
-
-        // Reset Form
-        this.dom.modalForm.reset();
-        this.resetImage();
-        document.getElementById('commessaId').value = '';
-
-        // Reset Choices
-        if (this.state.choicesInstances.cliente) this.state.choicesInstances.cliente.setChoiceByValue('');
-        if (this.state.choicesInstances.modello) this.state.choicesInstances.modello.setChoiceByValue('');
-        if (this.state.choicesInstances.macro) this.state.choicesInstances.macro.removeActiveItems();
-
-        if (isEdit && id) {
-            this.dom.modalTitle.textContent = "MODIFICA COMMESSA";
-            this.loadCommessaDetails(id); // Fetch dati reali e popola
-        } else {
-            this.dom.modalTitle.textContent = "NUOVA COMMESSA";
-            const yearInput = document.getElementById('anno');
-            if (yearInput) yearInput.value = new Date().getFullYear();
-            // Default ubicazione = prima voce (ARMADIO)
-            const ubicazioneSelect = document.getElementById('ubicazione');
-            if (ubicazioneSelect && this.state.allUbicazioni.length > 0) {
-                ubicazioneSelect.value = this.state.allUbicazioni[0].id_ubicazione;
-            }
-        }
-
-        this.dom.modal.classList.add('active');
-    },
-
-    loadCommessaDetails: async function (id) {
-        try {
-            const res = await apiFetch(`/api/commesse/${id}`);
-            if (!res.ok) throw new Error("Errore nel recupero dati commessa");
-
-            const data = await res.json();
-
-            // Popola campi testuali
-            // Usa encadement opzionale per evitare crash su proprietà mancanti
-            if (this.dom.modalForm) {
-                const setValue = (id, val) => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = val || '';
-                };
-
-                setValue('commessaId', data.id_commessa);
-                setValue('impianto', data.nome_commessa || data.impianto); // Gestione fallback nome
-                setValue('vo', data.vo || data.vo_offerta);
-                setValue('matricola', data.matricola);
-                setValue('rif_tecnico', data.riferimento_tecnico);
-                setValue('luogo', data.paese || data.luogo); // Fallback
-                setValue('provincia', data.provincia);
-                setValue('anno', data.anno);
-                setValue('note', data.note || data.descrizione);
-
-                // [NEW] Popola lat/lon se presenti
-                setValue('latitudine', data.latitudine);
-                setValue('longitudine', data.longitudine);
-                const posEsattaEl = document.getElementById('posizione_esatta');
-                if (posEsattaEl) posEsattaEl.checked = !!data.posizione_esatta;
-
-                // [NEW] Popola ubicazione magazzino
-                const ubicazioneSelect = document.getElementById('ubicazione');
-                if (ubicazioneSelect && data.id_ubicazione_fk) {
-                    ubicazioneSelect.value = data.id_ubicazione_fk;
-                }
-            }
-
-            // Popola Select (Choices.js)
-            // Timeout breve per assicurare che Choices sia pronto se necessario, ma qui è sincrono
-            if (this.state.choicesInstances.cliente && data.id_cliente_fk) {
-                try {
-                    const val = data.id_cliente_fk;
-                    this.state.choicesInstances.cliente.setChoiceByValue([val, String(val)]);
-                } catch (e) { console.warn("Errore set cliente", e); }
-            }
-
-            if (this.state.choicesInstances.modello && data.id_modello_fk) {
-                try {
-                    const val = data.id_modello_fk;
-                    this.state.choicesInstances.modello.setChoiceByValue([val, String(val)]);
-                } catch (e) { console.warn("Errore set modello", e); }
-            }
-
-            // Popola Macro (Multipla)
-            if (this.state.choicesInstances.macro && data.ids_macro_categorie_attive) {
-                try {
-                    const vals = Array.isArray(data.ids_macro_categorie_attive) ? data.ids_macro_categorie_attive : [data.ids_macro_categorie_attive];
-                    const expandedVals = vals.flatMap(v => [v, String(v)]);
-                    this.state.choicesInstances.macro.setChoiceByValue(expandedVals);
-                } catch (e) { console.warn("Errore set macro", e); }
-            }
-
-
-            // Popola Immagine
-            if (data.immagine) {
-                // Non mostriamo preview IMG come da richiesta recente, ma mostriamo testo "file esistente" o simile?
-                // L'utente ha chiesto di vedere solo il nome. Se è una stringa base64 o URL, 
-                // mostriamo "Immagine caricata".
-                this.dom.uploadText.textContent = "Immagine presente (modifica per cambiare)";
-                this.dom.previewContainer.style.display = 'block';
-                // NON impostiamo src preview
-            }
-
-        } catch (e) {
-            console.error("Errore fetch dettagli", e);
-            showModal({ title: "Attenzione", message: "Impossibile caricare i dati completi della commessa: " + e.message });
-            // NON chiudiamo il modale, così l'utente può vedere cosa manca o riprovare
-            // this.closeModal(); 
-        }
-    },
+    // --- CREAZIONE / MODIFICA: avviene in nuova-commessa.html ---
 
     handleEdit: function (id) {
         // Redirige alla pagina standalone nuova-commessa in modalità modifica
@@ -1218,115 +961,13 @@ const App = {
         }
     },
 
-    handleFormSubmit: async function (e) {
-        e.preventDefault();
-        const id = document.getElementById('commessaId').value;
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/commesse/${id}` : '/api/commesse';
 
-        // Usa FormData per multipart (dati + file)
-        const formData = new FormData(this.dom.modalForm);
 
-        // GESTIONE SPECIALE MACRO:
-        // Choices.js non popola automaticamente l'input hidden per le select multiple in modo compatibile con FormData a volte.
-        // Estraiamo i valori manualmente e li passiamo come JSON string
-        if (this.state.choicesInstances.macro) {
-            const selectedMacros = this.state.choicesInstances.macro.getValue(true); // Ritorna array di value
-            // Inviamo come stringa separata da virgola per attivare il parsing fallback del backend (che fa cast a int)
-            formData.set('ids_macro_categorie_attive', selectedMacros.join(','));
-        }
-
-        const saveBtn = this.dom.modalForm.querySelector('.save-button');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = "Salvando...";
-
-        try {
-            const token = localStorage.getItem('session_token');
-            const baseUrl = 'https://segretario-ai-backend-service-460205196659.europe-west1.run.app'; // Importato da config idealmente
-
-            // Fetch nativa per gestire FormData senza header Content-Type manuale
-            const res = await fetch(baseUrl + url, {
-                method: method,
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            if (!res.ok) {
-                const errJson = await res.json();
-                throw new Error(errJson.error || "Errore salvataggio");
-            }
-
-            this.closeModal();
-            this.fetchCommesse(true); // Ricarica griglia
-
-        } catch (error) {
-            console.error(error);
-            showModal({ title: "Errore", message: error.message });
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
-        }
-    },
-
-    closeModal: function () {
-        this.dom.modal.classList.remove('active');
-    },
-
-    populateUbicazioniSelect: function (ubicazioni) {
-        const select = document.getElementById('ubicazione');
-        if (!select) return;
-        select.innerHTML = ubicazioni.map(u =>
-            `<option value="${u.id_ubicazione}">${u.nome_ubicazione}</option>`
-        ).join('');
-    },
 
     // Gestione Immagine (Solo Nome File)
-    handleImageSelect: function (e) {
-        const file = e.target.files[0];
-        this.processFile(file);
-    },
 
-    processFile: function (file) {
-        if (file) {
-            this.dom.uploadText.textContent = file.name;
-            // Mostra container rimuovi (senza img preview)
-            this.dom.previewContainer.style.display = 'block';
-        }
-    },
 
-    setupDragDrop: function () {
-        const widget = this.dom.uploadWidget;
-        if (!widget) return;
 
-        const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            widget.addEventListener(eventName, preventDefaults, false);
-        });
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            widget.addEventListener(eventName, () => widget.classList.add('drag-over'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            widget.addEventListener(eventName, () => widget.classList.remove('drag-over'), false);
-        });
-
-        widget.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            if (file && file.type.startsWith('image/')) {
-                this.dom.imageInput.files = dt.files;
-                this.processFile(file);
-            }
-        });
-    },
-
-    resetImage: function () {
-        this.dom.imageInput.value = '';
-        this.dom.uploadText.textContent = 'Trascina file o Clicca';
-        this.dom.previewContainer.style.display = 'none';
-    },
 
     // --- UTILITIES ---
     getOptimizedImageUrl: function (url, width = 500) {
