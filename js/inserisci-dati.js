@@ -113,7 +113,7 @@ function stopRecordingAndTranscribe() {
     // UI: Stato di elaborazione
     const statusText = document.getElementById('recordingStatus');
     statusText.innerText = "Elaborazione trascrizione...";
-    statusText.style.color = "#e67e22"; // Arancione
+    statusText.style.color = "var(--col-e67e22)"; // Arancione
     document.getElementById('stopButton').disabled = true;
 
     mediaRecorder.onstop = async () => {
@@ -186,7 +186,7 @@ async function transcribeAudioFile(blob, mimeType) {
         textArea.disabled = false;
         textArea.placeholder = originalPlaceholder;
         document.getElementById('recordingStatus').innerText = "Pronto per registrare";
-        document.getElementById('recordingStatus').style.color = "#666";
+        document.getElementById('recordingStatus').style.color = "var(--col-666666)";
     }
 }
 
@@ -198,7 +198,7 @@ function updateAudioUI(isRec) {
     const statusText = document.getElementById('recordingStatus');
     if (isRec) {
         statusText.innerText = "Registrazione in corso...";
-        statusText.style.color = "#dc3545"; // Rosso
+        statusText.style.color = "var(--col-dc3545)"; // Rosso
     }
 }
 
@@ -293,7 +293,7 @@ function handleFileSelect(e) {
     if (e.target.files.length > 0) {
         const file = e.target.files[0];
         document.querySelector('.file-name').textContent = file.name;
-        document.querySelector('.file-name').style.color = '#27ae60';
+        document.querySelector('.file-name').style.color = 'var(--col-27ae60)';
         document.querySelector('.drop-icon').textContent = '📄';
     }
 }

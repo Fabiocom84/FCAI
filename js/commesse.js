@@ -353,7 +353,7 @@ const App = {
             if (!data.data || data.data.length === 0) {
                 this.state.hasMore = false;
                 if (reset) {
-                    this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Nessuna commessa trovata.</div>';
+                    this.dom.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--col-888888);">Nessuna commessa trovata.</div>';
                 }
                 return;
             }
@@ -426,7 +426,7 @@ const App = {
                                 <h3 style="margin:0;flex:1;">${c.clienti?.ragione_sociale || 'Cliente ???'}</h3>
                                 ${mannStatusBadge}
                             </div>
-                            <span style="color:#666;font-size:0.88rem;">${c.impianto || '—'}</span>
+                            <span style="color:var(--col-666666);font-size:0.88rem;">${c.impianto || '—'}</span>
                         </div>
 
                         <div class="card-info-grid">
@@ -440,7 +440,7 @@ const App = {
                             </div>
                         </div>
 
-                        ${c.note ? `<div class="commessa-note" style="margin:8px 0;padding:7px 10px;background:#fff3e0;border-left:3px solid #e67e22;font-size:0.79em;color:#666;border-radius:0 4px 4px 0;"><strong>Note:</strong> ${c.note}</div>` : ''}
+                        ${c.note ? `<div class="commessa-note" style="margin:8px 0;padding:7px 10px;background:var(--col-fff3e0);border-left:3px solid var(--col-e67e22);font-size:0.79em;color:var(--col-666666);border-radius:0 4px 4px 0;"><strong>Note:</strong> ${c.note}</div>` : ''}
 
                         <div class="card-footer-actions">
 
@@ -467,8 +467,8 @@ const App = {
                             })()) ? `
                             <div style="margin-bottom:8px; width:100%;">
                                 <span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}" style="display:block; width:100%;">
-                                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:#ecf0f1; color:#95a5a6; font-size:0.82em; padding:6px 8px; border-radius:4px; border:1px solid #bdc3c7; text-decoration:none;" onclick="event.stopPropagation()">
-                                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:var(--col-ecf0f1); color:var(--col-95a5a6); font-size:0.82em; padding:6px 8px; border-radius:4px; border:1px solid var(--col-bdc3c7); text-decoration:none;" onclick="event.stopPropagation()">
+                                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid var(--col-bdc3c7);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
                                     </a>
                                 </span>
                             </div>` : ''}
@@ -534,7 +534,7 @@ const App = {
             // [OPTIMIZATION] Usa <img> tag per lazy loading + Supabase resize
             let imgContent = '';
             if (!c.immagine) {
-                imgContent = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-weight:500;">NO FOTO</div>';
+                imgContent = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--col-cccccc);font-weight:500;">NO FOTO</div>';
             } else {
                 // Richiedi thumbnail piccola (400px width)
                 const optimizedUrl = this.getOptimizedImageUrl(c.immagine, 400);
@@ -586,8 +586,8 @@ const App = {
             if (canViewBadge) {
                 // Placeholder grigio con data attribute — verrà aggiornato da loadOpStatsBatch
                 opBadge = `<span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}">
-                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid #bdc3c7; display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
-                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                    <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="background:var(--col-ecf0f1); color:var(--col-95a5a6); font-size:0.8em; padding:5px 8px; border-radius:4px; border:1px solid var(--col-bdc3c7); display:flex; align-items:center; gap:5px; text-decoration:none;" onclick="event.stopPropagation()">
+                        ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid var(--col-bdc3c7);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
                     </a>
                 </span>`;
             }
@@ -685,7 +685,7 @@ const App = {
                                     ${statusOptions}
                                 </select>`
                     :
-                    `<span class="status-badge" style="background:${c.status_commessa?.colore || '#ccc'}; color:white; padding:4px 8px; border-radius:12px; font-size:0.8em;">
+                    `<span class="status-badge" style="background:${c.status_commessa?.colore || 'var(--col-cccccc)'}; color:white; padding:4px 8px; border-radius:12px; font-size:0.8em;">
                                     ${c.status_commessa?.nome_status || 'Status ???'}
                                 </span>`
                 }
@@ -713,12 +713,12 @@ const App = {
                     }
                     if (macrosToDisplay.length === 0) return '';
                     return `<div class="card-macro-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px; margin-bottom: 8px;">
-                            ${macrosToDisplay.map(n => `<span style="background:#eef2f3; color:#555; padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid #ddd;">${n}</span>`).join('')}
+                            ${macrosToDisplay.map(n => `<span style="background:#eef2f3; color:var(--col-555555); padding:2px 6px; border-radius:10px; font-size:0.75em; border:1px solid var(--col-dddddd);">${n}</span>`).join('')}
                         </div>`;
                 })()}
 
                     <!-- NOTE COMMESSA (Se presenti) -->
-                    ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid #f1c40f; font-size: 0.8em; color: #555;"><strong>Note:</strong> ${c.note}</div>` : ''}
+                    ${c.note ? `<div class="commessa-note" style="margin: 10px 0; padding: 8px; background: #fffde7; border-left: 3px solid var(--col-f1c40f); font-size: 0.8em; color: var(--col-555555);"><strong>Note:</strong> ${c.note}</div>` : ''}
 
                     ${IsAdmin ? `
                     <div class="phase-toggles-container">
@@ -756,8 +756,8 @@ const App = {
                         ${canViewBadge ? `
                         <div style="margin-bottom:8px; width:100%;" id="op-row-${c.id_commessa}">
                             <span class="op-badge-placeholder" data-op-commessa="${c.id_commessa}" style="display:block; width:100%;">
-                                <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:#ecf0f1; color:#95a5a6; font-size:0.8em; padding:6px 8px; border-radius:4px; border:1px solid #bdc3c7; text-decoration:none;" onclick="event.stopPropagation()">
-                                    ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid #bdc3c7;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
+                                <a href="registro-ordini.html?commessa_id=${c.id_commessa}" class="std-btn" style="display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; background:var(--col-ecf0f1); color:var(--col-95a5a6); font-size:0.8em; padding:6px 8px; border-radius:4px; border:1px solid var(--col-bdc3c7); text-decoration:none;" onclick="event.stopPropagation()">
+                                    ⚙️ <span style="display:inline-block;width:8px;height:8px;border:2px solid var(--col-bdc3c7);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span> OP
                                 </a>
                             </span>
                         </div>` : ''}
@@ -897,11 +897,11 @@ const App = {
                 let badgeHtml;
                 const FULL_W = 'display:flex; width:100%; box-sizing:border-box; justify-content:center; align-items:center; gap:6px; font-size:0.82em; padding:6px 8px; border-radius:4px; text-decoration:none;';
                 if (open > 0) {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#e67e22; color:white;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:var(--col-e67e22); color:white;" onclick="event.stopPropagation()">⚙️ <b>${open}</b> / ${total} OP</a>`;
                 } else if (closed > 0) {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#e8f8f5; color:#27ae60; border:1px solid #27ae60;" onclick="event.stopPropagation()">✅ ${closed} OP chiusi</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#e8f8f5; color:var(--col-27ae60); border:1px solid var(--col-27ae60);" onclick="event.stopPropagation()">✅ ${closed} OP chiusi</a>`;
                 } else {
-                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:#ecf0f1; color:#95a5a6; border:1px solid #bdc3c7;" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
+                    badgeHtml = `<a href="registro-ordini.html?commessa_id=${cId}" class="std-btn" style="${FULL_W} background:var(--col-ecf0f1); color:var(--col-95a5a6); border:1px solid var(--col-bdc3c7);" onclick="event.stopPropagation()">⚙️ 0 OP</a>`;
                 }
                 el.innerHTML = badgeHtml;
             });
@@ -1665,7 +1665,7 @@ function renderGeoMapMarkers(list) {
         className: '',
         html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
             <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
-                  fill="#e67e22" stroke="#d35400" stroke-width="1.5"/>
+                  fill="var(--col-e67e22)" stroke="var(--col-d35400)" stroke-width="1.5"/>
             <circle cx="12.5" cy="12.5" r="5" fill="white"/>
         </svg>`,
         iconSize: [25, 41],
@@ -1680,13 +1680,13 @@ function renderGeoMapMarkers(list) {
 
             // Build Popup
             let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
-            popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${c.impianto || 'Impianto'}</b>`;
+            popupContent += `<b style="color:var(--col-2c3e50); font-size:1.1em;">${c.impianto || 'Impianto'}</b>`;
             if (!c.posizione_esatta) {
                 popupContent += ` <span style="font-size:1.2em;" title="Posizione Approssimativa">⚠️</span>`;
             }
             popupContent += `<br>`;
             if (c.clienti && c.clienti.ragione_sociale) {
-                popupContent += `<span style="color:#7f8c8d; font-size:0.9em;">${c.clienti.ragione_sociale}</span><br>`;
+                popupContent += `<span style="color:var(--col-7f8c8d); font-size:0.9em;">${c.clienti.ragione_sociale}</span><br>`;
             }
             // Helper Link
             //  popupContent += `<a href="#" style="color:#3498db; text-decoration:none; font-size:0.85em; margin-top:5px; display:inline-block;">Vedi Dettaglio</a>`;
@@ -1728,11 +1728,11 @@ function renderGeoMapSidebar() {
         const cliente = commessa.clienti?.ragione_sociale || '';
 
         // Custom search handling logic will look at textContent
-        div.style.cssText = 'padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; flex-direction: column; transition: background 0.2s;';
+        div.style.cssText = 'padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--col-eeeeee); display: flex; flex-direction: column; transition: background 0.2s;';
 
         div.innerHTML = `
-            <span style="font-weight:500; color:#2c3e50; font-size: 0.95em;">${impianto}</span>
-            <span style="font-size: 0.8em; color:#7f8c8d; margin-top: 2px;">${cliente}</span>
+            <span style="font-weight:500; color:var(--col-2c3e50); font-size: 0.95em;">${impianto}</span>
+            <span style="font-size: 0.8em; color:var(--col-7f8c8d); margin-top: 2px;">${cliente}</span>
         `;
 
         div.onmouseover = () => { if (div !== activeItem) div.style.background = '#f5f6fa'; };
@@ -1814,9 +1814,9 @@ function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
                     }).addTo(geoMap);
 
                     let popupContent = `<div style="font-family: Roboto, sans-serif;">`;
-                    popupContent += `<b style="color:#2c3e50; font-size:1.1em;">${impianto}</b><br>`;
+                    popupContent += `<b style="color:var(--col-2c3e50); font-size:1.1em;">${impianto}</b><br>`;
                     if (cliente) {
-                        popupContent += `<span style="color:#7f8c8d; font-size:0.9em;">${cliente}</span><br>`;
+                        popupContent += `<span style="color:var(--col-7f8c8d); font-size:0.9em;">${cliente}</span><br>`;
                     }
                     popupContent += `</div>`;
 

@@ -390,7 +390,7 @@ async function saveProductionRows() {
         tr.style.border = 'none';
 
         if (!commessaId || !codice || !qta || !op || !dataRicezione) {
-            tr.style.border = '2px solid #e53e3e';
+            tr.style.border = '2px solid var(--col-e53e3e)';
             hasErrors = true;
             return;
         }

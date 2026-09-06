@@ -522,15 +522,15 @@ const DevTools = {
             if (r._status === 'ok') {
                 statusBadge = `<span class="badge-status badge-status--ok">✅ VALIDA</span>`;
                 rowClass = 'row-ok';
-                noteHtml = `<span style="color: #27ae60; font-size: 0.85em;">Pronto all'importazione</span>`;
+                noteHtml = `<span style="color: var(--col-27ae60); font-size: 0.85em;">Pronto all'importazione</span>`;
             } else if (r._status === 'skip') {
                 statusBadge = `<span class="badge-status badge-status--skip">⏭️ SCARTATA</span>`;
                 rowClass = 'row-skip';
-                noteHtml = `<span style="color: #d35400; font-weight: 500; font-size: 0.85em;">⚠️ ${r._errors.join(', ') || 'Duplicata'}</span>`;
+                noteHtml = `<span style="color: var(--col-d35400); font-weight: 500; font-size: 0.85em;">⚠️ ${r._errors.join(', ') || 'Duplicata'}</span>`;
             } else {
                 statusBadge = `<span class="badge-status badge-status--error">❌ ERRORE</span>`;
                 rowClass = 'row-error';
-                noteHtml = `<span style="color: #c0392b; font-weight: 500; font-size: 0.85em;">⛔ ${r._errors.join(', ') || 'Errore dati'}</span>`;
+                noteHtml = `<span style="color: var(--col-c0392b); font-weight: 500; font-size: 0.85em;">⛔ ${r._errors.join(', ') || 'Errore dati'}</span>`;
             }
 
             tbody.innerHTML += `<tr class="${rowClass}">

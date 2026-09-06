@@ -168,7 +168,7 @@ const App = {
                     <div class="man-no-results">
                         <div class="man-no-results-icon">🔒</div>
                         <p>Non hai i permessi per consultare le manutenzioni</p>
-                        <small style="color:#999;">Richiesto il ruolo Impiegato o Amministratore.</small>
+                        <small style="color:var(--col-999999);">Richiesto il ruolo Impiegato o Amministratore.</small>
                     </div>`;
                 return;
             }
@@ -178,7 +178,7 @@ const App = {
                 <div class="man-no-results">
                     <div class="man-no-results-icon">❌</div>
                     <p>Errore di caricamento</p>
-                    <small style="color:#999;">${e.message}</small>
+                    <small style="color:var(--col-999999);">${e.message}</small>
                 </div>`;
         } finally {
             this.dom.listLoader.style.display = 'none';

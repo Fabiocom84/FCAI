@@ -438,15 +438,15 @@ const App = {
                     editable: false,
                     formatter: (r) => {
                         const badges = {
-                            'DELETE': '<span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">DELETE</span>',
-                            'CREATE': '<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">CREATE</span>',
-                            'UPDATE': '<span style="background:#3498db;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">UPDATE</span>',
-                            'STATUS_CHANGE': '<span style="background:#8e44ad;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">STATUS</span>',
-                            'ADMIN_OVERRIDE': '<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">OVERRIDE</span>',
-                            'ADMIN_ACTION': '<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">ADMIN</span>',
-                            'LOGIN': '<span style="background:#95a5a6;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">LOGIN</span>'
+                            'DELETE': '<span style="background:var(--col-e74c3c);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">DELETE</span>',
+                            'CREATE': '<span style="background:var(--col-27ae60);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">CREATE</span>',
+                            'UPDATE': '<span style="background:var(--col-3498db);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">UPDATE</span>',
+                            'STATUS_CHANGE': '<span style="background:var(--col-8e44ad);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">STATUS</span>',
+                            'ADMIN_OVERRIDE': '<span style="background:var(--col-e67e22);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">OVERRIDE</span>',
+                            'ADMIN_ACTION': '<span style="background:var(--col-e67e22);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">ADMIN</span>',
+                            'LOGIN': '<span style="background:var(--col-95a5a6);color:var(--col-ffffff);padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600">LOGIN</span>'
                         };
-                        return badges[r.azione] || `<span style="background:#bdc3c7;padding:2px 8px;border-radius:4px;font-size:0.8em">${r.azione}</span>`;
+                        return badges[r.azione] || `<span style="background:var(--col-bdc3c7);padding:2px 8px;border-radius:4px;font-size:0.8em">${r.azione}</span>`;
                     }
                 },
                 {
@@ -469,7 +469,7 @@ const App = {
                         const entries = Object.entries(r.dettagli)
                             .map(([k, v]) => `<b>${k}</b>: ${v}`)
                             .join(', ');
-                        return `<span style="font-size:0.85em;color:#555">${entries}</span>`;
+                        return `<span style="font-size:0.85em;color:var(--col-555555)">${entries}</span>`;
                     }
                 },
                 {
@@ -1201,7 +1201,7 @@ const App = {
             cell.colSpan = config.columns.length + (isReadOnly ? 1 : 2);
             cell.textContent = 'Nessun dato trovato. Modifica i filtri per una nuova ricerca.';
             cell.style.textAlign = 'center'; cell.style.padding = '20px';
-            cell.style.fontStyle = 'italic'; cell.style.color = '#666';
+            cell.style.fontStyle = 'italic'; cell.style.color = 'var(--col-666666)';
         } else {
             // --- APPLICAZIONE SUGGERIMENTO 4: DocumentFragment ---
             const fragment = document.createDocumentFragment();

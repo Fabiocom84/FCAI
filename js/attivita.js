@@ -133,7 +133,7 @@ const TaskApp = {
             columnEl.innerHTML = `
                 <div class="task-column-header">
                     <h2>
-                        <span class="dot-indicator" style="background-color: var(--${col.colorClass}-color, #ccc)"></span>
+                        <span class="dot-indicator" style="background-color: var(--${col.colorClass}-color, var(--col-cccccc))"></span>
                         ${col.label} ${extraBtn}
                     </h2>
                     <span class="column-count">${tasksInCol.length}</span>
@@ -244,12 +244,12 @@ const TaskApp = {
 
         // Lucchetto se sto solo monitorando
         const lockIcon = isDelegatedOut
-            ? `<i class="fas fa-lock" style="color:#999; font-size:0.9em;" title="In carico a ${assigneeName}"></i>`
+            ? `<i class="fas fa-lock" style="color:var(--col-999999); font-size:0.9em;" title="In carico a ${assigneeName}"></i>`
             : '';
 
         // Formattazione data scadenza
         const dateHtml = task.data_obiettivo
-            ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? '#e74c3c' : '#95a5a6'}; display:flex; align-items:center; gap:4px;">
+            ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'var(--col-e74c3c)' : 'var(--col-95a5a6)'}; display:flex; align-items:center; gap:4px;">
                  <i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}
                </div>`
             : '<div></div>';
@@ -264,9 +264,9 @@ const TaskApp = {
             
             <h4 style="margin: 5px 0 10px 0; font-size:0.95em; line-height:1.4;">${task.titolo}</h4>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f0f0f0; padding-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--col-f0f0f0); padding-top:6px;">
                  ${dateHtml}
-                 <span style="font-size:0.75em; color:#555; font-weight:600; background:#f1f3f5; padding:2px 6px; border-radius:4px;">
+                 <span style="font-size:0.75em; color:var(--col-555555); font-weight:600; background:var(--col-f1f3f5); padding:2px 6px; border-radius:4px;">
                     ${assigneeName}
                  </span>
             </div>
@@ -472,7 +472,7 @@ const TaskApp = {
         const html = `
             <h2 class="detail-title">Invia / Trasferisci Task</h2>
             <div style="padding: 20px 0;">
-                <label style="display:block; margin-bottom:5px; font-weight:600; color:#444;">Seleziona il nuovo assegnatario:</label>
+                <label style="display:block; margin-bottom:5px; font-weight:600; color:var(--col-444444);">Seleziona il nuovo assegnatario:</label>
                 <div class="styled-select-wrapper" style="margin-bottom:15px;">
                     <select id="transferUserSelect" class="inp-select">
                         <option value="" disabled selected>-- Seleziona Persona --</option>
@@ -483,9 +483,9 @@ const TaskApp = {
                     </select>
                 </div>
 
-                <label style="display:block; margin-bottom:5px; font-weight:600; color:#444;">Messaggio per il destinatario *:</label>
+                <label style="display:block; margin-bottom:5px; font-weight:600; color:var(--col-444444);">Messaggio per il destinatario *:</label>
                 <textarea id="transferMessage" rows="3" class="inp-area" placeholder="Spiega perché stai inviando questo task o cosa deve fare..."></textarea>
-                <small style="color:#888;">Questo messaggio verrà salvato come commento e inviato come notifica.</small>
+                <small style="color:var(--col-888888);">Questo messaggio verrà salvato come commento e inviato come notifica.</small>
             </div>
             <div class="form-actions">
                 <button id="btnCancelTransfer" class="std-btn std-btn--ghost">Annulla</button>
@@ -562,7 +562,7 @@ const TaskApp = {
                     <div class="empty-state">
                         <i class="far fa-bell-slash fa-3x"></i>
                         <p>Non hai nuove notifiche.</p>
-                        <small style="color:#999;">Tutti i messaggi precedenti sono stati letti.</small>
+                        <small style="color:var(--col-999999);">Tutti i messaggi precedenti sono stati letti.</small>
                         <div style="margin-top: 20px;">
                             <button id="btnCloseNotes" class="std-btn std-btn--ghost">Indietro</button>
                         </div>
@@ -602,7 +602,7 @@ const TaskApp = {
 
             // Struttura completa pannello
             const html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--col-eeeeee); padding-bottom:10px;">
                     <h2 class="detail-title" style="margin:0;">Le tue Notifiche</h2>
                     <button id="btnMarkAll" class="std-btn std-btn--blue" style="font-size:0.75em; padding:4px 10px; min-height:auto;">
                         <i class="fas fa-check-double"></i> Segna tutte lette
@@ -1036,14 +1036,14 @@ const TaskApp = {
                 ? tasks.map(t => `
                     <div class="archive-task-item" data-task="${t.id_task}" style="cursor:pointer;">
                         <div class="archive-task-title" style="pointer-events:none;">
-                            <i class="fas fa-check-circle" style="color:#2ecc71;"></i> 
+                            <i class="fas fa-check-circle" style="color:var(--col-2ecc71);"></i> 
                             ${t.titolo}
                         </div>
                         <div class="archive-task-date" style="pointer-events:none;">
                             <i class="far fa-calendar-alt"></i> 
                             ${new Date(t.data_ultima_modifica).toLocaleDateString()}
                         </div>
-                        <div style="font-size:0.8rem; color:#666; pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <div style="font-size:0.8rem; color:var(--col-666666); pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                            ${t.descrizione || ''}
                         </div>
                     </div>`).join('')
@@ -1066,7 +1066,7 @@ const TaskApp = {
                 }
             };
 
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
+        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:var(--col-e74c3c)"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
     },
 
     // =================================================================

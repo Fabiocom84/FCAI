@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.innerHTML = `
             <h4>${date}</h4>
             <div class="type-grid-container" id="v-type-grid">${gridHtml}</div>
-            <hr style="margin: 5px 0; border:0; border-top:1px solid #eee;">
+            <hr style="margin: 5px 0; border:0; border-top:1px solid var(--col-eeeeee);">
             <div class="popup-input-row"><label>Ore:</label><input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5"></div>
             <div class="popup-color-row" id="v-color-row">${colorHtml}</div>
             <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
