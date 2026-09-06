@@ -54,7 +54,6 @@ async function loadReferenceData() {
     } catch (error) {
         console.error("Errore caricamento dati:", error);
         segnala(error);
-        segnala(error);
         showModal({ title: "Errore", message: "Impossibile caricare le anagrafiche." });
     }
 }

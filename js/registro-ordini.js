@@ -323,9 +323,7 @@ const App = {
                     i++;
                 }
             }
-        } catch (e) { console.warn(e); }
-        segnala(e);
-        segnala(e);
+        } catch (e) { console.warn(e); segnala(e); }
     },
 
     saveOrder: async function () {

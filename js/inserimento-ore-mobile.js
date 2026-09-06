@@ -1372,8 +1372,7 @@ const MobileHoursApp = {
                 this.state.choicesInstance.clearChoices();
                 groups.forEach(g => this.state.choicesInstance.setChoices(g.choices, 'value', 'label', false));
                 console.log("📡 Etichette aggiornate da server");
-            } catch (e) { console.error("Errore caricamento etichette:", e); }
-            segnala(e);
+            } catch (e) { console.error("Errore caricamento etichette:", e); segnala(e); }
         };
 
         // Se cache scaduta o mancante, aspetta il fetch

@@ -102,8 +102,6 @@ const TaskApp = {
         } catch (error) {
             console.error("Init Error:", error);
             segnala(error);
-            segnala(error);
-            segnala(error);
         }
     },
 

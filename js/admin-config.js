@@ -90,8 +90,6 @@ const App = {
             } catch (kwErr) {
                 console.warn("⚠️ Keywords load failed (tabelle non ancora create?):", kwErr);
                 segnala(kwErr);
-                segnala(kwErr);
-                segnala(kwErr);
                 this.data.keywords = [];
                 this.data.matchings = [];
             }
@@ -536,7 +534,6 @@ const App = {
             this.data.matchings = matchRes.ok ? await matchRes.json() : [];
         } catch (e) {
             console.error("Errore reload keywords:", e);
-            segnala(e);
             segnala(e);
         }
     },

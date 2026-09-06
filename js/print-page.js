@@ -450,8 +450,7 @@ const PrintPage = {
                 // Configura i bottoni "Rapidi"
                 this.configureQuickButtons(data.url, data.version, year, month);
             }
-        } catch (e) { console.error("Errore check:", e); }
-        segnala(e);
+        } catch (e) { console.error("Errore check:", e); segnala(e); }
     },
 
     configureQuickButtons: function (url, version, year, month) {

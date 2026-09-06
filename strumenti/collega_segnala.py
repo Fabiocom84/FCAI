@@ -29,14 +29,22 @@ import sys
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
 
-# ELENCO CHIUSO delle letture in SOTTOFONDO: file -> righe da lasciare mute.
-# Aggiungere qui significa dichiarare "il silenzio e voluto", non "non ci ho
-# pensato". La differenza fra le due, in un file, e questo elenco.
-IN_SOTTOFONDO = {
-    'main.js': {238, 265},          # contatori dei contrassegni
-    'attivita.js': {555},           # sondaggio delle notifiche
-    'admin-training.js': {119},     # stato dell'addestramento, in polling
-}
+# ELENCO CHIUSO delle letture in SOTTOFONDO: frammenti di indirizzo da lasciare
+# muti. Dichiarare qui significa "il silenzio e voluto", non "non ci ho pensato":
+# la differenza fra le due, in un file, e questo elenco.
+#
+# INDICIZZATO PER INDIRIZZO, NON PER NUMERO DI RIGA — corretto il 06/09/2026.
+# La prima stesura usava `{'main.js': {238, 265}}`. Ha funzionato una volta: alla
+# passata successiva lo strumento aveva gia inserito righe piu in alto nel file,
+# i numeri si erano spostati, e l'elenco proteggeva due punti a caso mentre i due
+# veri tornavano candidati. Un identificatore che cambia da solo non identifica
+# niente, e il difetto e silenzioso: lo strumento riferiva "2 da applicare" senza
+# alcun segnale che l'esclusione avesse mancato il bersaglio.
+IN_SOTTOFONDO = (
+    'tasks/notifiche',              # sondaggio e contatore delle notifiche
+    'registrazioni/orfane/count',   # contatore del contrassegno
+    'admin/training-status',        # stato dell'addestramento, in polling
+)
 
 LETTURA = re.compile(r"(apiFetch|apiClient\.get)\s*\(")
 APERTURA_CATCH = re.compile(r"\bcatch\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\{")
@@ -100,6 +108,7 @@ def fine_del_catch(righe, j, entro=40):
 def elabora(applica=False):
     aggiunte, saltate_sottofondo, gia_a_posto = 0, 0, 0
     per_file = {}
+    gia_fatti = set()   # (file, riga del catch): un solo avviso per blocco
 
     for f in sorted((RADICE / 'js').glob('*.js')):
         if f.name == 'api-client.js':
@@ -108,7 +117,8 @@ def elabora(applica=False):
         fine_riga = eol(grezzo)
         righe = grezzo.decode('utf-8', errors='replace').replace('\r\n', '\n').split('\n')
 
-        da_inserire = []   # (indice_riga, testo)
+        da_inserire = []      # (indice_riga, testo da INSERIRE)
+        da_sostituire = []    # (indice_riga, testo che SOSTITUISCE la riga)
         for i, riga in enumerate(righe):
             s = riga.strip()
             if s.startswith('//') or s.startswith('*') or not LETTURA.search(riga):
@@ -127,7 +137,7 @@ def elabora(applica=False):
                          '\n'.join(righe[i:i + 6])):
                 continue
 
-            if (i + 1) in IN_SOTTOFONDO.get(f.name, set()):
+            if any(frammento in riga for frammento in IN_SOTTOFONDO):
                 saltate_sottofondo += 1
                 continue
 
@@ -158,19 +168,52 @@ def elabora(applica=False):
                 gia_a_posto += 1
                 continue
 
-            # Si inserisce SUBITO DOPO la prima riga di console.*, per stare
-            # accanto alla registrazione invece che in fondo a rami che
-            # potrebbero uscire prima.
-            for r in range(j, k + 1):
-                if REGISTRA.search(righe[r]):
-                    rientro = re.match(r"\s*", righe[r]).group(0)
-                    da_inserire.append((r + 1, f"{rientro}segnala({variabile});"))
-                    aggiunte += 1
-                    break
+            # Un solo avviso per `catch`: piu letture possono condividerlo, e due
+            # messaggi per un solo errore sono rumore.
+            if (f.name, j) in gia_fatti:
+                continue
+            gia_fatti.add((f.name, j))
 
-        if not da_inserire:
+            # ═══ CORRETTO IL 06/09/2026, DOPO UN GUASTO IN STAGING ═══
+            #
+            # La prima stesura inseriva SEMPRE sulla riga successiva a quella del
+            # `console.*`. Corretto per un catch su piu righe; **sbagliato per un
+            # catch su una riga sola**, dove "la riga dopo" e gia fuori dal blocco:
+            #
+            #     } catch (e) { console.error("...", e); }
+            #     segnala(e);        // <- `e` non e definita: ReferenceError
+            #
+            # Otto casi su 34 erano cosi, ed erano gia stati committati e messi
+            # in staging. Non li ha trovati nessun controllo — li ha trovati il
+            # proprietario aprendo una pagina.
+            #
+            # Il difetto vero non e l'errore di confine: e che questo strumento
+            # contava le sostituzioni FATTE e non se fossero VALIDE. Da qui
+            # `verifica_segnala.py`, che va eseguito dopo ogni passata e
+            # controlla che ogni chiamata sia dentro un catch con quella
+            # variabile. Contare quante volte si e scritto non e verificare cosa
+            # si e scritto.
+            for r in range(j, k + 1):
+                if not REGISTRA.search(righe[r]):
+                    continue
+                rientro = re.match(r"\s*", righe[r]).group(0)
+                if r == k and righe[r].rstrip().endswith('}'):
+                    # Catch a riga singola: si inserisce PRIMA della graffa che
+                    # chiude il blocco, non dopo.
+                    testo = righe[r].rstrip()
+                    p = testo.rfind('}')
+                    da_sostituire.append(
+                        (r, testo[:p].rstrip() + f" segnala({variabile}); " + testo[p:]))
+                else:
+                    da_inserire.append((r + 1, f"{rientro}segnala({variabile});"))
+                aggiunte += 1
+                break
+
+        if not da_inserire and not da_sostituire:
             continue
 
+        for pos, testo in da_sostituire:
+            righe[pos] = testo
         for pos, testo in sorted(da_inserire, reverse=True):
             righe.insert(pos, testo)
 
@@ -183,7 +226,7 @@ def elabora(applica=False):
         elif not m:
             testo = "import { segnala } from './api-client.js';\n" + testo
 
-        per_file[f.name] = len(da_inserire)
+        per_file[f.name] = len(da_inserire) + len(da_sostituire)
         if applica:
             f.write_bytes(fine_riga.join(testo.split('\n')).encode('utf-8'))
 
@@ -203,3 +246,5 @@ print(f"  {sf:3d}  in sottofondo, silenzio VOLUTO (elenco chiuso nello strumento
 print(f"  {gia:3d}  gia collegate")
 if not applica:
     print("\nRilancia con --applica per scrivere.")
+print("\nDOPO --applica, ESEGUIRE SEMPRE: python strumenti/verifica_segnala.py")
+print("Contare le sostituzioni fatte non e verificare che siano valide.")

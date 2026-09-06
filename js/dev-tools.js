@@ -163,8 +163,6 @@ const DevTools = {
         } catch (e) {
             console.error("Errore caricamento lookups:", e);
             segnala(e);
-            segnala(e);
-            segnala(e);
         }
     },
 
