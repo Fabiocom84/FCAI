@@ -5,23 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/variables.css?v=3c2f6268">
+    <link rel="stylesheet" href="css/variables.css?v=f997b938">
     <title>Gestione Commesse - Segretario AI</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Choices.js (Select avanzate) -->
-    <link rel="stylesheet" href="css/libs/choices.min.css" />
-
-
-
+    <!-- Choices.js non serve piu' a questa pagina: lo usava solo il modale di
+         creazione/modifica, rimosso il 06/09/2026. Resta sulle altre 10 pagine. -->
 
 
     <!-- Stili Custom -->
-    <link rel="stylesheet" href="style-v2.css?v=3c2f6268">
-    <link rel="stylesheet" href="commesse.css?v=3c2f6268">
+    <link rel="stylesheet" href="style-v2.css?v=f997b938">
+    <link rel="stylesheet" href="commesse.css?v=f997b938">
 </head>
 
 <body class="internal-page">
@@ -106,188 +103,9 @@
         </div>
     </div>
 
-    <!-- MODALE NUOVA/MODIFICA COMMESSA -->
+    <!-- Sovrapposizione condivisa: la usa showModal di shared-ui.js -->
     <div id="modalOverlay" class="modal-overlay"></div>
 
-    <div id="commessaModal" class="commessa-modal-container">
-        <div class="modal-content large-modal">
-
-            <!-- Header Modale -->
-            <div class="modal-header">
-                <button type="button" class="std-btn std-btn--blue close-modal-btn" id="closeModal">
-                    <img src="img/log-out.png" style="transform: rotate(180deg); filter: brightness(0) invert(1);">
-                    INDIETRO
-                </button>
-                <h2 id="modalTitle">NUOVA COMMESSA</h2>
-            </div>
-
-            <!-- Body Modale (Scrollabile) -->
-            <div class="modal-body">
-                <form id="commessaForm">
-                    <input type="hidden" id="commessaId">
-
-                    <!-- SEZIONE 1: CONFIGURAZIONE PRINCIPALE -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>🏭 Configurazione Commessa</h3>
-                        </div>
-                        <!-- Riga 1: Dati Identificativi (3 colonne) -->
-                        <div class="form-grid-3">
-                            <div class="form-group">
-                                <label>Nome Impianto *</label>
-                                <input type="text" id="impianto" name="nome_commessa"
-                                    placeholder="Es. Magazzino Automatico" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Cliente *</label>
-                                <select id="cliente" name="id_cliente_fk" required></select>
-                            </div>
-                            <div class="form-group">
-                                <label>Modello Macchina</label>
-                                <select id="modello" name="id_modello_fk"></select>
-                            </div>
-                        </div>
-                        <!-- Riga 2: Macro (Full Width) -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label>Macro Categorie (Associazione)</label>
-                            <select id="macro-select" name="ids_macro_categorie_attive" multiple></select>
-                        </div>
-                        <!-- Riga 3: Ubicazione Magazzino -->
-                        <div class="form-grid-3" style="margin-top: 20px;">
-                            <div class="form-group">
-                                <label>📁 Ubicazione Magazzino</label>
-                                <select id="ubicazione" name="id_ubicazione_fk">
-                                    <option value="">Caricamento...</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEZIONE 2: DATI TECNICI -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>📝 Riferimenti Tecnici</h3>
-                        </div>
-                        <div class="form-grid-3">
-                            <div class="form-group">
-                                <label>Ordine Vendita (VO)</label>
-                                <input type="text" id="vo" name="vo_offerta" placeholder="00-0000" maxlength="7"
-                                    style="font-weight: bold; letter-spacing: 1px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Matricola</label>
-                                <input type="text" id="matricola" name="matricola" placeholder="Es. S2026">
-                            </div>
-                            <div class="form-group">
-                                <label>Rif. Tecnico</label>
-                                <input type="text" id="rif_tecnico" name="riferimento_tecnico"
-                                    style="text-transform: uppercase;" placeholder="C1234">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEZIONE 3: LUOGO E ANNO -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>📍 Localizzazione</h3>
-                        </div>
-                        <div class="form-grid-3">
-                            <div class="form-group">
-                                <label>Luogo (Città)</label>
-                                <input type="text" id="luogo" name="paese" placeholder="Es. Milano">
-                            </div>
-                            <div class="form-group">
-                                <label>Provincia</label>
-                                <input type="text" id="provincia" name="provincia" placeholder="PR">
-                            </div>
-                            <div class="form-group">
-                                <label>Anno</label>
-                                <input type="number" id="anno" name="anno" placeholder="YYYY">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEZIONE 3.5: GEOLOCALIZZAZIONE INTERATTIVA -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>🗺️ Geolocalizzazione</h3>
-                        </div>
-                        <div class="form-grid-3">
-                            <div class="form-group">
-                                <label>Latitudine</label>
-                                <input type="number" id="latitudine" name="latitudine" step="any"
-                                    placeholder="0.000000">
-                            </div>
-                            <div class="form-group">
-                                <label>Longitudine</label>
-                                <input type="number" id="longitudine" name="longitudine" step="any"
-                                    placeholder="0.000000">
-                            </div>
-                            <div class="form-group" style="display: flex; gap: 10px; align-items: flex-end;">
-                                <button type="button" id="btn-calc-geo" class="std-btn std-btn--blue"
-                                    style="width: 50%;" title="Calcola da Paese/Provincia">
-                                    <span>📍 Calcola</span>
-                                </button>
-                                <button type="button" id="btn-open-map" class="std-btn std-btn--secondary"
-                                    style="width: 50%;" title="Scegli su Mappa">
-                                    <span>🗺️ Mappa</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="posizione_esatta" name="posizione_esatta" style="width: 20px; height: 20px; cursor: pointer;">
-                            <label for="posizione_esatta" style="margin: 0; cursor: pointer; font-weight: 500;">Posizione Esatta sulla Mappa</label>
-                            <small style="color: #888; margin-left: 10px;">(Se non spuntata, l'icona sulla mappa sarà arancione)</small>
-                        </div>
-                    </div>
-
-                    <!-- SEZIONE 4: MULTIMEDIA E NOTE -->
-                    <!-- SEZIONE 4: MULTIMEDIA E NOTE -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <h3>📷 Multimedia & Note</h3>
-                        </div>
-                        <div class="form-grid-notes">
-                            <div class="form-group notes-area">
-                                <label>Descrizione / Note</label>
-                                <textarea id="note" name="descrizione" rows="8"
-                                    placeholder="Dettagli aggiuntivi, note di cantiere..."></textarea>
-                            </div>
-
-                            <div class="form-group upload-area">
-                                <label>Foto Copertina</label>
-                                <div id="uploadWidget" class="custom-file-upload">
-                                    <span class="upload-icon">📷</span>
-                                    <span id="uploadText" class="file-name">Trascina file o Clicca</span>
-                                    <input type="file" id="imageInput" name="immagine" accept="image/*"
-                                        style="display: none;">
-                                </div>
-                                <div id="imagePreviewContainer" class="preview-container"
-                                    style="display: none; margin-top: 10px;">
-                                    <button type="button" id="removeImageBtn" class="remove-img-btn"
-                                        style="width: 100%; border: 1px solid #e74c3c; background: #fff; color: #e74c3c; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: 500;">Rimuovi
-                                        File</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Campo Stato Nascosto (gestito logicamente) -->
-                        <div class="form-group" style="display:none;">
-                            <select id="status-select" name="id_status_fk"></select>
-                        </div>
-                    </div>
-
-                    <!-- Footer Modale -->
-                    <div class="modal-footer">
-                        <button type="submit" class="save-button">
-                            <img src="img/save.png" alt="Save" style="width: 20px; filter: invert(1);">
-                            <span>SALVA COMMESSA</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- CUSTOM CONFIRM MODAL (SHARED UI) -->
     <div id="universal-modal-overlay" class="universal-modal-overlay" style="display: none;">
@@ -301,24 +119,6 @@
     </div>
     </div>
 
-    <!-- MAP SELECTION MODAL -->
-    <div id="mapModalOverlay" class="modal-overlay" style="z-index: 10000;"></div>
-    <div id="mapModal" class="commessa-modal-container"
-        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width: 90vw; max-width: 800px; height: 80vh; max-height: 600px; display: none; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
-        <div class="modal-content" style="height: 100%; display: flex; flex-direction: column;">
-            <div class="modal-header">
-                <h3>📍 Seleziona Posizione</h3>
-                <button type="button" id="closeMapBtn" class="std-btn std-btn--secondary">Chiudi</button>
-            </div>
-            <div class="modal-body" style="flex: 1; padding: 0;">
-                <div id="mapContainer" style="width: 100%; height: 100%;"></div>
-            </div>
-            <div class="modal-footer">
-                <p id="map-coords-display" style="margin-right: auto; font-family: monospace;">Lat: -, Lon: -</p>
-                <button type="button" id="confirmMapBtn" class="std-btn std-btn--primary">CONFERMA POSIZIONE</button>
-            </div>
-        </div>
-    </div>
 
 
     <!-- GEO MAP MODAL -->
@@ -336,8 +136,9 @@
             </div>
             <div class="modal-body" style="flex: 1; padding: 0; display: flex; overflow: hidden;">
                 <!-- Sidebar Filtri -->
-                <div class="geomap-sidebar"
-                    style="width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: #f9f9f9;">
+                <!-- L'aspetto sta in commesse.css (.geomap-sidebar). Rimettere qui un
+                     `display` inline rompe il commutatore Mappa/Lista su mobile. -->
+                <div class="geomap-sidebar">
                     <div style="padding: 15px; border-bottom: 1px solid #ddd;">
                         <input type="text" id="geomap-search-labels" placeholder="Filtra impianti..."
                             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -361,13 +162,12 @@
     <!-- Script caricati come moduli -->
     <!-- Leaflet JS -->
     <!-- Leaflet JS spostato in locale o in head se preferisci, ma qui rimuoviamo la CDN -->
-    <script src="js/libs/choices.min.js" defer></script>
 
-    <script type="module" src="js/config.js?v=a7756800"></script>
-    <script type="module" src="js/auth-guard.js?v=a7756800"></script>
-    <script type="module" src="js/api-client.js?v=a7756800"></script>
-    <script type="module" src="js/shared-ui.js?v=a7756800"></script>
-    <script type="module" src="js/commesse.js?v=a7756800"></script>
+    <script type="module" src="js/config.js?v=ed1636ee"></script>
+    <script type="module" src="js/auth-guard.js?v=ed1636ee"></script>
+    <script type="module" src="js/api-client.js?v=ed1636ee"></script>
+    <script type="module" src="js/shared-ui.js?v=ed1636ee"></script>
+    <script type="module" src="js/commesse.js?v=ed1636ee"></script>
 </body>
 
 </html>
