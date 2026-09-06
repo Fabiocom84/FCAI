@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+# Gancio pre-commit del frontend — task E5, 06/09/2026.
+#
+# PERCHE ESISTE
+# Il riesame del 23/08 (punto 7) ha trovato che tutte le discipline del progetto
+# — il controllo delle impronte, la suite, la procedura in otto passi — vivevano
+# nella conversazione e non nel repository. Funzionavano finche qualcuno se ne
+# ricordava, e le regole avevano la vita della sessione.
+#
+# Il caso peggiore e gia capitato, il 22/08: `api-client.js` era stato
+# modificato ma l'impronta no, quindi i browser continuavano a servire la copia
+# in cache. Nessun errore, nessun avviso, e un collaudo che diceva "sembra
+# funzionare" su codice che non era in esecuzione. Il 06/09 la stessa cosa si e
+# ripresentata tre volte in una sola sessione, evitata solo perche qualcuno se ne
+# e ricordato ogni volta.
+#
+# COSA CONTROLLA
+#   1. che ogni collegamento a CSS e JS porti l'impronta del contenuto ATTUALE;
+#   2. che ogni `segnala(X)` stia dentro un `catch (X)` — controllo nato il
+#      06/09, dopo che uno strumento ne aveva piazzati otto fuori dal blocco e
+#      la cosa era arrivata in staging.
+#
+# COME SI INSTALLA
+#   python strumenti/installa_ganci.py
+#
+# I ganci NON sono versionati da git (vivono in `.git/hooks/`), quindi questo
+# file sta in `strumenti/` e l'installatore lo copia. Chi clona il repository
+# deve eseguire l'installatore una volta: e un passo in piu, ma e l'unico modo
+# di far viaggiare un gancio insieme al codice.
+#
+# COME SI SCAVALCA, quando serve davvero
+#   git commit --no-verify
+# Legittimo per un commit di soli documenti. Se serve spesso, il gancio e
+# sbagliato e va corretto, non aggirato.
+
+set -e
+
+echo "── pre-commit ─────────────────────────────────────────"
+
+# QUALE PYTHON — aggiunto il 06/09/2026, prima che il gancio rompesse tutto.
+#
+# La prima stesura invocava `python` e basta. Su Windows quel nome esiste solo
+# se il PATH e stato configurato o se un ambiente virtuale e attivo: i ganci git
+# girano in una shell PROPRIA, senza `.venv`, quindi il gancio avrebbe fallito a
+# OGNI commit con "Python non e stato trovato".
+#
+# Un gancio che blocca sempre e peggio di uno assente: chi lo subisce impara a
+# usare `--no-verify` per abitudine, e da quel momento non protegge piu niente —
+# ma resta li a dare l'impressione di proteggere.
+#
+# Scoperto perche l'installazione e fallita a mano. Se fosse riuscita su una
+# shell con il venv attivo, il difetto sarebbe comparso al primo commit fatto
+# altrove, senza alcun legame visibile con questo file.
+PY=""
+for candidato in python3 python py; do
+    if command -v "$candidato" >/dev/null 2>&1 && "$candidato" -c "import sys" >/dev/null 2>&1; then
+        PY="$candidato"
+        break
+    fi
+done
+
+if [ -z "$PY" ]; then
+    echo ""
+    echo "✗ COMMIT INTERROTTO: nessun interprete Python utilizzabile."
+    echo ""
+    echo "  Provati: python3, python, py — nessuno risponde."
+    echo "  I ganci girano in una shell propria, senza ambiente virtuale."
+    echo ""
+    echo "  Rimedio: installare Python nel PATH di sistema, oppure — se questo"
+    echo "  blocco si ripete e non si puo risolvere subito — disinstallare il"
+    echo "  gancio invece di aggirarlo ogni volta con --no-verify:"
+    echo "      rm .git/hooks/pre-commit"
+    echo ""
+    exit 1
+fi
+
+# `--controlla` esce con 1 se un collegamento porta un'impronta vecchia.
+if ! "$PY" strumenti/versione_css.py --controlla; then
+    echo ""
+    echo "✗ COMMIT INTERROTTO: le impronte non sono allineate."
+    echo ""
+    echo "  Hai modificato un CSS o un JS senza aggiornare i collegamenti."
+    echo "  I browser continuerebbero a servire la copia in cache: la modifica"
+    echo "  NON arriverebbe agli utenti, e il collaudo direbbe che funziona."
+    echo ""
+    # Si nomina l'interprete TROVATO, non "python": su Windows quel nome
+    # spesso non esiste, e un rimedio che non funziona sulla macchina di chi
+    # lo legge e peggio di nessun rimedio — manda a cercare la causa
+    # sbagliata.
+    echo "  Rimedio:  $PY strumenti/versione_css.py --aggiorna"
+    echo "            git add *.html"
+    echo ""
+    exit 1
+fi
+
+if ! "$PY" strumenti/verifica_segnala.py; then
+    echo ""
+    echo "✗ COMMIT INTERROTTO: una chiamata a segnala() e fuori posto."
+    echo ""
+    echo "  Una chiamata fuori dal proprio catch solleva ReferenceError a"
+    echo "  runtime, su una pagina che gli utenti aprono. E' gia successo il"
+    echo "  06/09/2026 ed e arrivata in staging."
+    echo ""
+    exit 1
+fi
+
+echo "── controlli superati ─────────────────────────────────"
