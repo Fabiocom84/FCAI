@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/variables.css?v=3c2f6268">
+    <link rel="stylesheet" href="css/variables.css?v=f997b938">
     <title>Gestione Commesse - Segretario AI</title>
 
     <!-- Fonts -->
@@ -20,8 +20,8 @@
 
 
     <!-- Stili Custom -->
-    <link rel="stylesheet" href="style-v2.css?v=3c2f6268">
-    <link rel="stylesheet" href="commesse.css?v=3c2f6268">
+    <link rel="stylesheet" href="style-v2.css?v=f997b938">
+    <link rel="stylesheet" href="commesse.css?v=f997b938">
 </head>
 
 <body class="internal-page">
@@ -336,8 +336,9 @@
             </div>
             <div class="modal-body" style="flex: 1; padding: 0; display: flex; overflow: hidden;">
                 <!-- Sidebar Filtri -->
-                <div class="geomap-sidebar"
-                    style="width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: #f9f9f9;">
+                <!-- L'aspetto sta in commesse.css (.geomap-sidebar). Rimettere qui un
+                     `display` inline rompe il commutatore Mappa/Lista su mobile. -->
+                <div class="geomap-sidebar">
                     <div style="padding: 15px; border-bottom: 1px solid #ddd;">
                         <input type="text" id="geomap-search-labels" placeholder="Filtra impianti..."
                             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">

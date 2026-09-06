@@ -962,6 +962,22 @@
     display: none;
 }
 
+/* Aspetto della barra laterale, che fino al 06/09/2026 stava nell'attributo
+   `style` dell'HTML. Spostarlo qui non e' questione di ordine: uno stile inline
+   batte qualunque selettore senza `!important`, quindi `display: flex` scritto
+   nel markup vinceva su `.view-map .geomap-sidebar { display: none }` e il
+   commutatore "Mappa" non nascondeva l'elenco. Funzionava solo in direzione
+   "Lista", perche' quella regola l'`!important` ce l'aveva.
+   Da qui la regola: se per far valere un CSS serve `!important`, la domanda
+   giusta e' che cosa lo stia sovrastando — non quanta forza aggiungere. */
+.geomap-sidebar {
+    width: 300px;
+    border-right: 1px solid var(--col-dddddd);
+    display: flex;
+    flex-direction: column;
+    background: var(--col-f9f9f9);
+}
+
 @media (max-width: 768px) {
 
     /* Mostra Toggles */
@@ -1021,11 +1037,15 @@
         height: 100%;
     }
 
+    /* Senza `!important`: ora questi selettori (0,2,0) battono la regola base
+       `.geomap-sidebar` (0,1,0) per specificita'. I quattro `!important` che
+       stavano qui servivano a scavalcare l'attributo `style` dell'HTML, che non
+       c'e' piu'. */
     .view-list .geomap-sidebar {
-        display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        border-right: none !important;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        border-right: none;
     }
 
     .view-list #geoMapFullContainer {
@@ -1149,84 +1169,6 @@
     font-weight: 500;
 }
 
-
-/* --- MOBILE GEOMAP STYLES --- */
-
-/* Nascondi toggles su desktop */
-.mobile-toggles {
-    display: none;
-}
-
-@media (max-width: 768px) {
-
-    /* Mostra Toggles */
-    .mobile-toggles {
-        display: flex;
-        gap: 5px;
-        background: var(--col-ffffff1a);
-        padding: 4px;
-        border-radius: 20px;
-        margin-left: 10px;
-        margin-right: auto;
-        /* Push close btn to right */
-    }
-
-    .toggle-btn {
-        background: transparent;
-        border: none;
-        color: var(--col-ffffffb2);
-        padding: 4px 12px;
-        border-radius: 15px;
-        font-size: 0.85em;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .toggle-btn.active {
-        background: white;
-        color: var(--col-2c3e50);
-        box-shadow: 0 2px 4px var(--col-00000033);
-    }
-
-    /* Modifica Header per accomodare i controlli */
-    #geoMapModal .modal-header h3 {
-        display: none;
-        /* Nascondi titolo per spazio */
-    }
-
-    #geoMapModal .modal-header {
-        justify-content: space-between;
-        padding: 10px;
-    }
-
-    /* Logica Visibilità View */
-    #geoMapModal .modal-body {
-        flex-direction: column;
-    }
-
-    /* Default: Mostra Mappa, Nascondi Lista (o gestito via classi .view-map / .view-list) */
-
-    .view-map .geomap-sidebar {
-        display: none;
-    }
-
-    .view-map #geoMapFullContainer {
-        display: block;
-        height: 100%;
-    }
-
-    .view-list .geomap-sidebar {
-        display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        border-right: none !important;
-    }
-
-    .view-list #geoMapFullContainer {
-        display: none;
-    }
-}
 
 /* --- IMAGE LIGHTBOX --- */
 .image-viewer-modal {
