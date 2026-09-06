@@ -1,7 +1,7 @@
 // js/dashboard.js
 // V9.0 - Pagination, Multi-Select Filters, Unified View
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -127,6 +127,7 @@ const Dashboard = {
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento etichette commesse:', e);
+            segnala(e);
         }
     },
 
@@ -477,6 +478,7 @@ const Dashboard = {
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento commesse analisi:', e);
+            segnala(e);
         }
     },
 

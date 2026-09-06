@@ -1,6 +1,6 @@
 // js/commesse.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
 
@@ -239,6 +239,7 @@ const App = {
             }
         } catch (e) {
             console.error("Errore lazy load clienti", e);
+            segnala(e);
             showModal({ title: "Errore", message: "Impossibile caricare la lista clienti." });
         }
     },
@@ -997,6 +998,7 @@ const App = {
 
         } catch (e) {
             console.error("Errore toggle fase", e);
+            segnala(e);
 
             // Annulla l'aggiornamento ottimistico: senza questo l'interfaccia
             // resterebbe a mostrare una fase attiva che il database non ha, e
@@ -1649,6 +1651,7 @@ async function loadGeoMapData() {
         }
     } catch (e) {
         console.error("GeoMap Fetch Error", e);
+        segnala(e);
     }
 }
 

@@ -1,4 +1,4 @@
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
 const App = {
@@ -324,6 +324,8 @@ const App = {
                 }
             }
         } catch (e) { console.warn(e); }
+        segnala(e);
+        segnala(e);
     },
 
     saveOrder: async function () {

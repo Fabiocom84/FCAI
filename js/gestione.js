@@ -1,6 +1,6 @@
 // js/gestione.js - Versione Completa, Corretta e Ottimizzata
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -32,6 +32,7 @@ const App = {
             }
         } catch (e) {
             console.error("Errore caricamento dipendenze:", e);
+            segnala(e);
         }
     },
     viewConfig: {

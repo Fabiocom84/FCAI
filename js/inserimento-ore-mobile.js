@@ -3,7 +3,7 @@
    Versione Completa - Gestione Viaggi Separati, Doppio Straordinario e Assenze
    ========================================================================== */
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 
 const MobileHoursApp = {
@@ -1195,6 +1195,7 @@ const MobileHoursApp = {
 
         } catch (e) {
             console.error('❌ Errore copyPreviousWorkday:', e);
+            segnala(e);
             this._showCopyModal('Errore',
                 'Impossibile recuperare il giorno precedente: ' + e.message,
                 [{ text: 'OK', class: 'save-button' }]
@@ -1372,6 +1373,7 @@ const MobileHoursApp = {
                 groups.forEach(g => this.state.choicesInstance.setChoices(g.choices, 'value', 'label', false));
                 console.log("📡 Etichette aggiornate da server");
             } catch (e) { console.error("Errore caricamento etichette:", e); }
+            segnala(e);
         };
 
         // Se cache scaduta o mancante, aspetta il fetch

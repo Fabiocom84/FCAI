@@ -1,6 +1,6 @@
 // js/inserimento-ordini.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showSuccessFeedbackModal, showModal, mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -53,6 +53,8 @@ async function loadReferenceData() {
         console.log("✅ Dati caricati:", State.commesseList.length, "commesse,", State.fasiList.length, "fasi.");
     } catch (error) {
         console.error("Errore caricamento dati:", error);
+        segnala(error);
+        segnala(error);
         showModal({ title: "Errore", message: "Impossibile caricare le anagrafiche." });
     }
 }

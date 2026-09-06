@@ -1,6 +1,6 @@
 //registro-presenze.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
 // --- ADAPTER ---
@@ -154,6 +154,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (direction === 'forward') appendColumns(start, end);
             else prependColumns(start, end);
         } catch (err) { console.error("Errore fetch dati:", err); }
+        segnala(err);
+        segnala(err);
     }
 
     // --- MODIFICA QUI: AGGIUNTA DOPPIO BOTTONE NELLA COLONNA NOME ---
@@ -536,6 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await apiClient.get('/presenze/tipi');
             (res || []).forEach(t => { typesById[t.id_tipo] = t; if (t.shortcut_key) shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo; });
         } catch (e) { console.error(e); }
+        segnala(e);
     }
 
     function sortPersonnel(list) {
@@ -624,5 +627,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
         } catch (err) { console.error("Errore auto-refresh:", err); }
+        segnala(err);
     }
 });

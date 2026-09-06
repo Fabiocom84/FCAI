@@ -1,6 +1,6 @@
 // js/admin-config.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
 const App = {
@@ -89,6 +89,9 @@ const App = {
                 console.log(`🔑 Keywords: ${this.data.keywords.length}, Matchings: ${this.data.matchings.length}`);
             } catch (kwErr) {
                 console.warn("⚠️ Keywords load failed (tabelle non ancora create?):", kwErr);
+                segnala(kwErr);
+                segnala(kwErr);
+                segnala(kwErr);
                 this.data.keywords = [];
                 this.data.matchings = [];
             }
@@ -533,6 +536,8 @@ const App = {
             this.data.matchings = matchRes.ok ? await matchRes.json() : [];
         } catch (e) {
             console.error("Errore reload keywords:", e);
+            segnala(e);
+            segnala(e);
         }
     },
 

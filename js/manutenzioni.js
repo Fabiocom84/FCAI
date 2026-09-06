@@ -1,5 +1,5 @@
 // js/manutenzioni.js — Logica pagina gestione manutenzioni
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin, CurrentUser, HasAccessoImpiegato } from './core-init.js';
 
 const App = {
@@ -252,6 +252,7 @@ const App = {
             this._renderDetail(data);
         } catch (e) {
             console.error('Errore dettaglio manutenzione:', e);
+            segnala(e);
         }
         // Gli OdP arrivano dentro la risposta del dettaglio (campo
         // ordini_produzione) e li rende _renderDetail: non serve una seconda

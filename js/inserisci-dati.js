@@ -1,6 +1,6 @@
 // js/inserisci-dati.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import Legend from './legend.js';
@@ -54,6 +54,7 @@ async function loadCommesseDropdown() {
         }
     } catch (error) {
         console.error("Errore dropdown:", error);
+        segnala(error);
     }
 }
 

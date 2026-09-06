@@ -1,6 +1,6 @@
 // js/dev-tools.js — Import massivo commesse con Tabella di Conversione dinamica
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -162,6 +162,9 @@ const DevTools = {
             console.log(`📋 Lookups: ${this.data.clientiList.length} clienti, ${this.data.modelliList.length} modelli, ${this.data.ubicazioniList.length} ubicazioni`);
         } catch (e) {
             console.error("Errore caricamento lookups:", e);
+            segnala(e);
+            segnala(e);
+            segnala(e);
         }
     },
 

@@ -1,7 +1,7 @@
 // js/attivita.js
 // Versione 9.0 - Logic: Delegation Flow, Read-Only Locks, Incoming Highlights
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 import { mostraAvviso } from './shared-ui.js';
 
@@ -101,6 +101,9 @@ const TaskApp = {
 
         } catch (error) {
             console.error("Init Error:", error);
+            segnala(error);
+            segnala(error);
+            segnala(error);
         }
     },
 

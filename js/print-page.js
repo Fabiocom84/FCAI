@@ -2,7 +2,7 @@
    js/print-page.js - Versione Admin Fixed & Filenames
    ========================================================================== */
 
-import { apiFetch, publicApiFetch } from './api-client.js';
+import { apiFetch, publicApiFetch, segnala } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import { TEMPLATE_PRESENZE_URL } from './config.js';
 
@@ -451,6 +451,7 @@ const PrintPage = {
                 this.configureQuickButtons(data.url, data.version, year, month);
             }
         } catch (e) { console.error("Errore check:", e); }
+        segnala(e);
     },
 
     configureQuickButtons: function (url, version, year, month) {

@@ -1,7 +1,7 @@
 // js/main.js (Versione Fix "Velo Scuro")
 
 import { IsAdmin, CurrentUser } from './core-init.js';
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import Legend from './legend.js';
 import { showModal } from './shared-ui.js';
 
@@ -43,6 +43,7 @@ async function initializeApp() {
                 await apiFetch('/api/admin/init-data'); 
             } catch (e) {
                 console.warn("Admin data error (ignorato):", e);
+                segnala(e);
             }
         }
         */

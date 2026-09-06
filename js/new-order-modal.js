@@ -1,6 +1,6 @@
 // js/new-order-modal.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Errore apertura modale:", error);
+            segnala(error);
             showModal({ title: 'Errore', message: `Si è verificato un errore: ${error.message}`, confirmText: 'Chiudi' });
             closeAndCleanup();
         } finally {
@@ -243,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Errore salvataggio:", error);
+            segnala(error);
             let msg = error.message;
             if (msg.includes('id_cliente_fk')) msg = 'Seleziona un cliente valido.';
             

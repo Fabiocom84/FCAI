@@ -1,6 +1,6 @@
 // js/distribuzione-ore.js — v3: apiFetch per letture (backend bypassa RLS), Supabase RLS blocca anon key
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -91,6 +91,7 @@ const App = {
             console.log(`📋 ${this.data.commesse.length} commesse caricate`);
         } catch (e) {
             console.error("Errore caricamento commesse:", e);
+            segnala(e);
         }
     },
 
