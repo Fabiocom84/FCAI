@@ -58,17 +58,47 @@ if (typeof window !== 'undefined' && !window.__reteErroriApi) {
         const errore = evento.reason;
         if (!errore || errore.name !== 'ErroreApi') return;
         console.error(`[API non gestito] ${errore.status} su ${errore.endpoint}`, errore.corpo);
-        try {
-            const { mostraAvviso } = await import('./shared-ui.js');
-            mostraAvviso(errore.message, 'errore');
-            evento.preventDefault();   // gestito: non serve il rumore in console
-        } catch (e) {
-            // `shared-ui.js` non disponibile su questa pagina: meglio un avviso
-            // spartano che nessun avviso.
-            alert(errore.message);
-            evento.preventDefault();
-        }
+        await segnala(errore);
+        evento.preventDefault();   // gestito: non serve il rumore in console
     });
+}
+
+/**
+ * Mostra un errore all'utente. Da usare nei `catch` che gestiscono una lettura.
+ *
+ * PERCHÉ ESISTE
+ * La rete di sicurezza qui sopra interviene solo sulle promesse NON gestite. Un
+ * `catch (e) { console.error(e); }` la disinnesca: l'errore risulta gestito,
+ * l'evento non scatta, e l'utente non vede nulla. Misurate il 06/09/2026,
+ * **33 letture su 68** avevano quella forma — non più silenziose per mancanza di
+ * una difesa, ma perché la spegnevano prima che intervenisse.
+ *
+ * PERCHÉ STA QUI E NON IN `shared-ui.js`
+ * Due ragioni, entrambe misurate. `shared-ui.js` è caricato da 12 pagine su 21;
+ * `api-client.js` da 19, ed è già importato da tutti i file che ne hanno
+ * bisogno: chiamare direttamente `mostraAvviso` avrebbe funzionato su alcune
+ * pagine e non su altre — la forma di difetto peggiore, perché si manifesta solo
+ * dove nessuno guarda. E la rete di sicurezza usa QUESTA funzione, non una
+ * copia: il progetto ha già pagato tre volte per la stessa regola scritta due
+ * volte (`post_restore_grants.sql`, `permessi.py`, gli elenchi nei test).
+ *
+ * Non solleva e non cambia il flusso: si affianca al `console.error` esistente,
+ * e il codice attorno continua a comportarsi come prima.
+ *
+ * @param {Error} errore  di norma un `ErroreApi`, che porta il messaggio del
+ *                        backend. Con un errore qualunque si mostra il suo
+ *                        `message`, che resta meglio del silenzio.
+ */
+export async function segnala(errore) {
+    const testo = (errore && errore.message) || 'Operazione non riuscita';
+    try {
+        const { mostraAvviso } = await import('./shared-ui.js');
+        mostraAvviso(testo, 'errore');
+    } catch (e) {
+        // `shared-ui.js` non disponibile su questa pagina: meglio un avviso
+        // spartano che nessun avviso.
+        alert(testo);
+    }
 }
 
 /** Legge il corpo dell'errore senza consumare la risposta né sollevare. */

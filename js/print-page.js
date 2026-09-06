@@ -2,7 +2,7 @@
    js/print-page.js - Versione Admin Fixed & Filenames
    ========================================================================== */
 
-import { apiFetch, publicApiFetch } from './api-client.js';
+import { apiFetch, publicApiFetch, segnala } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import { TEMPLATE_PRESENZE_URL } from './config.js';
 
@@ -145,7 +145,7 @@ const PrintPage = {
         const header = document.querySelector('.mobile-nav-header');
         if (header) {
             header.style.backgroundColor = "#34495e";
-            header.style.borderBottom = "4px solid #f1c40f";
+            header.style.borderBottom = "4px solid var(--col-f1c40f)";
         }
 
         // 3. Tasto Chiudi
@@ -165,7 +165,7 @@ const PrintPage = {
                 nome_cognome: this.state.targetUserName
             };
             // Mostriamo il nome in GIALLO per evidenziare che stiamo operando su di lui
-            this.dom.userName.innerHTML = `Operando come: <span style="color:#f1c40f; font-weight:bold;">${this.state.targetUserName}</span>`;
+            this.dom.userName.innerHTML = `Operando come: <span style="color:var(--col-f1c40f); font-weight:bold;">${this.state.targetUserName}</span>`;
         } else {
             // Modalità Normale
             try {
@@ -267,7 +267,7 @@ const PrintPage = {
             console.error(e);
             this.dom.tableBody.innerHTML = `
                 <tr>
-                    <td colspan="3" style="text-align:center; padding:20px; color:#e53e3e;">
+                    <td colspan="3" style="text-align:center; padding:20px; color:var(--col-e53e3e);">
                         <strong>Errore caricamento dati</strong><br>
                         ${e.message}
                     </td>
@@ -353,11 +353,11 @@ const PrintPage = {
                     <td><b>${shortDate}</b></td>
                     <td>
                         <div style="font-weight:500;">${row.label_commessa}</div>
-                        <div style="font-size:0.8em; color:#666;">${row.label_componente} ${row.note ? `(${row.note})` : ''}</div>
+                        <div style="font-size:0.8em; color:var(--col-666666);">${row.label_componente} ${row.note ? `(${row.note})` : ''}</div>
                     </td>
                     <td style="text-align:center;">
                         <span style="font-weight:bold;">${row.ore}</span>
-                        ${row.viaggio > 0 ? `<div style="font-size:0.7em; color:#9b59b6;">+${row.viaggio}v</div>` : ''}
+                        ${row.viaggio > 0 ? `<div style="font-size:0.7em; color:var(--col-9b59b6);">+${row.viaggio}v</div>` : ''}
                     </td>`;
                 tbody.appendChild(tr);
             });
@@ -375,9 +375,9 @@ const PrintPage = {
                 const g = groups[k];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><div style="font-weight:bold;">${k}</div><div style="font-size:0.75em; color:#888;">${g.count} reg.</div></td>
-                    <td style="text-align:right; color:#2980b9;"><b>${g.hours.toFixed(1)}</b></td>
-                    <td style="text-align:right; color:#8e44ad;">${g.travel > 0 ? g.travel.toFixed(1) : '-'}</td>`;
+                    <td><div style="font-weight:bold;">${k}</div><div style="font-size:0.75em; color:var(--col-888888);">${g.count} reg.</div></td>
+                    <td style="text-align:right; color:var(--col-2980b9);"><b>${g.hours.toFixed(1)}</b></td>
+                    <td style="text-align:right; color:var(--col-8e44ad);">${g.travel > 0 ? g.travel.toFixed(1) : '-'}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -450,7 +450,7 @@ const PrintPage = {
                 // Configura i bottoni "Rapidi"
                 this.configureQuickButtons(data.url, data.version, year, month);
             }
-        } catch (e) { console.error("Errore check:", e); }
+        } catch (e) { console.error("Errore check:", e); segnala(e); }
     },
 
     configureQuickButtons: function (url, version, year, month) {

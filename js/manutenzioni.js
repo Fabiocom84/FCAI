@@ -1,5 +1,5 @@
 // js/manutenzioni.js — Logica pagina gestione manutenzioni
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin, CurrentUser, HasAccessoImpiegato } from './core-init.js';
 
 const App = {
@@ -168,7 +168,7 @@ const App = {
                     <div class="man-no-results">
                         <div class="man-no-results-icon">🔒</div>
                         <p>Non hai i permessi per consultare le manutenzioni</p>
-                        <small style="color:#999;">Richiesto il ruolo Impiegato o Amministratore.</small>
+                        <small style="color:var(--col-999999);">Richiesto il ruolo Impiegato o Amministratore.</small>
                     </div>`;
                 return;
             }
@@ -178,7 +178,7 @@ const App = {
                 <div class="man-no-results">
                     <div class="man-no-results-icon">❌</div>
                     <p>Errore di caricamento</p>
-                    <small style="color:#999;">${e.message}</small>
+                    <small style="color:var(--col-999999);">${e.message}</small>
                 </div>`;
         } finally {
             this.dom.listLoader.style.display = 'none';
@@ -252,6 +252,7 @@ const App = {
             this._renderDetail(data);
         } catch (e) {
             console.error('Errore dettaglio manutenzione:', e);
+            segnala(e);
         }
         // Gli OdP arrivano dentro la risposta del dettaglio (campo
         // ordini_produzione) e li rende _renderDetail: non serve una seconda

@@ -3,7 +3,7 @@
    Versione Completa - Gestione Viaggi Separati, Doppio Straordinario e Assenze
    ========================================================================== */
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 
 const MobileHoursApp = {
@@ -283,7 +283,7 @@ const MobileHoursApp = {
         if (titleContainer) titleContainer.textContent = "MODIFICA ADMIN";
         if (headerEl) {
             headerEl.textContent = `Operando come: ${this.state.targetUserName}`;
-            headerEl.style.color = "#f1c40f"; // Giallo per evidenziare
+            headerEl.style.color = "var(--col-f1c40f)"; // Giallo per evidenziare
             headerEl.style.fontWeight = "bold";
         }
         if (detailEl) detailEl.textContent = this.state.targetUserName;
@@ -292,7 +292,7 @@ const MobileHoursApp = {
         const header = document.querySelector('.mobile-nav-header');
         if (header) {
             header.style.backgroundColor = "#34495e"; // Un colore diverso per l'admin (es. grigio scuro)
-            header.style.borderBottom = "4px solid #f1c40f"; // Bordo giallo warning
+            header.style.borderBottom = "4px solid var(--col-f1c40f)"; // Bordo giallo warning
         }
 
         // 3. Modifica il bottone Home per chiudere la scheda
@@ -372,11 +372,11 @@ const MobileHoursApp = {
             console.error("❌ Errore loadTimelineBatch:", e);
             if (isInitialLoad) {
                 this.dom.timelineContainer.innerHTML = `
-                    <div style="text-align:center; padding:30px; color:#e53e3e;">
+                    <div style="text-align:center; padding:30px; color:var(--col-e53e3e);">
                         <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
                         <p style="font-weight:bold; margin-bottom:5px;">Errore caricamento</p>
                         <p style="font-size:0.85rem; margin-bottom:15px;">${e.message}</p>
-                        <button onclick="location.reload()" style="padding:8px 20px; border-radius:8px; border:none; background:#34495e; color:white; cursor:pointer;">🔄 Riprova</button>
+                        <button onclick="location.reload()" style="padding:8px 20px; border-radius:8px; border:none; background:var(--col-34495e); color:white; cursor:pointer;">🔄 Riprova</button>
                     </div>`;
             } else {
                 const errDiv = document.createElement('div');
@@ -659,7 +659,7 @@ const MobileHoursApp = {
             // RENDER CARDS
             if (works.length === 0) {
                 this.dom.existingList.innerHTML = `
-                    <div style="text-align: center; padding: 20px 10px; color: #a0aec0; font-size: 0.9rem; font-style: italic;">
+                    <div style="text-align: center; padding: 20px 10px; color: var(--col-a0aec0); font-size: 0.9rem; font-style: italic;">
                         Nessuna attività registrata.
                     </div>`;
                 return;
@@ -705,16 +705,16 @@ const MobileHoursApp = {
                 if (w.assenza_mattina_dalle) extras.push(`🕒 M(${w.assenza_mattina_dalle}-${w.assenza_mattina_alle})`);
                 if (w.assenza_pomeriggio_dalle) extras.push(`🕒 P(${w.assenza_pomeriggio_dalle}-${w.assenza_pomeriggio_alle})`);
 
-                const extraHtml = extras.length > 0 ? `<div style="font-size:0.75rem; color:#555; margin-top:4px; background:#f0f0f0; padding:2px 5px; border-radius:4px; display:inline-block;">${extras.join(' | ')}</div>` : '';
+                const extraHtml = extras.length > 0 ? `<div style="font-size:0.75rem; color:var(--col-555555); margin-top:4px; background:var(--col-f0f0f0); padding:2px 5px; border-radius:4px; display:inline-block;">${extras.join(' | ')}</div>` : '';
 
                 let actionsHtml = '';
                 if (isLocked) {
-                    actionsHtml = `<div style="color:#aaa; font-size:1.2rem;" title="Contabilizzato">🔒</div>`;
+                    actionsHtml = `<div style="color:var(--col-aaaaaa); font-size:1.2rem;" title="Contabilizzato">🔒</div>`;
                 } else {
                     actionsHtml = `
                         <div class="card-actions">
                             <button class="action-icon btn-edit">✏️</button>
-                            <button class="action-icon btn-delete" style="color:#e53e3e;">🗑️</button>
+                            <button class="action-icon btn-delete" style="color:var(--col-e53e3e);">🗑️</button>
                         </div>`;
                 }
 
@@ -731,14 +731,14 @@ const MobileHoursApp = {
 
                     // Evita duplicati se il nome componente inizia già con il nome macro
                     if (!normSub.startsWith(normMac)) {
-                        formattedSub = `<span style="color:#2c3e50; font-weight:600;">${macName}</span> <span style="color:#95a5a6;">|</span> ${sub}`;
+                        formattedSub = `<span style="color:var(--col-2c3e50); font-weight:600;">${macName}</span> <span style="color:var(--col-95a5a6);">|</span> ${sub}`;
                     }
                 }
 
                 card.innerHTML = `
                     <div class="card-info">
                         <h5>${title}</h5>
-                        <p>${formattedSub} ${w.componenti?.codice_componente ? `<span style="font-size:0.75rem; color:#95a5a6;">(${w.componenti.codice_componente})</span>` : ''}</p>
+                        <p>${formattedSub} ${w.componenti?.codice_componente ? `<span style="font-size:0.75rem; color:var(--col-95a5a6);">(${w.componenti.codice_componente})</span>` : ''}</p>
                         ${w.note ? `<span class="card-meta">📝 ${w.note}</span>` : ''}
                         ${extraHtml}
                     </div>
@@ -767,11 +767,11 @@ const MobileHoursApp = {
 
             // Visualizza errore con bottone Riprova
             this.dom.existingList.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #e53e3e;">
+                <div style="text-align: center; padding: 20px; color: var(--col-e53e3e);">
                     <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
                     <p style="font-weight: bold; margin-bottom: 5px;">Errore caricamento</p>
                     <p style="font-size: 0.85rem; margin-bottom: 15px;">${e.message}</p>
-                    <button id="retryLoadBtn" class="save-button" style="background-color:#34495e; padding:8px 15px; width:auto; font-size:0.9rem;">
+                    <button id="retryLoadBtn" class="save-button" style="background-color:var(--col-34495e); padding:8px 15px; width:auto; font-size:0.9rem;">
                         🔄 Riprova
                     </button>
                 </div>
@@ -1136,8 +1136,8 @@ const MobileHoursApp = {
             btn.className = b.class || 'save-button';
             btn.style.cssText = 'padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;';
             if (b.class === 'cancel-button') {
-                btn.style.background = '#e2e8f0';
-                btn.style.color = '#4a5568';
+                btn.style.background = 'var(--col-e2e8f0)';
+                btn.style.color = 'var(--col-4a5568)';
             }
             btn.onclick = () => {
                 closeModal();
@@ -1195,6 +1195,7 @@ const MobileHoursApp = {
 
         } catch (e) {
             console.error('❌ Errore copyPreviousWorkday:', e);
+            segnala(e);
             this._showCopyModal('Errore',
                 'Impossibile recuperare il giorno precedente: ' + e.message,
                 [{ text: 'OK', class: 'save-button' }]
@@ -1371,7 +1372,7 @@ const MobileHoursApp = {
                 this.state.choicesInstance.clearChoices();
                 groups.forEach(g => this.state.choicesInstance.setChoices(g.choices, 'value', 'label', false));
                 console.log("📡 Etichette aggiornate da server");
-            } catch (e) { console.error("Errore caricamento etichette:", e); }
+            } catch (e) { console.error("Errore caricamento etichette:", e); segnala(e); }
         };
 
         // Se cache scaduta o mancante, aspetta il fetch

@@ -1,6 +1,6 @@
 //registro-presenze.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
 // --- ADAPTER ---
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             newData.forEach(rec => { loadedDataMap[`${rec.id_personale_fk}_${rec.data}`] = rec; });
             if (direction === 'forward') appendColumns(start, end);
             else prependColumns(start, end);
-        } catch (err) { console.error("Errore fetch dati:", err); }
+        } catch (err) { console.error("Errore fetch dati:", err); segnala(err); }
     }
 
     // --- MODIFICA QUI: AGGIUNTA DOPPIO BOTTONE NELLA COLONNA NOME ---
@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.innerHTML = `
             <h4>${date}</h4>
             <div class="type-grid-container" id="v-type-grid">${gridHtml}</div>
-            <hr style="margin: 5px 0; border:0; border-top:1px solid #eee;">
+            <hr style="margin: 5px 0; border:0; border-top:1px solid var(--col-eeeeee);">
             <div class="popup-input-row"><label>Ore:</label><input type="number" id="v-ore" value="${record.numero_ore || ''}" step="0.5"></div>
             <div class="popup-color-row" id="v-color-row">${colorHtml}</div>
             <textarea id="v-note" placeholder="Note...">${record.note || ''}</textarea>
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiClient.get('/presenze/tipi');
             (res || []).forEach(t => { typesById[t.id_tipo] = t; if (t.shortcut_key) shortcutMap[t.shortcut_key.toLowerCase().trim()] = t.id_tipo; });
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error(e); segnala(e); }
     }
 
     function sortPersonnel(list) {
@@ -623,6 +623,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateCellVisuals(td, record);
             });
 
-        } catch (err) { console.error("Errore auto-refresh:", err); }
+        } catch (err) { console.error("Errore auto-refresh:", err); segnala(err); }
     }
 });

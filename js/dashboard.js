@@ -1,7 +1,7 @@
 // js/dashboard.js
 // V9.0 - Pagination, Multi-Select Filters, Unified View
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -127,6 +127,7 @@ const Dashboard = {
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento etichette commesse:', e);
+            segnala(e);
         }
     },
 
@@ -341,7 +342,7 @@ const Dashboard = {
         if (group.detailsLoaded || group.loading) return;
 
         group.loading = true;
-        groupBody.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Caricamento dettagli...</div>';
+        groupBody.innerHTML = '<div style="padding:10px; text-align:center; color:var(--col-999999);">Caricamento dettagli...</div>';
 
         try {
             const params = this.buildFilterParams();
@@ -477,6 +478,7 @@ const Dashboard = {
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento commesse analisi:', e);
+            segnala(e);
         }
     },
 
@@ -585,15 +587,15 @@ const Dashboard = {
                 const delta = budgetOre - totaleOre;
                 this.dom.caKpiDelta.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1);
                 const deltaCard = this.dom.caKpiDeltaCard;
-                deltaCard.style.borderColor = delta >= 0 ? '#2ecc71' : '#e74c3c';
-                this.dom.caKpiDelta.style.color = delta >= 0 ? '#27ae60' : '#c0392b';
+                deltaCard.style.borderColor = delta >= 0 ? 'var(--col-2ecc71)' : '#e74c3c';
+                this.dom.caKpiDelta.style.color = delta >= 0 ? 'var(--col-27ae60)' : '#c0392b';
             } else {
                 this.dom.caKpiBudget.textContent = '-';
                 this.dom.caBudgetInfo.textContent = budget.messaggio || 'Dati insufficienti';
                 this.dom.caKpiProgress.textContent = '-';
                 this.dom.caKpiDelta.textContent = '-';
                 this.dom.caKpiDeltaCard.style.borderColor = '#95a5a6';
-                this.dom.caKpiDelta.style.color = '#2c3e50';
+                this.dom.caKpiDelta.style.color = 'var(--col-2c3e50)';
             }
 
             // 7. Distribuzione Ore per Macrocategoria (barre proporzionali)
@@ -622,7 +624,7 @@ const Dashboard = {
                     this.dom.caMacroContainer.appendChild(item);
                 });
             } else {
-                this.dom.caMacroContainer.innerHTML = '<p style="color:#999; font-style:italic;">Nessuna ora registrata per macrocategoria.</p>';
+                this.dom.caMacroContainer.innerHTML = '<p style="color:var(--col-999999); font-style:italic;">Nessuna ora registrata per macrocategoria.</p>';
             }
 
             // 8. Grafici Personale e Lavorazioni (da dati analytics filtrati O da endpoint)
@@ -746,7 +748,7 @@ const Dashboard = {
             } else {
                 // Show week number or day
                 headerCell.textContent = d.getDate();
-                headerCell.style.color = '#ccc';
+                headerCell.style.color = 'var(--col-cccccc)';
                 headerCell.style.fontSize = '0.6rem';
             }
             chart.appendChild(headerCell);
@@ -1372,7 +1374,7 @@ const Dashboard = {
         container.innerHTML = ''; // Clear loader
 
         if (!group.rows || !group.rows.length) {
-            container.innerHTML = '<div style="padding:10px; font-style:italic; color:#999;">Nessuna riga.</div>';
+            container.innerHTML = '<div style="padding:10px; font-style:italic; color:var(--col-999999);">Nessuna riga.</div>';
             return;
         }
 
@@ -1414,7 +1416,7 @@ const Dashboard = {
         }
 
         if (!rows.length) {
-            container.innerHTML = `<div style="padding:10px; font-style:italic; color:#999;">Nessuna riga corrispondente a "${t}".</div>`;
+            container.innerHTML = `<div style="padding:10px; font-style:italic; color:var(--col-999999);">Nessuna riga corrispondente a "${t}".</div>`;
             return;
         }
 

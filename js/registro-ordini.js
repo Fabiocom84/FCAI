@@ -1,4 +1,4 @@
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showSuccessFeedbackModal, showModal } from './shared-ui.js';
 
 const App = {
@@ -162,7 +162,7 @@ const App = {
         container.innerHTML = '';
 
         if (this.data.filteredOrders.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Nessun ordine trovato.</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--col-999999);">Nessun ordine trovato.</div>';
             return;
         }
 
@@ -209,7 +209,7 @@ const App = {
                 row.innerHTML = `
                     <div class="col-code">${order.anagrafica_articoli?.codice_articolo || '?'}</div>
                     <div class="col-desc" title="${desc}">${desc}</div>
-                    <div style="font-size:0.75em; background:#eee; padding:2px 6px; border-radius:4px; margin-right:10px;">${fase}</div>
+                    <div style="font-size:0.75em; background:var(--col-eeeeee); padding:2px 6px; border-radius:4px; margin-right:10px;">${fase}</div>
                     <div class="col-qta">${statusIcon} Q: ${order.qta_richiesta}</div>
                 `;
 
@@ -323,7 +323,7 @@ const App = {
                     i++;
                 }
             }
-        } catch (e) { console.warn(e); }
+        } catch (e) { console.warn(e); segnala(e); }
     },
 
     saveOrder: async function () {

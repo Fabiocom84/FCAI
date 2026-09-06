@@ -57,7 +57,7 @@ function openInsertModal() {
                 <!-- AREA TESTO -->
                 <div class="form-group">
                     <label>Note / Trascrizione</label>
-                    <textarea id="quick-note-text" rows="5" placeholder="Parla o scrivi qui..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                    <textarea id="quick-note-text" rows="5" placeholder="Parla o scrivi qui..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid var(--col-cccccc);"></textarea>
                 </div>
 
             </div>

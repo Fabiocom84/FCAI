@@ -1,6 +1,6 @@
 // js/admin-config.js
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 
 const App = {
@@ -89,6 +89,7 @@ const App = {
                 console.log(`🔑 Keywords: ${this.data.keywords.length}, Matchings: ${this.data.matchings.length}`);
             } catch (kwErr) {
                 console.warn("⚠️ Keywords load failed (tabelle non ancora create?):", kwErr);
+                segnala(kwErr);
                 this.data.keywords = [];
                 this.data.matchings = [];
             }
@@ -144,13 +145,13 @@ const App = {
             const valIcona = m.icona || m.icona_macro || '';
 
             tr.innerHTML = `
-                <td style="text-align: center; color: #888;">${m.id_macro_categoria}</td>
+                <td style="text-align: center; color: var(--col-888888);">${m.id_macro_categoria}</td>
                 <td><input type="text" class="edit-macro-name" value="${valNome}" style="width: 100%; font-weight: 500;"></td>
                 <td><input type="text" class="edit-macro-icon" value="${valIcona}" style="width: 50px; text-align: center; font-size: 1.2em;"></td>
                 <td><select class="choice-macro-comps" multiple></select></td>
                 <td style="text-align: center; white-space: nowrap;">
                     <button class="action-btn save-macro-btn" data-id="${m.id_macro_categoria}" title="Salva">💾</button>
-                    <button class="action-btn delete-macro-btn" data-id="${m.id_macro_categoria}" title="Elimina" style="color: #dc3545; border-color: #dc3545;">🗑️</button>
+                    <button class="action-btn delete-macro-btn" data-id="${m.id_macro_categoria}" title="Elimina" style="color: var(--col-dc3545); border-color: var(--col-dc3545);">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -252,7 +253,7 @@ const App = {
                 tr.innerHTML = `
                     <td style="vertical-align: top;">
                         <input type="text" class="edit-name" value="${comp.nome_componente || ''}" style="width:100%; margin-bottom:5px;" placeholder="Nome">
-                        <input type="text" class="edit-code" value="${comp.codice_componente || ''}" style="width:100%; font-size:0.85em; color:#666;" placeholder="Codice">
+                        <input type="text" class="edit-code" value="${comp.codice_componente || ''}" style="width:100%; font-size:0.85em; color:var(--col-666666);" placeholder="Codice">
                     </td>
                     <td style="vertical-align: top;"><select class="choice-macro" multiple></select></td>
                     <td style="vertical-align: top;"><select class="choice-ruoli" multiple></select></td>
@@ -261,7 +262,7 @@ const App = {
                     <!-- MODIFICATA ULTIMA COLONNA CON I DUE TASTI -->
                     <td style="vertical-align: top; text-align: center; white-space: nowrap;">
                         <button class="action-btn save-btn" data-id="${comp.id_componente}" title="Salva">💾</button>
-                        <button class="action-btn delete-btn" data-id="${comp.id_componente}" title="Elimina" style="color: #dc3545; border-color: #dc3545; margin-left: 5px;">🗑️</button>
+                        <button class="action-btn delete-btn" data-id="${comp.id_componente}" title="Elimina" style="color: var(--col-dc3545); border-color: var(--col-dc3545); margin-left: 5px;">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -342,14 +343,14 @@ const App = {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div style="font-weight: 700; color: #2c3e50; font-size: 1.05em;">${nomeCliente} - ${labelImpianto}</div>
-                        <div style="color: #666; font-size: 0.9em; margin-top: 4px;">OV: <strong>${labelOdv}</strong> | Rif: <strong>${labelRif}</strong></div>
-                        <div style="font-size: 0.8em; color: #999; margin-top: 2px;">${labelCodice}</div>
+                        <div style="font-weight: 700; color: var(--col-2c3e50); font-size: 1.05em;">${nomeCliente} - ${labelImpianto}</div>
+                        <div style="color: var(--col-666666); font-size: 0.9em; margin-top: 4px;">OV: <strong>${labelOdv}</strong> | Rif: <strong>${labelRif}</strong></div>
+                        <div style="font-size: 0.8em; color: var(--col-999999); margin-top: 2px;">${labelCodice}</div>
                     </td>
                     <td style="overflow: visible;"><select class="choice-macro-comm" multiple></select></td>
                     <td style="text-align: center; white-space: nowrap;">
                         <!-- NUOVO BOTTONE ANTEPRIMA -->
-                        <button class="action-btn view-preview-btn" title="Vedi Anteprima Componenti" style="margin-right: 5px; color: #007bff; border-color: #007bff;">👁️</button>
+                        <button class="action-btn view-preview-btn" title="Vedi Anteprima Componenti" style="margin-right: 5px; color: var(--col-007bff); border-color: var(--col-007bff);">👁️</button>
                         <button class="action-btn save-btn" title="Salva Modifiche">💾</button>
                     </td>
                 `;
@@ -387,7 +388,7 @@ const App = {
                         return;
                     }
 
-                    let htmlContent = `<div style="margin-bottom:15px; color:#555;">Anteprima configurazione per: <strong>${labelOdv}</strong></div>`;
+                    let htmlContent = `<div style="margin-bottom:15px; color:var(--col-555555);">Anteprima configurazione per: <strong>${labelOdv}</strong></div>`;
                     let hasAnyContent = false;
 
                     // 1. CICLO SULLE MACRO SELEZIONATE
@@ -479,7 +480,7 @@ const App = {
                     });
 
                     if (!hasAnyContent) {
-                        htmlContent += `<div style="text-align:center; padding:20px; color:#888;">Nessun componente trovato nelle macro selezionate.</div>`;
+                        htmlContent += `<div style="text-align:center; padding:20px; color:var(--col-888888);">Nessun componente trovato nelle macro selezionate.</div>`;
                     }
 
                     // Iniezione nel modale
@@ -533,6 +534,7 @@ const App = {
             this.data.matchings = matchRes.ok ? await matchRes.json() : [];
         } catch (e) {
             console.error("Errore reload keywords:", e);
+            segnala(e);
         }
     },
 
@@ -556,7 +558,7 @@ const App = {
             const assocs = (kw.keywords_matching || []);
             let assocHtml = '';
             if (assocs.length === 0) {
-                assocHtml = '<span style="color: #999; font-style: italic;">Nessuna associazione</span>';
+                assocHtml = '<span style="color: var(--col-999999); font-style: italic;">Nessuna associazione</span>';
             } else {
                 assocHtml = assocs.map(a => {
                     const macro = this.data.macros.find(m => m.id_macro_categoria === a.id_macro_categoria);
@@ -573,7 +575,7 @@ const App = {
                 <td style="line-height: 1.8;">${assocHtml}</td>
                 <td style="text-align: center;">
                     <button class="action-btn delete-kw-btn" data-id="${kw.id_keyword}" data-name="${kw.keyword}" 
-                            title="Elimina" style="color: #dc3545; border-color: #dc3545;">🗑️</button>
+                            title="Elimina" style="color: var(--col-dc3545); border-color: var(--col-dc3545);">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -684,7 +686,7 @@ const App = {
                 </td>
                 <td>
                     <strong>${combo.compName}</strong>
-                    ${combo.compCode ? '<br><span style="color:#888; font-size:0.85em;">' + combo.compCode + '</span>' : ''}
+                    ${combo.compCode ? '<br><span style="color:var(--col-888888); font-size:0.85em;">' + combo.compCode + '</span>' : ''}
                 </td>
                 <td style="overflow: visible;"><div class="kw-include-wrap"><select class="choice-kw-include" multiple></select></div></td>
                 <td style="overflow: visible;"><div class="kw-exclude-wrap"><select class="choice-kw-exclude" multiple></select></div></td>

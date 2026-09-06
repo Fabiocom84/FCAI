@@ -24,6 +24,19 @@ package-lock.json.bak
 dist/
 build/
 
+# Artefatti Python — aggiunto il 23/08/2026.
+# Il commento in testa a questo file diceva "nessun artefatto tracciato per
+# sbaglio", e il 18/08 era vero: qui non c'era codice Python. Poi è arrivata
+# `strumenti/`, la categoria non era prevista, e un `.pyc` è entrato nel merge
+# di rilascio verso main senza che nulla lo segnalasse.
+# Una lista di esclusioni copre le categorie che esistevano quando è stata
+# scritta: va rivista quando il repository cambia natura, non solo quando
+# qualcosa va storto.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # Editor e sistema operativo
 .idea/
 .vscode/

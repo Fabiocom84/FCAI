@@ -123,7 +123,7 @@ function stopRecording() {
 
         const statusEl = document.getElementById('qnRecordingStatus');
         statusEl.textContent = 'Audio registrato ✓';
-        statusEl.style.color = '#28a745';
+        statusEl.style.color = 'var(--col-28a745)';
     };
 
     mediaRecorder.stop();
@@ -137,7 +137,7 @@ function updateRecordUI(recording) {
     const status = document.getElementById('qnRecordingStatus');
     if (recording) {
         status.textContent = 'Registrazione in corso...';
-        status.style.color = '#dc3545';
+        status.style.color = 'var(--col-dc3545)';
     }
 }
 
@@ -170,7 +170,7 @@ async function handleSave() {
         audioChunks = [];
         const status = document.getElementById('qnRecordingStatus');
         status.textContent = 'Pronto';
-        status.style.color = '#666';
+        status.style.color = 'var(--col-666666)';
 
     } catch (err) {
         console.error('Errore salvataggio:', err);

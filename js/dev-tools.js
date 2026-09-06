@@ -1,6 +1,6 @@
 // js/dev-tools.js — Import massivo commesse con Tabella di Conversione dinamica
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -162,6 +162,7 @@ const DevTools = {
             console.log(`📋 Lookups: ${this.data.clientiList.length} clienti, ${this.data.modelliList.length} modelli, ${this.data.ubicazioniList.length} ubicazioni`);
         } catch (e) {
             console.error("Errore caricamento lookups:", e);
+            segnala(e);
         }
     },
 
@@ -522,15 +523,15 @@ const DevTools = {
             if (r._status === 'ok') {
                 statusBadge = `<span class="badge-status badge-status--ok">✅ VALIDA</span>`;
                 rowClass = 'row-ok';
-                noteHtml = `<span style="color: #27ae60; font-size: 0.85em;">Pronto all'importazione</span>`;
+                noteHtml = `<span style="color: var(--col-27ae60); font-size: 0.85em;">Pronto all'importazione</span>`;
             } else if (r._status === 'skip') {
                 statusBadge = `<span class="badge-status badge-status--skip">⏭️ SCARTATA</span>`;
                 rowClass = 'row-skip';
-                noteHtml = `<span style="color: #d35400; font-weight: 500; font-size: 0.85em;">⚠️ ${r._errors.join(', ') || 'Duplicata'}</span>`;
+                noteHtml = `<span style="color: var(--col-d35400); font-weight: 500; font-size: 0.85em;">⚠️ ${r._errors.join(', ') || 'Duplicata'}</span>`;
             } else {
                 statusBadge = `<span class="badge-status badge-status--error">❌ ERRORE</span>`;
                 rowClass = 'row-error';
-                noteHtml = `<span style="color: #c0392b; font-weight: 500; font-size: 0.85em;">⛔ ${r._errors.join(', ') || 'Errore dati'}</span>`;
+                noteHtml = `<span style="color: var(--col-c0392b); font-weight: 500; font-size: 0.85em;">⛔ ${r._errors.join(', ') || 'Errore dati'}</span>`;
             }
 
             tbody.innerHTML += `<tr class="${rowClass}">

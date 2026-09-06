@@ -1,6 +1,6 @@
 // js/distribuzione-ore.js — v3: apiFetch per letture (backend bypassa RLS), Supabase RLS blocca anon key
 
-import { apiFetch } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { mostraAvviso } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 
@@ -91,6 +91,7 @@ const App = {
             console.log(`📋 ${this.data.commesse.length} commesse caricate`);
         } catch (e) {
             console.error("Errore caricamento commesse:", e);
+            segnala(e);
         }
     },
 
@@ -209,7 +210,7 @@ const App = {
                         <span class="storico-label" title="OP: ${s.numero_op}">${s.commessa || s.numero_op}</span>
                         <span class="storico-ore">${s.ore}h</span>
                     </li>`).join('')}
-                    ${entries.length > 5 ? `<li style="color:#888; font-size:0.9em;">+${entries.length - 5} altri</li>` : ''}
+                    ${entries.length > 5 ? `<li style="color:var(--col-888888); font-size:0.9em;">+${entries.length - 5} altri</li>` : ''}
                 </ul>`;
             }
         });
@@ -255,7 +256,7 @@ const App = {
         const sortedMesi = Object.keys(orePerMese).sort();
 
         if (sortedMesi.length === 0) {
-            grid.innerHTML = '<span style="color:#999; font-style:italic;">Nessun dato ore per questa commessa</span>';
+            grid.innerHTML = '<span style="color:var(--col-999999); font-style:italic;">Nessun dato ore per questa commessa</span>';
         } else {
             grid.innerHTML = sortedMesi.map(k => {
                 const m = orePerMese[k];
@@ -273,7 +274,7 @@ const App = {
         tbody.innerHTML = '';
 
         if (this.data.ordini.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">Nessun OP trovato per questa commessa</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--col-999999);">Nessun OP trovato per questa commessa</td></tr>';
             return;
         }
 
@@ -317,7 +318,7 @@ const App = {
                     </div>
                 </td>
                 <td class="col-storico" data-storico-art="${op.id_articolo || ''}">
-                    <span style="color:#ddd; font-size:0.8em;">⏳</span>
+                    <span style="color:var(--col-dddddd); font-size:0.8em;">⏳</span>
                 </td>
                 <td class="col-ore-ai">
                     <div class="ore-cell ${proposta == null ? 'empty' : ''}">
@@ -326,7 +327,7 @@ const App = {
                 </td>
                 <td class="col-dettaglio">
                     <div class="dettaglio-placeholder" id="dettaglio-${op.id}">
-                        <span style="color:#ccc; font-style:italic;">In attesa di elaborazione</span>
+                        <span style="color:var(--col-cccccc); font-style:italic;">In attesa di elaborazione</span>
                     </div>
                 </td>
                 <td class="col-ore-finali">
