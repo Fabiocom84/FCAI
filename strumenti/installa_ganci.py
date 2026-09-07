@@ -53,7 +53,12 @@ def controllo_positivo():
     `--no-verify` fino a dimenticarsene.
     """
     esiti = []
-    for nome in ('versione_css.py', 'verifica_segnala.py'):
+    # L'elenco va tenuto allineato al gancio: il 06/09/2026 e' stato aggiunto
+    # `controlla_pagine.py` e questo installatore ha continuato a dichiarare
+    # «gli strumenti rispondono» controllandone solo due su tre. Un installatore
+    # che verifica una parte dei controlli e ne riporta l'esito come se fossero
+    # tutti e' peggio di uno che non verifica niente.
+    for nome in ('versione_css.py', 'controlla_pagine.py', 'verifica_segnala.py'):
         percorso = RADICE / 'strumenti' / nome
         if not percorso.exists():
             esiti.append((nome, False, "MANCA: il gancio fallirebbe sempre"))

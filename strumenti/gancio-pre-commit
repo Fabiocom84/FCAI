@@ -75,6 +75,24 @@ if [ -z "$PY" ]; then
     exit 1
 fi
 
+# IL GANCIO E' AGGIORNATO? — aggiunto il 06/09/2026.
+#
+# I ganci vivono in `.git/hooks/`, che git non versiona: `installa_ganci.py` ne
+# copia una versione. Modificare `strumenti/gancio-pre-commit` quindi NON ha
+# effetto finche' qualcuno non reinstalla — e nulla lo segnala. Il giorno in cui
+# si aggiunge un controllo qui e ci si dimentica di reinstallare, si continua a
+# committare credendo di essere protetti da una verifica che non gira.
+#
+# E' avviso e non blocco: chi clona il repository non ha ancora installato
+# nulla, e fermarlo al primo commit sarebbe il gancio-che-blocca-sempre
+# descritto sopra.
+if [ -f strumenti/gancio-pre-commit ] && ! cmp -s strumenti/gancio-pre-commit "$0"; then
+    echo "⚠ il gancio installato e' diverso da strumenti/gancio-pre-commit"
+    echo "  i controlli che stai vedendo NON sono quelli aggiornati."
+    echo "  Rimedio:  \$PY strumenti/installa_ganci.py"
+    echo ""
+fi
+
 # `--controlla` esce con 1 se un collegamento porta un'impronta vecchia.
 if ! "$PY" strumenti/versione_css.py --controlla; then
     echo ""
@@ -90,6 +108,19 @@ if ! "$PY" strumenti/versione_css.py --controlla; then
     # sbagliata.
     echo "  Rimedio:  $PY strumenti/versione_css.py --aggiorna"
     echo "            git add *.html"
+    echo ""
+    exit 1
+fi
+
+if ! "$PY" strumenti/controlla_pagine.py; then
+    echo ""
+    echo "✗ COMMIT INTERROTTO: una pagina non riuscirebbe a caricarsi."
+    echo ""
+    echo "  Import irrisolti, export di funzioni cancellate, o due proprieta'"
+    echo "  con la stessa chiave nello stesso oggetto. I primi due fermano la"
+    echo "  pagina; il terzo non produce alcun errore — la seconda definizione"
+    echo "  sovrascrive la prima in silenzio, ed e' il motivo per cui 51 righe"
+    echo "  di dashboard.js non giravano da mesi senza che nulla lo dicesse."
     echo ""
     exit 1
 fi
