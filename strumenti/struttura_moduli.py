@@ -101,8 +101,22 @@ def fine_metodo(righe, inizio):
     Le graffe dentro stringhe, template literal e commenti non contano: sono la
     ragione per cui un conteggio ingenuo sbaglia proprio sui metodi che
     costruiscono HTML, che qui sono i piu lunghi.
+
+    NEMMENO LE GRAFFE DENTRO LA LISTA DEI PARAMETRI, ed e' costato caro.
+    `fetchData: async function (opts = {}) {` ha un valore predefinito a graffe:
+    il conteggio ingenuo apriva e chiudeva su `{}` e dichiarava il metodo lungo
+    UNA riga. Tutte le chiamate nel suo corpo — `updateKPIs`, `renderCharts`,
+    `renderSidebarFilters`, `fetchGroups` — sparivano dal grafo, e
+    `raggiungibilita.py` le riportava come codice morto. Quattro metodi vivi
+    dichiarati morti, in un file da cui stavo per proporre cancellazioni.
+
+    E' il verso di errore pericoloso, ed e' l'opposto di quello che avevo
+    scritto nella docstring di `raggiungibilita.py`: «sbaglia verso il vivo,
+    mai il contrario». Non era una misura, era una convinzione. Corretto il
+    06/09/2026 contando anche le tonde: le graffe valgono solo a profondita'
+    zero di parentesi, cioe' fuori dalla lista dei parametri.
     """
-    livello, avviato = 0, False
+    livello, tonde, avviato = 0, 0, False
     for i in range(inizio, len(righe)):
         r, k, dentro, fuga = righe[i], 0, None, False
         while k < len(r):
@@ -118,9 +132,13 @@ def fine_metodo(righe, inizio):
                 dentro = c
             elif c == '/' and k + 1 < len(r) and r[k + 1] == '/':
                 break                      # commento di riga: il resto non conta
-            elif c == '{':
+            elif c == '(':
+                tonde += 1
+            elif c == ')':
+                tonde -= 1
+            elif c == '{' and tonde <= 0:
                 livello += 1; avviato = True
-            elif c == '}':
+            elif c == '}' and tonde <= 0:
                 livello -= 1
                 if avviato and livello <= 0:
                     return i + 1           # riga di chiusura inclusa
@@ -167,7 +185,62 @@ def analizza(percorso):
     return voci
 
 
+# --- GUARDIA DI REGRESSIONE ---
+def controllo_misura():
+    """Verifica che `fine_metodo` misuri davvero, su casi costruiti apposta.
+
+    Esiste per un difetto preciso: un parametro con valore predefinito a graffe
+    (`function (opts = {})`) faceva risultare il metodo lungo UNA riga, e le
+    chiamate nel suo corpo sparivano dal grafo. Su `dashboard.js` questo ha
+    prodotto 390 righe di codice vivo dichiarate morte — in un file da cui
+    stavo per proporre cancellazioni.
+
+    Il caso `graffe_nei_parametri` e' quel difetto. Se un giorno torna verde
+    per caso, gli altri due dicono se la sonda sia ancora capace di misurare.
+    """
+    import tempfile
+    casi = {
+        'semplice': ("""const A = {
+    breve: function () {
+        return 1;
+    },
+    altro: function () { return 2; }
+};""", 'breve', 3),
+        'graffe_nei_parametri': ("""const A = {
+    conDefault: async function (opts = {}) {
+        const x = opts.a;
+        this.altro();
+        return x;
+    },
+    altro: function () { return 2; }
+};""", 'conDefault', 5),
+        'graffe_in_stringa': ("""const A = {
+    conHtml: function () {
+        const s = `<div style="a:{b}">`;
+        return s;
+    },
+    altro: function () { return 2; }
+};""", 'conHtml', 4),
+    }
+    esiti = []
+    for nome, (sorgente, metodo, atteso) in casi.items():
+        with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False,
+                                         encoding='utf-8') as f:
+            f.write(sorgente)
+            percorso = f.name
+        v = [x for x in (analizza(percorso) or []) if x['nome'] == metodo]
+        ottenuto = v[0]['righe'] if v else None
+        esiti.append((nome, atteso, ottenuto, ottenuto == atteso))
+    return esiti
+
+
 if __name__ == '__main__':
+    if '--autoprova' in sys.argv:
+        print("Controllo che la sonda sappia misurare:")
+        for nome, atteso, ottenuto, ok in controllo_misura():
+            print(f"   {'OK  ' if ok else 'ROTTO'} {nome:<24} atteso {atteso}, ottenuto {ottenuto}")
+        sys.exit(0 if all(e[3] for e in controllo_misura()) else 2)
+
     for percorso in [a for a in sys.argv[1:] if not a.startswith('--')]:
         metodi = analizza(percorso)
         if not metodi:

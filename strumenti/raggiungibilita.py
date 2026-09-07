@@ -9,12 +9,30 @@ chiamato da un punto che non ho guardato hanno lo stesso aspetto.
 
     python strumenti/raggiungibilita.py js/commesse.js --radici init
 
-COME SBAGLIA, di proposito
-Segue `this.X(` e anche `this.X` senza parentesi, perche un metodo passato come
-callback (`addEventListener('click', this.aggiorna)`) e vivo quanto uno
-chiamato. Sbaglia quindi verso il VIVO: puo dichiarare raggiungibile qualcosa
-che non lo e, mai il contrario. Per la domanda «posso cancellarlo?» e l'unico
-verso in cui convenga sbagliare.
+COME SBAGLIA — e la prima stesura di questa sezione era falsa
+Qui c'era scritto: «sbaglia verso il VIVO: puo dichiarare raggiungibile
+qualcosa che non lo e, mai il contrario». Non era una misura, era una
+convinzione, e il 06/09/2026 e' stata smentita nel modo peggiore.
+
+Su `dashboard.js` questo strumento ha dichiarato morti 14 metodi per 402 righe.
+Erano vivi. `struttura_moduli.fine_metodo` misurava `fetchData` — la cui firma
+e' `async function (opts = {})` — come lungo UNA riga, perche' le graffe del
+valore predefinito aprivano e chiudevano il blocco. Le chiamate nel suo corpo
+(`updateKPIs`, `renderCharts`, `renderSidebarFilters`, `fetchGroups`) non
+entravano nel grafo. Il numero vero era 12 righe, non 402: **un solo metodo
+mal misurato valeva 390 righe di falsi morti.**
+
+Quindi lo strumento puo sbagliare in ENTRAMBI i versi, e quello pericoloso
+esiste. Da qui due conseguenze pratiche:
+  * `controllo_misura()` di `struttura_moduli` gira prima di ogni risposta: se
+    la sonda non sa misurare, il resto non vale niente e ci si ferma;
+  * un metodo dichiarato morto va confermato leggendo il file, non citando
+    questo strumento. La lista e' un punto di partenza per guardare, non un
+    verdetto.
+
+Verso il vivo sbaglia comunque, ed e' voluto: segue `this.X(` e anche `this.X`
+senza parentesi, perche un metodo passato come callback e vivo quanto uno
+chiamato.
 
 NON VEDE, e vanno controllati a mano prima di cancellare:
   * `onclick="..."` scritti nell'HTML, sia nelle pagine sia nelle stringhe
@@ -28,7 +46,7 @@ import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from struttura_moduli import analizza  # noqa: E402
+from struttura_moduli import analizza, controllo_misura  # noqa: E402
 
 
 def grafo(voci):
@@ -69,6 +87,14 @@ if __name__ == '__main__':
 
     if not controllo_positivo():
         sys.exit("La sonda e cieca: sul caso di prova non separa vivo da morto.")
+
+    # Un grafo costruito su confini di metodo sbagliati produce falsi morti, ed
+    # e' esattamente cosi' che questo strumento ha dichiarato morte 390 righe
+    # vive. Se la misura non regge, non c'e' risposta da dare.
+    guasti = [n for n, _, _, ok in controllo_misura() if not ok]
+    if guasti:
+        sys.exit(f"MISURA ROTTA ({', '.join(guasti)}): i confini dei metodi sono "
+                 f"sbagliati, quindi il grafo lo e' di conseguenza. Nessun risultato.")
 
     for p in percorsi:
         voci = analizza(p) or []

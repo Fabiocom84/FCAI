@@ -369,16 +369,7 @@ const Dashboard = {
         }
     },
 
-    loadMore: function () {
-        // Deprecated/Changed in Group Mode? 
-        // If we want global pagination of groups, we'd need page/pageSize for fetchGroups.
-        // User requirement: "all that match filter... load titles first".
-        // So presumably we load all headers.
-    },
 
-    renderAll: function (append) {
-        // Replaced by specific calls in fetchData
-    },
 
     updateKPIs: function (kpis) {
         if (!kpis) return;
@@ -923,59 +914,12 @@ const Dashboard = {
         });
     },
 
-    renderSidebarFilters: function () {
-        // ... existing filter render logic ...
-        const charts = this.state.availableFilters;
-        if (!charts) return;
-        this.renderCheckList(this.dom.boxCommesse, charts.by_commessa, 'id_commessa');
-        this.renderCheckList(this.dom.boxDipendenti, charts.by_user, 'id_personale');
-    },
-
-    // --- GRID with GROUPING ---
-    renderGrid: function () {
-        const container = this.dom.gridContainer;
-        if (!container) return;
-        container.innerHTML = '';
-
-        const groups = this.state.groups || [];
-        if (!groups.length) {
-            container.innerHTML = '<div style="padding:20px; text-align:center;">Nessun dato trovato.</div>';
-            return;
-        }
-
-        // Loop Groups (Headers Only First)
-        groups.forEach((g, index) => {
-            const groupId = `group-container-${index}`;
-
-            // Header
-            const groupHeader = document.createElement('div');
-            groupHeader.className = 'grid-group-header collapsed';
-            groupHeader.style.cursor = 'pointer';
-
-            // Pass the group object 'g' to the toggle function
-            groupHeader.onclick = () => this.toggleGroup(g, groupId, groupHeader);
-
-            groupHeader.innerHTML = `
-                <div class="g-title">
-                    <span class="toggle-icon">▶</span> ${g.group_label}
-                </div>
-                <div class="g-stats">
-                    <span class="badge-count">${g.row_count} righe</span>
-                    <span class="badge-hours">${Number(g.total_hours).toFixed(1)} ore</span>
-                </div>
-            `;
-            container.appendChild(groupHeader);
-
-            // Body
-            const groupBody = document.createElement('div');
-            groupBody.id = groupId;
-            groupBody.className = 'grid-group-body';
-            groupBody.style.display = 'none';
-            container.appendChild(groupBody);
-        });
-
-        this.updateSelectionSummary();
-    },
+    // Qui stavano due definizioni di `renderSidebarFilters` e `renderGrid`,
+    // rimosse il 06/09/2026. Non erano copie: differivano dalle versioni piu'
+    // sotto (righe ~1020 e ~1172) di 15 e 21 righe. In un oggetto letterale la
+    // chiave definita per seconda sovrascrive la prima IN SILENZIO, quindi
+    // queste due non venivano mai eseguite — e chi le avesse modificate non
+    // avrebbe visto alcun effetto. 51 righe.
 
 
     createPieChart: function (id, d) {
@@ -1164,9 +1108,6 @@ const Dashboard = {
     },
 
     // Expose for HTML inline calls
-    toggleAllFilterPublic: function (key, select) {
-        this.toggleAllFilter(key, select, null);
-    },
 
     // --- GRID with GROUPING ---
     renderGrid: function () {
