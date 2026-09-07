@@ -93,14 +93,56 @@ if [ -f strumenti/gancio-pre-commit ] && ! cmp -s strumenti/gancio-pre-commit "$
     echo ""
 fi
 
+# SEI SUL RAMO GIUSTO? — aggiunto il 06/09/2026, dopo esserci cascati.
+#
+# CLAUDE.md regola 9, in vigore dal 17/08/2026: ogni modifica va applicata e
+# verificata ESCLUSIVAMENTE su staging; `main` e' cio' che Vercel serve in
+# produzione e non si tocca senza autorizzazione esplicita e caso per caso.
+#
+# Quella regola viveva solo in un documento. Il 06/09 un commit e' finito su
+# `main` perche' il comando dato non aveva davanti un `git checkout staging`, e
+# nessuno se n'e' accorto finche' `git push origin staging` non ha risposto
+# "Everything up-to-date" — un successo apparente che diceva il contrario di
+# quello che sembrava. Bastava un `push origin main` fatto per abitudine e la
+# produzione cambiava senza che nessuno l'avesse deciso.
+#
+# Le fusioni non passano da qui (git usa `pre-merge-commit`), quindi un commit
+# diretto su `main` e' proprio il caso che la regola 9 vieta. Si blocca, e la
+# via d'uscita e' esplicita: chi ha davvero l'autorizzazione usa --no-verify e
+# sa perche' lo sta facendo.
+RAMO=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+if [ "$RAMO" = "main" ] || [ "$RAMO" = "master" ]; then
+    echo ""
+    echo "✗ COMMIT INTERROTTO: sei sul ramo '$RAMO', cioe' la produzione."
+    echo ""
+    echo "  CLAUDE.md regola 9: ogni modifica si applica e si verifica su"
+    echo "  staging. La produzione non si tocca senza autorizzazione esplicita."
+    echo ""
+    echo "  Quasi certamente volevi:  git checkout staging"
+    echo "  Il lavoro non e' perso: le modifiche restano dove sono."
+    echo ""
+    echo "  Se l'autorizzazione ce l'hai davvero:  git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
 # `--controlla` esce con 1 se un collegamento porta un'impronta vecchia.
 if ! "$PY" strumenti/versione_css.py --controlla; then
     echo ""
-    echo "✗ COMMIT INTERROTTO: le impronte non sono allineate."
+    echo "✗ COMMIT INTERROTTO: vedi la causa qui sopra."
     echo ""
-    echo "  Hai modificato un CSS o un JS senza aggiornare i collegamenti."
-    echo "  I browser continuerebbero a servire la copia in cache: la modifica"
-    echo "  NON arriverebbe agli utenti, e il collaudo direbbe che funziona."
+    # Il messaggio NON ripete una causa specifica, ed e' una correzione del
+    # 06/09/2026. `versione_css.py` controlla due cose — le impronte `?v=` nelle
+    # pagine e CACHE_VERSION in sw.js — e stampa da se' quale delle due sia
+    # disallineata. Qui sotto c'era scritto «hai modificato un CSS o un JS senza
+    # aggiornare i collegamenti», che alla prima prova reale del gancio ha
+    # nominato la causa sbagliata: i collegamenti erano a posto, disallineata era
+    # CACHE_VERSION. Il rimedio coincide, quindi non ha fatto danni — ma un
+    # messaggio che nomina una causa diversa da quella trovata e' il modo in cui
+    # si perde un'ora a guardare nel posto sbagliato, ed e' gia' costato
+    # esattamente quello il 18/08 con l'allarme di sicurezza.
+    echo "  In entrambi i casi il codice nuovo NON arriverebbe agli utenti, e il"
+    echo "  collaudo direbbe che funziona perche' si comporta come prima."
     echo ""
     # Si nomina l'interprete TROVATO, non "python": su Windows quel nome
     # spesso non esiste, e un rimedio che non funziona sulla macchina di chi
