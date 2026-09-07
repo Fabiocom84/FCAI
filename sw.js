@@ -6,7 +6,7 @@
 //
 // v8 (21/08/2026): rimosso il tema scuro (Fase 3). Senza incremento, la cache
 // `segretario-ai-v7` sopravvivrebbe con dentro la shell precedente.
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'b9b9c94d';
 const CACHE_NAME = `segretario-ai-${CACHE_VERSION}`;
 
 // Assets da pre-cachare all'installazione (shell minima)

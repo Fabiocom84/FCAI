@@ -113,6 +113,53 @@ def pagine():
     return [f for f in sorted(os.listdir(BASE)) if f.endswith('.html')]
 
 
+SW = os.path.join(BASE, 'sw.js')
+RIGA_CACHE = re.compile(r"(const CACHE_VERSION = ')([^']*)(')")
+
+
+def impronta_sw():
+    """Impronta di CSS e JS insieme: il service worker li cachea entrambi."""
+    return _impronta(file_css() + file_js())
+
+
+def scorri_sw(riscrivi):
+    """Allinea `CACHE_VERSION` in sw.js al contenuto. Restituisce (attuale, atteso).
+
+    PERCHE ESISTE — aggiunto il 06/09/2026
+    `sw.js` serve i `.js` e i `.css` con strategia **Cache-First**: risponde
+    PRIMA della cache HTTP, quindi ne' `must-revalidate` ne' l'impronta `?v=`
+    sui tag proteggono chi ha il service worker installato — cioe' quasi tutti,
+    essendo una PWA. L'unica cosa che svuota quella cache e' un cambio di
+    `CACHE_VERSION`, perche' `activate` cancella le cache di nome diverso.
+
+    Finora quel valore si scriveva a mano. `RUNBOOK_aggiornamento_frontend.md`
+    documenta che e' gia' stato dimenticato **tre volte in un giorno**, con la
+    conseguenza esatta: repository aggiornato, Vercel aggiornato, e l'utente che
+    vede il vecchio. Il runbook proponeva di derivarlo da
+    `VERCEL_GIT_COMMIT_SHA` in fase di build — ma questo sito non ha una fase di
+    build, e' un deploy statico. Derivarlo dall'impronta del contenuto ottiene
+    lo stesso risultato e si aggancia a una disciplina che gia' esiste ed e' gia'
+    imposta dal gancio pre-commit.
+
+    Un beneficio secondario, che chiude un debito a parte: i moduli raggiunti
+    tramite `import` non portano l'impronta `?v=` — non possono, e' scritta nei
+    tag. Con la cache del service worker svuotata a ogni cambio di contenuto,
+    anche quelli vengono riscaricati.
+    """
+    atteso = impronta_sw()
+    if not os.path.exists(SW):
+        return None, atteso
+    testo = open(SW, encoding='utf-8', errors='replace').read()
+    m = RIGA_CACHE.search(testo)
+    if not m:
+        return None, atteso
+    attuale = m.group(2)
+    if riscrivi and attuale != atteso:
+        open(SW, 'w', encoding='utf-8', newline='').write(
+            RIGA_CACHE.sub(lambda x: f'{x.group(1)}{atteso}{x.group(3)}', testo))
+    return attuale, atteso
+
+
 LINK = re.compile(r'(href=")((?:css/)?[a-zA-Z0-9._-]+\.css)(\?[^"]*)?(")')
 SCRIPT = re.compile(r'(src=")(js/[a-zA-Z0-9._-]+\.js)(\?[^"]*)?(")')
 
@@ -165,13 +212,26 @@ def main():
             open(percorso, 'w', encoding='utf-8', newline='').write(nuovo)
             toccate += 1
 
+    sw_attuale, sw_atteso = scorri_sw(riscrivi)
+
     print(f"impronta CSS       : {versione}   ({len(locali)} fogli)")
     print(f"impronta JavaScript: {versione_js}   ({len(locali_js)} script)")
+    print(f"CACHE_VERSION (sw) : {sw_atteso}   (CSS + JS insieme)")
     print(f"riferimenti totali : {totali} in {len(pagine())} pagine")
 
     if riscrivi:
         print(f"pagine aggiornate  : {toccate}")
+        if sw_attuale != sw_atteso:
+            print(f"sw.js              : CACHE_VERSION {sw_attuale} -> {sw_atteso}")
         return 0
+
+    if sw_attuale != sw_atteso:
+        print(f"\nCACHE_VERSION DISALLINEATA: sw.js dice '{sw_attuale}', il contenuto vale '{sw_atteso}'")
+        print("Il service worker serve i .js e i .css dalla PROPRIA cache, e risponde\n"
+              "prima della cache HTTP: senza cambiare CACHE_VERSION la modifica non\n"
+              "arriva a chi ha gia' il service worker installato — cioe' quasi tutti.\n"
+              "Rimedio:  python3 strumenti/versione_css.py --aggiorna")
+        return 1
 
     if fuori_passo:
         print(f"\nDISALLINEATI: {fuori_passo} riferimenti non portano l'impronta corrente")

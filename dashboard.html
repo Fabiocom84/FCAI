@@ -353,10 +353,13 @@
         </div>
     </div>
 
-    <script type="module" src="js/config.js?v=7790a6d9"></script>
+    <!-- Solo i punti d'ingresso: gli altri moduli arrivano tramite `import`.
+         Fino al 06/09/2026 qui c'erano anche i tag di config.js, api-client.js e
+         shared-ui.js, che quei moduli importano gia'. Tag e import sono URL
+         DIVERSI (`js/x.js?v=N` contro `./x.js`), quindi il browser caricava ed
+         eseguiva due istanze separate dello stesso modulo — config.js tre volte.
+         Era inerte per tre motivi accidentali, non progettati. -->
     <script type="module" src="js/auth-guard.js?v=7790a6d9"></script>
-    <script type="module" src="js/api-client.js?v=7790a6d9"></script>
-    <script type="module" src="js/shared-ui.js?v=7790a6d9"></script>
     <script type="module" src="js/dashboard.js?v=7790a6d9"></script>
 
 </body>
