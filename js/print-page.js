@@ -2,7 +2,7 @@
    js/print-page.js - Versione Admin Fixed & Filenames
    ========================================================================== */
 
-import { apiFetch, publicApiFetch, segnala } from './api-client.js';
+import { apiFetch, segnala } from './api-client.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
 import { TEMPLATE_PRESENZE_URL } from './config.js';
 

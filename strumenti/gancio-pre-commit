@@ -167,6 +167,37 @@ if ! "$PY" strumenti/controlla_pagine.py; then
     exit 1
 fi
 
+# PROVE ESEGUIBILI — aggiunte l'09/09/2026 (task 4.10).
+#
+# `controlla_pagine.py` guarda la struttura; queste eseguono il codice. Servono
+# `api-client.js` in particolare, da cui dipendono 23 moduli su 34: un suo
+# difetto non rompe una pagina, le rompe tutte. Il primo giorno che sono
+# esistite hanno trovato un 401 che eseguiva il logout tre volte con 1,5
+# secondi di attesa, invisibile a settimane di riletture.
+#
+# Girano SOLO se `node` c'e'. Non e' pigrizia: i ganci vivono in una shell
+# propria e non tutti hanno node nel PATH, e un gancio che blocca chi non puo'
+# rimediare insegna `--no-verify` — dopodiche' non protegge piu' niente
+# continuando a sembrare che lo faccia.
+if command -v node >/dev/null 2>&1; then
+    for prova in prove/*.prova.mjs; do
+        [ -f "$prova" ] || continue
+        if ! node "$prova" > /tmp/prova-esito.txt 2>&1; then
+            echo ""
+            echo "✗ COMMIT INTERROTTO: una prova eseguibile non passa."
+            echo ""
+            grep -E "^  ✗|casi come attesi|atteso|osservato" /tmp/prova-esito.txt | sed 's/^/  /'
+            echo ""
+            echo "  Esegui:  node $prova"
+            echo ""
+            exit 1
+        fi
+    done
+    echo "── prove eseguibili superate ──────────────────────────"
+else
+    echo "⚠ node non trovato: le prove in prove/ non sono state eseguite."
+fi
+
 if ! "$PY" strumenti/verifica_segnala.py; then
     echo ""
     echo "✗ COMMIT INTERROTTO: una chiamata a segnala() e fuori posto."

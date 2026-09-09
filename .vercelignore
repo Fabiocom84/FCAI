@@ -20,3 +20,7 @@ senza-tema-scuro/
 # Strumenti di analisi e misura: si eseguono in locale o dalla console del
 # browser, mai dal sito.
 strumenti/
+
+# Prove eseguibili (09/09/2026): girano con node in locale e dal gancio
+# pre-commit. Servirle dal sito non le renderebbe piu' utili, solo pubbliche.
+prove/

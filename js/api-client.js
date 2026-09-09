@@ -115,16 +115,37 @@ async function corpoErrore(response) {
     }
 }
 
+/**
+ * @param {object} options  opzioni di `fetch`, più `senzaSessione`.
+ *
+ * `senzaSessione: true` serve alle chiamate fatte quando una sessione non
+ * esiste ancora — oggi solo il login. Salta l'invio del token e, soprattutto,
+ * la gestione di 401 e 403: un login con credenziali sbagliate risponde 401, e
+ * con il trattamento normale provocherebbe `localStorage.clear()` e un
+ * ricaricamento di `login.html`. L'utente vedrebbe la pagina ripartire invece
+ * del messaggio "credenziali errate".
+ *
+ * Era questa — e solo questa — la ragione per cui esisteva `publicApiFetch`,
+ * che per il resto era una copia dichiarata: il suo corpo portava scritto
+ * «RETRY LOGIC (COPIATA DA apiFetch)». Le due funzioni divergevano già: il
+ * ramo 403 con `ACCOUNT_DISABLED`, aggiunto qui il 17/08/2026, non era mai
+ * arrivato nella copia. Unificate l'09/09/2026 (task 4.8).
+ *
+ * Sul percorso `senzaSessione` un 401 non viene ignorato: cade nel controllo
+ * `!response.ok` e diventa un `ErroreApi(401)`, esattamente come faceva
+ * `publicApiFetch`. Il comportamento del login non cambia.
+ */
 export async function apiFetch(endpoint, options = {}) {
-    const token = localStorage.getItem('session_token');
+    const { senzaSessione = false, ...opzioni } = options;
+    const token = senzaSessione ? null : localStorage.getItem('session_token');
 
     const headers = {
-        ...options.headers
+        ...opzioni.headers
     };
 
     // Auto-detect JSON content type requirement
     // Se il body non è FormData e non è stato specificato altro Content-Type, assumiamo JSON
-    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    if (!(opzioni.body instanceof FormData) && !headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
     }
 
@@ -133,7 +154,7 @@ export async function apiFetch(endpoint, options = {}) {
     }
 
     const config = {
-        ...options,
+        ...opzioni,
         headers
     };
 
@@ -168,14 +189,22 @@ export async function apiFetch(endpoint, options = {}) {
             // con 403 e `code: ACCOUNT_DISABLED`. Lì il logout è corretto, perché
             // la sessione non deve più valere. Si riconosce dal codice e non dal
             // testo del messaggio, che può cambiare senza preavviso.
-            if (response.status === 401) {
+            if (response.status === 401 && !senzaSessione) {
                 console.warn("Sessione non valida. Eseguo Logout.");
                 localStorage.clear();
                 window.location.replace('login.html');
-                throw new Error("Sessione scaduta");
+                // `nonRitentare` esiste dal giorno in cui si e' capito che
+                // ritentare un rifiuto applicativo fa solo aspettare l'utente.
+                // A questo ramo non era mai stata messa: una sessione scaduta
+                // eseguiva il logout TRE volte, con 500ms + 1000ms di attesa fra
+                // l'uno e l'altro. Trovato l'09/09/2026 non rileggendo il codice
+                // ma eseguendolo, in `prove/api-client.prova.mjs`.
+                const e = new Error("Sessione scaduta");
+                e.nonRitentare = true;
+                throw e;
             }
 
-            if (response.status === 403) {
+            if (response.status === 403 && !senzaSessione) {
                 let codice = null;
                 try {
                     codice = (await response.clone().json())?.code || null;
@@ -187,7 +216,9 @@ export async function apiFetch(endpoint, options = {}) {
                     console.warn("Account disabilitato. Eseguo Logout.");
                     localStorage.clear();
                     window.location.replace('login.html');
-                    throw new Error("Accesso revocato");
+                    const e = new Error("Accesso revocato");
+                    e.nonRitentare = true;   // stesso motivo del 401 qui sopra
+                    throw e;
                 }
 
                 // Diniego di permesso: la sessione resta valida, ma l'operazione
@@ -244,60 +275,15 @@ export async function apiFetch(endpoint, options = {}) {
     }
 }
 
+/**
+ * Chiamata senza sessione: oggi solo il login.
+ *
+ * Era una copia di `apiFetch` lunga 55 righe, con il proprio ciclo di
+ * ritentativi, il proprio backoff e i propri messaggi — e con il ramo 403 su
+ * `ACCOUNT_DISABLED` che non le era mai arrivato, perché nessuno si ricorda di
+ * aggiornare due implementazioni della stessa cosa. Resta come nome perché ha
+ * un chiamante che dice bene cosa intende, ma il corpo è uno solo.
+ */
 export async function publicApiFetch(endpoint, options = {}) {
-    const headers = {
-        ...options.headers
-    };
-    // Auto-detect JSON content type requirement
-    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/json';
-    }
-    const config = { ...options, headers };
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-
-    // --- RETRY LOGIC (COPIATA DA apiFetch) ---
-    const MAX_RETRIES = 3;
-    let attempt = 0;
-
-    while (attempt < MAX_RETRIES) {
-        attempt++;
-        try {
-            const response = await fetch(url, config);
-
-            // Se è un errore gateway temporaneo (502, 503, 504), lanciamo eccezione per fare retry
-            if ([502, 503, 504].includes(response.status)) {
-                try {
-                    const errText = await response.clone().text();
-                    console.error("🔥 Server Error Details (publicApiFetch):", errText);
-                } catch (e) {
-                    console.error("Could not read error body", e);
-                }
-                throw new Error(`Server Error ${response.status}`);
-            }
-
-            // Stessa regola di `apiFetch`: un esito non riuscito è un errore,
-            // non una risposta da controllare a discrezione del chiamante.
-            if (!response.ok) {
-                throw new ErroreApi(response.status, await corpoErrore(response), endpoint);
-            }
-
-            return response;
-
-        } catch (error) {
-            if (error.nonRitentare) {
-                throw error;
-            }
-
-            // Se abbiamo raggiunto i tentativi massimi, rilanciamo l'errore
-            if (attempt >= MAX_RETRIES) {
-                console.error(`Public API Fetch failed after ${MAX_RETRIES} attempts:`, error);
-                throw error;
-            }
-
-            // Backoff esponenziale: aspetta 500ms, 1000ms, ...
-            const waitTime = 500 * Math.pow(2, attempt - 1);
-            console.warn(`Public API Tentativo ${attempt} fallito. Riprovo tra ${waitTime}ms...`);
-            await new Promise(r => setTimeout(r, waitTime));
-        }
-    }
+    return apiFetch(endpoint, { ...options, senzaSessione: true });
 }
