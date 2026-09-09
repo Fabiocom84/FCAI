@@ -75,10 +75,10 @@
         });
     }
 
-    // Aggiungi un metodo per ottenere lo stato degli elementi aperti (utile per il debug)
-    window.getOpenElementCount = function() {
-        return openElementCount;
-    };
+    // RIMOSSA l'09/09/2026 (task 4.9): `window.getOpenElementCount`, che
+    // restituiva `openElementCount`. Nessuna lettura in nessuna forma — né da
+    // JavaScript, né da un attributo `onclick`, né per nome costruito. Era
+    // dichiarata "utile per il debug" e in debug non l'ha usata nessuno.
 
     // --- Inizializzazione degli Event Listener per i Pulsanti di Apertura Modali ---
     document.addEventListener('DOMContentLoaded', () => {

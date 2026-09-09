@@ -36,6 +36,14 @@ window.openChatModal = function () {
 };
 
 // Funzione per chiudere il modale
+// ⚠ Il nome NON e' libero: `shared-ui.js` cerca questa funzione come
+// `window['close' + id]`, dove `id` e' `chatModal`. La stringa che le collega
+// non esiste in nessun punto del progetto. Vedi il commento esteso in
+// `shared-ui.js`, in `closeSuccessFeedbackModal`. Annotato l'09/09/2026.
+//
+// Nota: `main.js` definisce una PROPRIA `window.closeChatModal`. Le due non si
+// incontrano — nessuna pagina carica entrambi i file, verificato — ma sono due
+// implementazioni dello stesso nome, ed e' un debito a parte.
 window.closeChatModal = async function () {
     if (chatModal) chatModal.style.display = 'none';
     if (modalOverlay) modalOverlay.style.display = 'none';

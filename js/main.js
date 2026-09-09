@@ -202,6 +202,24 @@ function bindGlobalEvents() {
 }
 
 // Funzioni Globali per l'HTML (Retrocompatibilità)
+// ⚠ LE TRE `close*` QUI SOTTO SONO CHIAMATE DA UN NOME COSTRUITO.
+//
+// `shared-ui.js`, in `closeSuccessFeedbackModal`, cerca
+// `window['close' + id-del-modale-con-l-iniziale-maiuscola]`. Quindi il nome di
+// queste funzioni NON e' libero: e' legato all'attributo `id` del rispettivo
+// modale, e la stringa che le collega non esiste in nessun punto del progetto.
+//
+//     id="insertDataModal"  ->  closeInsertDataModal
+//     id="chatModal"        ->  closeChatModal
+//     id="trainingModal"    ->  closeTrainingModal
+//
+// Rinominarle, o togliere il `window.`, rompe la chiusura del modale padre dopo
+// un messaggio di operazione riuscita — e lo fa in SILENZIO, perche' il
+// chiamante ha un ramo di riserva che fa qualcosa di plausibile. Annotato
+// l'09/09/2026 (task 4.9), dopo che il legame era sfuggito a tutte le ricerche
+// e le tre funzioni erano state classificate due volte come eliminabili.
+//
+// Le tre `open*` non hanno questo vincolo: le chiama solo il codice qui intorno.
 window.openInsertDataModal = () => { toggleModal('insertDataModal', true); };
 window.closeInsertDataModal = () => { toggleModal('insertDataModal', false); };
 

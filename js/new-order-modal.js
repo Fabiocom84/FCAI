@@ -54,8 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.voInput) elements.voInput.addEventListener('input', formatVO);
     if (elements.rifTecnicoInput) elements.rifTecnicoInput.addEventListener('input', formatRifTecnico);
 
-    // Esponi la funzione globalmente
-    window.openNewOrderModal = openModal;
+    // RIMOSSA l'09/09/2026 (task 4.9): l'esposizione globale di `openModal`.
+    // "Esponi la funzione globalmente" — a nessuno: nessuna lettura da
+    // JavaScript, nessun attributo `onclick` in nessuna pagina, e il nome non e'
+    // fra quelli che `shared-ui.js` puo' costruire da un id. `openModal` resta
+    // e viene chiamata dall'interno del modulo, che e' l'unico posto da cui sia
+    // mai stata chiamata.
 
     // --- LOGICA PRINCIPALE ---
 

@@ -115,6 +115,33 @@ export function closeSuccessFeedbackModal() {
     if (feedbackModal) feedbackModal.style.display = 'none';
 
     const modalOverlay = document.getElementById('modalOverlay');
+
+    // ⚠ RICHIAMO PER NOME COSTRUITO — leggere prima di rinominare qualcosa.
+    //
+    // La riga qui sotto cerca una funzione globale il cui nome NON compare in
+    // nessun punto del progetto: lo costruisce dall'id dell'elemento. Un modale
+    // con `id="chatModal"` fa cercare `window.closeChatModal`.
+    //
+    // Oggi (09/09/2026) risolve tre nomi reali:
+    //     id="chatModal"        ->  window.closeChatModal        (chat-modal.js, main.js)
+    //     id="insertDataModal"  ->  window.closeInsertDataModal   (main.js)
+    //     id="trainingModal"    ->  window.closeTrainingModal     (main.js)
+    //
+    // PERCHE' QUESTO COMMENTO ESISTE. Cercando le variabili globali da
+    // eliminare (task 4.9) quelle tre risultavano "usate solo dentro il file che
+    // le definisce", e quindi eliminabili: nessuna ricerca testuale le collega a
+    // questa riga, perche' la stringa `closeChatModal` qui non c'e'. Il legame
+    // e' stato trovato per caso, e classificato male due volte prima di reggere.
+    // Chi rinominasse un modale, o togliesse il `window.` da una di quelle
+    // funzioni, romperebbe la chiusura del modale padre — in silenzio, perche'
+    // il ramo `else` qui sotto nasconde il guasto facendo qualcosa di
+    // plausibile.
+    //
+    // Il rimedio vero e' un registro esplicito, dove ogni modale annunci la
+    // propria funzione di chiusura invece di farsi trovare per convenzione sul
+    // nome. E' il punto 3 del task 4.9 in `04_roadmap_refactoring.md`: tocca la
+    // chiusura dei modali su tutte le pagine, e il frontend non ha ancora prove
+    // end-to-end che lo coprano.
     const parentModalCloseFunction = parentModalToClose ? window[`close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`] : null;
 
     if (parentModalCloseFunction) {
