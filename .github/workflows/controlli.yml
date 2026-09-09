@@ -1,0 +1,79 @@
+# Controlli automatici del frontend.
+#
+# PERCHE' ESISTE (09/09/2026)
+# Il riesame del 23/08/2026, punto 7, aveva trovato che tutte le discipline di
+# questo progetto vivevano nella conversazione e non nel repository: il
+# controllo delle impronte, la suite, la procedura di rilascio. Funzionavano
+# finche' qualcuno se ne ricordava.
+#
+# Il gancio pre-commit ha risolto meta' del problema, ma dipende da due cose che
+# non sono garantite: che sia stato installato (vive in `.git/hooks/`, che git
+# non versiona) e che la macchina abbia gli interpreti. Il 09/09 si e' scoperto
+# che su quella di Fabio manca `node`: le prove eseguibili erano nel repository
+# e non giravano da nessuna parte.
+#
+# Qui girano sempre, su una macchina che non e' quella di nessuno.
+#
+# NIENTE CREDENZIALI, ed e' una condizione del progetto e non una comodita':
+# tutti i controlli sono statici tranne le prove, che sostituiscono `fetch` con
+# una funzione finta. Nessun segreto in questo file, nessuna variabile
+# d'ambiente, nessuna chiamata verso Supabase o Cloud Run.
+
+name: Controlli
+
+on:
+  push:
+    branches: [main, staging, sviluppo-backend]
+  pull_request:
+
+jobs:
+  controlli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 1. Le impronte nei collegamenti e CACHE_VERSION corrispondono al
+      #    contenuto? Se no, il codice nuovo non arriverebbe agli utenti e il
+      #    collaudo direbbe che funziona, perche' si comporta come prima.
+      #    E' successo il 22/08/2026 con api-client.js.
+      - name: Impronte e CACHE_VERSION
+        run: python strumenti/versione_css.py --controlla
+
+      # 2. Ogni pagina riesce a caricarsi? Import risolti, export di funzioni
+      #    esistenti, nessuna chiave duplicata nello stesso oggetto — l'ultima
+      #    non produce alcun errore di console, quindi non la troverebbe
+      #    nemmeno un browser.
+      - name: Caricamento delle pagine
+        run: python strumenti/controlla_pagine.py
+
+      # 3. Ogni `segnala(X)` sta dentro il proprio `catch (X)`? Fuori solleva
+      #    ReferenceError su una pagina che gli utenti aprono: e' arrivato in
+      #    staging il 06/09/2026, trovato aprendo una pagina e non da un
+      #    controllo.
+      - name: Chiamate a segnala()
+        run: python strumenti/verifica_segnala.py
+
+      # 4. Le prove eseguono il codice invece di rileggerlo. Il primo giorno
+      #    che sono esistite hanno trovato un 401 che eseguiva il logout tre
+      #    volte con 1,5 secondi di attesa.
+      - name: Prove eseguibili
+        run: |
+          for prova in prove/*.prova.mjs; do
+            echo "── $prova"
+            node "$prova"
+          done
+
+      # 5. Non blocca: ha falsi positivi noti e documentati (15 all'09/09/2026).
+      #    Serve a rendere VISIBILE una voce nuova, che va guardata a mano.
+      #    Un controllo che blocca a sproposito insegna a scavalcarlo.
+      - name: Identificatori irrisolti (informativo)
+        continue-on-error: true
+        run: python strumenti/identificatori_irrisolti.py js/*.js

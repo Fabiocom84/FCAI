@@ -24,3 +24,6 @@ strumenti/
 # Prove eseguibili (09/09/2026): girano con node in locale e dal gancio
 # pre-commit. Servirle dal sito non le renderebbe piu' utili, solo pubbliche.
 prove/
+
+# Definizione della CI: gira su GitHub, non ha niente a che fare col sito.
+.github/
