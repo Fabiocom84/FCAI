@@ -1,20 +1,25 @@
 // js/modal-manager.js
 
+// LE CINQUE FUNZIONI DI QUESTO FILE NON SONO PIU' SU `window` — task 4.9,
+// 10/09/2026. Stanno dentro la IIFE, che e' esattamente il loro ambito d'uso:
+// nessuna pagina le nomina in un `onclick` (verificato su tutti i 21 file) e
+// nessun altro modulo le legge. Erano globali per abitudine, non per bisogno.
+
 (function() {
     const modalOverlay = document.getElementById('modalOverlay');
     let openElementCount = 0; // Contatore unificato per modali e leggende
 
     // Funzione per mostrare l'overlay
-    window.showOverlay = function() {
+    function showOverlay() {
         openElementCount++;
         if (modalOverlay) {
             modalOverlay.classList.add('is-open');
             console.log(`Overlay mostrato. Elementi aperti: ${openElementCount}`);
         }
-    };
+    }
 
     // Funzione per nascondere l'overlay
-    window.hideOverlay = function() {
+    function hideOverlay() {
         if (openElementCount > 0) {
             openElementCount--;
         }
@@ -24,27 +29,27 @@
             modalOverlay.classList.remove('is-open');
             console.log(`Overlay nascosto. Elementi aperti: ${openElementCount}`);
         }
-    };
+    }
 
     // Funzione generica per aprire un modale (o una leggenda, dato che usano lo stesso overlay)
-    window.openGenericElement = function(elementId) {
+    function openGenericElement(elementId) {
         const element = document.getElementById(elementId);
         if (element) {
             element.classList.add('is-open');
-            window.showOverlay();
+            showOverlay();
             document.body.classList.add('modal-open'); // Disabilita scroll del body
             console.log(`Elemento ${elementId} aperto.`);
         } else {
             console.error(`Errore: Elemento con ID ${elementId} non trovato.`);
         }
-    };
+    }
 
     // Funzione generica per chiudere un modale (o una leggenda)
-    window.closeGenericElement = function(elementId) {
+    function closeGenericElement(elementId) {
         const element = document.getElementById(elementId);
         if (element) {
             element.classList.remove('is-open');
-            window.hideOverlay();
+            hideOverlay();
             // Controlla se ci sono ancora modali/leggende aperti prima di rimuovere modal-open dal body
             if (openElementCount === 0) {
                 document.body.classList.remove('modal-open');
@@ -53,24 +58,24 @@
         } else {
             console.warn(`Tentativo di chiudere un elemento non esistente con ID ${elementId}.`);
         }
-    };
+    }
 
     // Funzione per chiudere TUTTI i modali e le leggende attualmente aperti
-    window.closeAllOpenElements = function() {
+    function closeAllOpenElements() {
         document.querySelectorAll('.modal.is-open, .legend.is-open').forEach(element => {
             element.classList.remove('is-open');
         });
         openElementCount = 0; // Reset diretto del contatore
-        window.hideOverlay(); // Forza la chiusura dell'overlay
+        hideOverlay(); // Forza la chiusura dell'overlay
         document.body.classList.remove('modal-open');
         console.log('Tutti gli elementi (modali/leggende) e overlay chiusi.');
-    };
+    }
 
     // Listener per chiudere l'overlay al click diretto sull'overlay stesso.
     if (modalOverlay) {
         modalOverlay.addEventListener('click', (event) => {
             if (event.target === modalOverlay) {
-                window.closeAllOpenElements();
+                closeAllOpenElements();
             }
         });
     }
@@ -87,7 +92,7 @@
         if (openInsertDataModalBtn) {
             openInsertDataModalBtn.addEventListener('click', (event) => {
                 event.preventDefault(); // Impedisce il comportamento di default del link
-                window.openGenericElement('insertDataModal');
+                openGenericElement('insertDataModal');
             });
         } else {
             console.warn('Pulsante #openInsertDataModalBtn non trovato.');
@@ -98,7 +103,7 @@
         if (openChatModalBtn) {
             openChatModalBtn.addEventListener('click', (event) => {
                 event.preventDefault();
-                window.openGenericElement('chatModal');
+                openGenericElement('chatModal');
             });
         } else {
             console.warn('Pulsante #openChatModalBtn non trovato.');
@@ -109,7 +114,7 @@
         if (openNewOrderModalBtn) {
             openNewOrderModalBtn.addEventListener('click', (event) => {
                 event.preventDefault();
-                window.openGenericElement('newOrderModal');
+                openGenericElement('newOrderModal');
             });
         } else {
             console.warn('Pulsante #openNewOrderModalBtn non trovato.');
@@ -120,7 +125,7 @@
         if (updateAIDbBtn) {
             updateAIDbBtn.addEventListener('click', (event) => {
                 event.preventDefault();
-                window.openGenericElement('knowledgeLogsModal');
+                openGenericElement('knowledgeLogsModal');
                 
                 // Logica specifica per l'aggiornamento della KB (spostata qui da main.js)
                 updateAIDbBtn.disabled = true;
@@ -149,9 +154,9 @@
                 const parentModal = button.closest('.modal');
                 const parentLegend = button.closest('.legend');
                 if (parentModal) {
-                    window.closeGenericElement(parentModal.id);
+                    closeGenericElement(parentModal.id);
                 } else if (parentLegend) {
-                    window.closeGenericElement(parentLegend.id);
+                    closeGenericElement(parentLegend.id);
                 }
             });
         });

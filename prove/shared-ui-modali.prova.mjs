@@ -1,29 +1,31 @@
 /**
  * Prove sulla chiusura dei modali in `js/shared-ui.js`.
  *
- * PERCHE' ESISTE
- * `closeSuccessFeedbackModal` chiama la funzione di chiusura del modale padre
- * per un nome COSTRUITO dall'id dell'elemento:
+ * STORIA DI QUESTO FILE, che e' il motivo per cui vale la pena leggerlo.
  *
- *     window[`close${id-con-iniziale-maiuscola}`]
+ * Nato il 09/09/2026 per coprire un richiamo per NOME COSTRUITO:
+ * `closeSuccessFeedbackModal` cercava la funzione di chiusura del modale padre
+ * come <code>window[`close${id}`]</code>, legando il nome di tre funzioni
+ * all'`id` del rispettivo modale senza che nessuna ricerca testuale potesse
+ * mostrarlo. Cercando le globali da eliminare (task 4.9), quelle tre erano
+ * state classificate DUE volte come rimovibili.
  *
- * La stringa `closeChatModal` non compare in nessun punto del progetto: il
- * legame fra questa riga e le tre funzioni che raggiunge non e' trovabile con
- * una ricerca testuale. Cercando le globali da eliminare (task 4.9) quelle tre
- * risultavano rimovibili, e sono state classificate male DUE volte prima che il
- * legame venisse fuori.
+ * Il 10/09 e' emerso che quel meccanismo **non e' mai stato eseguito**: delle
+ * sei chiamate a `showSuccessFeedbackModal` nel progetto, zero passavano un id.
+ * Il 09/09 avevo misurato che il richiamo POTEVA raggiungere tre nomi e avevo
+ * riferito che li raggiungeva, senza guardare i chiamanti.
  *
- * Rimuoverle avrebbe rotto la chiusura del modale padre **in silenzio**, perche'
- * il ramo di riserva qui sotto fa comunque qualcosa di plausibile: nasconde
- * l'elemento a mano. Nessun errore, nessun avviso, e un collaudo che dice
- * "sembra funzionare".
+ * E non era una funzionalita' dimenticata: ogni modale si chiude gia' da se',
+ * in due righe esplicite. Quindi e' stata rimossa, non cablata.
  *
- * Queste prove trasformano quella convenzione in qualcosa che si rompe
- * rumorosamente. Sono la precondizione dichiarata nella roadmap per il punto 1
- * del task 4.9 — sostituire il richiamo per nome con un registro esplicito.
+ * Le prove che restano fanno due cose diverse:
+ *   1. descrivono il comportamento attuale, che e' semplice;
+ *   2. **impediscono al meccanismo di rientrare** — sono i due casi in fondo, e
+ *      sono la ragione principale per cui questo file sopravvive alla rimozione.
  *
  *     node prove/shared-ui-modali.prova.mjs
  */
+import { readFileSync } from 'node:fs';
 import { elemento, installa } from './finto-dom.mjs';
 
 const esiti = [];
@@ -34,113 +36,43 @@ function verifica(nome, condizione, dettaglio = '') {
     if (!condizione && dettaglio) console.log(`      ${dettaglio}`);
 }
 
-/** Prepara un DOM finto con il modale di feedback e un modale padre. */
-function scena(idPadre) {
-    const feedback = elemento('success-feedback-modal');
-    const padre = elemento(idPadre);
-    const overlay = elemento('modalOverlay');
-    installa({ 'success-feedback-modal': feedback, [idPadre]: padre, modalOverlay: overlay });
-    return { feedback, padre, overlay };
-}
-
 const shared = await import('../js/shared-ui.js');
 
 // ---------------------------------------------------------------------------
-// 1. Il nome viene costruito dall'id, e la funzione trovata viene chiamata.
-// ---------------------------------------------------------------------------
-{
-    const { padre, overlay } = scena('chatModal');
-    let chiamata = 0;
-    globalThis.window.closeChatModal = () => { chiamata++; };
-
-    shared.showSuccessFeedbackModal('Fatto', 'Salvato', 'chatModal');
-    shared.closeSuccessFeedbackModal();
-
-    verifica('id="chatModal" fa chiamare window.closeChatModal',
-        chiamata === 1, `chiamate osservate: ${chiamata}`);
-    verifica('quando la trova, NON nasconde il padre a mano (lo fa la funzione)',
-        padre.style.display !== 'none' && overlay.style.display !== 'none',
-        `padre=${padre.style.display} overlay=${overlay.style.display}`);
-    delete globalThis.window.closeChatModal;
-}
-
-// ---------------------------------------------------------------------------
-// 2. La maiuscola conta: `insertDataModal` -> `closeInsertDataModal`.
-//    Se qualcuno cambiasse il calcolo del nome, questo caso lo direbbe.
-// ---------------------------------------------------------------------------
-{
-    scena('insertDataModal');
-    let giusta = 0, sbagliata = 0;
-    globalThis.window.closeInsertDataModal = () => { giusta++; };
-    globalThis.window.closeinsertDataModal = () => { sbagliata++; };
-
-    shared.showSuccessFeedbackModal('Fatto', 'Salvato', 'insertDataModal');
-    shared.closeSuccessFeedbackModal();
-
-    verifica('l\'iniziale viene resa maiuscola: closeInsertDataModal',
-        giusta === 1 && sbagliata === 0, `giusta=${giusta} sbagliata=${sbagliata}`);
-    delete globalThis.window.closeInsertDataModal;
-    delete globalThis.window.closeinsertDataModal;
-}
-
-// ---------------------------------------------------------------------------
-// 3. IL CASO CHE CONTA: se la funzione NON esiste, il codice non fallisce —
-//    nasconde l'elemento a mano. E' il ramo che rende invisibile il guasto, ed
-//    e' esattamente cio' che sarebbe successo togliendo quelle globali.
-// ---------------------------------------------------------------------------
-{
-    const { padre, overlay } = scena('trainingModal');
-    // nessuna window.closeTrainingModal definita
-    shared.showSuccessFeedbackModal('Fatto', 'Salvato', 'trainingModal');
-    shared.closeSuccessFeedbackModal();
-
-    verifica('senza la funzione non solleva errori: il guasto resta silenzioso',
-        padre.style.display === 'none' && overlay.style.display === 'none',
-        `padre=${padre.style.display} overlay=${overlay.style.display}`);
-}
-
-// ---------------------------------------------------------------------------
-// 4. Senza modale padre: si chiude solo la sovrapposizione.
+// 1. Comportamento attuale: chiude se stesso e la sovrapposizione, e basta.
 // ---------------------------------------------------------------------------
 {
     const feedback = elemento('success-feedback-modal');
     const overlay = elemento('modalOverlay');
-    installa({ 'success-feedback-modal': feedback, modalOverlay: overlay });
+    const altro = elemento('chatModal');
+    installa({ 'success-feedback-modal': feedback, modalOverlay: overlay, chatModal: altro });
 
-    shared.showSuccessFeedbackModal('Fatto', 'Salvato', null);
+    shared.showSuccessFeedbackModal('Fatto', 'Salvato');
+    verifica('si mostra', feedback.style.display === 'block', `display=${feedback.style.display}`);
+
     shared.closeSuccessFeedbackModal();
-
-    verifica('senza modale padre chiude la sovrapposizione',
-        overlay.style.display === 'none',
-        `overlay=${overlay.style.display}`);
-
-    // Il caso qui sopra e' nato sbagliato: dava per scontato che anche
-    // `feedback.style.display` diventasse 'none'. Non succede, e la ragione e'
-    // comportamento reale che vale la pena fissare qui invece di aggirare.
-    verifica('il modale di feedback e\' MEMORIZZATO al primo uso e mai riletto',
-        feedback.style.display === undefined,
-        `il nuovo elemento risulta toccato: ${feedback.style.display}`);
+    verifica('chiude se stesso e la sovrapposizione',
+        feedback.style.display === 'none' && overlay.style.display === 'none',
+        `feedback=${feedback.style.display} overlay=${overlay.style.display}`);
+    verifica('NON tocca altri modali della pagina',
+        altro.style.display === undefined,
+        `chatModal risulta toccato: ${altro.style.display}`);
 }
 
 // ---------------------------------------------------------------------------
-// 5b. Conseguenza della memorizzazione: se la pagina sostituisce l'elemento
-//     `#success-feedback-modal` nel DOM, `shared-ui.js` continua a usare quello
-//     vecchio — che non e' piu' attaccato a niente. Il messaggio di conferma
-//     smette di comparire e nessun errore lo dice. Oggi non capita, perche' quel
-//     modale sta nel markup statico e nessuno lo ricrea: e' un rischio
-//     documentato, non un difetto vivo.
+// 2. `feedbackModal` e' memorizzato al primo uso e mai riletto. Comportamento
+//    reale, emerso scrivendo queste prove: se una pagina sostituisse
+//    `#success-feedback-modal` nel DOM, `shared-ui.js` continuerebbe a usare
+//    quello vecchio e il messaggio smetterebbe di comparire senza un errore.
+//    Oggi non capita — quel modale sta nel markup statico — ed e' documentato
+//    qui invece che da scoprire un domani.
 // ---------------------------------------------------------------------------
 {
-    const vecchio = elemento('success-feedback-modal');
     const overlay = elemento('modalOverlay');
-    installa({ 'success-feedback-modal': vecchio, modalOverlay: overlay });
-    shared.showSuccessFeedbackModal('Primo', 'msg', null);
-    shared.closeSuccessFeedbackModal();
-
     const nuovo = elemento('success-feedback-modal');
     installa({ 'success-feedback-modal': nuovo, modalOverlay: overlay });
-    shared.showSuccessFeedbackModal('Secondo', 'msg', null);
 
+    shared.showSuccessFeedbackModal('Secondo', 'msg');
     verifica('sostituendo l\'elemento nel DOM, continua a usare quello vecchio',
         nuovo.style.display === undefined,
         `il nuovo elemento e' stato usato: ${nuovo.style.display}`);
@@ -148,26 +80,46 @@ const shared = await import('../js/shared-ui.js');
 }
 
 // ---------------------------------------------------------------------------
-// 5. I TRE NOMI CHE OGGI ESISTONO DAVVERO. Questo caso non prova il codice:
-//    prova la CORRISPONDENZA fra gli id usati nel progetto e i nomi definiti.
-//    Se qualcuno rinomina un modale o una funzione, senza toccare l'altro capo,
-//    qui si rompe — che e' l'unico posto in cui possa rompersi rumorosamente.
+// 3. GUARDIA: niente ricerche per nome costruito in shared-ui.js.
+//
+//    Vincolano il nome di una funzione a un attributo dell'HTML senza che
+//    nessuna ricerca testuale possa mostrarlo. In questo progetto e' gia'
+//    costato due classificazioni sbagliate con gli strumenti in mano.
 // ---------------------------------------------------------------------------
 {
-    const coppie = [
-        ['chatModal', 'closeChatModal'],
-        ['insertDataModal', 'closeInsertDataModal'],
-        ['trainingModal', 'closeTrainingModal'],
-    ];
-    const { readFileSync } = await import('node:fs');
-    const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
+    const src = readFileSync(new URL('../js/shared-ui.js', import.meta.url), 'utf8');
+    const senzaCommenti = src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    verifica('shared-ui.js non cerca funzioni con window[...]',
+        !/window\s*\[/.test(senzaCommenti),
+        'trovato un accesso dinamico a window: ' +
+        (senzaCommenti.match(/window\s*\[[^\]]{0,50}\]/) || [''])[0]);
+}
 
-    for (const [id, atteso] of coppie) {
-        const calcolato = `close${id.charAt(0).toUpperCase() + id.slice(1)}`;
-        verifica(`id "${id}" -> ${calcolato}, ed e' definita in main.js`,
-            calcolato === atteso && new RegExp(`window\\.${atteso}\\s*=`).test(main),
-            `calcolato=${calcolato}, definita=${new RegExp(`window\\.${atteso}\\s*=`).test(main)}`);
+// ---------------------------------------------------------------------------
+// 4. GUARDIA: nessuno passa un terzo argomento a showSuccessFeedbackModal.
+//
+//    Il parametro non esiste piu'. Se qualcuno lo ripassasse, JavaScript lo
+//    ignorerebbe in silenzio e chi l'ha scritto crederebbe che il modale padre
+//    si chiuda. Questo caso lo dice ad alta voce.
+// ---------------------------------------------------------------------------
+{
+    const { readdirSync } = await import('node:fs');
+    const cartella = new URL('../js/', import.meta.url);
+    let colpevoli = [];
+    for (const f of readdirSync(cartella).filter(n => n.endsWith('.js'))) {
+        const t = readFileSync(new URL(f, cartella), 'utf8');
+        for (const m of t.matchAll(/showSuccessFeedbackModal\s*\(([^;]{0,200}?)\)\s*;/gs)) {
+            let liv = 0, virgole = 0;
+            for (const c of m[1]) {
+                if ('([{'.includes(c)) liv++;
+                else if (')]}'.includes(c)) liv--;
+                else if (c === ',' && liv === 0) virgole++;
+            }
+            if (virgole >= 2) colpevoli.push(`${f}: ${m[1].slice(0, 60)}`);
+        }
     }
+    verifica('nessuna chiamata passa un id di modale padre',
+        colpevoli.length === 0, colpevoli.join(' | '));
 }
 
 // ---------------------------------------------------------------------------

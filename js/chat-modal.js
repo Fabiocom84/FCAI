@@ -21,9 +21,20 @@ let chatHistory = [];
 
 // --- 3. FUNZIONI PRINCIPALI ---
 
-// Funzione per aprire il modale della chat
-// (Esportiamo la funzione se serve chiamarla da altri file, o la lasciamo globale)
-window.openChatModal = function () {
+// ⚠ QUESTA FUNZIONE E `closeChatModal` NON SONO RAGGIUNGIBILI — 10/09/2026.
+//
+// Erano su `window` e sono state rese locali col task 4.9, ma erano gia' morte
+// prima: nessuno le chiama, ne' qui, ne' da un altro modulo, ne' da un attributo
+// `onclick` (verificato su tutti i 21 file). `chat.html` non apre un modale —
+// ha un `<div id="chatPanel">` che fa parte della pagina.
+//
+// NON sono state cancellate perche' `closeChatModal` descrive cosa dovrebbe
+// succedere alla chiusura: fermare il riconoscimento vocale e salvare la
+// cronologia. Il salvataggio pero' avviene per un'altra via, dal pulsante Home
+// in fondo a questo file — quindi non si sta perdendo nulla oggi.
+//
+// Da decidere: cancellarle, o ricollegarle se il pannello tornera' un modale.
+function openChatModal() {
     if (chatModal) chatModal.style.display = 'flex';
     if (modalOverlay) modalOverlay.style.display = 'block';
     if (chatInput) chatInput.focus();
@@ -36,15 +47,16 @@ window.openChatModal = function () {
 };
 
 // Funzione per chiudere il modale
-// ⚠ Il nome NON e' libero: `shared-ui.js` cerca questa funzione come
-// `window['close' + id]`, dove `id` e' `chatModal`. La stringa che le collega
-// non esiste in nessun punto del progetto. Vedi il commento esteso in
-// `shared-ui.js`, in `closeSuccessFeedbackModal`. Annotato l'09/09/2026.
+// CORREZIONE DEL 10/09/2026: il commento che stava qui diceva che il nome di
+// questa funzione non fosse libero, perche' `shared-ui.js` la cercava come
+// `window['close' + id]`. Il meccanismo c'era ma non e' mai stato eseguito —
+// nessuna chiamata passava un id — ed e' stato rimosso. Il nome e' libero.
 //
-// Nota: `main.js` definisce una PROPRIA `window.closeChatModal`. Le due non si
-// incontrano — nessuna pagina carica entrambi i file, verificato — ma sono due
-// implementazioni dello stesso nome, ed e' un debito a parte.
-window.closeChatModal = async function () {
+// Resta vero il resto: `main.js` definisce una PROPRIA `window.closeChatModal`.
+// Le due non si incontrano, perche' nessuna pagina carica entrambi i file
+// (verificato), ma sono due implementazioni dello stesso nome ed e' un debito
+// a parte.
+async function closeChatModal() {
     if (chatModal) chatModal.style.display = 'none';
     if (modalOverlay) modalOverlay.style.display = 'none';
 

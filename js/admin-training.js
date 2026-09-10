@@ -1,6 +1,4 @@
 import { apiFetch } from './api-client.js';
-import { showSuccessFeedbackModal } from './shared-ui.js';
-
 // DOM Elements
 const step1 = document.getElementById('step-1');
 const step2 = document.getElementById('step-2');

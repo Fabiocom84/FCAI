@@ -71,6 +71,13 @@ function getMarkerIcon() {
 
 
 // --- GEO MAP FEATURE ---
+// Stato del sottosistema. `impostaVistaMobile` e `saltaProssimoAdattamento`
+// stavano su `window` fino al 10/09/2026 (task 4.9): non per farsi trovare da
+// fuori — nessun altro file li legge — ma solo per attraversare due funzioni
+// di questo stesso modulo. Una variabile di modulo fa la stessa cosa senza
+// mettere due nomi nello spazio globale di ogni pagina.
+let impostaVistaMobile = null;
+let saltaProssimoAdattamento = false;
 let geoMap = null;
 let geoMarkersLayer = null;
 let allGeoCommesse = []; // Cache for filtering locally
@@ -138,7 +145,7 @@ function setupGeoMapControls() {
     }
 
     // Expose for sidebar
-    window.geoMapSetMobileView = setMobileView;
+    impostaVistaMobile = setMobileView;
 }
 
 function initGeoMap() {
@@ -226,11 +233,11 @@ function renderGeoMapMarkers(list) {
         }
     });
 
-    if (list.length > 0 && !window.skipNextGeoFit) {
+    if (list.length > 0 && !saltaProssimoAdattamento) {
         geoMap.fitBounds(bounds, { padding: [50, 50] });
     }
     // Reset flag immediately after check so next manual open works
-    window.skipNextGeoFit = false;
+    saltaProssimoAdattamento = false;
 }
 
 function renderGeoMapSidebar() {
@@ -272,8 +279,8 @@ function renderGeoMapSidebar() {
             div.style.background = '#e1f5fe'; // Selected
 
             // Auto-switch to map on mobile
-            if (window.innerWidth <= 768 && window.geoMapSetMobileView) {
-                window.geoMapSetMobileView('map');
+            if (window.innerWidth <= 768 && impostaVistaMobile) {
+                impostaVistaMobile('map');
             }
 
             // Fly to marker
@@ -320,7 +327,7 @@ function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
     // 2. Open Modal
     const btnOpenGeoMap = document.getElementById('btn-open-geomap');
     if (btnOpenGeoMap) {
-        window.skipNextGeoFit = true; // [FIX] Prevent fitBounds from resetting view
+        saltaProssimoAdattamento = true; // [FIX] Prevent fitBounds from resetting view
         btnOpenGeoMap.click();
     }
 

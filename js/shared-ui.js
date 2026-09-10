@@ -72,10 +72,35 @@ export function showModal(options) {
     });
 }
 
-let feedbackModal, countdownInterval, closeTimeout, parentModalToClose;
+let feedbackModal, countdownInterval, closeTimeout;
 
-// Esporta la funzione per renderla importabile
-export function showSuccessFeedbackModal(title, message, parentModalId) {
+/**
+ * Messaggio di conferma con chiusura automatica.
+ *
+ * IL TERZO PARAMETRO E' STATO RIMOSSO il 10/09/2026 (task 4.9).
+ * Si chiamava `parentModalId` e serviva a far chiudere anche il modale da cui
+ * l'operazione era partita. Non ha mai funzionato, nel senso letterale: delle
+ * SEI chiamate esistenti nel progetto, zero passavano un id — `inserisci-dati.js`
+ * passava esplicitamente `null`, le altre cinque si fermavano a due argomenti.
+ *
+ * E non era una funzionalita' dimenticata, era una funzionalita' resa superflua:
+ * ogni modale si chiude gia' da se'. In `insert-data-modal.js` sono due righe
+ * nell'ordine giusto —
+ *
+ *     closeQuickModal();
+ *     showModal({ title: "Successo", ... });
+ *
+ * Cablare il meccanismo avrebbe spostato quella responsabilita' dentro
+ * `shared-ui.js`, che avrebbe dovuto imparare a chiudere modali non suoi e
+ * tenere un registro per farlo. Ogni modale che possiede la propria chiusura e'
+ * la disposizione migliore, e c'era gia'.
+ *
+ * Con il parametro se n'e' andato il richiamo per nome costruito —
+ * <code>window[`close${id}`]</code> — che vincolava il NOME di tre funzioni
+ * all'`id` del rispettivo modale senza che nessuna ricerca testuale potesse
+ * mostrarlo.
+ */
+export function showSuccessFeedbackModal(title, message) {
     if (!feedbackModal) {
         feedbackModal = document.getElementById('success-feedback-modal');
     }
@@ -86,7 +111,6 @@ export function showSuccessFeedbackModal(title, message, parentModalId) {
 
     feedbackModal.querySelector('#feedback-modal-title').textContent = title;
     feedbackModal.querySelector('#feedback-modal-message').textContent = message;
-    parentModalToClose = document.getElementById(parentModalId);
 
     const modalOverlay = document.getElementById('modalOverlay');
     feedbackModal.style.display = 'block';
@@ -114,44 +138,22 @@ export function closeSuccessFeedbackModal() {
 
     if (feedbackModal) feedbackModal.style.display = 'none';
 
+    // Qui stavano venticinque righe che cercavano la funzione di chiusura del
+    // modale padre per un nome COSTRUITO dall'id dell'elemento:
+    //
+    //     window[`close${id-con-iniziale-maiuscola}`]
+    //
+    // Rimosse il 10/09/2026 insieme al parametro `parentModalId`, che nessuna
+    // delle sei chiamate del progetto passava. Il dettaglio e il perche' stanno
+    // sopra, su `showSuccessFeedbackModal`.
+    //
+    // NON RIMETTERE UNA RICERCA PER NOME COSTRUITO. Vincola il nome di una
+    // funzione a un attributo dell'HTML senza che nessuna ricerca testuale
+    // possa mostrarlo, e in questo progetto ha gia' fatto classificare tre
+    // funzioni come eliminabili — due volte, con gli strumenti in mano. Se
+    // servisse davvero, si passa la funzione come argomento.
     const modalOverlay = document.getElementById('modalOverlay');
-
-    // ⚠ RICHIAMO PER NOME COSTRUITO — leggere prima di rinominare qualcosa.
-    //
-    // La riga qui sotto cerca una funzione globale il cui nome NON compare in
-    // nessun punto del progetto: lo costruisce dall'id dell'elemento. Un modale
-    // con `id="chatModal"` fa cercare `window.closeChatModal`.
-    //
-    // Oggi (09/09/2026) risolve tre nomi reali:
-    //     id="chatModal"        ->  window.closeChatModal        (chat-modal.js, main.js)
-    //     id="insertDataModal"  ->  window.closeInsertDataModal   (main.js)
-    //     id="trainingModal"    ->  window.closeTrainingModal     (main.js)
-    //
-    // PERCHE' QUESTO COMMENTO ESISTE. Cercando le variabili globali da
-    // eliminare (task 4.9) quelle tre risultavano "usate solo dentro il file che
-    // le definisce", e quindi eliminabili: nessuna ricerca testuale le collega a
-    // questa riga, perche' la stringa `closeChatModal` qui non c'e'. Il legame
-    // e' stato trovato per caso, e classificato male due volte prima di reggere.
-    // Chi rinominasse un modale, o togliesse il `window.` da una di quelle
-    // funzioni, romperebbe la chiusura del modale padre — in silenzio, perche'
-    // il ramo `else` qui sotto nasconde il guasto facendo qualcosa di
-    // plausibile.
-    //
-    // Il rimedio vero e' un registro esplicito, dove ogni modale annunci la
-    // propria funzione di chiusura invece di farsi trovare per convenzione sul
-    // nome. E' il punto 3 del task 4.9 in `04_roadmap_refactoring.md`: tocca la
-    // chiusura dei modali su tutte le pagine, e il frontend non ha ancora prove
-    // end-to-end che lo coprano.
-    const parentModalCloseFunction = parentModalToClose ? window[`close${parentModalToClose.id.charAt(0).toUpperCase() + parentModalToClose.id.slice(1)}`] : null;
-
-    if (parentModalCloseFunction) {
-        parentModalCloseFunction();
-    } else if (parentModalToClose) {
-        parentModalToClose.style.display = 'none';
-        if (modalOverlay) modalOverlay.style.display = 'none';
-    } else {
-        if (modalOverlay) modalOverlay.style.display = 'none';
-    }
+    if (modalOverlay) modalOverlay.style.display = 'none';
 }
 
 /* =========================================================================

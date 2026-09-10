@@ -186,48 +186,49 @@ function bindGlobalEvents() {
     };
 
     // Binding Apertura Modali
-    bind('openInsertDataModalBtn', window.openInsertDataModal);
-    bind('openChatModalBtn', window.openChatModal);
-    bind('openTrainingModalBtn', window.openTrainingModal);
+    bind('openInsertDataModalBtn', openInsertDataModal);
+    bind('openChatModalBtn', openChatModal);
+    bind('openTrainingModalBtn', openTrainingModal);
 
     // Gestione Chiusura Overlay clickando fuori
     const overlay = document.getElementById('modalOverlay');
     if (overlay) {
         overlay.addEventListener('click', () => {
-            if (document.querySelector('#insertDataModal')?.style.display === 'block') window.closeInsertDataModal();
-            if (document.querySelector('#chatModal')?.style.display === 'block') window.closeChatModal();
-            if (document.querySelector('#trainingModal')?.style.display === 'block') window.closeTrainingModal();
+            if (document.querySelector('#insertDataModal')?.style.display === 'block') closeInsertDataModal();
+            if (document.querySelector('#chatModal')?.style.display === 'block') closeChatModal();
+            if (document.querySelector('#trainingModal')?.style.display === 'block') closeTrainingModal();
         });
     }
 }
 
-// Funzioni Globali per l'HTML (Retrocompatibilità)
-// ⚠ LE TRE `close*` QUI SOTTO SONO CHIAMATE DA UN NOME COSTRUITO.
+// Apertura e chiusura dei tre modali di questa pagina.
 //
-// `shared-ui.js`, in `closeSuccessFeedbackModal`, cerca
-// `window['close' + id-del-modale-con-l-iniziale-maiuscola]`. Quindi il nome di
-// queste funzioni NON e' libero: e' legato all'attributo `id` del rispettivo
-// modale, e la stringa che le collega non esiste in nessun punto del progetto.
+// NON SONO PIU' SU `window` — task 4.9, 10/09/2026.
 //
-//     id="insertDataModal"  ->  closeInsertDataModal
-//     id="chatModal"        ->  closeChatModal
-//     id="trainingModal"    ->  closeTrainingModal
+// Erano globali per due ragioni, entrambe cadute. La prima era il commento che
+// stava qui, e diceva il falso: sostenevo che `shared-ui.js` le chiamasse per
+// un nome costruito dall'id del modale. Il meccanismo esisteva ma non e' MAI
+// stato eseguito — delle sei chiamate a `showSuccessFeedbackModal`, zero
+// passavano un id — ed e' stato rimosso. Avevo misurato che quel richiamo
+// POTEVA raggiungerle e avevo riferito che le raggiungeva, senza guardare i
+// chiamanti.
 //
-// Rinominarle, o togliere il `window.`, rompe la chiusura del modale padre dopo
-// un messaggio di operazione riuscita — e lo fa in SILENZIO, perche' il
-// chiamante ha un ramo di riserva che fa qualcosa di plausibile. Annotato
-// l'09/09/2026 (task 4.9), dopo che il legame era sfuggito a tutte le ricerche
-// e le tre funzioni erano state classificate due volte come eliminabili.
+// La seconda era «Funzioni Globali per l'HTML (Retrocompatibilità)»: nessuna
+// pagina le nomina in un attributo `onclick`, verificato su tutti i 21 file.
 //
-// Le tre `open*` non hanno questo vincolo: le chiama solo il codice qui intorno.
-window.openInsertDataModal = () => { toggleModal('insertDataModal', true); };
-window.closeInsertDataModal = () => { toggleModal('insertDataModal', false); };
+// Le chiama solo il codice di questo file: `bindGlobalEvents` qui sopra, per i
+// pulsanti e per il clic sulla sovrapposizione. Dichiarate con `function` e non
+// con `const` perche' `bindGlobalEvents` le nomina prima di questa riga: le
+// dichiarazioni di funzione si sollevano, quindi l'ordine non e' piu' un
+// vincolo da ricordare.
+function openInsertDataModal() { toggleModal('insertDataModal', true); }
+function closeInsertDataModal() { toggleModal('insertDataModal', false); }
 
-window.openChatModal = () => { toggleModal('chatModal', true); };
-window.closeChatModal = () => { toggleModal('chatModal', false); };
+function openChatModal() { toggleModal('chatModal', true); }
+function closeChatModal() { toggleModal('chatModal', false); }
 
-window.openTrainingModal = () => { toggleModal('trainingModal', true); };
-window.closeTrainingModal = () => { toggleModal('trainingModal', false); };
+function openTrainingModal() { toggleModal('trainingModal', true); }
+function closeTrainingModal() { toggleModal('trainingModal', false); }
 
 // Helper unico per i modali
 function toggleModal(modalId, show) {

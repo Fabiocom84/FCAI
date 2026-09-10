@@ -250,7 +250,7 @@ async function handleFormSubmit(e) {
 
         if (!response.ok) throw new Error(await response.text());
 
-        showSuccessFeedbackModal("Dati Salvati!", "Il contenuto è stato archiviato.", null);
+        showSuccessFeedbackModal("Dati Salvati!", "Il contenuto è stato archiviato.");
 
         // Reset del form per permettere un nuovo inserimento senza redirect
         document.getElementById('voiceTranscription').value = '';
