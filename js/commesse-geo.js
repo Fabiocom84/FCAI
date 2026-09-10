@@ -8,14 +8,15 @@
 // PERCHE' QUI E NON IN commesse.js
 // Non per lunghezza: questo codice non tocca l'oggetto `App`. Nessun `this`,
 // nessun `App.state`, nessun `App.dom` — ha il proprio stato, e il legame con
-// la pagina passa da due punti soli (`setupGeoMapControls` chiamata in
-// `App.addEventListeners`, e `window.openGeoMap`). Era gia' un modulo: gli
+// la pagina passa da due punti soli, entrambi import espliciti di
+// `commesse.js`: `setupGeoMapControls` e `openGeoMap`. Era gia' un modulo: gli
 // mancava solo il file.
 //
-// `window.openGeoMap` resta un globale perche' l'HTML delle card lo invoca da
-// un attributo `onclick` inline, generato in `renderCards`. Finche' quella
-// stringa esiste, togliere il globale rompe il pulsante Mappa senza che nulla
-// lo segnali: `onclick` fallisce in silenzio se la funzione non c'e'.
+// FINO AL 10/09/2026 `openGeoMap` era anche su `window`, perche' l'HTML delle
+// card la invocava da un attributo `onclick` generato in `renderCards` — e un
+// attributo HTML non vede gli import di un modulo. Quell'`onclick` e' stato
+// sostituito da un `addEventListener`, e con lui e' caduto il globale (task
+// 4.9, punto 2).
 //
 // Il file nasceva con una seconda funzionalita', la geocodifica del form di
 // creazione commessa. E' stata rimossa lo stesso giorno: agiva sui campi
@@ -362,7 +363,9 @@ function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
     }, 600);
 }
 
-// Expose to App scope if needed, or window
-window.openGeoMap = openGeoMap;
+// RIMOSSO il 10/09/2026 (task 4.9): `window.openGeoMap = openGeoMap`.
+// Serviva all'`onclick` del pulsante Mappa, generato nella stringa template
+// di `renderCards`. Ora `commesse.js` importa la funzione e la lega con
+// `addEventListener`, quindi il globale non ha piu' lettori.
 
 export { setupGeoMapControls, openGeoMap };

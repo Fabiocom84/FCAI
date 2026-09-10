@@ -3,7 +3,7 @@
 import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
-import { setupGeoMapControls } from './commesse-geo.js';
+import { setupGeoMapControls, openGeoMap } from './commesse-geo.js';
 
 const App = {
     state: {
@@ -612,7 +612,7 @@ const App = {
                         
                         <!-- RIGA 1: MAPPA + ORE -->
                         <div style="display:flex; gap:8px; margin-bottom:8px;">
-                             <button class="std-btn ${c.posizione_esatta ? 'std-btn--blue' : 'std-btn--orange'}" onclick="window.openGeoMap(${c.id_commessa}, ${c.latitudine || 'null'}, ${c.longitudine || 'null'}, '${encodeURIComponent(c.impianto || 'Impianto')}', '${encodeURIComponent(c.clienti?.ragione_sociale || '')}'); event.stopPropagation();" style="flex:1; padding:8px; font-size:0.85em;" title="${c.posizione_esatta ? 'Posizione Esatta' : 'Posizione Approssimativa'}">
+                             <button class="std-btn btn-geomap ${c.posizione_esatta ? 'std-btn--blue' : 'std-btn--orange'}" style="flex:1; padding:8px; font-size:0.85em;" title="${c.posizione_esatta ? 'Posizione Esatta' : 'Posizione Approssimativa'}">
                                  ${c.posizione_esatta ? '🗺️ Mappa' : '⚠️ Mappa'}
                              </button>
                              <a href="inserimento-ore.html?commessaId=${c.id_commessa}" class="std-btn std-btn--primary" style="flex:1; padding:8px; font-size:0.85em; text-decoration:none; text-align:center;">
@@ -648,6 +648,32 @@ const App = {
             `;
 
             // --- BINDING EVENTI (Con stopPropagation per evitare click su card non voluti) ---
+
+            // 0. Pulsante Mappa — legato qui dal 10/09/2026 (task 4.9, punto 2).
+            //
+            // Era un `onclick` scritto dentro la stringa template, e per
+            // funzionare da li' obbligava `openGeoMap` a stare su `window`:
+            // un attributo HTML non vede gli import di un modulo. Togliendo
+            // l'attributo cade anche il globale.
+            //
+            // Gli argomenti restano codificati con `encodeURIComponent` perche'
+            // `openGeoMap` li decodifica al proprio interno. Ora che non
+            // attraversano piu' un attributo la codifica e' un residuo, ma
+            // toglierla vuol dire cambiare anche `openGeoMap`: due modifiche
+            // insieme sono due modi di sbagliare.
+            const btnGeoMap = card.querySelector('.btn-geomap');
+            if (btnGeoMap) {
+                btnGeoMap.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openGeoMap(
+                        c.id_commessa,
+                        c.latitudine ?? null,
+                        c.longitudine ?? null,
+                        encodeURIComponent(c.impianto || 'Impianto'),
+                        encodeURIComponent(c.clienti?.ragione_sociale || '')
+                    );
+                });
+            }
 
             // 1. Status Change (Solo Admin)
             const statusSelect = card.querySelector('.status-select-badge');

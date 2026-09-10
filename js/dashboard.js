@@ -1013,11 +1013,25 @@ const Dashboard = {
         header.innerHTML = `
             <span class="filter-title">${title}</span>
             <div class="filter-actions">
-                <span title="Seleziona Tutto" onclick="Dashboard.toggleAllFilter('${filterKey}', true, this)">☑️</span>
-                <span title="Deseleziona Tutto" onclick="Dashboard.toggleAllFilter('${filterKey}', false, this)">⬜</span>
+                <span title="Seleziona Tutto" data-seleziona="tutto">☑️</span>
+                <span title="Deseleziona Tutto" data-seleziona="niente">⬜</span>
             </div>
         `;
         container.appendChild(header);
+
+        // Legate qui dal 10/09/2026 (task 4.9, punto 2). Erano due `onclick`
+        // scritti nella stringa template, e per funzionare da li' obbligavano
+        // l'intero oggetto `Dashboard` a stare su `window`: un attributo HTML
+        // non vede le variabili di un modulo. Erano gli ULTIMI due usi di quel
+        // globale, quindi togliendoli cade anche lui.
+        //
+        // L'`onclick` passava tre argomenti — `(chiave, booleano, this)` — a una
+        // funzione che ne prende due. Il terzo e' sempre stato ignorato.
+        header.querySelectorAll('[data-seleziona]').forEach(span => {
+            span.addEventListener('click', () => {
+                this.toggleAllFilter(filterKey, span.dataset.seleziona === 'tutto');
+            });
+        });
 
         // Current Filter State
         const currentIds = this.state.filters[filterKey];
@@ -1485,5 +1499,9 @@ const Dashboard = {
 };
 
 // Global for inline onclick
-window.Dashboard = Dashboard;
+// RIMOSSO il 10/09/2026 (task 4.9): `window.Dashboard = Dashboard`.
+// L'oggetto stava su `window` per un motivo solo — due `onclick` scritti
+// nella stringa template di `renderCheckList`, che da un attributo HTML non
+// potevano vedere una variabile di modulo. Sostituiti con `addEventListener`
+// nello stesso commit, questo globale non ha piu' lettori.
 document.addEventListener('DOMContentLoaded', () => Dashboard.init());
