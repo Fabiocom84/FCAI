@@ -110,9 +110,14 @@
                     <option value="registro_produzione">Registro Produzione</option>
                     <option value="audit_log">📋 Registro Attività</option>
                 </select>
-                <!-- Help Button moved here -->
-                <button class="help-button" id="pageHelpBtn" data-legend="agileViewLegend"
-                    style="margin-left: 10px;">?</button>
+                <!-- Il pulsante "?" e' stato rimosso il 13/09/2026 (task 5.1).
+                     Puntava a `agileViewLegend`, un id che in questa pagina non
+                     esiste, e `Legend` non era nemmeno istanziata qui: il clic
+                     non produceva nulla. Un "?" che non risponde insegna che la
+                     guida non funziona, ed e' peggio della sua assenza.
+                     Per rimetterlo servono due cose: il contenitore della legenda
+                     con quell'id, e il testo — che lo sa scrivere solo chi usa
+                     questa pagina. -->
             </div>
         </div>
 
@@ -167,8 +172,8 @@
          DIVERSI (`js/x.js?v=N` contro `./x.js`), quindi il browser caricava ed
          eseguiva due istanze separate dello stesso modulo — config.js tre volte.
          Era inerte per tre motivi accidentali, non progettati. -->
-    <script type="module" src="js/auth-guard.js?v=b1f9648d"></script>
-    <script type="module" src="js/gestione.js?v=b1f9648d"></script>
+    <script type="module" src="js/auth-guard.js?v=9d81ce45"></script>
+    <script type="module" src="js/gestione.js?v=9d81ce45"></script>
 </body>
 
 </html>

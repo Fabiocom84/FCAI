@@ -3,7 +3,10 @@
 import { apiFetch, segnala } from './api-client.js';
 import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
-import Legend from './legend.js';
+// `Legend` non e' piu' importata qui dal 13/09/2026 (task 5.1): il solo
+// pulsante "?" di questa pagina puntava a un id inesistente ed e' stato
+// rimosso, quindi la classe non avrebbe nulla a cui attaccarsi. Resta viva su
+// `index.html`, dove il pulsante e la legenda esistono entrambi.
 
 // Cache delle commesse per riuso nella sezione orfane
 let cachedCommesse = [];
@@ -14,7 +17,6 @@ let isRecording = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("Inizializzazione Inserisci Dati - Modalità: Audio Effimero");
-    new Legend();
     await loadCommesseDropdown();
     setupEventListeners();
     await loadOrphanNotes();

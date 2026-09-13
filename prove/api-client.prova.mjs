@@ -132,6 +132,46 @@ await caso('publicApiFetch non invia il token nemmeno se ce n\'e\' uno in memori
     () => publicApiFetch('/api/assistente-login', { method: 'POST', body: '{}' }),
     { redirect: null, ripulito: false, tokenInviato: false, tentativi: 1, errore: null });
 
+// ---- l'indicatore di caricamento -------------------------------------------
+//
+// `apiFetch` accende la barra in cima alla pagina e la spegne nel `finally`.
+// Il guasto peggiore e' silenzioso: una barra che resta accesa dice che il
+// sistema sta lavorando quando ha gia' finito, e nessun errore lo segnala.
+// Il caso che conta e' quindi l'USCITA PER ECCEZIONE — 403, 409, sessione
+// scaduta — non quella riuscita.
+
+const { inCorso } = await import('../js/indicatore-caricamento.js');
+
+async function casoIndicatore(nome, stato, azione) {
+    localStorage._d = { session_token: 'TOKEN-DI-PROVA' };
+    rispondiCon(stato);
+    try { await azione(); } catch (e) { /* atteso */ }
+    const rimaste = inCorso();
+    esiti.push({ nome, uguale: rimaste === 0 });
+    console.log(`  ${rimaste === 0 ? '✓' : '✗'} ${nome}`);
+    if (rimaste !== 0) console.log(`      richieste ancora "in volo": ${rimaste}`);
+}
+
+await casoIndicatore('dopo un esito riuscito non resta nulla in volo', 200,
+    () => apiFetch('/api/ore'));
+await casoIndicatore('dopo un 409 (eccezione) non resta nulla in volo', 409,
+    () => apiFetch('/api/commesse', { method: 'POST', body: '{}' }));
+await casoIndicatore('dopo un 403 (eccezione) non resta nulla in volo', 403,
+    () => apiFetch('/api/personale'));
+await casoIndicatore('dopo un 503 ritentato tre volte non resta nulla in volo', 503,
+    () => apiFetch('/api/ore'));
+
+// Richieste sovrapposte: il conteggio deve tornare a zero, non a un numero
+// negativo ne' restare appeso.
+{
+    rispondiCon(200);
+    localStorage._d = { session_token: 'T' };
+    await Promise.all([apiFetch('/api/a'), apiFetch('/api/b'), apiFetch('/api/c')]);
+    const rimaste = inCorso();
+    esiti.push({ nome: 'tre richieste insieme tornano a zero', uguale: rimaste === 0 });
+    console.log(`  ${rimaste === 0 ? '✓' : '✗'} tre richieste insieme tornano a zero`);
+}
+
 // ---- esito ----------------------------------------------------------------
 
 const passati = esiti.filter(e => e.uguale).length;

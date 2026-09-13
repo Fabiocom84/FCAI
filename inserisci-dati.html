@@ -35,7 +35,10 @@
 
             <h1>INSERIMENTO DATI</h1>
 
-            <button class="help-button" id="pageHelpBtn" data-legend="insertLegend">?</button>
+            <!-- Il pulsante "?" e' stato rimosso il 13/09/2026 (task 5.1).
+                 Puntava a `insertLegend`, un id inesistente: il clic scriveva
+                 "Legenda non trovata" in console e all'utente non mostrava
+                 niente. Per rimetterlo servono il contenitore e il testo. -->
         </div>
 
         <!-- 4. AREA CONTENUTO (Qui avviene lo scroll) -->
@@ -177,8 +180,8 @@
          DIVERSI (`js/x.js?v=N` contro `./x.js`), quindi il browser caricava ed
          eseguiva due istanze separate dello stesso modulo — config.js tre volte.
          Era inerte per tre motivi accidentali, non progettati. -->
-    <script type="module" src="js/auth-guard.js?v=b1f9648d"></script>
-    <script type="module" src="js/inserisci-dati.js?v=b1f9648d"></script>
+    <script type="module" src="js/auth-guard.js?v=9d81ce45"></script>
+    <script type="module" src="js/inserisci-dati.js?v=9d81ce45"></script>
 
 </body>
 

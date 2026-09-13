@@ -1,6 +1,7 @@
 // js/api-client.js
 
 import { API_BASE_URL } from './config.js';
+import { richiestaIniziata, richiestaFinita } from './indicatore-caricamento.js';
 
 /**
  * Errore restituito dall'API: porta con sé codice e corpo.
@@ -166,6 +167,16 @@ export async function apiFetch(endpoint, options = {}) {
     const MAX_RETRIES = 3;
     let attempt = 0;
 
+    // La barra di caricamento in cima alla pagina si accende qui e si spegne
+    // nel `finally` in fondo. Agganciata al punto di passaggio comune invece
+    // che alle singole pagine: nove su ventuno non mostravano nulla durante il
+    // caricamento, e farlo pagina per pagina sarebbe stato nove interventi
+    // diversi su nove contenitori diversi. Task 5.3, 13/09/2026.
+    //
+    // Fuori dal ciclo dei ritentativi di proposito: tre tentativi con backoff
+    // sono UNA attesa sola per chi guarda, non tre.
+    richiestaIniziata();
+    try {
     while (attempt < MAX_RETRIES) {
         attempt++;
         try {
@@ -272,6 +283,20 @@ export async function apiFetch(endpoint, options = {}) {
             console.warn(`Tentativo ${attempt} fallito. Riprovo tra ${waitTime}ms...`);
             await new Promise(r => setTimeout(r, waitTime));
         }
+    }
+    } finally {
+        // Nel `finally`, e non dopo il ciclo. Ci sono DUE ragioni, e la prima
+        // e' meno ovvia: l'esito riuscito fa `return response` dall'interno del
+        // `try`, quindi qualunque riga messa dopo il blocco non verrebbe
+        // eseguita nemmeno quando tutto va bene. La seconda e' che `apiFetch`
+        // esce anche per eccezione — 403, 409, sessione scaduta.
+        //
+        // Su entrambi i percorsi la barra resterebbe accesa per sempre, e un
+        // indicatore che non si spegne e' peggio di nessun indicatore: dice che
+        // il sistema sta lavorando quando ha gia' finito, e nessun errore lo
+        // segnala. Provato spostando questa riga fuori dal `finally`: le prove
+        // in `prove/api-client.prova.mjs` lo vedono su tutti e cinque i casi.
+        richiestaFinita();
     }
 }
 
