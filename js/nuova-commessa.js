@@ -2,24 +2,9 @@
 import { apiFetch } from './api-client.js';
 import { IsAdmin, CurrentUser, IsImpiegato } from './core-init.js';
 import { showModal, rinviaAvvisi } from './shared-ui.js';
+import { loadLeafletLazy, getMarkerIcon } from './leaflet-comune.js';
 
 // Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
-let _leafletLoadPromise = null;
-function loadLeafletLazy() {
-    if (_leafletLoadPromise) return _leafletLoadPromise;
-    _leafletLoadPromise = new Promise((resolve) => {
-        if (typeof L !== 'undefined') { resolve(); return; }
-        const link = document.createElement('link');
-        link.rel  = 'stylesheet';
-        link.href = 'css/libs/leaflet.css';
-        document.head.appendChild(link);
-        const script = document.createElement('script');
-        script.src = 'js/libs/leaflet.min.js';
-        script.onload = resolve;
-        document.head.appendChild(script);
-    });
-    return _leafletLoadPromise;
-}
 
 // ── Mappa Leaflet (geocoding sezione) ──
 let _map = null;
@@ -737,29 +722,13 @@ const App = {
 
 
     // SVG inline: elimina la dipendenza dai PNG di Leaflet (non risolvibili in contesto vanilla)
-    _getMarkerIcon() {
-        if (!this._markerIcon) {
-            this._markerIcon = L.divIcon({
-                className: '',
-                html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
-                    <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
-                          fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
-                    <circle cx="12.5" cy="12.5" r="5" fill="white"/>
-                </svg>`,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-            });
-        }
-        return this._markerIcon;
-    },
 
     _placeMarker(latlng) {
         if (!_map) return;
         if (_currentMarker) {
             _currentMarker.setLatLng(latlng);
         } else {
-            _currentMarker = L.marker(latlng, { icon: this._getMarkerIcon(), draggable: true }).addTo(_map);
+            _currentMarker = L.marker(latlng, { icon: getMarkerIcon(), draggable: true }).addTo(_map);
             _currentMarker.on('dragend', (ev) => this._updateCoordsDisplay(ev.target.getLatLng()));
         }
         this._updateCoordsDisplay(latlng);

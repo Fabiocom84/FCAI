@@ -21,55 +21,15 @@
 // Il file nasceva con una seconda funzionalita', la geocodifica del form di
 // creazione commessa. E' stata rimossa lo stesso giorno: agiva sui campi
 // lat/lon di un modale che nessuno apriva piu' da quando `nuova-commessa.html`
-// l'ha sostituito. `loadLeafletLazy` e `getMarkerIcon` restano perche' li usa
-// anche la mappa globale.
+// l'ha sostituito.
+//
+// `loadLeafletLazy` e `getMarkerIcon` stavano qui e sono uscite il 13/09/2026
+// in `leaflet-comune.js`: erano duplicate in `nuova-commessa.js`, la prima
+// identica al 100% riga per riga.
 
 import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
-
-// Carica Leaflet CSS+JS on-demand (lazy) al primo utilizzo della mappa.
-// Risparmia ~198KB di parsing JS/CSS dal critical path di caricamento pagina.
-let _leafletLoadPromise = null;
-function loadLeafletLazy() {
-    if (_leafletLoadPromise) return _leafletLoadPromise;
-    _leafletLoadPromise = new Promise((resolve) => {
-        if (typeof L !== 'undefined') { resolve(); return; }
-        const link = document.createElement('link');
-        link.rel  = 'stylesheet';
-        link.href = 'css/libs/leaflet.css';
-        document.head.appendChild(link);
-        const script = document.createElement('script');
-        script.src = 'js/libs/leaflet.min.js';
-        script.onload = resolve;
-        document.head.appendChild(script);
-    });
-    return _leafletLoadPromise;
-}
-
-// SVG inline per il marker: non dipende da PNG esterni che Leaflet non riesce a
-// risolvere in contesto vanilla (no bundler). Creato lazy al primo utilizzo.
-let _leafletMarkerIcon = null;
-function getMarkerIcon() {
-    if (!_leafletMarkerIcon && typeof L !== 'undefined') {
-        _leafletMarkerIcon = L.divIcon({
-            className: '',
-            html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
-                <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
-                      fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5"/>
-                <circle cx="12.5" cy="12.5" r="5" fill="white"/>
-            </svg>`,
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
-    }
-    return _leafletMarkerIcon;
-}
-
-
-
-
-
+import { loadLeafletLazy, getMarkerIcon } from './leaflet-comune.js';
 
 // --- GEO MAP FEATURE ---
 // Stato del sottosistema. `impostaVistaMobile` e `saltaProssimoAdattamento`

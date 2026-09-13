@@ -158,6 +158,28 @@ def esamina():
     return guasti
 
 
+def squilibri_div():
+    """`<div>` aperti e chiusi che non tornano, pagina per pagina.
+
+    NON BLOCCA IL COMMIT, ed e' una scelta. Un `<div>` non chiuso viene chiuso
+    dal browser da qualche parte, e la pagina che gli utenti vedono funziona
+    GRAZIE a quel recupero: «correggere» il markup puo' cambiare il rendering.
+    Non e' un difetto da sistemare di corsa, e' un lavoro che vuole una verifica
+    visiva pagina per pagina.
+
+    Serve invece a renderli VISIBILI e a impedire che se ne aggiungano altri
+    senza accorgersene: al 13/09/2026 sono tre — chat.html +1, commesse.html -1,
+    dashboard.html +1 — e un quarto vorrebbe dire che qualcosa e' cambiato.
+    """
+    fuori = []
+    for pagina in sorted(BASE.glob('*.html')):
+        t = re.sub(r'<!--.*?-->', '', pagina.read_text(encoding='utf-8', errors='replace'), flags=re.S)
+        b = len(re.findall(r'<div\b', t)) - len(re.findall(r'</div>', t))
+        if b:
+            fuori.append((pagina.name, b))
+    return fuori
+
+
 CASI = {
     'import_di_file_inesistente': ("import { x } from './non-c-e.js';", 'non esiste'),
     'import_di_nome_non_esportato': None,      # costruito sotto, servono due file
@@ -225,3 +247,12 @@ if __name__ == '__main__':
     print(f"✓ {n_mod} moduli, {n_pag} pagine: import risolti, export presenti, "
           f"nessuna chiave duplicata.")
     print("  (non apre le pagine: i problemi di comportamento restano fuori portata)")
+
+    squilibri = squilibri_div()
+    if squilibri:
+        print(f"\n  nota, non bloccante — <div> sbilanciati in {len(squilibri)} pagine:")
+        for nome, b in squilibri:
+            print(f"      {nome}: {b:+d}")
+        print("  Un <div> non chiuso viene chiuso dal browser, e la pagina funziona")
+        print("  grazie a quel recupero: correggerlo puo' cambiare il rendering, e")
+        print("  vuole una verifica visiva. Elencati perche' non se ne aggiungano altri.")
