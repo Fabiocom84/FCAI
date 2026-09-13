@@ -1323,3 +1323,42 @@
 .phase-pill--readonly:hover:not(.active) {
     background-color: var(--col-ffffff);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BERSAGLI COMODI PER IL DITO — task 5.4, 13/09/2026.
+
+   Misurato con il browser a 375px: su questa pagina 58 elementi cliccabili su
+   106 stanno sotto i 40px, e i pulsanti in fondo alle card sono alti 29. Le
+   linee guida di Apple e Google indicano ~44px come minimo perche' un dito
+   colpisca il bersaglio giusto invece di quello accanto — e qui i bersagli
+   accanto sono "modifica" ed "elimina".
+
+   Solo sotto i 768px: su desktop i pulsanti restano come sono, perche' alzarli
+   farebbe crescere ogni card per un problema che con il mouse non esiste. 768
+   e' il punto di rottura gia' piu' usato nel progetto (sette volte), scelto per
+   non aggiungere un tredicesimo valore ai dodici che ci sono.
+
+   Nessun `!important`: quei pulsanti hanno stili in linea per `flex`, `padding`
+   e `font-size`, ma NON per l'altezza. Verificato prima di scrivere questa
+   regola, perche' il 10/09 un `display` in linea aveva gia' reso inerte una
+   regola scritta senza guardare.
+
+   Due righe che avevo scritto qui sono state TOLTE dopo averle misurate:
+   `align-items` e `justify-content` non spostavano il testo di un pixel
+   (`.std-btn` lo centra gia': scarto massimo 1px sugli 84 elementi), e
+   `display: inline-flex` non cambiava nessuna altezza. Scritte per prudenza,
+   non per necessita' — regola 5.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .card-footer-actions .std-btn,
+    .card-footer-actions .btn-registrazioni {
+        /* Questa riga NON e' cosmetica. 14 degli 84 pulsanti sono
+           `content-box`: su quelli `min-height` vincola il solo contenuto, che
+           con 8px di padding e 1px di bordo per lato diventa un pulsante alto
+           62px invece di 44. E poiche' i vicini nella stessa riga flex si
+           allungano per pareggiarli, senza `border-box` i pulsanti oltre i
+           44px erano 24 e ogni card cresceva di 42px invece di 24. */
+        box-sizing: border-box;
+        min-height: 44px;
+    }
+}
