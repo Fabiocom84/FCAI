@@ -3,6 +3,7 @@
 import { apiFetch, segnala } from './api-client.js';
 import { API_BASE_URL } from './config.js';
 import { showModal, showSuccessFeedbackModal } from './shared-ui.js';
+import { apriMicrofono } from './registratore-audio.js';
 // `Legend` non e' piu' importata qui dal 13/09/2026 (task 5.1): il solo
 // pulsante "?" di questa pagina puntava a un id inesistente ed e' stato
 // rimosso, quindi la classe non avrebbe nulla a cui attaccarsi. Resta viva su
@@ -84,19 +85,9 @@ function setupEventListeners() {
 
 async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // Determina il mimeType supportato dal browser (importante per iOS vs Chrome)
-        let mimeType = 'audio/webm';
-        if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
-        else if (MediaRecorder.isTypeSupported('audio/aac')) mimeType = 'audio/aac';
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType });
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = e => {
-            if (e.data.size > 0) audioChunks.push(e.data);
-        };
+        const { registratore, pezzi } = await apriMicrofono();
+        mediaRecorder = registratore;
+        audioChunks = pezzi;
 
         mediaRecorder.start();
         isRecording = true;

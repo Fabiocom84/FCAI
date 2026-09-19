@@ -4,6 +4,12 @@
 import { API_BASE_URL } from './config.js';
 import { IsAdmin } from './core-init.js';
 import { saveToQueue, syncQueue } from './offline-queue.js';
+import { creaBarraConnessione } from './connessione-ui.js';
+import { apriMicrofono } from './registratore-audio.js';
+
+// Quindici righe identiche a quelle di `quick-record.js` tranne questo
+// messaggio: unificate in `connessione-ui.js` il 19/09/2026.
+const updateConnectionUI = creaBarraConnessione('Offline — le note verranno salvate in locale');
 
 // --- 0. ADMIN GUARD ---
 if (!IsAdmin) {
@@ -26,21 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // --- 1. CONNESSIONE ---
-function updateConnectionUI() {
-    const bar = document.getElementById('connectionStatus');
-    const icon = document.getElementById('connectionIcon');
-    const text = document.getElementById('connectionText');
-
-    if (navigator.onLine) {
-        bar.className = 'qn-connection-bar qn-connection-online';
-        icon.textContent = '🟢';
-        text.textContent = 'Online';
-    } else {
-        bar.className = 'qn-connection-bar qn-connection-offline';
-        icon.textContent = '🟠';
-        text.textContent = 'Offline — le note verranno salvate in locale';
-    }
-}
+// La funzione e' costruita in cima al file da `creaBarraConnessione`.
 
 window.addEventListener('online', updateConnectionUI);
 window.addEventListener('offline', updateConnectionUI);
@@ -90,18 +82,9 @@ function setupEventListeners() {
 // --- 4. REGISTRAZIONE AUDIO ---
 async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        let mimeType = 'audio/webm';
-        if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
-        else if (MediaRecorder.isTypeSupported('audio/aac')) mimeType = 'audio/aac';
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType });
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = e => {
-            if (e.data.size > 0) audioChunks.push(e.data);
-        };
+        const { registratore, pezzi } = await apriMicrofono();
+        mediaRecorder = registratore;
+        audioChunks = pezzi;
 
         mediaRecorder.start();
         isRecording = true;
