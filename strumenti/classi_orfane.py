@@ -46,9 +46,18 @@ DUE SCELTE CHE VANNO SPIEGATE
    JavaScript ne e' un prefisso. E' un'euristica, ed e' dichiarata: preferisce
    tacere a sproposito piuttosto che gridare.
 
-RIFERIMENTO: il 19/09/2026, primo giro utile, **103 classi senza regola** e
-**83 regole senza classe**. Sono numeri da confrontare, non da azzerare:
-restano falsi positivi noti. Se salgono, qualcosa e' cambiato e va guardato.
+RIFERIMENTO: il 19/09/2026, dopo la rimozione del tema scuro, **103 classi
+senza regola** e **82 regole senza classe**. Sono numeri da confrontare, non
+da azzerare: restano falsi positivi noti. Se salgono, qualcosa e' cambiato e
+va guardato.
+
+ATTENZIONE A COSA MISURA IL SECONDO NUMERO: **nomi di classe, non regole.**
+Togliendo il tema scuro sono sparite 35 regole `body.dark-mode ...` da due
+fogli, e l'elenco e' sceso da 83 a 82 — di UNO, perche' `dark-mode` era una
+classe sola usata da trentacinque regole. Chi facesse una pulizia grossa e
+vedesse il numero quasi fermo potrebbe concludere di non aver combinato
+nulla. Il conteggio dice quante classi non servono piu', non quanto CSS e'
+stato tolto.
 
 COSA HA TROVATO IL PRIMO GIORNO, oltre al rumore — due gruppi OMOGENEI, che
 sono la firma di una funzione intera rimasta senza aspetto o di una rimossa a
