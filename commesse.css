@@ -1320,7 +1320,30 @@
     background: var(--col-27ae60d9);
 }
 
-/* Stili legacy (non più usati, mantenuti per compatibilità) */
+/* Stili legacy — RIVISTI il 19/09/2026, e confermati.
+ *
+ * Verificato che nessuna delle sei sia prodotta da `commesse.js`, che usa
+ * quattro `card-mann-*` e solo quelle: `status-badge`, `img-wrapper`,
+ * `img-overlay`, `tipo-badge`. `strumenti/classi_orfane.py` le segnala come
+ * morte, ed e' esatto — ma questa regola NON e' un residuo: e' una rete, e
+ * `display: none` e' cio' che fa. Se un giorno un percorso non migrato
+ * riproducesse quegli elementi, resterebbero nascosti invece di comparire
+ * rotti in mezzo a una card.
+ *
+ * ATTENZIONE AI NOMI VICINI, se un giorno si cancella: `card-mann-tipo` e'
+ * morta ma `card-mann-tipo-badge` e' VIVA, e lo stesso vale per
+ * `card-mann-status` contro `card-mann-status-badge`. Vanno tolte per
+ * corrispondenza esatta, mai per prefisso.
+ *
+ * CONDIZIONE PER TOGLIERLE, che prima non era scritta: quando `commesse.js`
+ * non avra' piu' un ramo che costruisce card di manutenzione a mano — cioe'
+ * quando la card sara' generata da un unico punto. Finche' i rami sono due,
+ * la rete costa una riga e copre un errore di migrazione.
+ *
+ * Il commento precedente diceva soltanto «non piu' usati, mantenuti per
+ * compatibilita'»: un rinvio senza condizione, che questo progetto ha gia'
+ * imparato a riconoscere come un'omissione travestita da decisione.
+ */
 .card-mann-header, .card-mann-icon, .card-mann-tipo, .card-mann-status,
 .card-mann-body, .card-mann-vo { display: none; }
 

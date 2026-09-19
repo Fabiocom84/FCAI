@@ -73,6 +73,19 @@ documentata, e ha comunque lasciato indietro tredici regole. Nessuno se ne e'
 accorto per tredici giorni perche' **il CSS morto non fa rumore** — a
 differenza del codice morto, che prima o poi qualcuno chiama.
 
+UNA CLASSE MORTA NON E' SEMPRE UN RESIDUO — verificato il 19/09/2026.
+Il gruppo piu' promettente del primo giro, i sei `card-mann-*` di
+`commesse.css`, si e' rivelato **una scelta deliberata**: stanno tutti in una
+regola sola, con `display: none` e il commento «non piu' usati, mantenuti per
+compatibilita'». Sono una rete, non uno scarto: se un percorso non migrato
+riproducesse quegli elementi, resterebbero nascosti invece di comparire rotti.
+
+Lo strumento aveva ragione sui fatti e torto sulla conclusione, ed e' la
+ragione per cui il suo esito si legge e non si esegue. Quel che mancava era
+un'altra cosa — **la condizione che permette di toglierle**, assente dal
+commento: e' stata scritta ora. Un rinvio senza condizione e' un'omissione
+travestita da decisione, e questo progetto lo ha gia' imparato altrove.
+
 COME CANCELLARE CIO' CHE QUESTO STRUMENTO TROVA — provato il 19/09/2026 e
 interrotto di proposito, con due ragioni misurate:
 
