@@ -43,6 +43,16 @@ import re
 import sys
 from collections import defaultdict
 
+# L'USCITA DEVE REGGERE UNA PIPE — aggiunto il 19/09/2026, terzo strumento
+# della famiglia a prenderlo. Python scrive nella codifica ANSI del sistema,
+# PowerShell legge la pipe in quella OEM: i caratteri fuori ASCII arrivano
+# trasformati. Qui il trattino lungo del titolo diventava `ù`.
+# La soluzione non e' forzare UTF-8 — renderebbe illeggibili le accentate —
+# ma usare ASCII in uscita; `errors='replace'` resta solo come rete, perche'
+# sostituire un carattere e' sempre meglio che morire a meta' di un elenco.
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(errors='replace')
+
 # Metodo di un oggetto letterale, rientrato di 4 spazi:
 #   nome: function (...)   |   nome: async function   |   nome(...) {   |   async nome(
 # Parole chiave di JavaScript che a quattro spazi di rientro somigliano a un
@@ -250,7 +260,7 @@ if __name__ == '__main__':
         nomi = {m['nome'] for m in metodi}
         n_met = sum(1 for m in metodi if m['genere'] == 'metodo')
         n_fun = len(metodi) - n_met
-        print(f"\n{'='*74}\n{percorso}  —  {n_met} metodi + {n_fun} funzioni di modulo\n{'='*74}")
+        print(f"\n{'='*74}\n{percorso}  -  {n_met} metodi + {n_fun} funzioni di modulo\n{'='*74}")
         print(f"{'nome':<34}{'righe':>6}{'stato':>7}{'dom':>5}{'api':>5}  chiama")
         for m in sorted(metodi, key=lambda x: -x['righe']):
             interni = [c for c in m['chiama'] if c in nomi]

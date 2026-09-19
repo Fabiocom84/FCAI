@@ -4,6 +4,8 @@ import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 import { viewConfig } from './gestione-viste.js';
+import { getPropertyByString, formatCellValue } from './gestione-utili.js';
+import { esportaInXlsx } from './gestione-esporta.js';
 
 const App = {
 
@@ -1091,126 +1093,27 @@ const App = {
         return input;
     },
 
-    getPropertyByString(obj, path) {
-        return path.split('.').reduce((current, key) => current && current[key], obj);
+    // Spostate in `js/gestione-utili.js` il 19/09/2026 (task 4.4), e RIMESSE
+    // QUI come proprieta' assegnate dall'import — lo stesso schema usato per
+    // `viewConfig` l'08/09.
+    //
+    // Perche' cosi' e non riscrivendo i richiami: `getPropertyByString` e'
+    // chiamata da quattro metodi e `formatCellValue` da due. Lasciandole
+    // proprieta' di `App`, ogni `this.getPropertyByString(...)` continua a
+    // valere e l'estrazione non tocca nessun punto d'uso. Sei righe cambiate
+    // invece di sei punti da verificare.
+    getPropertyByString,
+    formatCellValue,
+
+    // Il corpo (106 righe) e' in `js/gestione-esporta.js` dal 19/09/2026.
+    // Qui resta un metodo di una riga: `handleToolbarClick` continua a
+    // chiamare `this.exportToXlsx()` come prima, quindi l'estrazione non
+    // tocca il suo unico punto d'uso.
+    exportToXlsx: function () {
+        const vista = this.state.currentView;
+        return esportaInXlsx(vista, this.viewConfig[vista], this.state);
     },
 
-    formatCellValue: function (col, rowData) {
-        // Se la colonna ha un formattatore personalizzato, usalo
-        if (col.formatter) {
-            return col.formatter(rowData);
-        }
-        // Altrimenti, prendi il valore della proprietà
-        const displayKey = col.displayKey || col.key;
-        return this.getPropertyByString(rowData, displayKey) || '';
-    },
-
-    exportToXlsx: async function() {
-        if (typeof XLSX === 'undefined') {
-            alert('Libreria XLSX non caricata. Ricarica la pagina.');
-            return;
-        }
-
-        const view = this.state.currentView;
-        const config = this.viewConfig[view];
-        if (!config) return;
-
-        const btn = document.getElementById('downloadXlsBtn');
-        if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-
-        try {
-            // Scarica TUTTI i dati (senza paginazione)
-            // Usa il 'count' totale restituito dal server per decidere quando fermarsi,
-            // evitando il bug dove chunk.length < limit anche se ci sono altri dati
-            // (causato dal cap del backend inferiore al limit richiesto).
-            let allData = [];
-            let page = 1;
-            const limit = 1000;
-            let totalCount = null; // sarà valorizzato alla prima risposta
-
-            while (true) {
-                const params = new URLSearchParams({
-                    page: page,
-                    limit: limit,
-                    sortBy: this.state.sortBy || config.defaultSortBy || config.columns[0].key,
-                    sortOrder: this.state.sortOrder || config.defaultSortOrder || 'asc'
-                });
-
-                // Applica filtri attivi
-                for (const key in this.state.activeFilters) {
-                    this.state.activeFilters[key].forEach(value => params.append(key, value));
-                }
-
-                const searchTerm = document.getElementById('filter-search-term')?.value || '';
-                if (searchTerm) params.append('search', searchTerm);
-
-                const res = await apiFetch(`${config.apiEndpoint}?${params.toString()}`);
-                const json = await res.json();
-                const chunk = json.data || (Array.isArray(json) ? json : []);
-
-                // Al primo chunk, leggi il totale dal server
-                if (totalCount === null) {
-                    totalCount = (json.count !== undefined && json.count !== null) ? json.count : chunk.length;
-                }
-
-                allData = allData.concat(chunk);
-                if (btn) btn.textContent = `⏳ ${allData.length} / ${totalCount}`;
-
-                // Ci fermiamo se abbiamo raggiunto il totale o se il chunk era vuoto
-                if (chunk.length === 0 || allData.length >= totalCount) break;
-                page++;
-            }
-
-            if (allData.length === 0) {
-                alert('Nessun dato da esportare.');
-                return;
-            }
-
-            // Flatten dei dati: risolve oggetti join (es. clienti.ragione_sociale -> Cliente)
-            const flatData = allData.map(row => {
-                const flat = {};
-                for (const col of config.columns) {
-                    const label = col.label || col.key;
-                    if (col.type === 'foreignKey' && col.displayKey) {
-                        flat[label] = this.getPropertyByString(row, col.displayKey) || '';
-                    } else if (col.formatter) {
-                        flat[label] = col.formatter(row);
-                    } else {
-                        const val = row[col.key];
-                        flat[label] = (val !== null && val !== undefined) ? val : '';
-                    }
-                }
-                // Aggiungi ID
-                flat['ID'] = row[config.idColumn] || '';
-                return flat;
-            });
-
-            // Genera XLSX
-            const ws = XLSX.utils.json_to_sheet(flatData);
-
-            // Auto-width colonne
-            const colWidths = Object.keys(flatData[0]).map(key => {
-                const maxLen = Math.max(
-                    key.length,
-                    ...flatData.map(r => String(r[key] || '').length)
-                );
-                return { wch: Math.min(maxLen + 2, 50) };
-            });
-            ws['!cols'] = colWidths;
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, view);
-            XLSX.writeFile(wb, `${view}_export_${new Date().toISOString().slice(0,10)}.xlsx`);
-
-            console.log(`📥 Esportati ${allData.length} record per vista '${view}'`);
-
-        } catch (e) {
-            console.error('Errore export XLSX:', e);
-            alert('Errore durante l\'esportazione: ' + e.message);
-        } finally {
-            if (btn) { btn.disabled = false; btn.textContent = '📥'; }
-        }
-    },
 };
 
 document.addEventListener('DOMContentLoaded', () => {
