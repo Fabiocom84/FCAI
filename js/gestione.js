@@ -6,6 +6,7 @@ import { IsAdmin } from './core-init.js';
 import { viewConfig } from './gestione-viste.js';
 import { getPropertyByString, formatCellValue } from './gestione-utili.js';
 import { esportaInXlsx } from './gestione-esporta.js';
+import { apriPopupFiltro, chiudiPopupFiltro } from './gestione-filtri.js';
 
 const App = {
 
@@ -851,152 +852,33 @@ const App = {
         });
     },
 
+    // Il popup dei filtri per colonna e' in `js/gestione-filtri.js` dal
+    // 19/09/2026. Qui restano due deleghe, cosi' `handleTableClick` e
+    // `addStaticEventListeners` continuano a chiamare `this.closeColumnFilterPopup()`
+    // e `this.openColumnFilterPopup(...)` come prima.
+    //
+    // `renderFilterPopup` NON ha piu' una delega: era chiamata soltanto da
+    // `openColumnFilterPopup`, quindi nel modulo e' privata ed e' uscita dalla
+    // superficie di `App`.
+    //
+    // `this.state` viene passato per INTERO e non a campi: il popup SCRIVE
+    // `activeFilters`, e la scrittura deve finire sullo stesso oggetto che
+    // leggono gli altri metodi. Con una copia il filtro si sarebbe applicato
+    // in apparenza — popup chiuso, tabella ricaricata — senza filtrare nulla.
     closeColumnFilterPopup: function () {
-        const existingPopup = document.querySelector('.column-filter-popup');
-        if (existingPopup) {
-            existingPopup.remove();
-        }
+        chiudiPopupFiltro();
     },
 
-    async openColumnFilterPopup(iconElement, columnKey) {
-        this.closeColumnFilterPopup();
-
-        const config = this.viewConfig[this.state.currentView];
-        const columnConfig = config.columns.find(c => c.key === columnKey);
-        const filterOptions = columnConfig.filterOptions;
-
-        const popup = document.createElement('div');
-        popup.className = 'column-filter-popup';
-        popup.dataset.column = columnKey; // Memorizza la colonna a cui si riferisce
-        document.body.appendChild(popup);
-
-        const rect = iconElement.getBoundingClientRect();
-        popup.style.top = `${rect.bottom + 5 + window.scrollY}px`;
-        popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
-        popup.style.visibility = 'visible';
-        popup.innerHTML = `<div class="loader-small"></div>`;
-
-        try {
-            let optionsData;
-            // SE la colonna ha una configurazione di filtro avanzata, usala.
-            if (filterOptions && filterOptions.apiEndpoint) {
-                const response = await apiFetch(filterOptions.apiEndpoint);
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                optionsData = await response.json();
-            }
-            // ALTRIMENTI, usa il vecchio metodo generico.
-            else {
-                const filterKey = filterOptions?.key || columnKey;
-                const tableNameForApi = config.tableName || this.state.currentView;
-                const response = await apiFetch(`/api/distinct/${tableNameForApi}/${filterKey}`);
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                optionsData = await response.json();
-            }
-
-            this.renderFilterPopup(popup, optionsData, columnKey, filterOptions);
-
-        } catch (error) {
-            console.error("Errore durante il recupero delle opzioni di filtro:", error);
-            popup.innerHTML = `<div class="error-text">Errore filtri</div>`;
-        }
-    },
-
-    renderFilterPopup: function (popupElement, options, columnKey, filterOptions) {
-        const searchFilter = document.createElement('input');
-        searchFilter.type = 'text';
-        searchFilter.placeholder = 'Filtra opzioni...';
-        searchFilter.className = 'filter-search-input';
-
-        const optionsList = document.createElement('div');
-        optionsList.className = 'filter-options-list';
-
-        const filterKey = filterOptions?.key || columnKey;
-        const activeFilterValues = (this.state.activeFilters[filterKey] || []).map(String);
-
-        options.forEach(option => {
-            let value, text;
-
-            // SE abbiamo opzioni complesse (ID + Testo), estrai i valori corretti.
-            if (filterOptions && filterOptions.valueField && filterOptions.textField) {
-                value = option[filterOptions.valueField];
-                text = option[filterOptions.textField];
-            }
-            // ALTRIMENTI, valore e testo sono la stessa cosa.
-            else {
-                value = option;
-                text = option;
-            }
-
-            const checkboxWrapper = document.createElement('div');
-            checkboxWrapper.className = 'filter-option';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `filter-${columnKey}-${value}`;
-            checkbox.value = value;
-            checkbox.checked = activeFilterValues.includes(String(value));
-
-            const label = document.createElement('label');
-            label.setAttribute('for', checkbox.id);
-            label.textContent = text;
-
-            checkboxWrapper.appendChild(checkbox);
-            checkboxWrapper.appendChild(label);
-            optionsList.appendChild(checkboxWrapper);
+    openColumnFilterPopup(iconElement, columnKey) {
+        const vista = this.state.currentView;
+        return apriPopupFiltro({
+            iconElement,
+            columnKey,
+            config: this.viewConfig[vista],
+            vista,
+            stato: this.state,
+            ricaricaDati: () => this.loadAndRenderData(true),
         });
-
-        // La logica per la ricerca interna, i pulsanti e gli eventi rimane invariata...
-        let searchTimeout;
-        searchFilter.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const searchTerm = e.target.value.toLowerCase();
-                optionsList.querySelectorAll('.filter-option').forEach(opt => {
-                    const label = opt.querySelector('label').textContent.toLowerCase();
-                    opt.style.display = label.includes(searchTerm) ? 'flex' : 'none';
-                });
-            }, 300);
-        });
-
-        const footer = document.createElement('div');
-        footer.className = 'filter-popup-footer';
-
-        const applyBtn = document.createElement('button');
-        applyBtn.textContent = 'Applica';
-        applyBtn.className = 'button button--primary';
-
-        const clearBtn = document.createElement('button');
-        clearBtn.textContent = 'Pulisci';
-        clearBtn.className = 'button';
-
-        applyBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            const selectedOptions = Array.from(optionsList.querySelectorAll('input:checked')).map(cb => cb.value);
-
-            if (selectedOptions.length > 0) {
-                this.state.activeFilters[filterKey] = selectedOptions;
-            } else {
-                delete this.state.activeFilters[filterKey];
-            }
-
-            this.loadAndRenderData(true);
-            this.closeColumnFilterPopup();
-        });
-
-        clearBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            delete this.state.activeFilters[filterKey];
-            this.loadAndRenderData(true);
-            this.closeColumnFilterPopup();
-        });
-
-        footer.appendChild(clearBtn);
-        footer.appendChild(applyBtn);
-
-        popupElement.innerHTML = '';
-        popupElement.appendChild(searchFilter);
-        popupElement.appendChild(optionsList);
-        popupElement.appendChild(footer);
     },
 
     async createCellInput(columnConfig, currentValue = '') {
