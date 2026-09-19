@@ -67,6 +67,12 @@
                 </div>
             </div>
         </div>
+    </div><!-- .std-app-shell, aperta a riga 19: la chiusura mancava, e la
+               faceva `</body>`. Gli unici elementi che finivano dentro la
+               shell per effetto della svista erano i due `<script>`, che non
+               rendono nulla; verificato nel browser che nessuna regola CSS
+               usi `.std-app-shell >`, `:last-child` o simili, dove lo
+               spostamento avrebbe contato. -->
 
     <!-- Solo i punti d'ingresso: gli altri moduli arrivano tramite `import`.
          Fino al 06/09/2026 qui c'erano anche i tag di config.js, api-client.js e

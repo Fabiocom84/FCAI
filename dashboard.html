@@ -316,9 +316,18 @@
                         </div>
                     </div>
 
+                <!-- Le due chiusure qui sotto mancavano, e `</main>` le faceva
+                     implicitamente: l'HTML chiude cio' che e' rimasto aperto
+                     quando incontra la fine del contenitore. Il DOM prodotto
+                     era gia' questo — verificato nel browser prima di scrivere,
+                     `.main-footer-status` risultava figlio di `.main-content`
+                     e `.main-content` figlio di `.dashboard-body-wrapper`.
+                     Scriverle esplicite non cambia il rendering, toglie una
+                     deduzione dal browser. -->
+                </div><!-- .main-content, aperta a riga 86 -->
+            </div><!-- .dashboard-body-wrapper, aperta a riga 45 -->
         </main>
-    </div>
-    </div>
+    </div><!-- .std-app-shell, aperta a riga 18 -->
 
     <!-- MODALE CONFERMA (Classe Custom per evitare conflitti) -->
     <div id="confirmModal" class="custom-dashboard-modal" style="display: none;">

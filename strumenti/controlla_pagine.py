@@ -206,8 +206,21 @@ def squilibri_div():
     visiva pagina per pagina.
 
     Serve invece a renderli VISIBILI e a impedire che se ne aggiungano altri
-    senza accorgersene: al 13/09/2026 sono tre — chat.html +1, commesse.html -1,
-    dashboard.html +1 — e un quarto vorrebbe dire che qualcosa e' cambiato.
+    senza accorgersene.
+
+    RIFERIMENTO: dal 19/09/2026 sono **zero**. Erano tre — chat.html +1,
+    commesse.html -1, dashboard.html +1 — e sono stati corretti guardando
+    prima il DOM vivo, non la specifica: per ciascuno si e' verificato dove il
+    browser chiudeva davvero, e la correzione ha scritto quello. Nessuno dei
+    tre cambia il rendering.
+
+    Uno dei tre insegna qualcosa sul numero stesso. `dashboard.html` diceva +1
+    e conteneva TRE sviste: due chiusure mancanti — `.main-content` e
+    `.dashboard-body-wrapper`, che `</main>` chiudeva implicitamente — e un
+    `</div>` spaiato di troppo. Due meno uno fa uno. **Il conteggio era giusto
+    e descriveva una situazione diversa da quella che suggeriva**, ed e' il
+    motivo per cui questa funzione elenca le pagine invece di limitarsi a
+    dire quante sono: un saldo netto puo' nascondere errori che si elidono.
     """
     fuori = []
     for pagina in sorted(BASE.glob('*.html')):
