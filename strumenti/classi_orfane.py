@@ -73,6 +73,28 @@ documentata, e ha comunque lasciato indietro tredici regole. Nessuno se ne e'
 accorto per tredici giorni perche' **il CSS morto non fa rumore** — a
 differenza del codice morto, che prima o poi qualcuno chiama.
 
+COME CANCELLARE CIO' CHE QUESTO STRUMENTO TROVA — provato il 19/09/2026 e
+interrotto di proposito, con due ragioni misurate:
+
+  1. *I nomi vicini ingannano.* `manutenzioni.css` definisce `.man-add-btn`
+     (morta) a quattordici righe da `.man-add-btn-header` (VIVA, la usa
+     `manutenzioni.html:29`). Cancellare guardando l'elenco invece del file
+     avrebbe potuto prendere quella sbagliata.
+
+  2. *Le regole morte e quelle vive sono ALTERNATE, non raggruppate.* In
+     `commesse.css` il blocco del modale cancellato contiene, in mezzo,
+     `.modal-body input[type="text"]` e `.form-group label`: `.modal-body` e'
+     viva — la usa il modale della GeoMap, e dentro c'e' il campo «Filtra
+     impianti». Toglierle come regione contigua romperebbe un campo che gli
+     utenti usano.
+
+Quindi: **una regola alla volta, con i confini letti nel file**, non per
+corrispondenza di nome, e collaudo visivo sulle pagine toccate. Sono una
+ventina di modifiche piccole e indipendenti: e' un lavoro da sessione propria,
+non da coda di giornata. Il guadagno sono byte e leggibilita', non
+comportamento — quindi non c'e' fretta, e la fretta e' l'unica cosa che puo'
+trasformarlo in un guasto.
+
 NON E' UN GANCIO PRE-COMMIT, e per la stessa ragione di
 `identificatori_irrisolti`: ha falsi positivi noti (le librerie di terze
 parti, le classi applicate da Choices.js e Leaflet). Un controllo che blocca
