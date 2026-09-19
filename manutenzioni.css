@@ -536,30 +536,25 @@ body.internal-page {
 
 /* .man-mobile-back rimosso (non necessario su desktop) */
 
-/* ── DARK MODE ── */
-body.dark-mode {
-    background: var(--col-0f0f1a);
-    color: var(--col-e8eaf0);
-}
-body.dark-mode .man-sidebar,
-body.dark-mode .man-detail-section,
-body.dark-mode .man-detail-header,
-body.dark-mode .man-edit-modal,
-body.dark-mode .man-completa-modal { background: var(--col-1a1a2e); border-color: var(--col-2a2a42); }
-body.dark-mode .man-card { background: var(--col-1a1a2e); border-color: var(--col-2a2a42); }
-body.dark-mode .man-card.active { background: var(--col-241a0e); }
-body.dark-mode .man-sidebar-header { background: var(--col-1a1a2e); border-color: var(--col-2a2a42); }
-body.dark-mode .man-search-input { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); color: var(--col-e8eaf0); }
-body.dark-mode .man-card-cliente { color: var(--col-e8eaf0); }
-body.dark-mode .man-card-impianto { color: var(--col-aaaaaa); }
-body.dark-mode .man-info-value { color: var(--col-e8eaf0); }
-body.dark-mode .man-detail { background: var(--col-0f0f1a); }
-body.dark-mode .man-detail-placeholder { color: var(--col-555555); }
-body.dark-mode .man-table th { color: var(--col-666666); border-color: var(--col-2a2a42); }
-body.dark-mode .man-table td { border-color: var(--col-1e1e30); color: var(--col-cccccc); }
-body.dark-mode .man-task-card { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); }
-body.dark-mode .man-completa-item { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); }
-body.dark-mode .man-completa-value { color: var(--col-e8eaf0); }
+/* ── DARK MODE — RIMOSSO il 19/09/2026, ventinove giorni dopo la funzione ──
+ *
+ * Qui c'erano 24 regole `body.dark-mode ...`. Il tema scuro e' stato tolto
+ * con la Fase 3 il **21/08/2026**: `dark-mode.css` e `js/dark-mode.js` sono
+ * stati cancellati, e lo documenta `sw.js` in testa al suo elenco di
+ * precache. Da quel giorno **nessuno aggiunge piu' la classe `dark-mode` al
+ * body** — verificato il 19/09 cercandola in tutto il JavaScript e l'HTML:
+ * l'unica occorrenza rimasta era il commento in `sw.js` che ne annuncia la
+ * rimozione. Regole che non possono attivarsi.
+ *
+ * Trovate da `strumenti/classi_orfane.py`, che segnalava `dark-mode` fra le
+ * classi definite e mai usate. Erano in due fogli: qui in blocco, e sparse
+ * riga per riga in `nuova-commessa.css`.
+ *
+ * Perche' erano sopravvissute: una rimozione fatta per file — cancellati
+ * quelli del tema — non tocca le regole che altri fogli avevano scritto per
+ * conto proprio. E il CSS morto non fa rumore, a differenza del codice morto
+ * che prima o poi qualcuno chiama.
+ */
 
 /* Choices overrides */
 .man-edit-form .choices__inner {

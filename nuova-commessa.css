@@ -32,10 +32,12 @@
     box-shadow: 0 1px 6px var(--col-0000000f);
     border: 1px solid var(--col-e8eaf0);
 }
-body.dark-mode .nc-section {
-    background: var(--col-1a1a2e);
-    border-color: var(--col-2a2a42);
-}
+/* Le regole `body.dark-mode` di questo foglio sono state rimosse il
+ * 19/09/2026: il tema scuro e' stato tolto con la Fase 3 il 21/08, e da
+ * allora nessuno aggiunge piu' quella classe al body — verificato cercandola
+ * in tutto il JavaScript e l'HTML. Erano quattordici, sparse fra le regole
+ * vive invece che raggruppate, ed e' il motivo per cui sono sopravvissute a
+ * una rimozione fatta cancellando i file del tema. */
 
 .nc-section-header {
     display: flex;
@@ -45,7 +47,6 @@ body.dark-mode .nc-section {
     padding-bottom: 12px;
     border-bottom: 2px solid var(--col-f0f2f5);
 }
-body.dark-mode .nc-section-header { border-color: var(--col-2a2a42); }
 
 .nc-section-icon { font-size: 1.2rem; }
 .nc-section-header h2 {
@@ -56,7 +57,6 @@ body.dark-mode .nc-section-header { border-color: var(--col-2a2a42); }
     text-transform: uppercase;
     margin: 0;
 }
-body.dark-mode .nc-section-header h2 { color: var(--col-e8eaf0); }
 
 /* ── TIPO TOGGLE ── */
 .nc-tipo-toggle {
@@ -88,10 +88,6 @@ body.dark-mode .nc-section-header h2 { color: var(--col-e8eaf0); }
 .tipo-btn small { font-size: 0.8rem; color: var(--col-666666); margin-top: 2px; display: block; }
 .tipo-btn.active strong { color: var(--col-2980b9); }
 .tipo-btn.active[data-tipo="MANUTENZIONE"] strong { color: var(--col-d35400); }
-body.dark-mode .tipo-btn { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); }
-body.dark-mode .tipo-btn strong { color: var(--col-e8eaf0); }
-body.dark-mode .tipo-btn.active { background: var(--col-1a2535); border-color: var(--col-3498db); }
-body.dark-mode .tipo-btn.active[data-tipo="MANUTENZIONE"] { background: var(--col-2a1a0a); border-color: var(--col-e67e22); }
 
 .nc-locked-note {
     margin-top: 12px;
@@ -120,7 +116,6 @@ body.dark-mode .tipo-btn.active[data-tipo="MANUTENZIONE"] { background: var(--co
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-body.dark-mode .nc-form-group label { color: var(--col-aaaaaa); }
 
 .nc-form-group input,
 .nc-form-group select,
@@ -143,13 +138,6 @@ body.dark-mode .nc-form-group label { color: var(--col-aaaaaa); }
     border-color: var(--col-3498db);
     box-shadow: 0 0 0 3px var(--col-3498db1f);
 }
-body.dark-mode .nc-form-group input,
-body.dark-mode .nc-form-group select,
-body.dark-mode .nc-form-group textarea {
-    background: var(--col-0f0f1a);
-    border-color: var(--col-2a2a42);
-    color: var(--col-e8eaf0);
-}
 
 /* ── VO FEEDBACK ── */
 .nc-vo-feedback {
@@ -171,7 +159,6 @@ body.dark-mode .nc-form-group textarea {
     border-radius: 10px;
     border: 1px solid var(--col-e0e4ea);
 }
-body.dark-mode .nc-toggle-group { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); }
 
 .nc-toggle-label {
     display: flex;
@@ -181,7 +168,6 @@ body.dark-mode .nc-toggle-group { background: var(--col-0f0f1a); border-color: v
 }
 .nc-toggle-label strong { font-size: 0.95rem; color: var(--col-1a1a2e); display: block; }
 .nc-toggle-label small  { font-size: 0.82rem; color: var(--col-666666); }
-body.dark-mode .nc-toggle-label strong { color: var(--col-e8eaf0); }
 
 .nc-toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
 .nc-toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -233,7 +219,6 @@ body.dark-mode .nc-toggle-label strong { color: var(--col-e8eaf0); }
 .nc-upload-area:hover { border-color: var(--col-3498db); background: var(--col-ebf5fb); }
 .nc-upload-icon { font-size: 2rem; }
 .nc-upload-area span { font-size: 0.9rem; color: var(--col-666666); }
-body.dark-mode .nc-upload-area { background: var(--col-0f0f1a); border-color: var(--col-2a2a42); }
 
 .nc-remove-img-btn {
     width: 100%;
@@ -281,11 +266,6 @@ body.dark-mode .nc-upload-area { background: var(--col-0f0f1a); border-color: va
     font-family: inherit;
     padding-top: 4px;
     box-sizing: border-box;
-}
-body.dark-mode .choices__inner {
-    background: var(--col-0f0f1a) !important;
-    border-color: var(--col-2a2a42) !important;
-    color: var(--col-e8eaf0) !important;
 }
 .choices__list--dropdown {
     border-radius: 8px !important;
