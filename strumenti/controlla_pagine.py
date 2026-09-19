@@ -38,6 +38,12 @@ import pathlib
 import re
 import sys
 
+# La pulizia non viene riscritta qui: e' la stessa di `identificatori_irrisolti`,
+# che la mantiene da quando esiste. Due copie della stessa logica divergono, e
+# quella che diverge in silenzio e' sempre la copia meno usata.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from identificatori_irrisolti import ripulisci   # noqa: E402
+
 BASE = pathlib.Path(__file__).resolve().parent.parent
 
 
@@ -85,10 +91,24 @@ def importa(sorgente):
 
 
 CHIAVE = re.compile(r'^    ([A-Za-z_$][\w$]*)\s*:', re.M)
-# Parole che a quattro spazi di rientro somigliano a una chiave ma non lo sono
-# (etichette, `default:` in uno switch, proprieta' CSS in una stringa).
-NON_CHIAVI = {'default', 'case', 'http', 'https', 'style', 'background', 'color',
-              'width', 'height', 'margin', 'padding', 'border', 'display', 'font'}
+
+# RIDOTTA DA 14 NOMI A 2, il 19/09/2026, dopo averlo misurato.
+#
+# Conteneva `http`, `https`, `style`, `background`, `color`, `width`, `height`,
+# `margin`, `padding`, `border`, `display`, `font`: nessuna di queste e' una
+# parola JavaScript. Erano **proprieta' CSS e URL dentro le stringhe**, che a
+# quattro spazi di rientro hanno la forma `    color: rosso` — identica a una
+# chiave. La lista non era una regola: era la cicatrice di un controllo che
+# leggeva il sorgente grezzo, compilata guardando cosa usciva.
+#
+# Ora le chiavi si cercano sul codice ripulito dalle stringhe, e la misura dice
+# che senza alcuna esclusione le segnalazioni sono ZERO. Tolte.
+#
+# Restano `default` e `case` perche' sono l'unico caso che la pulizia NON puo'
+# risolvere: sono JavaScript vero, non testo dentro una stringa, e uno `switch`
+# rientrato di quattro spazi li mette esattamente nella forma di una chiave.
+# Oggi non compaiono; restano perche' un giorno un riordino potrebbe portarceli.
+NON_CHIAVI = {'default', 'case'}
 
 
 def chiavi_duplicate(sorgente):
@@ -115,13 +135,27 @@ def esamina():
     src = moduli()
     guasti = []
 
+    # DUE LIVELLI DI PULIZIA, e la differenza non e' un dettaglio.
+    #
+    # `codice` toglie i commenti e TIENE le stringhe: il percorso di un import
+    # vive dentro una stringa, e togliendola `from './x.js'` diventa `from ''`.
+    # Un controllo sugli import che non vede piu' nessun import riporta
+    # «nessun guasto»: sarebbe un falso NEGATIVO al posto di un falso positivo,
+    # cioe' un peggioramento travestito da correzione.
+    #
+    # `nudo` toglie anche le stringhe, e serve alle chiavi duplicate: li' il
+    # rumore VIENE dalle stringhe — una regola CSS dentro un template ha la
+    # forma `    color: rosso`, identica a una chiave a quattro spazi.
+    codice = {n: ripulisci(t, tieni_stringhe=True) for n, t in src.items()}
+    nudo = {n: ripulisci(t) for n, t in src.items()}
+
     # 1 e 2: gli import si risolvono?
-    for nome, testo in sorted(src.items()):
+    for nome, testo in sorted(codice.items()):
         for dest, nomi in importa(testo):
             if dest not in src:
                 guasti.append(f"{nome}: importa './{dest}', che non esiste")
                 continue
-            mancanti = nomi - esportati(src[dest])
+            mancanti = nomi - esportati(codice[dest])
             for x in sorted(mancanti):
                 guasti.append(f"{nome}: importa {{{x}}} da './{dest}', che non lo esporta")
 
@@ -132,7 +166,11 @@ def esamina():
     # estraendo la geo — la funzione cancellata, il suo nome rimasto
     # nell'elenco degli export. E' un SyntaxError e la pagina non parte affatto,
     # ma il controllo precedente non lo vedeva perche' guardava solo chi importa.
-    for nome, testo in sorted(src.items()):
+    # Sul codice ripulito, e qui il verso dell'errore si rovescia: una
+    # definizione NOMINATA IN UN COMMENTO — «la vecchia `caricaMappa` stava
+    # qui» — contava come definizione e zittiva la segnalazione di un export
+    # rimasto orfano. Non un falso allarme: un guasto vero reso invisibile.
+    for nome, testo in sorted(codice.items()):
         definiti = set(re.findall(
             r'(?:^|\s)(?:export\s+)?(?:async\s+)?(?:function|const|let|var|class)\s+([\w$]+)', testo))
         definiti |= set(re.findall(r'import\s*\{([^}]*)\}', testo)[0].split(',')) \
@@ -144,8 +182,8 @@ def esamina():
                     guasti.append(f"{nome}: esporta '{x}', che non e' definito nel modulo "
                                   f"(SyntaxError: la pagina non si carica)")
 
-    # 3: chiavi duplicate
-    for nome, testo in sorted(src.items()):
+    # 3: chiavi duplicate, sul codice senza stringhe (vedi sopra)
+    for nome, testo in sorted(nudo.items()):
         for chiave, prima, poi in chiavi_duplicate(testo):
             guasti.append(f"{nome}: '{chiave}' definita due volte (righe {prima} e {poi}); "
                           f"la seconda sovrascrive la prima in silenzio")
@@ -180,59 +218,97 @@ def squilibri_div():
     return fuori
 
 
-CASI = {
-    'import_di_file_inesistente': ("import { x } from './non-c-e.js';", 'non esiste'),
-    'import_di_nome_non_esportato': None,      # costruito sotto, servono due file
-    'chiave_duplicata': ("const A = {\n    tizio: function () { return 1; },\n"
-                         "    caio: 2,\n    tizio: function () { return 3; }\n};", 'due volte'),
-}
+# Ogni caso: (etichetta, {file: contenuto}, spia, DEVE_TROVARLO)
+#
+# I casi con `False` sono nati il 19/09/2026 e sono la meta' che mancava. Fino a
+# quel giorno l'autoprova chiedeva solo «trova i guasti veri?», mai «tace sui
+# guasti finti?» — e una sonda che non e' mai stata vista tacere e' cieca quanto
+# una che non e' mai stata vista parlare.
+#
+# La spinta e' arrivata dal collaudo di un rilascio, lo stesso giorno: tre
+# segnalazioni su tre erano stringhe trovate DENTRO I MIEI COMMENTI —
+# `inline-flex` nella riga in cui spiegavo di averlo TOLTO, `agileViewLegend`
+# dentro il commento che documenta la rimozione del pulsante. Cercare una parola
+# in un file che contiene anche la prosa su quella parola non e' una verifica.
+#
+# Il caso `export_definito_SOLO_in_un_commento` e' l'altro verso, ed e' il piu'
+# grave dei due: prima del 19/09 una definizione nominata in un commento contava
+# come definizione, quindi un export rimasto orfano — che e' un SyntaxError e
+# impedisce alla pagina di caricarsi — passava inosservato.
+CASI = [
+    ('import_di_file_inesistente',
+     {'a.js': "import { x } from './non-c-e.js';"},
+     'non esiste', True),
+
+    ('import_di_nome_non_esportato',
+     {'a.js': "import { manca } from './b.js';\n", 'b.js': "export function c() {}\n"},
+     'non lo esporta', True),
+
+    ('chiave_duplicata',
+     {'a.js': "const A = {\n    tizio: function () { return 1; },\n"
+              "    caio: 2,\n    tizio: function () { return 3; }\n};"},
+     'due volte', True),
+
+    ('export_definito_SOLO_in_un_commento',
+     {'a.js': "// una volta qui c'era: function orfana() {}\nexport { orfana };\n"},
+     "esporta 'orfana'", True),
+
+    ('import_finto_dentro_un_commento',
+     {'a.js': "// prima era: import { x } from './non-c-e.js';\nexport const y = 1;\n"},
+     'non esiste', False),
+
+    ('chiave_finta_dentro_una_stringa',
+     {'a.js': "const A = {\n    stile: `\n    tizio: uno;\n    tizio: due;\n`,\n};"},
+     'due volte', False),
+]
 
 
 def autoprova():
-    """Ogni controllo, su un caso guasto costruito apposta.
+    """Ogni controllo, in entrambe le direzioni: deve parlare, e deve tacere.
 
     Un controllo che non si e' mai visto trovare qualcosa non dice nulla quando
     riporta «nessun guasto» — ed e' la regola che questo progetto ha imparato
     piu' volte, l'ultima con quattro test di sicurezza rimasti verdi per un
     giorno intero senza verificare niente.
+
+    Il verso opposto vale quanto il primo: un controllo che segnala a sproposito
+    viene disattivato, o peggio si impara a ignorarlo — e da quel momento non
+    protegge piu' nulla continuando a sembrare una difesa.
     """
     import shutil
     import tempfile
     global BASE
     vero = BASE
     esiti = []
-    for etichetta, caso in [('import_di_file_inesistente', CASI['import_di_file_inesistente']),
-                            ('chiave_duplicata', CASI['chiave_duplicata']),
-                            ('import_di_nome_non_esportato', ('IMPORT_NOME', 'non lo esporta'))]:
+    for etichetta, file, spia, atteso in CASI:
         d = pathlib.Path(tempfile.mkdtemp())
         (d / 'js').mkdir()
-        if caso[0] == 'IMPORT_NOME':
-            (d / 'js' / 'a.js').write_text("import { manca } from './b.js';\n", encoding='utf-8')
-            (d / 'js' / 'b.js').write_text("export function c() {}\n", encoding='utf-8')
-        else:
-            (d / 'js' / 'a.js').write_text(caso[0], encoding='utf-8')
+        for nome, contenuto in file.items():
+            (d / 'js' / nome).write_text(contenuto, encoding='utf-8')
         BASE = d
         try:
             trovati = esamina()
         finally:
             BASE = vero
             shutil.rmtree(d, ignore_errors=True)
-        visto = any(caso[1] in g for g in trovati)
-        esiti.append((etichetta, visto, trovati))
+        visto = any(spia in g for g in trovati)
+        esiti.append((etichetta, visto == atteso, atteso, trovati))
     return esiti
 
 
 if __name__ == '__main__':
     if '--autoprova' in sys.argv:
-        print("Ogni controllo, su un caso guasto costruito apposta:")
+        print("Ogni controllo in entrambe le direzioni — deve parlare, e deve tacere:")
         esiti = autoprova()
-        for etichetta, visto, trovati in esiti:
-            print(f"   {'OK   ' if visto else 'CIECO'} {etichetta:<32} "
-                  f"{trovati[0] if trovati else '(non ha trovato nulla)'}")
+        for etichetta, ok, atteso, trovati in esiti:
+            verso = 'deve trovarlo ' if atteso else 'deve TACERE  '
+            print(f"   {'OK   ' if ok else 'ROTTO'} {verso} {etichetta:<36} "
+                  f"{trovati[0] if trovati else '(nessuna segnalazione)'}")
         sys.exit(0 if all(e[1] for e in esiti) else 2)
 
     if not all(e[1] for e in autoprova()):
-        sys.exit("Sonda cieca: su casi costruiti apposta non trova i guasti. "
+        sys.exit("Sonda inaffidabile: sui casi costruiti apposta non si comporta "
+                 "come deve — o non trova i guasti, o ne segnala di inesistenti. "
                  "Nessun risultato ha valore. Esegui --autoprova.")
 
     guasti = esamina()

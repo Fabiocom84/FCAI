@@ -27,11 +27,18 @@ Toglierli richiederebbe un parser JavaScript vero. Con una manciata di voci
 stabili, elencarle e piu onesto che nasconderle dietro un filtro che un giorno
 zittirebbe anche un caso vero.
 
-RIFERIMENTO: l'08/09/2026, su tutti i `js/*.js`, le voci sono **15** — sette
+RIFERIMENTO: l'08/09/2026, su tutti i `js/*.js`, le voci sono **15** — sei
 `var`, cinque `resolve`, piu' `reject`, `fn`, `O`, `database`. Erano trenta
 prima che venissero riconosciuti i metodi in forma abbreviata, la
 destrutturazione, le classi e gli import predefiniti: quattro lacune dello
 strumento, non del codice.
+
+  *Ricontato il 19/09/2026 dopo la modifica a `ripulisci()`: totale ancora 15,
+  invariato — che era la verifica che contava. Ma la scomposizione diceva
+  «sette var» e sommava quindi a 16, uno in piu' del totale dichiarato due
+  righe sopra. Corretta a sei. Un numero di riferimento con accanto una
+  scomposizione che non torna invita a fidarsi del totale senza ricontarlo,
+  che e' esattamente cio' contro cui il riferimento esiste.*
 
 Questo numero e' il riferimento, ed e' il motivo per cui vale la pena scriverlo:
 **sedici voci vogliono dire che ce n'e' una nuova**, e va guardata. Senza un
@@ -53,13 +60,26 @@ MediaRecorder Audio AudioContext Image Uint8Array Int8Array Float32Array ArrayBu
 L Choices XLSX Chart Papa mammoth QRCode Leaflet""".split())
 
 
-def ripulisci(t):
+def ripulisci(t, tieni_stringhe=False):
     """Toglie commenti e testo delle stringhe, TENENDO il codice dentro ${...}.
 
     Senza questo passaggio il controllo legge `var(--col-888888)` dentro una
     stringa CSS e riporta `var` fra i non risolti, insieme a una quarantina di
     parole di commento. Un elenco cosi non e severo: e cieco, perche il caso
     vero ci sta dentro senza distinguersi.
+
+    `tieni_stringhe=True` toglie SOLO i commenti, lasciando le stringhe intatte.
+    Serve a chi deve leggere qualcosa che VIVE dentro una stringa — il percorso
+    di un import, per esempio: `from './commesse-geo.js'` senza le stringhe
+    diventa `from ''`, e un controllo sugli import che non vede piu' nessun
+    import riporta «nessun guasto». Sarebbe un falso NEGATIVO al posto di un
+    falso positivo, cioe' un peggioramento travestito da correzione.
+
+    In entrambi i modi le RIGHE si conservano: al posto di cio' che viene tolto
+    restano i suoi a capo. Chi usa questa funzione per segnalare un numero di
+    riga — `controlla_pagine.py` lo fa per le chiavi duplicate — otterrebbe
+    altrimenti numeri che non corrispondono al file, ed e' il genere di errore
+    che manda a cercare nel punto sbagliato.
     """
     fuori, i, n = [], 0, len(t)
     while i < n:
@@ -69,13 +89,19 @@ def ripulisci(t):
             i = n if i < 0 else i
         elif c == '/' and i + 1 < n and t[i + 1] == '*':
             j = t.find('*/', i + 2)
-            i = n if j < 0 else j + 2
+            fine = n if j < 0 else j + 2
+            fuori.append('\n' * t.count('\n', i, fine))
+            i = fine
         elif c in '"\'':
+            inizio = i
             i += 1
             while i < n and t[i] != c:
                 i += 2 if t[i] == '\\' else 1
-            i += 1
+            i = min(i + 1, n)
+            fuori.append(t[inizio:i] if tieni_stringhe
+                         else '\n' * t.count('\n', inizio, i))
         elif c == '`':
+            inizio, interpolato = i, []
             i += 1
             while i < n and t[i] != '`':
                 if t[i] == '\\':
@@ -88,12 +114,18 @@ def ripulisci(t):
                         elif t[i] == '}':
                             liv -= 1
                         if liv:
-                            fuori.append(t[i])
+                            interpolato.append(t[i])
                         i += 1
-                    fuori.append(';')
+                    interpolato.append(';')
                 else:
                     i += 1
-            i += 1
+            i = min(i + 1, n)
+            if tieni_stringhe:
+                fuori.append(t[inizio:i])
+            else:
+                fuori.append(''.join(interpolato))
+                mancanti = t.count('\n', inizio, i) - ''.join(interpolato).count('\n')
+                fuori.append('\n' * max(0, mancanti))
         else:
             fuori.append(c)
             i += 1
@@ -150,7 +182,21 @@ def controllo_positivo():
 
 
 if __name__ == '__main__':
-    percorsi = [a for a in sys.argv[1:] if not a.startswith('--')]
+    # I caratteri jolly si espandono QUI, e non e' pignoleria: bash li espande
+    # prima di lanciare il programma, PowerShell no. La riga d'uso scritta in
+    # testa a questo file — `js/*.js` — falliva quindi sulla macchina di chi lo
+    # usa ogni giorno, con un `OSError: Invalid argument: 'js\*.js'` che non
+    # nomina la causa. Un documento che descrive un comando che sulla macchina
+    # del lettore non funziona e' la stessa forma di errore che questo progetto
+    # insegue da giorni: espanderli qui la toglie di mezzo per entrambe le shell.
+    percorsi = []
+    for a in sys.argv[1:]:
+        if a.startswith('--'):
+            continue
+        if any(x in a for x in '*?['):
+            percorsi += sorted(str(p) for p in pathlib.Path().glob(a.replace('\\', '/')))
+        else:
+            percorsi.append(a)
     if not percorsi:
         sys.exit(__doc__)
 
