@@ -853,9 +853,21 @@ const App = {
     },
 
     // Il popup dei filtri per colonna e' in `js/gestione-filtri.js` dal
-    // 19/09/2026. Qui restano due deleghe, cosi' `handleTableClick` e
-    // `addStaticEventListeners` continuano a chiamare `this.closeColumnFilterPopup()`
-    // e `this.openColumnFilterPopup(...)` come prima.
+    // 19/09/2026. Qui restano due deleghe, cosi' `handleTableClick` continua
+    // a chiamare `this.closeColumnFilterPopup()` e
+    // `this.openColumnFilterPopup(...)` come prima.
+    //
+    // CORREZIONE DI UN COMMENTO SBAGLIATO, scritto qui poche ore prima:
+    // diceva che anche `addStaticEventListeners` chiamasse la chiusura. NON
+    // LA CHIAMA. Quel metodo registra tre soli ascoltatori — su `gridWrapper`,
+    // `viewSelector` e `toolbarArea` — e nessuno a livello di `document`.
+    //
+    // Ne discende una cosa che vale la pena sapere: **cliccare fuori dal popup
+    // non lo chiude**, e non e' una regressione di questa estrazione — non e'
+    // mai esistito un ascoltatore che lo facesse. Il popup si chiude solo con
+    // Applica, con Pulisci, o ricliccando l'icona della stessa colonna.
+    // Annotato in `04a_esercizio_e_debito.md`: aggiungerlo e' un cambio di
+    // comportamento, e non si infila dentro un'estrazione.
     //
     // `renderFilterPopup` NON ha piu' una delega: era chiamata soltanto da
     // `openColumnFilterPopup`, quindi nel modulo e' privata ed e' uscita dalla
