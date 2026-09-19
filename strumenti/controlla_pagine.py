@@ -38,6 +38,27 @@ import pathlib
 import re
 import sys
 
+# L'USCITA DEVE REGGERE UNA PIPE — aggiunto il 19/09/2026, e qui vale doppio.
+# Questo programma stampa `✓` e `✗`, che nella codifica `cp1252` usata da
+# Windows in italiano NON ESISTONO. Finche' l'output va a un terminale la
+# console regge; appena finisce in una pipe, in un file o in un registro di
+# CI, Python ripiega su cp1252 e muore con UnicodeEncodeError **dopo** aver
+# stampato meta' del risultato. Questo strumento gira nel gancio pre-commit e
+# nella CI: un guasto simile trasformerebbe un controllo superato in un
+# fallimento incomprensibile, o peggio in un'uscita troncata presa per buona.
+# Scoperto su `classi_orfane.py`, che moriva su `| Select-Object`.
+#
+# LA CORREZIONE E' STATA RIFATTA, e vale la pena dire perche'. Il primo
+# tentativo forzava UTF-8: niente piu' crash, ma il `✓` diventava `Ô£ô` —
+# e avrebbe reso illeggibili anche le lettere accentate, che in cp1252
+# funzionavano. Si barattava un guasto con un altro.
+#
+# La soluzione e' non dipendere dai caratteri speciali: l'uscita usa ASCII, e
+# `errors='replace'` resta solo come rete, perche' sostituire un carattere e'
+# sempre meglio che morire a meta' di un elenco.
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(errors='replace')
+
 # La pulizia non viene riscritta qui: e' la stessa di `identificatori_irrisolti`,
 # che la mantiene da quando esiste. Due copie della stessa logica divergono, e
 # quella che diverge in silenzio e' sempre la copia meno usata.
@@ -384,14 +405,14 @@ if __name__ == '__main__':
 
     guasti = esamina()
     if guasti:
-        print(f"✗ {len(guasti)} problemi che impediscono a una pagina di caricarsi:\n")
+        print(f"GUASTI: {len(guasti)} problemi che impediscono a una pagina di caricarsi:\n")
         for g in guasti:
             print(f"   {g}")
         sys.exit(1)
 
     n_mod = len(moduli())
     n_pag = len(list(BASE.glob('*.html')))
-    print(f"✓ {n_mod} moduli, {n_pag} pagine: import risolti, export presenti, "
+    print(f"OK: {n_mod} moduli, {n_pag} pagine: import risolti, export presenti, "
           f"nessuna chiave duplicata.")
     print("  (non apre le pagine: i problemi di comportamento restano fuori portata)")
 

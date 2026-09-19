@@ -120,6 +120,20 @@ import pathlib
 import re
 import sys
 
+# L'USCITA DEVE REGGERE UNA PIPE. Su Windows, quando l'output non va a un
+# terminale ma a `| Select-Object` o a un file, Python ripiega sulla codifica
+# di sistema — `cp1252` in italiano — dove i caratteri di riquadro e i segni
+# di spunta NON ESISTONO, e il programma muore con UnicodeEncodeError DOPO
+# aver stampato meta' del risultato. Capitato il 19/09/2026 su questo file.
+# Vale per qualunque strumento che qualcuno un giorno convogliera' in una
+# pipe, in un file di log o in una CI: cioe' tutti.
+#
+# Forzare UTF-8 NON e' la risposta: toglie il crash ma rende illeggibili le
+# lettere accentate, che in cp1252 funzionavano. L'uscita usa ASCII, e
+# `errors='replace'` resta solo come rete.
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(errors='replace')
+
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from identificatori_irrisolti import ripulisci   # noqa: E402
 
@@ -315,12 +329,12 @@ if __name__ == '__main__':
 
     print(f"{n_def} classi definite nei CSS, {n_uso} nominate da HTML e JavaScript.\n")
 
-    print(f"── CLASSI USATE SENZA ALCUNA REGOLA CSS ({len(senza_regola)}) "
-          f"─ una funzione che esiste e non ha aspetto")
+    print(f"--- CLASSI USATE SENZA ALCUNA REGOLA CSS ({len(senza_regola)}) "
+          f"- una funzione che esiste e non ha aspetto")
     for c, dove in sorted(senza_regola.items()):
         print(f"   {c:<38} {', '.join(sorted(dove))[:60]}")
 
-    print(f"\n── REGOLE CHE NON COLPISCONO NULLA ({len(senza_uso)}) ─ CSS morto, regola 5")
+    print(f"\n--- REGOLE CHE NON COLPISCONO NULLA ({len(senza_uso)}) - CSS morto, regola 5")
     for c, dove in sorted(senza_uso.items()):
         print(f"   {c:<38} {', '.join(sorted(dove))[:60]}")
 
