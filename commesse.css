@@ -1107,12 +1107,36 @@
     to {
         transform: scale(1);
         opacity: 1;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
-    font-weight: 500;
+    }
 }
+/* ↑ QUESTA GRAFFA MANCAVA, e con lei 249 righe di questo file.
+ *
+ * Il blocco `to` conteneva anche `border-radius`, `cursor`, `transition`,
+ * `user-select` e `font-weight`: proprieta' di `.phase-pill`, non di un
+ * fotogramma. Sono state tolte perche' `.phase-pill` esiste gia' completo
+ * alla riga 889 con esattamente quelle cinque piu' le altre — quindi qui non
+ * si e' ricostruito nulla a memoria, si e' rimosso un frammento duplicato.
+ *
+ * COSA FACEVA L'ERRORE. Senza la chiusura di `@keyframes zoomIn`, tutto cio'
+ * che segue restava annidato dentro un'animazione, e il browser lo ignorava:
+ * **249 righe, 36 selettori**. Quindici erano duplicati di regole gia' vive
+ * piu' su, e non si notavano. Gli altri ventuno no, ed erano tutti la stessa
+ * cosa: il tema visivo delle MANUTENZIONI — `.commesse-card--manutenzione`,
+ * `.card-mann-*`, `.tipo-filters`, `.filter-tipo`, `.std-btn--orange`,
+ * `.phase-pill--readonly`, `.card-footer-actions .btn-registrazioni`.
+ *
+ * Non si vedeva perche' quegli elementi portano anche una classe generica
+ * (`filter-btn`, `std-btn`, `commesse-card`) che li rende comunque
+ * presentabili: mancava il colore, non l'impaginazione.
+ *
+ * COME E' STATO TROVATO, il 19/09/2026. Misurando i bersagli per il dito si
+ * e' visto che la media query del task 5.4 — in fondo a questo file — non
+ * aveva alcun effetto, pur essendo presente nel file servito. Il browser non
+ * la vedeva: era dentro il `@keyframes`. **Il 13/09 quella regola era stata
+ * collaudata INIETTANDOLA nella pagina viva**, il che provava che la regola
+ * fosse giusta e non che arrivasse. Si era verificata la regola, non la sua
+ * consegna.
+ */
 
 .phase-pill.active {
     background-color: var(--col-2c3e50);

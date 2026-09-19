@@ -188,12 +188,54 @@ def esamina():
             guasti.append(f"{nome}: '{chiave}' definita due volte (righe {prima} e {poi}); "
                           f"la seconda sovrascrive la prima in silenzio")
 
+    # 3b: graffe CSS non bilanciate — vedi `squilibri_css` per il perche' blocca
+    for nome, saldo in squilibri_css():
+        verso = ('aperta e mai chiusa' if saldo > 0 else 'chiusa di troppo')
+        guasti.append(f"{nome}: {abs(saldo)} graffa {verso}. Tutto cio' che segue "
+                      f"il punto di rottura NON viene applicato, senza alcun errore")
+
     # 4: ogni pagina ha almeno un punto d'ingresso, e i suoi file esistono
     for pagina in sorted(BASE.glob('*.html')):
         for m in TAG.finditer(pagina.read_text(encoding='utf-8', errors='replace')):
             if m.group('file') not in src:
                 guasti.append(f"{pagina.name}: il tag punta a js/{m.group('file')}, che non esiste")
     return guasti
+
+
+def squilibri_css():
+    """Graffe non bilanciate nei fogli di stile. BLOCCA, e la differenza conta.
+
+    Un `<div>` non chiuso il browser lo chiude da solo, e la pagina funziona
+    grazie a quel recupero: per quello `squilibri_div` segnala e basta. Una
+    graffa non chiusa in un CSS non ha recupero — tutto cio' che segue resta
+    annidato dentro la regola aperta e **non viene mai applicato**, senza un
+    errore, senza un avviso, senza che nulla lo mostri.
+
+    IL CASO CHE HA FATTO NASCERE QUESTO CONTROLLO, il 19/09/2026.
+    In `commesse.css` mancava la graffa di chiusura di `@keyframes zoomIn`.
+    Conseguenza: **249 righe e 36 selettori inerti**, fra cui l'intero tema
+    visivo delle manutenzioni e la media query del task 5.4, rilasciata sei
+    giorni prima e mai entrata in funzione. Le card di manutenzione venivano
+    mostrate senza il loro stile, e non si notava perche' portano anche una
+    classe generica che le rende presentabili: mancava il colore, non
+    l'impaginazione.
+
+    Si e' scoperto per caso, misurando altro. Questo controllo costa
+    millisecondi ed e' l'unica ragione per cui non servira' di nuovo la
+    fortuna.
+    """
+    fuori = []
+    for foglio in sorted(BASE.glob('*.css')) + sorted((BASE / 'css').glob('*.css')):
+        t = foglio.read_text(encoding='utf-8', errors='replace')
+        # Via i commenti e il testo delle stringhe: una graffa dentro
+        # `content: "{"` o dentro una spiegazione non e' struttura.
+        t = re.sub(r'/\*.*?\*/', '', t, flags=re.S)
+        t = re.sub(r'"(?:\\.|[^"\\])*"', '""', t)
+        t = re.sub(r"'(?:\\.|[^'\\])*'", "''", t)
+        saldo = t.count('{') - t.count('}')
+        if saldo:
+            fuori.append((foglio.name, saldo))
+    return fuori
 
 
 def squilibri_div():
@@ -273,6 +315,17 @@ CASI = [
     ('chiave_finta_dentro_una_stringa',
      {'a.js': "const A = {\n    stile: `\n    tizio: uno;\n    tizio: due;\n`,\n};"},
      'due volte', False),
+
+    # I due casi CSS vengono dal guasto vero del 19/09: una graffa mancante in
+    # commesse.css teneva inerti 249 righe, fra cui l'intero tema visivo delle
+    # manutenzioni. Nessun controllo lo vedeva.
+    ('css_graffa_mai_chiusa',
+     {'_css': "@keyframes z {\n  from { opacity: 0; }\n  to { opacity: 1; }\n\n.dopo { color: red; }\n"},
+     'mai chiusa', True),
+
+    ('css_graffa_dentro_un_commento_o_una_stringa',
+     {'_css': "/* qui una graffa di troppo: { */\n.a::after { content: \"{\"; }\n.b { color: red; }\n"},
+     'graffa', False),
 ]
 
 
@@ -297,7 +350,12 @@ def autoprova():
         d = pathlib.Path(tempfile.mkdtemp())
         (d / 'js').mkdir()
         for nome, contenuto in file.items():
-            (d / 'js' / nome).write_text(contenuto, encoding='utf-8')
+            # `_css` finisce alla radice come foglio di stile: e' li' che
+            # `squilibri_css` guarda.
+            if nome == '_css':
+                (d / 'prova.css').write_text(contenuto, encoding='utf-8')
+            else:
+                (d / 'js' / nome).write_text(contenuto, encoding='utf-8')
         BASE = d
         try:
             trovati = esamina()
