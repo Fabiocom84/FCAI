@@ -656,11 +656,17 @@ const App = {
             // un attributo HTML non vede gli import di un modulo. Togliendo
             // l'attributo cade anche il globale.
             //
-            // Gli argomenti restano codificati con `encodeURIComponent` perche'
-            // `openGeoMap` li decodifica al proprio interno. Ora che non
-            // attraversano piu' un attributo la codifica e' un residuo, ma
-            // toglierla vuol dire cambiare anche `openGeoMap`: due modifiche
-            // insieme sono due modi di sbagliare.
+            // LA CODIFICA E' STATA TOLTA il 19/09/2026, insieme alla
+            // decodifica corrispondente in `commesse-geo.js`.
+            //
+            // Il commento che stava qui diceva che toglierla avrebbe voluto
+            // dire cambiare anche `openGeoMap`, e che «due modifiche insieme
+            // sono due modi di sbagliare». Era prudente quel giorno, quando si
+            // stava gia' spostando un globale. Ma le due meta' di un'andata e
+            // ritorno **devono** muoversi insieme: farne una sola avrebbe
+            // mostrato `Impianto%20Nord` a schermo. Sono state fatte in un
+            // colpo, ed e' il contrario di due modi di sbagliare — e' l'unico
+            // modo di non sbagliare.
             const btnGeoMap = card.querySelector('.btn-geomap');
             if (btnGeoMap) {
                 btnGeoMap.addEventListener('click', (e) => {
@@ -669,8 +675,8 @@ const App = {
                         c.id_commessa,
                         c.latitudine ?? null,
                         c.longitudine ?? null,
-                        encodeURIComponent(c.impianto || 'Impianto'),
-                        encodeURIComponent(c.clienti?.ragione_sociale || '')
+                        c.impianto || 'Impianto',
+                        c.clienti?.ragione_sociale || ''
                     );
                 });
             }

@@ -274,16 +274,23 @@ function renderGeoMapSidebar() {
 }
 
 // [NEW] EXPOSED FUNCTION FOR QUICK ACTIONS
-function openGeoMap(commessaId, lat, lon, encImpianto, encCliente) {
+// I due nomi arrivano GREZZI dal 19/09/2026. Prima erano codificati dal
+// chiamante e decodificati qui — un'andata e ritorno che si annullava, e che
+// serviva quando la chiamata veniva da un `onclick` scritto dentro una stringa
+// template: li' i valori dovevano sopravvivere all'inserimento in un attributo
+// HTML. Dal 10/09 (task 4.9) e' una chiamata diretta fra moduli, e da allora
+// la codifica era un residuo. Toglierla richiedeva di cambiare anche il
+// chiamante: le due meta' sono state fatte insieme, perche' separate avrebbero
+// prodotto nomi come `Impianto%20Nord` a schermo.
+function openGeoMap(commessaId, lat, lon, nomeImpianto, nomeCliente) {
     // 1. Check coordinates validity
     if (!lat || !lon || lat === 'null' || lon === 'null') {
         showModal({ title: "Info", message: "Questa commessa non ha coordinate geografiche impostate." });
         return;
     }
 
-    // Decode names (if passed)
-    const impianto = encImpianto ? decodeURIComponent(encImpianto) : 'Impianto';
-    const cliente = encCliente ? decodeURIComponent(encCliente) : '';
+    const impianto = nomeImpianto || 'Impianto';
+    const cliente = nomeCliente || '';
 
     // 2. Open Modal
     const btnOpenGeoMap = document.getElementById('btn-open-geomap');

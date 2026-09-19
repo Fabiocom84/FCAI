@@ -21,53 +21,39 @@ let chatHistory = [];
 
 // --- 3. FUNZIONI PRINCIPALI ---
 
-// ⚠ QUESTA FUNZIONE E `closeChatModal` NON SONO RAGGIUNGIBILI — 10/09/2026.
+// `openChatModal` e `closeChatModal` sono state CANCELLATE il 19/09/2026.
 //
-// Erano su `window` e sono state rese locali col task 4.9, ma erano gia' morte
-// prima: nessuno le chiama, ne' qui, ne' da un altro modulo, ne' da un attributo
-// `onclick` (verificato su tutti i 21 file). `chat.html` non apre un modale —
-// ha un `<div id="chatPanel">` che fa parte della pagina.
+// Erano annotate come irraggiungibili dal 10/09 con la decisione lasciata
+// aperta — «cancellarle, o ricollegarle se il pannello tornera' un modale».
+// Rivisto: `chat.html` non apre un modale, ha un `<div id="chatPanel">` che e'
+// parte della pagina, e nessuno le chiamava da nessun file. Il modale della
+// chat esiste su `index.html` ed e' servito dalle OMONIME funzioni in
+// `main.js`, che sono vive.
 //
-// NON sono state cancellate perche' `closeChatModal` descrive cosa dovrebbe
-// succedere alla chiusura: fermare il riconoscimento vocale e salvare la
-// cronologia. Il salvataggio pero' avviene per un'altra via, dal pulsante Home
-// in fondo a questo file — quindi non si sta perdendo nulla oggi.
+// LE COSE CHE FACEVANO, verificate una per una prima di toglierle:
+//   * `recognition.stop()` — compariva solo li'. Non serve: uscendo dalla
+//     pagina il browser distrugge l'oggetto di riconoscimento vocale.
+//   * `saveChatHistory()` — vedi sotto, ed e' il motivo per cui questa
+//     cancellazione non e' stata muta.
 //
-// Da decidere: cancellarle, o ricollegarle se il pannello tornera' un modale.
-function openChatModal() {
-    if (chatModal) chatModal.style.display = 'flex';
-    if (modalOverlay) modalOverlay.style.display = 'block';
-    if (chatInput) chatInput.focus();
-
-    chatHistory = [];
-    if (chatMessages) {
-        chatMessages.innerHTML = '';
-        addMessage('ai', 'Ciao! Sono Frank, il tuo assistente. Come posso aiutarti oggi?');
-    }
-};
-
-// Funzione per chiudere il modale
-// CORREZIONE DEL 10/09/2026: il commento che stava qui diceva che il nome di
-// questa funzione non fosse libero, perche' `shared-ui.js` la cercava come
-// `window['close' + id]`. Il meccanismo c'era ma non e' mai stato eseguito —
-// nessuna chiamata passava un id — ed e' stato rimosso. Il nome e' libero.
-//
-// Resta vero il resto: `main.js` definisce una PROPRIA `window.closeChatModal`.
-// Le due non si incontrano, perche' nessuna pagina carica entrambi i file
-// (verificato), ma sono due implementazioni dello stesso nome ed e' un debito
-// a parte.
-async function closeChatModal() {
-    if (chatModal) chatModal.style.display = 'none';
-    if (modalOverlay) modalOverlay.style.display = 'none';
-
-    if (isRecording && recognition) {
-        recognition.stop();
-    }
-
-    if (chatHistory.length > 1) {
-        await saveChatHistory();
-    }
-};
+// ┌ QUELLO CHE IL CODICE MORTO STAVA INDICANDO, e che resta aperto ─────────
+// │ `saveChatHistory()` e' chiamata da DUE punti: questa funzione morta, e il
+// │ pulsante Home in fondo al file. Tolta la prima, ne resta **uno solo**.
+// │
+// │ Quindi: **la conversazione viene salvata soltanto se si esce premendo
+// │ Home.** Chi chiude la scheda, torna indietro col browser o clicca un
+// │ altro collegamento la perde, senza alcun avviso.
+// │
+// │ Non e' un difetto introdotto qui — quella funzione non girava — ma era
+// │ l'unica traccia scritta del fatto che la chiusura dovesse salvare.
+// │ Cancellarla senza guardare avrebbe sepolto la domanda insieme al codice.
+// │
+// │ Rimedio possibile, non applicato oggi perche' e' una decisione e non una
+// │ riga: un `visibilitychange` o un `pagehide` che salvi, con l'accortezza
+// │ che quegli eventi non garantiscono il completamento di una chiamata di
+// │ rete — servirebbe `navigator.sendBeacon`, che cambia il percorso di
+// │ salvataggio lato backend. Annotato in `04a_esercizio_e_debito.md`.
+// └────────────────────────────────────────────────────────────────────────
 
 // Funzione per salvare la cronologia
 async function saveChatHistory() {
