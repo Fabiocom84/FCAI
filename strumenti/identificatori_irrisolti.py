@@ -18,7 +18,14 @@ momento non protegge piu nulla continuando a sembrare una protezione. Lo stesso
 ragionamento sta scritto in `gancio-pre-commit`.
 
 FALSI POSITIVI NOTI, e perche non li tolgo
-  * parametri di arrow function (`new Promise((resolve) => ...)` da `resolve`);
+  * parametri di funzione usati come callback, arrow o no: da
+    `new Promise((resolve) => ...)` esce `resolve`, da
+    `rimpiazzaGrafico(id, stato, costruisci)` esce `costruisci`. Sono nomi
+    CHIAMATI la cui dichiarazione sta in una lista di parametri semplice, che
+    lo strumento non legge. I parametri DESTRUTTURATI invece si', dal
+    20/09/2026: quelli non erano una manciata stabile — ne nasceva uno per ogni
+    estrazione, perche' e' cosi' che si passa il rientro (`ricaricaDati`,
+    `apriIspettore`);
   * parole dentro commenti o stringhe ANNIDATI in una interpolazione `${...}`:
     la ripulitura tiene il codice interpolato — deve, perche li dentro ci sono
     riferimenti veri — e non lo ripulisce a sua volta. Da `style="...var(--col-x)"`
@@ -40,9 +47,25 @@ strumento, non del codice.
   scomposizione che non torna invita a fidarsi del totale senza ricontarlo,
   che e' esattamente cio' contro cui il riferimento esiste.*
 
+  *Rimisurato il 20/09/2026 su 45 moduli: **16 voci** — sei `var`, cinque
+  `resolve`, piu' `reject`, `fn`, `O`, `database`, `costruisci`. Il riferimento
+  ha fatto il suo lavoro alla lettera: la riga qui sotto diceva «sedici voci
+  vogliono dire che ce n'e' una nuova», erano sedici, e la nuova era
+  `costruisci` — famiglia gia' documentata (parametro-callback), non una classe
+  nuova. Nello stesso giro hanno smesso di comparire `apriIspettore` e
+  `ricaricaDati`, che erano invece una classe in crescita: la destrutturazione
+  nelle liste di parametri, ora riconosciuta.*
+
+  *Non provo a far quadrare 15 e 16 voce per voce: in mezzo ci sono nove moduli
+  nuovi e una lacuna chiusa, e non so se `ricaricaDati` fosse gia' dentro il
+  conteggio del 19/09 — `gestione-filtri.js` e' nato quel giorno. Il totale
+  misurato oggi e' 16, la scomposizione qui sopra somma a 16, e quello e' il
+  riferimento. Una riconciliazione ricostruita a posteriori sarebbe una
+  ricostruzione, non una misura.*
+
 Questo numero e' il riferimento, ed e' il motivo per cui vale la pena scriverlo:
-**sedici voci vogliono dire che ce n'e' una nuova**, e va guardata. Senza un
-valore atteso, un elenco lungo si scorre e basta — che e' il modo in cui un
+**diciassette voci vogliono dire che ce n'e' una nuova**, e va guardata. Senza
+un valore atteso, un elenco lungo si scorre e basta — che e' il modo in cui un
 controllo smette di controllare pur continuando a girare.
 """
 import pathlib
@@ -132,6 +155,29 @@ def ripulisci(t, tieni_stringhe=False):
     return ''.join(fuori)
 
 
+def nomi_destrutturati(blocco):
+    """I nomi LOCALI introdotti da un blocco di destrutturazione.
+
+    Da `{ a, b: c, d = 1, ...resto }` rende `a`, `c`, `d`, `resto`. Conta il
+    nome locale, non la chiave: in `b: c` e' `c` a esistere nello scope, ed e'
+    `c` che potrebbe essere chiamato.
+
+    Estratta il 20/09/2026, quando e' servita anche per le liste di parametri:
+    la stessa manciata di righe scritta due volte significa che la prossima
+    correzione ne raggiunge una sola. Prima non gestiva i valori predefiniti —
+    da `{ d = 1 }` usciva il nome `d = 1`, che non corrisponde a niente — ne' il
+    rest: due falsi positivi silenziosi in meno.
+    """
+    nomi = set()
+    for pezzo in blocco.split(','):
+        pezzo = pezzo.split('=')[0].strip()        # via il valore predefinito
+        pezzo = pezzo.split(':')[-1].strip()       # rinomina: il locale e' a destra
+        pezzo = pezzo.lstrip('.').strip()          # rest: `...resto` -> `resto`
+        if pezzo:
+            nomi.add(pezzo)
+    return nomi
+
+
 def irrisolti(sorgente):
     t = ripulisci(sorgente)
     definiti = set(re.findall(r'(?:^|\s)(?:async\s+)?function\s+([A-Za-z_$][\w$]*)', t))
@@ -150,10 +196,23 @@ def irrisolti(sorgente):
     # proprio `mostraAvviso`, introdotto in `api-client.js` il 06/09 dallo stesso
     # lavoro che questo strumento doveva sorvegliare.
     for blocco in re.findall(r'(?:const|let|var)\s*\{([^}]*)\}\s*=', t):
-        for pezzo in blocco.split(','):
-            pezzo = pezzo.strip()
-            if pezzo:
-                definiti.add(pezzo.split(':')[-1].strip())
+        definiti |= nomi_destrutturati(blocco)
+    # DESTRUTTURAZIONE NELLA LISTA DEI PARAMETRI: `function f({ a, b })`.
+    # Il blocco qui sopra copre solo le DICHIARAZIONI. Aggiunto il 20/09/2026,
+    # e il motivo per cui mancava e' che il difetto si vede solo quando uno di
+    # quei nomi viene CHIAMATO — cioe' quando e' un callback. E' diventato
+    # frequente da quando le estrazioni passano il rientro cosi': `ricaricaDati`
+    # in `gestione-filtri.js`, `apriIspettore` in `attivita-carta.js`. Non e' una
+    # manciata stabile di falsi positivi: ne nasce uno per ogni estrazione.
+    #
+    # I DUE SCHEMI ANCORANO A `function` E A `=>` di proposito. Un `{...}`
+    # dentro una CHIAMATA — `apriPopupFiltro({ id, nome })` — NON va accettato:
+    # li' la forma abbreviata significa che quei nomi devono gia' esistere nello
+    # scope, e metterli fra i definiti nasconderebbe un caso vero.
+    for blocco in re.findall(r'function\s*[A-Za-z_$]?[\w$]*\s*\(\s*\{([^}]*)\}', t):
+        definiti |= nomi_destrutturati(blocco)
+    for blocco in re.findall(r'\(\s*\{([^}]*)\}\s*\)\s*=>', t):
+        definiti |= nomi_destrutturati(blocco)
     importati = set()
     for blocco in re.findall(r'import\s*\{([^}]*)\}', sorgente):
         importati |= {x.strip().split(' as ')[-1] for x in blocco.split(',') if x.strip()}
@@ -181,7 +240,54 @@ def controllo_positivo():
     return 'spostataAltrove' in irrisolti(CASO_GUASTO)
 
 
+# Il riconoscimento della destrutturazione nei PARAMETRI, aggiunto il
+# 20/09/2026, puo' peccare per eccesso: una regola troppo larga smette di
+# segnalare e nessuno se ne accorge, perche' un elenco piu' corto sembra un
+# miglioramento. Questo caso prova i DUE versi su un file solo — `apriDettaglio`
+# e' un parametro destrutturato e chiamato, e deve tacere; `scomparsa` non
+# esiste da nessuna parte, e deve continuare a vedersi.
+CASO_DESTRUTTURATO = """
+export function crea({ task, apriDettaglio }) {
+    apriDettaglio(task.id);
+    scomparsa();
+}
+"""
+
+
+def controllo_destrutturazione():
+    voci = irrisolti(CASO_DESTRUTTURATO)
+    return ('apriDettaglio' not in voci, 'scomparsa' in voci)
+
+
+def stampa_controlli():
+    """Esegue i controlli sulla sonda e dice se e' cieca. Rende True se regge.
+
+    ESISTE PER LA CI, e la ragione e' un buco trovato il 20/09/2026. In
+    `controlli.yml` il passo di questo strumento ha `continue-on-error: true`,
+    giustissimo per l'ELENCO — che ha falsi positivi noti e non deve bloccare —
+    ma cosi' viene ingoiato anche il codice d'uscita di un AUTOCONTROLLO
+    fallito. La sonda potrebbe diventare cieca e la CI resterebbe verde.
+    Separando i due passi, l'elenco resta informativo e la cecita' blocca.
+    """
+    ok = controllo_positivo()
+    print("Controllo positivo — la sonda saprebbe riconoscere un caso guasto?")
+    print("    su un caso costruito apposta: SI, lo vede" if ok else
+          "    NO. La sonda e cieca: qualunque elenco non vale nulla.")
+
+    tace, vede = controllo_destrutturazione()
+    print("\nDestrutturazione nei parametri — nei due versi:")
+    print(f"    su un callback destrutturato e chiamato, deve TACERE: {'SI' if tace else 'NO'}")
+    print(f"    su un nome che non esiste, deve vederlo ancora:       {'SI' if vede else 'NO'}")
+    if not (tace and vede):
+        print("    La regola sui parametri e sbagliata: troppo larga zittisce i casi veri.")
+    return ok and tace and vede
+
+
 if __name__ == '__main__':
+    # `--solo-controlli` non vuole file: serve al passo bloccante della CI.
+    if '--solo-controlli' in sys.argv:
+        sys.exit(0 if stampa_controlli() else 2)
+
     # I caratteri jolly si espandono QUI, e non e' pignoleria: bash li espande
     # prima di lanciare il programma, PowerShell no. La riga d'uso scritta in
     # testa a questo file — `js/*.js` — falliva quindi sulla macchina di chi lo
@@ -206,11 +312,8 @@ if __name__ == '__main__':
         totale += len(ignoti)
         print(f"{p:<40} {', '.join(ignoti) if ignoti else 'nessuno'}")
 
-    print("\nControllo positivo — la sonda saprebbe riconoscere un caso guasto?")
-    if controllo_positivo():
-        print("    su un caso costruito apposta: SI, lo vede")
-    else:
-        print("    NO. La sonda e cieca: qualunque risultato qui sopra non vale nulla.")
+    print()
+    if not stampa_controlli():
         sys.exit(2)
 
     print(f"\n{totale} voci da esaminare a mano (vedi FALSI POSITIVI NOTI in testa al file).")
