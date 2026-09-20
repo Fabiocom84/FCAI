@@ -78,13 +78,13 @@ export function disegnaGrafici(charts, stato) {
  * Grafico a ciambella. Esportata: la chiama anche `renderCommessaAnalysis`.
  */
 export function creaGraficoTorta(id, d, stato) {
-    const el = document.getElementById(id);
-    if (!el || !d.labels.length) return;
-    if (stato.chartInstances[id]) { stato.chartInstances[id].destroy(); delete stato.chartInstances[id]; }
-    stato.chartInstances[id] = new Chart(el, {
-        type: 'doughnut',
-        data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: tavolozza(d.labels.length) }] },
-        options: { responsive: true, plugins: { legend: { position: 'left', labels: { boxWidth: 10 } } } }
+    rimpiazzaGrafico(id, stato, () => {
+        if (!d.labels.length) return null;
+        return {
+            type: 'doughnut',
+            data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: tavolozza(d.labels.length) }] },
+            options: { responsive: true, plugins: { legend: { position: 'left', labels: { boxWidth: 10 } } } }
+        };
     });
 }
 
@@ -92,66 +92,130 @@ export function creaGraficoTorta(id, d, stato) {
  * Barre orizzontali. Esportata: la chiama anche `renderCommessaAnalysis`.
  */
 export function creaGraficoBarreOrizzontali(id, d, stato, color = '#3498db') {
-    const el = document.getElementById(id);
-    if (!el || !d.labels.length) return;
-    if (stato.chartInstances[id]) { stato.chartInstances[id].destroy(); delete stato.chartInstances[id]; }
-    stato.chartInstances[id] = new Chart(el, {
-        type: 'bar',
-        data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    rimpiazzaGrafico(id, stato, () => {
+        if (!d.labels.length) return null;
+        return {
+            type: 'bar',
+            data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        };
     });
 }
 
-/** Barre verticali. Privata: la chiama solo `disegnaGrafici`. */
+/**
+ * Barre verticali. Privata: la chiama solo `disegnaGrafici`.
+ *
+ * NON HA LA GUARDIA SUI DATI, e non e' una dimenticanza di questa riscrittura:
+ * non l'aveva nemmeno `createBarChart`, sola fra le quattro. Con dati vuoti
+ * disegna un grafico vuoto, mentre le altre tre escono e **lasciano a schermo
+ * quello del filtro precedente**. Conservata com'era: e' un'asimmetria da
+ * decidere, non da correggere di nascosto dentro un refactoring — e a guardarla
+ * bene la piu' sospetta delle due condotte e' quella delle altre tre, perche'
+ * un grafico vecchio che resta sotto un filtro nuovo si legge come se fosse il
+ * risultato del filtro nuovo.
+ */
 function creaGraficoBarre(id, d, stato, color = '#2ecc71') {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (stato.chartInstances[id]) { stato.chartInstances[id].destroy(); delete stato.chartInstances[id]; }
-    stato.chartInstances[id] = new Chart(el, {
+    rimpiazzaGrafico(id, stato, () => ({
         type: 'bar',
         data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
         options: { responsive: true, plugins: { legend: { display: false } } }
-    });
+    }));
 }
 
 /** Barre impilate, con pivot dei dati. Privata: la chiama solo `disegnaGrafici`. */
 function creaGraficoImpilato(id, rawData, xKey, stackKey, stato) {
-    const el = document.getElementById(id);
-    if (!el || !rawData || !rawData.length) return;
-    // Destroy existing chart on this canvas
-    if (stato.chartInstances[id]) { stato.chartInstances[id].destroy(); delete stato.chartInstances[id]; }
+    rimpiazzaGrafico(id, stato, () => {
+        if (!rawData || !rawData.length) return null;
 
-    // 1. Get Unique X Labels (Users)
-    const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
+        // 1. Get Unique X Labels (Users)
+        const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
 
-    // 2. Get Unique Stacks (Categories)
-    const categories = [...new Set(rawData.map(d => d[stackKey]))];
+        // 2. Get Unique Stacks (Categories)
+        const categories = [...new Set(rawData.map(d => d[stackKey]))];
 
-    // 3. Build Datasets
-    const datasets = categories.map((cat, i) => {
+        // 3. Build Datasets
+        const datasets = categories.map((cat, i) => {
+            return {
+                label: cat,
+                data: labels.map(label => {
+                    const item = rawData.find(d => d[xKey] === label && d[stackKey] === cat);
+                    return item ? item.value : 0;
+                }),
+                backgroundColor: tavolozza(categories.length)[i]
+            };
+        });
+
         return {
-            label: cat,
-            data: labels.map(label => {
-                const item = rawData.find(d => d[xKey] === label && d[stackKey] === cat);
-                return item ? item.value : 0;
-            }),
-            backgroundColor: tavolozza(categories.length)[i]
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true } },
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
+            }
         };
-    });
-
-    stato.chartInstances[id] = new Chart(el, {
-        type: 'bar',
-        data: { labels, datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { x: { stacked: true }, y: { stacked: true } },
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
-        }
     });
 }
 
-/** Tavolozza ciclica. Privata: era `getColors`, la usano le due qui sopra. */
+// PERCHE' ESISTE `rimpiazzaGrafico` — 20/09/2026, in un commit separato da
+// quello dell'estrazione, perche' un diff che e' sia un trasloco sia una
+// riscrittura non e' rileggibile da nessuno.
+//
+// Le quattro fabbriche ripetevano la stessa danza: prendi la tela, distruggi il
+// grafico che c'era, registra quello nuovo. **Non si unifica per accorciare il
+// file** — misurato, il conto delle righe eseguibili e' in pari. Si unifica
+// perche' quel protocollo esisteva in quattro copie, ed e' la forma in
+// miniatura di `publicApiFetch`: una copia dichiarata di `apiFetch` che
+// **divergeva gia'**, perche' il ramo 403 aggiunto il 17/08/2026 non le era mai
+// arrivato. Quattro copie di tre righe divergono allo stesso modo, solo piu'
+// tardi e su qualcosa di meno visibile.
+//
+// UNA DIFFERENZA DI COMPORTAMENTO, nominata e non nascosta dentro il
+// refactoring. Nell'originale `createStackedChart` distruggeva il grafico
+// precedente **prima** di calcolare i propri dati; qui la configurazione si
+// costruisce prima, e la distruzione avviene solo se c'e' qualcosa con cui
+// rimpiazzare. Si vede solo se la costruzione solleva un'eccezione: prima
+// restava una tela vuota, ora resta il grafico vecchio. E' voluta — non si
+// distrugge cio' che non si e' in grado di sostituire — ma e' un cambiamento,
+// non un refactoring puro.
+
+/**
+ * La danza comune alle quattro fabbriche: trova la tela, chiede al chiamante la
+ * configurazione, distrugge il grafico che c'era e registra quello nuovo.
+ *
+ * L'ordine non e' arbitrario. `costruisci()` viene chiamata **prima** della
+ * distruzione, cosi' un `null` (dati vuoti) fa uscire senza toccare il registro:
+ * e' il comportamento che avevano le tre fabbriche con la guardia sui dati, dove
+ * il grafico precedente resta a schermo. Conservato tale e quale, benche' sia
+ * proprio la condotta piu' discutibile delle due (vedi `creaGraficoBarre`).
+ *
+ * @param {string}   id          id della tela nel DOM.
+ * @param {object}   stato       l'oggetto di stato: `chartInstances` viene letto
+ *                               e scritto qui, e va dereferenziato a ogni uso
+ *                               (vedi il commento in testa al file).
+ * @param {Function} costruisci  restituisce la configurazione Chart.js, oppure
+ *                               `null` se non c'e' niente da disegnare.
+ */
+function rimpiazzaGrafico(id, stato, costruisci) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const config = costruisci();
+    if (!config) return;
+
+    if (stato.chartInstances[id]) {
+        stato.chartInstances[id].destroy();
+        delete stato.chartInstances[id];
+    }
+    stato.chartInstances[id] = new Chart(el, config);
+}
+
+/**
+ * Tavolozza ciclica. Privata: era `getColors`, e la usano `creaGraficoTorta` e
+ * `creaGraficoImpilato` — nominate, perche' «le due qui sopra» ha smesso di
+ * essere vero nel momento in cui `rimpiazzaGrafico` si e' infilato in mezzo.
+ */
 function tavolozza(count) {
     const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c', '#7f8c8d'];
     return Array(count).fill().map((_, i) => pal[i % pal.length]);
