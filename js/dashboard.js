@@ -5,6 +5,7 @@ import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
 import { disegnaGantt } from './dashboard-gantt.js';
+import { disegnaGrafici, creaGraficoTorta, creaGraficoBarreOrizzontali } from './dashboard-grafici.js';
 
 const Dashboard = {
     state: {
@@ -277,7 +278,7 @@ const Dashboard = {
 
             // Render KPIs & Charts
             this.updateKPIs(data.kpis);
-            this.renderCharts(data.charts);
+            disegnaGrafici(data.charts, this.state);
             if (!this.state.availableFilters) { // Init once
                 this.state.availableFilters = data.charts;
             }
@@ -374,34 +375,9 @@ const Dashboard = {
         if (this.dom.kpiDone) this.dom.kpiDone.textContent = Number(kpis.done_hours).toFixed(1);
     },
 
-    // --- CHARTS (Same as V8) ---
-    renderCharts: function (charts) {
-        // Cleanup
-        Object.values(this.state.chartInstances).forEach(c => c && c.destroy());
-        this.state.chartInstances = {};
-        if (!charts) return;
-
-        const mapData = (list) => ({
-            labels: list ? list.map(i => i.label) : [],
-            values: list ? list.map(i => i.value) : []
-        });
-
-        // Charts per "Sintesi Risorse"
-        this.createBarChart('chartTimeBar', mapData(charts.time_trend));
-        this.createPieChart('chartUserPie', mapData(charts.by_user));
-        this.createHorizontalBarChart('chartUserBar', mapData(charts.by_user));
-
-        // Stacked Charts (Cross Data)
-        this.createStackedChart('chartCrossMacroUser', charts.cross_macro_user, 'user', 'category');
-        this.createStackedChart('chartCrossLavUser', charts.cross_lav_user, 'user', 'category');
-
-        // HR Charts
-        this.createPieChart('chartAbsenceUser', mapData(charts.absence_by_user));
-        this.createBarChart('chartAbsenceTrend', mapData(charts.absence_trend), '#e74c3c');
-
-        // Removed charts (Non-existent in new HTML): 
-        // chartCommessaPie, chartLavPie, chartLavBar, chartMacroPie, chartMacroBar, chartCostCommessa
-    },
+    // I grafici stanno in `js/dashboard-grafici.js` dal 20/09/2026 (task 4.6).
+    // `renderCharts` e le quattro fabbriche sono uscite insieme: si chiamavano
+    // solo fra loro e toccavano un solo campo di stato, `chartInstances`.
 
     // --- ANALISI COMMESSA: SELETTORE INDIPENDENTE ---
 
@@ -619,7 +595,7 @@ const Dashboard = {
                 labels: distPersonale.map(p => p.label),
                 values: distPersonale.map(p => p.ore)
             };
-            this.createHorizontalBarChart('ca-chartUserBar', personaleData, '#3498db');
+            creaGraficoBarreOrizzontali('ca-chartUserBar', personaleData, this.state, '#3498db');
 
             // Per la pie lavorazioni, usiamo i dati analytics filtrati se disponibili
             const analytics = this.state.analyticsData;
@@ -628,7 +604,7 @@ const Dashboard = {
                     labels: list ? list.map(i => i.label) : [],
                     values: list ? list.map(i => i.value) : []
                 });
-                this.createPieChart('ca-chartCompPie', mapData(analytics.charts.by_lavorazione));
+                creaGraficoTorta('ca-chartCompPie', mapData(analytics.charts.by_lavorazione), this.state);
             }
 
             // 9. Benchmark: Tabella Commesse Simili
@@ -683,88 +659,16 @@ const Dashboard = {
     // e non usava `this.dom`: e' uscita senza parametri aggiuntivi. Con lei se
     // n'e' andato `_getWeekStart`, suo unico chiamante, che la' e' privato.
 
-    // Helper for Stacked Bar (Pivoting Data)
-    createStackedChart: function (id, rawData, xKey, stackKey) {
-        const el = document.getElementById(id);
-        if (!el || !rawData || !rawData.length) return;
-        // Destroy existing chart on this canvas
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-
-        // 1. Get Unique X Labels (Users)
-        const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
-
-        // 2. Get Unique Stacks (Categories)
-        const categories = [...new Set(rawData.map(d => d[stackKey]))];
-
-        // 3. Build Datasets
-        const datasets = categories.map((cat, i) => {
-            return {
-                label: cat,
-                data: labels.map(label => {
-                    const item = rawData.find(d => d[xKey] === label && d[stackKey] === cat);
-                    return item ? item.value : 0;
-                }),
-                backgroundColor: this.getColors(categories.length)[i]
-            };
-        });
-
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels, datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: { stacked: true }, y: { stacked: true } },
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
-            }
-        });
-    },
-
     // Qui stavano due definizioni di `renderSidebarFilters` e `renderGrid`,
     // rimosse il 06/09/2026. Non erano copie: differivano dalle versioni piu'
-    // sotto (righe ~1020 e ~1172) di 15 e 21 righe. In un oggetto letterale la
-    // chiave definita per seconda sovrascrive la prima IN SILENZIO, quindi
-    // queste due non venivano mai eseguite — e chi le avesse modificate non
-    // avrebbe visto alcun effetto. 51 righe.
-
-
-    createPieChart: function (id, d) {
-        const el = document.getElementById(id);
-        if (!el || !d.labels.length) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'doughnut',
-            data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: this.getColors(d.labels.length) }] },
-            options: { responsive: true, plugins: { legend: { position: 'left', labels: { boxWidth: 10 } } } }
-        });
-    },
-
-    createBarChart: function (id, d, color = '#2ecc71') {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-    },
-
-    createHorizontalBarChart: function (id, d, color = '#3498db') {
-        const el = document.getElementById(id);
-        if (!el || !d.labels.length) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    },
-
-    getColors: function (count) {
-        const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c', '#7f8c8d'];
-        return Array(count).fill().map((_, i) => pal[i % pal.length]);
-    },
+    // sotto — quelle tuttora in uso — di 15 e 21 righe. In un oggetto
+    // letterale la chiave definita per seconda sovrascrive la prima IN
+    // SILENZIO, quindi queste due non venivano mai eseguite, e chi le avesse
+    // modificate non avrebbe visto alcun effetto. 51 righe.
+    //
+    // (Il rimando diceva «righe ~1020 e ~1172». Tolto il 20/09/2026: i numeri
+    //  di riga in un commento invecchiano a ogni modifica del file, e questa
+    //  estrazione ne ha spostate un centinaio. I nomi dei metodi no.)
 
     // --- FILTERS V2 (Bio-Directional, Multi-Select) ---
     renderSidebarFilters: function () {
