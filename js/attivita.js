@@ -4,6 +4,7 @@
 import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 import { mostraAvviso } from './shared-ui.js';
+import { creaCartaAttivita } from './attivita-carta.js';
 
 const TaskApp = {
     state: {
@@ -143,7 +144,11 @@ const TaskApp = {
             `;
 
             const container = columnEl.querySelector('.tasks-container');
-            tasksInCol.forEach(task => container.appendChild(this.createTaskCard(task)));
+            tasksInCol.forEach(task => container.appendChild(creaCartaAttivita({
+                task,
+                stato: this.state,
+                apriIspettore: (id) => this.renderInspectorView(id),
+            })));
 
             this.setupDragDrop(container);
             this.dom.taskView.appendChild(columnEl);
@@ -153,141 +158,15 @@ const TaskApp = {
         if (arcBtn) arcBtn.addEventListener('click', () => this.openArchive());
     },
 
-    createTaskCard: function (task) {
-        const el = document.createElement('div');
-
-        // 1. Conversione sicura degli ID in numeri per evitare errori di confronto (String vs Int)
-        const myId = parseInt(this.state.currentUserProfile.id_personale, 10);
-        const taskCreatorId = parseInt(task.id_creatore_fk, 10);
-        const taskAssigneeId = parseInt(task.id_assegnatario_fk, 10);
-
-        // 2. Logica Ruoli
-        const isCreator = (taskCreatorId === myId);
-        const isAssignee = (taskAssigneeId === myId);
-
-        // SCENARIO DELEGANTE (Monitoraggio): 
-        // L'ho creato io, NON ce l'ho io in carico, e non è ancora finito.
-        // -> Vedo il task "grigino" con il lucchetto.
-        const isDelegatedOut = isCreator && !isAssignee && task.stato !== 'Completato';
-
-        // SCENARIO DESTINATARIO (In Arrivo): 
-        // Ce l'ho io in carico, MA non l'ho creato io.
-        // -> Vedo il task evidenziato in blu con banner.
-        const isIncoming = isAssignee && !isCreator;
-
-        // 3. Assegnazione Classi CSS
-        el.className = `task-card priority-${(task.priorita || 'Media').toLowerCase()}`;
-        el.dataset.taskId = task.id_task;
-        el.dataset.assigneeId = task.id_assegnatario_fk;
-
-        if (isDelegatedOut) {
-            el.classList.add('delegated-out');
-            el.draggable = false; // Impedisce trascinamento fisico
-        } else {
-            el.draggable = true; // Abilita trascinamento
-        }
-
-        if (isIncoming) {
-            el.classList.add('incoming-task');
-        }
-
-        // 4. Preparazione Contenuti (Tags, Nomi, Date)
-        // 4. Preparazione Contenuti (Tags, Nomi, Date)
-        // [MODIFIED] Gestione Colori Categorie
-        const catName = task.categoria?.nome_categoria || 'Altro';
-
-        // Mappa Colori (Basata su DB + Richieste)
-        const catColors = {
-            'Milano': '#607D8B',       // Blue Grey
-            'Qualità': '#9C27B0',      // Purple
-            'Sicurezza': '#FF9800',    // Orange
-            'Produzione': '#2196F3',   // Blue
-            'OP': '#009688',           // Teal
-            'Trevignano': '#795548',   // Brown
-            'Acquisti': '#4CAF50',     // Green
-            'Altro': '#9E9E9E',        // Grey
-            'Commessa': '#3F51B5',     // Indigo
-            'Montaggi': '#FF5722',     // Deep Orange
-            'Rozzano': '#673AB7',      // Deep Purple
-            'Fontanafredda': '#00BCD4',// Cyan
-            'Generale': '#607D8B',     // Blue Grey
-            'Amministrazione': '#E91E63', // Pink
-            'Tecnico': '#3F51B5',      // Indigo
-            'Commerciale': '#8BC34A'   // Light Green
-        };
-        // Normalizza nome per case-insensitive match se necessario (qui chiavi esatte)
-        const badgeColor = catColors[catName] || catColors[catName.trim()] || '#9E9E9E';
-
-        let headerText = catName;
-        let headerClass = 'cat-tag';
-        let headerStyle = `background-color: ${badgeColor}; color: white;`;
-
-        if (task.commessa) {
-            headerText = task.commessa.codice_commessa;
-            headerClass = 'commessa-tag';
-            // Se è OP/Commessa, usiamo il colore OP o manteniamo lo stile Commessa?
-            // L'utente vuole distinguere le categorie. 
-            // Se è OP, ha senso usare il colore OP (Teal) per il tag, anche se mostra il codice commessa.
-            if (catName.toUpperCase() === 'OP') {
-                headerStyle = `background-color: ${catColors['OP']}; color: white;`;
-            }
-        }
-
-        // Recupero nomi per visualizzazione
-        const creatorName = task.creatore?.nome_cognome?.split(' ')[0] || '?';
-        const assigneeName = task.assegnatario?.nome_cognome?.split(' ')[0] || '';
-
-        // Elementi Visivi Speciali
-        // Banner evidente se il task arriva da un altro
-        const incomingAlert = isIncoming
-            ? `<div class="incoming-alert"><i class="fas fa-arrow-down"></i> Da ${creatorName}</div>`
-            : '';
-
-        // Lucchetto se sto solo monitorando
-        const lockIcon = isDelegatedOut
-            ? `<i class="fas fa-lock" style="color:var(--col-999999); font-size:0.9em;" title="In carico a ${assigneeName}"></i>`
-            : '';
-
-        // Formattazione data scadenza
-        const dateHtml = task.data_obiettivo
-            ? `<div style="font-size:0.75em; color:${this.isLate(task.data_obiettivo) ? 'var(--col-e74c3c)' : 'var(--col-95a5a6)'}; display:flex; align-items:center; gap:4px;">
-                 <i class="far fa-calendar"></i> ${new Date(task.data_obiettivo).toLocaleDateString()}
-               </div>`
-            : '<div></div>';
-
-        // 5. Costruzione HTML Card
-        el.innerHTML = `
-            ${incomingAlert}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span class="${headerClass}" style="${headerStyle}">${headerText}</span>
-                ${lockIcon}
-            </div>
-            
-            <h4 style="margin: 5px 0 10px 0; font-size:0.95em; line-height:1.4;">${task.titolo}</h4>
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--col-f0f0f0); padding-top:6px;">
-                 ${dateHtml}
-                 <span style="font-size:0.75em; color:var(--col-555555); font-weight:600; background:var(--col-f1f3f5); padding:2px 6px; border-radius:4px;">
-                    ${assigneeName}
-                 </span>
-            </div>
-        `;
-
-        // 6. Event Listeners
-        // Click apre sempre l'inspector
-        el.addEventListener('click', () => this.renderInspectorView(task.id_task));
-
-        // Drag start solo se non è delegato fuori (locked)
-        if (!isDelegatedOut) {
-            el.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', task.id_task);
-                this.state.draggedTaskAssignee = task.id_assegnatario_fk;
-            });
-        }
-
-        return el;
-    },
-
+    // La carta sta in `js/attivita-carta.js` dal 20/09/2026 (task 4.7).
+    // `createTaskCard` (134 righe) costruiva un elemento del DOM da un oggetto
+    // `task` e lo restituiva: niente `this.dom`, niente API. Con lei se n'e'
+    // andato `isLate`, suo unico chiamante in tutto il repository, che la' e'
+    // privato come `inRitardo`.
+    //
+    // Lo stato passa per RIFERIMENTO perche' `draggedTaskAssignee` e' un canale
+    // verso `setupDragDrop`, qui sotto: la carta lo scrive su `dragstart`, il
+    // rilascio lo rilegge. Una copia romperebbe il canale in silenzio.
     setupDragDrop: function (container) {
         // Drag Over
         container.addEventListener('dragover', e => {
@@ -348,7 +227,6 @@ const TaskApp = {
         });
     },
 
-    isLate: function (dateStr) { return new Date(dateStr) < new Date().setHours(0, 0, 0, 0); },
 
     // =================================================================
     // == 3. INSPECTOR: VIEW MODE (VISUALIZZAZIONE)                   ==
