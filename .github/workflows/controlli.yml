@@ -40,6 +40,34 @@ jobs:
         with:
           node-version: '20'
 
+      # 0. LE SONDE SANNO ANCORA MISURARE? Aggiunto il 20/09/2026.
+      #
+      #    IL BUCO VERO era uno solo, e sta nel passo 5: `continue-on-error`
+      #    serve al suo ELENCO, che ha falsi positivi noti e non deve bloccare,
+      #    ma ingoiava anche il codice d'uscita dei suoi AUTOCONTROLLI. La sonda
+      #    poteva diventare cieca e questo file restare verde. Ora quei controlli
+      #    girano qui, con `--solo-controlli`, e bloccano.
+      #
+      #    `controlla_pagine.py --autoprova` e' invece RIDONDANTE di proposito:
+      #    quello strumento esegue gia' l'autoprova a ogni invocazione e si
+      #    rifiuta di rispondere se fallisce, quindi il passo 2 era coperto. Sta
+      #    qui perche' un esito visibile nel registro vale piu' di uno implicito,
+      #    e perche' un fallimento al passo 0 dice «la sonda e' rotta» invece di
+      #    farlo dedurre da un messaggio al passo 2.
+      #
+      #    `struttura_moduli.py --autoprova` non copriva un cancello di questa
+      #    CI — quello strumento serve all'analisi, non ai gate — ma dal
+      #    20/09/2026 le sue guardie sono due, e una misura sbagliata li' diventa
+      #    una decisione di refactoring sbagliata. Costa un secondo.
+      #
+      #    Sta PRIMA di tutto e BLOCCA, perche' un risultato prodotto da una
+      #    sonda rotta e' peggio di nessun risultato: sembra una risposta.
+      - name: Le sonde sanno misurare
+        run: |
+          python strumenti/controlla_pagine.py --autoprova
+          python strumenti/struttura_moduli.py --autoprova
+          python strumenti/identificatori_irrisolti.py --solo-controlli
+
       # 1. Le impronte nei collegamenti e CACHE_VERSION corrispondono al
       #    contenuto? Se no, il codice nuovo non arriverebbe agli utenti e il
       #    collaudo direbbe che funziona, perche' si comporta come prima.
@@ -71,9 +99,13 @@ jobs:
             node "$prova"
           done
 
-      # 5. Non blocca: ha falsi positivi noti e documentati (15 all'09/09/2026).
+      # 5. Non blocca: ha falsi positivi noti e documentati (16 al 20/09/2026).
       #    Serve a rendere VISIBILE una voce nuova, che va guardata a mano.
       #    Un controllo che blocca a sproposito insegna a scavalcarlo.
+      #
+      #    `continue-on-error` vale SOLO per l'elenco. I suoi autocontrolli sono
+      #    nel passo 0, che blocca: fino al 20/09/2026 stavano qui dentro e il
+      #    loro codice d'uscita veniva ingoiato insieme a quello dell'elenco.
       - name: Identificatori irrisolti (informativo)
         continue-on-error: true
         run: python strumenti/identificatori_irrisolti.py js/*.js

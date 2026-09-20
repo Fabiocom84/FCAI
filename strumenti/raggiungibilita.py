@@ -24,8 +24,13 @@ mal misurato valeva 390 righe di falsi morti.**
 
 Quindi lo strumento puo sbagliare in ENTRAMBI i versi, e quello pericoloso
 esiste. Da qui due conseguenze pratiche:
-  * `controllo_misura()` di `struttura_moduli` gira prima di ogni risposta: se
-    la sonda non sa misurare, il resto non vale niente e ci si ferma;
+  * `controllo_misura()` e `controllo_definizioni()` di `struttura_moduli` girano
+    prima di ogni risposta: se la sonda non sa misurare i confini, o non sa
+    riconoscere una definizione, il resto non vale niente e ci si ferma. La
+    seconda e' stata aggiunta il 20/09/2026, quando si e' scoperto che un metodo
+    con il corpo tutto su una riga non entrava affatto nell'elenco — e un nodo
+    mancante e' peggio di un confine sbagliato: falsa una conclusione, non una
+    lunghezza;
   * un metodo dichiarato morto va confermato leggendo il file, non citando
     questo strumento. La lista e' un punto di partenza per guardare, non un
     verdetto.
@@ -46,7 +51,7 @@ import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from struttura_moduli import analizza, controllo_misura  # noqa: E402
+from struttura_moduli import analizza, controllo_misura, controllo_definizioni  # noqa: E402
 
 
 def grafo(voci):
@@ -95,6 +100,16 @@ if __name__ == '__main__':
     if guasti:
         sys.exit(f"MISURA ROTTA ({', '.join(guasti)}): i confini dei metodi sono "
                  f"sbagliati, quindi il grafo lo e' di conseguenza. Nessun risultato.")
+
+    # Aggiunto il 20/09/2026, per lo stesso motivo e in direzione peggiore: un
+    # metodo che `apre_un_blocco` non riconosce non diventa un NODO, e allora
+    # cio' che e' raggiungibile solo attraverso di lui risulta morto. Un confine
+    # sbagliato falsa una lunghezza; un nodo mancante falsa una conclusione.
+    ciechi = [n for n, _, _, ok in controllo_definizioni() if not ok]
+    if ciechi:
+        sys.exit(f"DEFINIZIONI NON RICONOSCIUTE ({', '.join(ciechi)}): un metodo "
+                 f"fuori dall'elenco non e' un nodo del grafo, e cio' che passa "
+                 f"solo da lui sembrerebbe morto. Nessun risultato.")
 
     for p in percorsi:
         voci = analizza(p) or []

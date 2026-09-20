@@ -4,6 +4,8 @@
 import { apiFetch, segnala } from './api-client.js';
 import { showModal } from './shared-ui.js';
 import { IsAdmin } from './core-init.js';
+import { disegnaGantt } from './dashboard-gantt.js';
+import { disegnaGrafici, creaGraficoTorta, creaGraficoBarreOrizzontali } from './dashboard-grafici.js';
 
 const Dashboard = {
     state: {
@@ -103,7 +105,6 @@ const Dashboard = {
     },
 
     init: async function () {
-        console.log("🚀 Dashboard V9.0 (Pagination + Multi-Select)");
         if (!IsAdmin) { window.location.replace('index.html'); return; }
 
         this.initDates();
@@ -123,7 +124,6 @@ const Dashboard = {
                 data.forEach(e => {
                     this.state.etichetteMap[e.id] = e.label;
                 });
-                console.log(`✅ Etichette caricate: ${data.length} commesse`);
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento etichette commesse:', e);
@@ -271,7 +271,6 @@ const Dashboard = {
             // Note: analytics mode might return rows too, we can ignore them or use them for "Synthesis View".
             // If current view is Detail, we focus on Groups.
 
-            console.log("Fetch Analytics:", params.toString());
             const res = await apiFetch('/api/dashboard/stats?' + params.toString());
             if (!res.ok) throw new Error("Errore API Analytics");
             const data = await res.json();
@@ -279,7 +278,7 @@ const Dashboard = {
 
             // Render KPIs & Charts
             this.updateKPIs(data.kpis);
-            this.renderCharts(data.charts);
+            disegnaGrafici(data.charts, this.state);
             if (!this.state.availableFilters) { // Init once
                 this.state.availableFilters = data.charts;
             }
@@ -328,7 +327,6 @@ const Dashboard = {
         const groupKey = this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa';
         params.append('groupBy', groupKey);
 
-        console.log("Fetch Groups:", params.toString());
         const res = await apiFetch('/api/dashboard/stats?' + params.toString());
         if (!res.ok) throw new Error("Errore Fetch Groups");
         const data = await res.json();
@@ -350,7 +348,6 @@ const Dashboard = {
             params.append('groupBy', this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa');
             params.append('groupId', groupId);
 
-            console.log("Fetch Details:", params.toString());
             const res = await apiFetch('/api/dashboard/stats?' + params.toString());
             if (!res.ok) throw new Error("Errore Dettagli");
             const data = await res.json();
@@ -378,34 +375,9 @@ const Dashboard = {
         if (this.dom.kpiDone) this.dom.kpiDone.textContent = Number(kpis.done_hours).toFixed(1);
     },
 
-    // --- CHARTS (Same as V8) ---
-    renderCharts: function (charts) {
-        // Cleanup
-        Object.values(this.state.chartInstances).forEach(c => c && c.destroy());
-        this.state.chartInstances = {};
-        if (!charts) return;
-
-        const mapData = (list) => ({
-            labels: list ? list.map(i => i.label) : [],
-            values: list ? list.map(i => i.value) : []
-        });
-
-        // Charts per "Sintesi Risorse"
-        this.createBarChart('chartTimeBar', mapData(charts.time_trend));
-        this.createPieChart('chartUserPie', mapData(charts.by_user));
-        this.createHorizontalBarChart('chartUserBar', mapData(charts.by_user));
-
-        // Stacked Charts (Cross Data)
-        this.createStackedChart('chartCrossMacroUser', charts.cross_macro_user, 'user', 'category');
-        this.createStackedChart('chartCrossLavUser', charts.cross_lav_user, 'user', 'category');
-
-        // HR Charts
-        this.createPieChart('chartAbsenceUser', mapData(charts.absence_by_user));
-        this.createBarChart('chartAbsenceTrend', mapData(charts.absence_trend), '#e74c3c');
-
-        // Removed charts (Non-existent in new HTML): 
-        // chartCommessaPie, chartLavPie, chartLavBar, chartMacroPie, chartMacroBar, chartCostCommessa
-    },
+    // I grafici stanno in `js/dashboard-grafici.js` dal 20/09/2026 (task 4.6).
+    // `renderCharts` e le quattro fabbriche sono uscite insieme: si chiamavano
+    // solo fra loro e toccavano un solo campo di stato, `chartInstances`.
 
     // --- ANALISI COMMESSA: SELETTORE INDIPENDENTE ---
 
@@ -461,7 +433,6 @@ const Dashboard = {
             if (res.ok) {
                 this.state.caCommesseList = await res.json();
                 this.state.caCommesseLoaded = true;
-                console.log(`✅ Commesse analisi caricate: ${this.state.caCommesseList.length}`);
                 // If the search input is focused, show dropdown
                 if (document.activeElement === this.dom.caSearchInput) {
                     this.renderCommessaDropdown(this.dom.caSearchInput.value);
@@ -624,7 +595,7 @@ const Dashboard = {
                 labels: distPersonale.map(p => p.label),
                 values: distPersonale.map(p => p.ore)
             };
-            this.createHorizontalBarChart('ca-chartUserBar', personaleData, '#3498db');
+            creaGraficoBarreOrizzontali('ca-chartUserBar', personaleData, this.state, '#3498db');
 
             // Per la pie lavorazioni, usiamo i dati analytics filtrati se disponibili
             const analytics = this.state.analyticsData;
@@ -633,7 +604,7 @@ const Dashboard = {
                     labels: list ? list.map(i => i.label) : [],
                     values: list ? list.map(i => i.value) : []
                 });
-                this.createPieChart('ca-chartCompPie', mapData(analytics.charts.by_lavorazione));
+                creaGraficoTorta('ca-chartCompPie', mapData(analytics.charts.by_lavorazione), this.state);
             }
 
             // 9. Benchmark: Tabella Commesse Simili
@@ -672,9 +643,8 @@ const Dashboard = {
 
             // 10. GANTT: Fasi di produzione con proiezione ombra
             const ganttData = data.gantt;
-            console.log('🔍 GANTT DEBUG - data.gantt:', JSON.stringify(ganttData).substring(0, 500));
             if (ganttData) {
-                this.renderGanttChart(ganttData);
+                disegnaGantt(ganttData);
             }
 
         } catch (e) {
@@ -684,281 +654,21 @@ const Dashboard = {
         }
     },
 
-    // --- GANTT CHART RENDERING ---
-    renderGanttChart: function (ganttData) {
-        const container = document.getElementById('ca-gantt-container');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const attuale = ganttData.gantt_attuale || [];
-        const ombra = ganttData.gantt_ombra || [];
-        const timeline = ganttData.timeline || [];
-        const settimanaZero = ganttData.settimana_zero;
-
-        if (!attuale.length || !timeline.length || !settimanaZero) {
-            container.innerHTML = '<div class="gantt-empty">📅 Nessun dato Gantt disponibile. Le ore registrate verranno mostrate qui raggruppate per fase di produzione.</div>';
-            return;
-        }
-
-        // Collect all unique phases (from both attuale and ombra)
-        const phasesMap = new Map();
-        attuale.forEach(f => phasesMap.set(f.fase_id, f.fase_nome));
-        ombra.forEach(f => { if (!phasesMap.has(f.fase_id)) phasesMap.set(f.fase_id, f.fase_nome); });
-        const phases = Array.from(phasesMap.entries()).sort((a, b) => a[0] - b[0]);
-
-        const numWeeks = timeline.length;
-        const labelColWidth = 140; // px
-        const weekMinWidth = 35; // px per week cell
-
-        // Build CSS Grid: 1 label column + N week columns
-        const chart = document.createElement('div');
-        chart.className = 'gantt-chart';
-        chart.style.gridTemplateColumns = `${labelColWidth}px repeat(${numWeeks}, minmax(${weekMinWidth}px, 1fr))`;
-        chart.style.gridTemplateRows = `auto repeat(${phases.length}, auto)`;
-
-        // --- HEADER ROW ---
-        // Corner cell (empty label)
-        const corner = document.createElement('div');
-        corner.className = 'gantt-header-label';
-        corner.textContent = 'Fase';
-        corner.style.gridColumn = '1';
-        chart.appendChild(corner);
-
-        // Week headers - show month label at start of each month
-        const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-        let lastMonth = -1;
-        timeline.forEach((weekStr, i) => {
-            const d = new Date(weekStr);
-            const month = d.getMonth();
-            const headerCell = document.createElement('div');
-            headerCell.className = 'gantt-header-label';
-            headerCell.style.gridColumn = `${i + 2}`;
-            if (month !== lastMonth) {
-                headerCell.textContent = monthNames[month] + ' ' + String(d.getFullYear()).slice(2);
-                lastMonth = month;
-            } else {
-                // Show week number or day
-                headerCell.textContent = d.getDate();
-                headerCell.style.color = 'var(--col-cccccc)';
-                headerCell.style.fontSize = '0.6rem';
-            }
-            chart.appendChild(headerCell);
-        });
-
-        // --- PHASE ROWS ---
-        const phaseColors = ['gantt-phase-0', 'gantt-phase-1', 'gantt-phase-2', 'gantt-phase-3', 'gantt-phase-4'];
-
-        phases.forEach(([phaseId, phaseName], rowIdx) => {
-            const gridRow = rowIdx + 2; // +2 because row 1 is header
-
-            // Phase Label
-            const label = document.createElement('div');
-            label.className = 'gantt-phase-label';
-            label.textContent = phaseName;
-            label.style.gridRow = gridRow;
-            label.style.gridColumn = '1';
-            chart.appendChild(label);
-
-            // Timeline cell (spans all week columns)
-            const timelineCell = document.createElement('div');
-            timelineCell.className = 'gantt-row-timeline';
-            timelineCell.style.gridRow = gridRow;
-            timelineCell.style.gridColumn = `2 / ${numWeeks + 2}`;
-
-            // Week grid cells (background)
-            for (let w = 0; w < numWeeks; w++) {
-                const cell = document.createElement('div');
-                cell.className = 'gantt-week-cell';
-                timelineCell.appendChild(cell);
-            }
-
-            // --- SHADOW BAR (if exists for this phase) ---
-            const shadowPhase = ombra.find(o => o.fase_id === phaseId);
-            if (shadowPhase) {
-                const shadowStart = shadowPhase.offset_settimane || 0;
-                const shadowDuration = shadowPhase.durata_settimane || 1;
-                const shadowLeftPct = (shadowStart / numWeeks) * 100;
-                const shadowWidthPct = (shadowDuration / numWeeks) * 100;
-
-                const shadowBar = document.createElement('div');
-                shadowBar.className = 'gantt-bar-shadow';
-                shadowBar.style.left = shadowLeftPct + '%';
-                shadowBar.style.width = Math.min(shadowWidthPct, 100 - shadowLeftPct) + '%';
-                shadowBar.title = `Previsione: ${phaseName} – Sett. ${shadowStart + 1} → ${shadowStart + shadowDuration} (~${shadowPhase.ore_mediane || 0}h)`;
-                timelineCell.appendChild(shadowBar);
-            }
-
-            // --- ACTUAL BAR ---
-            const actualPhase = attuale.find(a => a.fase_id === phaseId);
-            if (actualPhase) {
-                const dettaglio = actualPhase.dettaglio_settimane || [];
-                if (dettaglio.length > 0) {
-                    const firstWeek = dettaglio[0].settimana;
-                    const lastWeek = dettaglio[dettaglio.length - 1].settimana;
-                    const startIdx = timeline.indexOf(firstWeek);
-                    const endIdx = timeline.indexOf(lastWeek);
-
-                    if (startIdx >= 0 && endIdx >= 0) {
-                        const barStartPct = (startIdx / numWeeks) * 100;
-                        const barWidthPct = ((endIdx - startIdx + 1) / numWeeks) * 100;
-
-                        const actualBar = document.createElement('div');
-                        actualBar.className = `gantt-bar-actual ${phaseColors[rowIdx % phaseColors.length]}`;
-                        actualBar.style.left = barStartPct + '%';
-                        actualBar.style.width = Math.max(barWidthPct, (1 / numWeeks) * 100) + '%';
-
-                        // Label inside bar
-                        const barLabel = document.createElement('span');
-                        barLabel.className = 'gantt-bar-label';
-                        barLabel.textContent = actualPhase.ore_totali + 'h';
-                        actualBar.appendChild(barLabel);
-
-                        // Tooltip
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'gantt-tooltip';
-                        const weeksSummary = dettaglio.slice(0, 5).map(d => {
-                            const dt = new Date(d.settimana);
-                            return `${dt.getDate()}/${dt.getMonth() + 1}: ${d.ore}h`;
-                        }).join(' | ');
-                        tooltip.textContent = `${phaseName}: ${actualPhase.ore_totali}h — ${weeksSummary}${dettaglio.length > 5 ? ' ...' : ''}`;
-                        actualBar.appendChild(tooltip);
-
-                        timelineCell.appendChild(actualBar);
-                    }
-                }
-            }
-
-            chart.appendChild(timelineCell);
-        });
-
-        // --- TODAY LINE (positioned after DOM insertion via RAF) ---
-        const today = new Date();
-        const todayStr = this._getWeekStart(today);
-        const todayIdx = timeline.indexOf(todayStr);
-
-        container.appendChild(chart);
-
-        // Position today line after layout (needs measured widths)
-        if (todayIdx >= 0) {
-            requestAnimationFrame(() => {
-                const chartRect = chart.getBoundingClientRect();
-                // First week cell to measure timeline area
-                const firstCell = chart.querySelector('.gantt-row-timeline');
-                if (firstCell) {
-                    const cellRect = firstCell.getBoundingClientRect();
-                    const timelineStartX = cellRect.left - chartRect.left;
-                    const timelineW = cellRect.width;
-                    const lineX = timelineStartX + ((todayIdx + 0.5) / numWeeks) * timelineW;
-
-                    const todayLine = document.createElement('div');
-                    todayLine.className = 'gantt-today-line';
-                    todayLine.style.left = lineX + 'px';
-                    chart.appendChild(todayLine);
-                }
-            });
-        }
-
-        // Ombra info badge
-        const numOmbra = ganttData.num_commesse_ombra || 0;
-        if (numOmbra > 0) {
-            const badge = document.createElement('div');
-            badge.className = 'gantt-ombra-info';
-            badge.textContent = `📊 Previsione basata su ${numOmbra} commesse simili chiuse`;
-            container.appendChild(badge);
-        }
-    },
-
-    // Helper: get ISO week start (Monday) for a date
-    _getWeekStart: function (date) {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
-        const monday = new Date(d.setDate(diff));
-        return monday.toISOString().split('T')[0];
-    },
-
-    // Helper for Stacked Bar (Pivoting Data)
-    createStackedChart: function (id, rawData, xKey, stackKey) {
-        const el = document.getElementById(id);
-        if (!el || !rawData || !rawData.length) return;
-        // Destroy existing chart on this canvas
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-
-        // 1. Get Unique X Labels (Users)
-        const labels = [...new Set(rawData.map(d => d[xKey]))].slice(0, 10); // Limit to top 10 users?
-
-        // 2. Get Unique Stacks (Categories)
-        const categories = [...new Set(rawData.map(d => d[stackKey]))];
-
-        // 3. Build Datasets
-        const datasets = categories.map((cat, i) => {
-            return {
-                label: cat,
-                data: labels.map(label => {
-                    const item = rawData.find(d => d[xKey] === label && d[stackKey] === cat);
-                    return item ? item.value : 0;
-                }),
-                backgroundColor: this.getColors(categories.length)[i]
-            };
-        });
-
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels, datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: { stacked: true }, y: { stacked: true } },
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
-            }
-        });
-    },
+    // Il Gantt sta in `js/dashboard-gantt.js` dal 20/09/2026 (task 4.6).
+    // `renderGanttChart` (182 righe) non leggeva `this.state`, non chiamava API
+    // e non usava `this.dom`: e' uscita senza parametri aggiuntivi. Con lei se
+    // n'e' andato `_getWeekStart`, suo unico chiamante, che la' e' privato.
 
     // Qui stavano due definizioni di `renderSidebarFilters` e `renderGrid`,
     // rimosse il 06/09/2026. Non erano copie: differivano dalle versioni piu'
-    // sotto (righe ~1020 e ~1172) di 15 e 21 righe. In un oggetto letterale la
-    // chiave definita per seconda sovrascrive la prima IN SILENZIO, quindi
-    // queste due non venivano mai eseguite — e chi le avesse modificate non
-    // avrebbe visto alcun effetto. 51 righe.
-
-
-    createPieChart: function (id, d) {
-        const el = document.getElementById(id);
-        if (!el || !d.labels.length) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'doughnut',
-            data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: this.getColors(d.labels.length) }] },
-            options: { responsive: true, plugins: { legend: { position: 'left', labels: { boxWidth: 10 } } } }
-        });
-    },
-
-    createBarChart: function (id, d, color = '#2ecc71') {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-    },
-
-    createHorizontalBarChart: function (id, d, color = '#3498db') {
-        const el = document.getElementById(id);
-        if (!el || !d.labels.length) return;
-        if (this.state.chartInstances[id]) { this.state.chartInstances[id].destroy(); delete this.state.chartInstances[id]; }
-        this.state.chartInstances[id] = new Chart(el, {
-            type: 'bar',
-            data: { labels: d.labels, datasets: [{ label: 'Ore', data: d.values, backgroundColor: color }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    },
-
-    getColors: function (count) {
-        const pal = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#1abc9c', '#7f8c8d'];
-        return Array(count).fill().map((_, i) => pal[i % pal.length]);
-    },
+    // sotto — quelle tuttora in uso — di 15 e 21 righe. In un oggetto
+    // letterale la chiave definita per seconda sovrascrive la prima IN
+    // SILENZIO, quindi queste due non venivano mai eseguite, e chi le avesse
+    // modificate non avrebbe visto alcun effetto. 51 righe.
+    //
+    // (Il rimando diceva «righe ~1020 e ~1172». Tolto il 20/09/2026: i numeri
+    //  di riga in un commento invecchiano a ogni modifica del file, e questa
+    //  estrazione ne ha spostate un centinaio. I nomi dei metodi no.)
 
     // --- FILTERS V2 (Bio-Directional, Multi-Select) ---
     renderSidebarFilters: function () {

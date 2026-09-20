@@ -75,6 +75,46 @@ METODO = re.compile(
 FUNZIONE = re.compile(r"^(?:async\s+)?function\s+(?P<nome>[A-Za-z_$][\w$]*)\s*\(")
 
 
+def scorri(riga, tonde=0):
+    """Rende i caratteri di CODICE di una riga, ciascuno con la profondita di
+    tonde a cui si trova. Salta stringhe, template literal e commenti di riga.
+
+    ESISTE PER NON AVERE DUE COPIE DI QUESTA LOGICA. La distinzione fra codice e
+    stringa e' sottile — apici, virgolette, backtick, la fuga con `\\` — e
+    serviva sia a `fine_metodo` sia, dal 20/09/2026, ad `apre_un_blocco`.
+    Scriverla due volte significa che la prossima correzione ne raggiunge una
+    sola: e' il modo in cui `publicApiFetch` ha divergito da `apiFetch`.
+
+    LIMITE NOTO, non corretto qui: `dentro` riparte a ogni riga, quindi una
+    stringa aperta su una riga e chiusa su quella dopo non e' inseguita fra le
+    due. Oggi non produce risposte sbagliate su questo repository — verificato a
+    mano su `createTaskCard`, dove le graffe tornano in pari riga per riga — ma
+    e' fortuna, non progetto. Inseguirla cambierebbe il comportamento su tutti i
+    file insieme, quindi e' un lavoro a parte con le sue prove.
+    """
+    dentro, fuga, k = None, False, 0
+    while k < len(riga):
+        c = riga[k]
+        if dentro:
+            if fuga:
+                fuga = False
+            elif c == '\\':
+                fuga = True
+            elif c == dentro:
+                dentro = None
+        elif c in '"\'`':
+            dentro = c
+        elif c == '/' and k + 1 < len(riga) and riga[k + 1] == '/':
+            return                         # commento di riga: il resto non conta
+        else:
+            if c == '(':
+                tonde += 1
+            elif c == ')':
+                tonde -= 1
+            yield c, tonde
+        k += 1
+
+
 def apre_un_blocco(riga):
     """Distingue una DEFINIZIONE da una CHIAMATA.
 
@@ -87,11 +127,36 @@ def apre_un_blocco(riga):
     di nessun oggetto. Estrarre "il metodo updateCoordsDisplay" avrebbe spostato
     una riga di chiamata lasciando la definizione dov'era.
 
-    Una definizione apre un blocco: la riga finisce con `{`, oppure le parentesi
-    tonde restano aperte perche i parametri proseguono sotto. Una chiamata no.
+    REGOLA: e' una definizione se un `{` compare a profondita ZERO di tonde.
+    Oppure se le tonde restano aperte, perche i parametri proseguono sotto.
+
+    CORRETTA IL 20/09/2026. Diceva: «la riga finisce con `{`, oppure le tonde
+    restano aperte». Un metodo che apre E CHIUDE il corpo sulla stessa riga non
+    soddisfa nessuna delle due —
+
+        isLate: function (d) { return new Date(d) < new Date(); },
+
+    — e sparisce dall'elenco dei metodi. Da li' tre effetti a catena: il
+    conteggio dei metodi scende di uno; ogni colonna «chiama» perde le chiamate
+    verso di lui, perche' la stampa tiene solo i nomi riconosciuti come metodi;
+    e `raggiungibilita.py`, che costruisce il grafo su questa funzione, non lo ha
+    come nodo — quindi cio' che e' raggiungibile SOLO attraverso di lui risulta
+    morto. E' la direzione di danno del difetto del 06/09.
+
+    NON chiude nessun falso positivo, e va detto perche' avevo scritto il
+    contrario prima di verificarlo. Su `apriPopupFiltro({ id: 1 });` la regola
+    vecchia rispondeva gia' `False`, correttamente: non finisce con `{` e ha una
+    tonda aperta e una chiusa. Cercato un caso in cui la vecchia dicesse `True`
+    a torto e la nuova `False`: non l'ho trovato. Il guadagno e' uno solo — i
+    metodi con il corpo su una riga — piu' il fatto che la regola guarda la
+    profondita invece del carattere finale, che e' una ragione di solidita' e non
+    una correzione di un guasto osservato.
     """
-    r = re.sub(r"//.*$", "", riga).rstrip()
-    return r.endswith('{') or r.count('(') > r.count(')')
+    tonde = 0
+    for c, tonde in scorri(riga):
+        if c == '{' and tonde <= 0:
+            return True
+    return tonde > 0
 
 
 def fine_metodo(righe, inizio):
@@ -128,31 +193,16 @@ def fine_metodo(righe, inizio):
     """
     livello, tonde, avviato = 0, 0, False
     for i in range(inizio, len(righe)):
-        r, k, dentro, fuga = righe[i], 0, None, False
-        while k < len(r):
-            c = r[k]
-            if dentro:
-                if fuga:
-                    fuga = False
-                elif c == '\\':
-                    fuga = True
-                elif c == dentro:
-                    dentro = None
-            elif c in '"\'`':
-                dentro = c
-            elif c == '/' and k + 1 < len(r) and r[k + 1] == '/':
-                break                      # commento di riga: il resto non conta
-            elif c == '(':
-                tonde += 1
-            elif c == ')':
-                tonde -= 1
-            elif c == '{' and tonde <= 0:
-                livello += 1; avviato = True
+        # `tonde` attraversa le righe; la distinzione codice/stringa la fa
+        # `scorri`, che dal 20/09/2026 e' condivisa con `apre_un_blocco`.
+        for c, tonde in scorri(righe[i], tonde):
+            if c == '{' and tonde <= 0:
+                livello += 1
+                avviato = True
             elif c == '}' and tonde <= 0:
                 livello -= 1
                 if avviato and livello <= 0:
                     return i + 1           # riga di chiusura inclusa
-            k += 1
     return len(righe)
 
 
@@ -244,12 +294,58 @@ def controllo_misura():
     return esiti
 
 
+def controllo_definizioni():
+    """Verifica che `apre_un_blocco` distingua definizione e chiamata, nelle DUE
+    direzioni: righe che DEVE riconoscere e righe su cui DEVE tacere.
+
+    PERCHE' IN DUE DIREZIONI. `controllo_misura` qui sopra prova solo le
+    lunghezze, e per due settimane non ha visto che un metodo con il corpo tutto
+    su una riga non veniva riconosciuto affatto — perche' una lunghezza
+    sbagliata la si misura, un metodo ASSENTE dall'elenco no: l'elenco sembra
+    completo. Una sonda mai vista trovare qualcosa non prova niente, e una mai
+    vista tacere e' cieca allo stesso modo.
+
+    Il caso `corpo_tutto_su_una_riga` e' il difetto del 20/09/2026, ed era
+    `isLate` in `attivita.js`. Il caso `chiamata_con_oggetto` e' il falso
+    positivo opposto, ed e' la forma di `apriPopupFiltro({...})`.
+    """
+    casi = [
+        ('corpo_sulla_riga_dopo',      '    breve: function () {',                      True),
+        ('corpo_tutto_su_una_riga',    '    isLate: function (d) { return d < 1; },',   True),
+        ('metodo_abbreviato',          '    breve() {',                                 True),
+        ('parametri_che_proseguono',   '    lunga: function (a,',                       True),
+        ('graffe_nei_parametri',       '    conDefault: function (opts = {}) {',        True),
+        ('chiamata_semplice',          '    aggiorna();',                               False),
+        ('chiamata_con_oggetto',       '    apriPopupFiltro({ id: 1 });',               False),
+        ('chiamata_con_arrow',         '    lista.forEach(x => { usa(x); });',          False),
+        ('graffa_dentro_una_stringa',  "    testo = '{';",                              False),
+        ('graffa_dentro_un_commento',  '    aggiorna(); // apre un blocco {',           False),
+    ]
+    esiti = []
+    for nome, riga, atteso in casi:
+        ottenuto = apre_un_blocco(riga)
+        esiti.append((nome, atteso, ottenuto, ottenuto == atteso))
+    return esiti
+
+
 if __name__ == '__main__':
     if '--autoprova' in sys.argv:
+        # Le guardie si eseguono UNA volta e si stampa cio' che ha deciso l'esito.
+        # Prima erano due chiamate separate, una per stampare e una per decidere:
+        # funzionava, ma stampava un esito e ne giudicava un altro.
+        misura = controllo_misura()
+        definizioni = controllo_definizioni()
+
         print("Controllo che la sonda sappia misurare:")
-        for nome, atteso, ottenuto, ok in controllo_misura():
+        for nome, atteso, ottenuto, ok in misura:
             print(f"   {'OK  ' if ok else 'ROTTO'} {nome:<24} atteso {atteso}, ottenuto {ottenuto}")
-        sys.exit(0 if all(e[3] for e in controllo_misura()) else 2)
+
+        print("\nControllo che distingua una definizione da una chiamata, nei due versi:")
+        for nome, atteso, ottenuto, ok in definizioni:
+            verso = 'deve riconoscerla' if atteso else 'deve TACERE      '
+            print(f"   {'OK  ' if ok else 'ROTTO'} {verso}  {nome:<26} ottenuto {ottenuto}")
+
+        sys.exit(0 if all(e[3] for e in misura + definizioni) else 2)
 
     for percorso in [a for a in sys.argv[1:] if not a.startswith('--')]:
         metodi = analizza(percorso)
