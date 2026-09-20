@@ -34,6 +34,33 @@
 // questo. Entra qui e sparisce dalla superficie di `TaskApp`, che passa da 26
 // metodi a 24.
 
+// Colori dei tag di categoria, dal DB piu' le richieste arrivate dopo.
+//
+// STA QUI E NON DENTRO LA FUNZIONE dal 20/09/2026, in un commit separato da
+// quello dell'estrazione. Era un letterale di 17 voci costruito a OGNI carta:
+// con sessanta task in board, sessanta oggetti identici e buttati. Non viene
+// mai modificato, quindi spostarlo non cambia comportamento — e' l'unica
+// ragione per cui e' lecito farlo senza altre prove oltre a quelle
+// dell'estrazione.
+const COLORI_CATEGORIA = {
+    'Milano': '#607D8B',       // Blue Grey
+    'Qualità': '#9C27B0',      // Purple
+    'Sicurezza': '#FF9800',    // Orange
+    'Produzione': '#2196F3',   // Blue
+    'OP': '#009688',           // Teal
+    'Trevignano': '#795548',   // Brown
+    'Acquisti': '#4CAF50',     // Green
+    'Altro': '#9E9E9E',        // Grey
+    'Commessa': '#3F51B5',     // Indigo
+    'Montaggi': '#FF5722',     // Deep Orange
+    'Rozzano': '#673AB7',      // Deep Purple
+    'Fontanafredda': '#00BCD4',// Cyan
+    'Generale': '#607D8B',     // Blue Grey
+    'Amministrazione': '#E91E63', // Pink
+    'Tecnico': '#3F51B5',      // Indigo
+    'Commerciale': '#8BC34A'   // Light Green
+};
+
 /**
  * Costruisce la carta di un'attivita' per la board.
  *
@@ -85,30 +112,10 @@ export function creaCartaAttivita({ task, stato, apriIspettore }) {
     }
 
     // 4. Preparazione Contenuti (Tags, Nomi, Date)
-    // [MODIFIED] Gestione Colori Categorie
     const catName = task.categoria?.nome_categoria || 'Altro';
 
-    // Mappa Colori (Basata su DB + Richieste)
-    const catColors = {
-        'Milano': '#607D8B',       // Blue Grey
-        'Qualità': '#9C27B0',      // Purple
-        'Sicurezza': '#FF9800',    // Orange
-        'Produzione': '#2196F3',   // Blue
-        'OP': '#009688',           // Teal
-        'Trevignano': '#795548',   // Brown
-        'Acquisti': '#4CAF50',     // Green
-        'Altro': '#9E9E9E',        // Grey
-        'Commessa': '#3F51B5',     // Indigo
-        'Montaggi': '#FF5722',     // Deep Orange
-        'Rozzano': '#673AB7',      // Deep Purple
-        'Fontanafredda': '#00BCD4',// Cyan
-        'Generale': '#607D8B',     // Blue Grey
-        'Amministrazione': '#E91E63', // Pink
-        'Tecnico': '#3F51B5',      // Indigo
-        'Commerciale': '#8BC34A'   // Light Green
-    };
     // Normalizza nome per case-insensitive match se necessario (qui chiavi esatte)
-    const badgeColor = catColors[catName] || catColors[catName.trim()] || '#9E9E9E';
+    const badgeColor = COLORI_CATEGORIA[catName] || COLORI_CATEGORIA[catName.trim()] || '#9E9E9E';
 
     let headerText = catName;
     let headerClass = 'cat-tag';
@@ -121,7 +128,7 @@ export function creaCartaAttivita({ task, stato, apriIspettore }) {
         // L'utente vuole distinguere le categorie.
         // Se è OP, ha senso usare il colore OP (Teal) per il tag, anche se mostra il codice commessa.
         if (catName.toUpperCase() === 'OP') {
-            headerStyle = `background-color: ${catColors['OP']}; color: white;`;
+            headerStyle = `background-color: ${COLORI_CATEGORIA['OP']}; color: white;`;
         }
     }
 
