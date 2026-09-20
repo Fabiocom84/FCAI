@@ -103,7 +103,6 @@ const Dashboard = {
     },
 
     init: async function () {
-        console.log("🚀 Dashboard V9.0 (Pagination + Multi-Select)");
         if (!IsAdmin) { window.location.replace('index.html'); return; }
 
         this.initDates();
@@ -123,7 +122,6 @@ const Dashboard = {
                 data.forEach(e => {
                     this.state.etichetteMap[e.id] = e.label;
                 });
-                console.log(`✅ Etichette caricate: ${data.length} commesse`);
             }
         } catch (e) {
             console.warn('⚠️ Errore caricamento etichette commesse:', e);
@@ -271,7 +269,6 @@ const Dashboard = {
             // Note: analytics mode might return rows too, we can ignore them or use them for "Synthesis View".
             // If current view is Detail, we focus on Groups.
 
-            console.log("Fetch Analytics:", params.toString());
             const res = await apiFetch('/api/dashboard/stats?' + params.toString());
             if (!res.ok) throw new Error("Errore API Analytics");
             const data = await res.json();
@@ -328,7 +325,6 @@ const Dashboard = {
         const groupKey = this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa';
         params.append('groupBy', groupKey);
 
-        console.log("Fetch Groups:", params.toString());
         const res = await apiFetch('/api/dashboard/stats?' + params.toString());
         if (!res.ok) throw new Error("Errore Fetch Groups");
         const data = await res.json();
@@ -350,7 +346,6 @@ const Dashboard = {
             params.append('groupBy', this.dom.groupingSelect ? this.dom.groupingSelect.value : 'commessa');
             params.append('groupId', groupId);
 
-            console.log("Fetch Details:", params.toString());
             const res = await apiFetch('/api/dashboard/stats?' + params.toString());
             if (!res.ok) throw new Error("Errore Dettagli");
             const data = await res.json();
@@ -461,7 +456,6 @@ const Dashboard = {
             if (res.ok) {
                 this.state.caCommesseList = await res.json();
                 this.state.caCommesseLoaded = true;
-                console.log(`✅ Commesse analisi caricate: ${this.state.caCommesseList.length}`);
                 // If the search input is focused, show dropdown
                 if (document.activeElement === this.dom.caSearchInput) {
                     this.renderCommessaDropdown(this.dom.caSearchInput.value);
