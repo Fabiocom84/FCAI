@@ -16,23 +16,46 @@
 // verso di lui sparivano dalla colonna. Progettare questa estrazione su quel
 // numero avrebbe dimenticato un pezzo.
 //
-// PERCHE' `stato` ARRIVA PER RIFERIMENTO, e qui la ragione e' piu' forte che
-// nel popup dei filtri di `gestione.js`.
-// `draggedTaskAssignee` non e' uno stato che la carta usa per se': e' un
-// **canale fra due metodi diversi**. La carta lo scrive su `dragstart`; quando
-// si rilascia il task, `setupDragDrop` lo rilegge per costruire `currentTask`:
+// IL TRASCINAMENTO STA TUTTO QUI DAL 22/09/2026, ed e' il motivo per cui
+// `collegaTrascinamento` e' arrivata dopo la carta.
 //
-//     stato.currentTask = { …, id_assegnatario_fk: stato.draggedTaskAssignee };
-//     renderTransferMode();
+// Il 20/09 era uscita solo la carta. La zona di rilascio era rimasta in
+// `attivita.js`, e le due meta' comunicavano attraverso un campo dello stato
+// condiviso — `draggedTaskAssignee`, scritto su `dragstart` e riletto al
+// rilascio. Un canale **che attraversava due file**: per tenerlo in piedi
+// serviva passare l'oggetto di stato per riferimento, e una copia l'avrebbe
+// interrotto in silenzio, aprendo il pannello di trasferimento con un
+// assegnatario indefinito. Nessun errore in console, una persona sbagliata a
+// schermo.
 //
-// Con una copia dello stato il canale si interrompe in silenzio: il pannello di
-// trasferimento si aprirebbe lo stesso, mostrando un assegnatario corrente
-// **indefinito**. Non un errore in console — una persona sbagliata a schermo.
+// Rimettendo insieme le due meta' quel problema non si documenta: **sparisce**.
+// L'assegnatario trascinato e' ora `assegnatarioTrascinato`, una variabile di
+// questo modulo, e nessuno fuori puo' romperla. Il campo condiviso non esiste
+// piu'.
+//
+// `currentTask` invece resta di `attivita.js`, perche' lo leggono
+// `renderTransferMode`, `executeTransfer` e altri. Ma non serve che sia questo
+// modulo a scriverlo: lo passa al callback `apriTrasferimento`, e il
+// proprietario lo deposita dove vuole. Cosi' il trascinamento non tocca stato
+// condiviso per niente.
+//
+// RESTA `stato` fra i parametri della carta, ma ora solo per LEGGERE
+// `currentUserProfile`. La ragione «per riferimento perche' lo scrive» non vale
+// piu': una copia funzionerebbe. Passare l'intero oggetto di stato per leggere
+// un campo e' largo, e andrebbe stretto a `mioId` — annotato, non fatto qui.
 //
 // COSA E' PRIVATO
 // `inRitardo` era `isLate`, e il suo unico chiamante in tutto il repository era
 // questo. Entra qui e sparisce dalla superficie di `TaskApp`, che passa da 26
 // metodi a 24.
+
+import { apiFetch } from './api-client.js';
+
+// L'assegnatario della carta che si sta trascinando, depositato su `dragstart`
+// e riletto al rilascio. Prima del 22/09/2026 era `state.draggedTaskAssignee`,
+// cioe' un campo dello stato condiviso, perche' i due capi stavano in file
+// diversi. Ora stanno qui, e questa variabile non e' raggiungibile da fuori.
+let assegnatarioTrascinato = null;
 
 // Colori dei tag di categoria, dal DB piu' le richieste arrivate dopo.
 //
@@ -66,10 +89,9 @@ const COLORI_CATEGORIA = {
  *
  * @param {object}   o
  * @param {object}   o.task           l'attivita', come arriva dall'API.
- * @param {object}   o.stato          l'oggetto di stato VERO: si legge
- *                                    `currentUserProfile` e si SCRIVE
- *                                    `draggedTaskAssignee` (vedi il commento in
- *                                    testa: e' un canale verso `setupDragDrop`).
+ * @param {object}   o.stato          serve solo per leggere `currentUserProfile`.
+ *                                    Dal 22/09/2026 non si scrive piu' niente
+ *                                    qui dentro: vedi il commento in testa.
  * @param {Function} o.apriIspettore  riceve l'id del task quando si clicca.
  * @returns {HTMLElement} la carta, pronta da appendere.
  */
@@ -180,11 +202,87 @@ export function creaCartaAttivita({ task, stato, apriIspettore }) {
     if (!isDelegatedOut) {
         el.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('text/plain', task.id_task);
-            stato.draggedTaskAssignee = task.id_assegnatario_fk;
+            assegnatarioTrascinato = task.id_assegnatario_fk;
         });
     }
 
     return el;
+}
+
+/**
+ * Rende una colonna della board una zona di rilascio.
+ *
+ * Era `setupDragDrop` in `attivita.js`, arrivata qui il 22/09/2026 per stare
+ * dove sta l'altro capo del trascinamento. **Non riceve stato**: quello che
+ * doveva scrivere lo passa a `apriTrasferimento`, e quello che doveva leggere
+ * e' ora una variabile di questo modulo.
+ *
+ * @param {object}   o
+ * @param {Element}  o.container          la colonna, con `dataset.statusKey`.
+ * @param {Function} o.apriTrasferimento  riceve `{id_task, id_assegnatario_fk}`
+ *                                        quando si rilascia in «Delegati».
+ * @param {Function} o.ricaricaBoard      da chiamare dopo aver salvato, e anche
+ *                                        in caso di errore per rimettere a
+ *                                        posto lo spostamento gia' fatto a
+ *                                        schermo.
+ */
+export function collegaTrascinamento({ container, apriTrasferimento, ricaricaBoard }) {
+    // Drag Over
+    container.addEventListener('dragover', e => {
+        e.preventDefault();
+        container.classList.add('drag-over');
+    });
+
+    // Drag Leave
+    container.addEventListener('dragleave', () => {
+        container.classList.remove('drag-over');
+    });
+
+    // DROP EVENT
+    container.addEventListener('drop', async e => {
+        e.preventDefault();
+        container.classList.remove('drag-over');
+
+        const taskId = e.dataTransfer.getData('text/plain');
+        if (!taskId) return; // Sicurezza
+
+        const targetColumn = container.closest('.task-column');
+        if (!targetColumn) return;
+
+        const newStatusKey = container.dataset.statusKey; // es: 'todo', 'doing'
+        const newStatusLabel = targetColumn.dataset.status; // es: 'Da Fare'
+
+        // --- INTERCEZIONE DRAG VERSO COLONNA 'review' (Delegati) ---
+        if (newStatusKey === 'review') {
+            apriTrasferimento({
+                id_task: taskId,
+                id_assegnatario_fk: assegnatarioTrascinato
+            });
+            return;
+        }
+
+        try {
+            // TRUCCO VISIVO: Spostiamo la card nel DOM *subito*, senza aspettare il server.
+            const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+            if (card) {
+                container.appendChild(card); // La sposta nella nuova colonna visivamente
+            }
+
+            // Ora chiamiamo il server per salvare
+            await apiFetch(`/api/tasks/${taskId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ stato: newStatusLabel })
+            });
+
+            // Infine sincronizziamo i dati veri (silenziosamente)
+            await ricaricaBoard();
+
+        } catch (error) {
+            console.error("Errore Drop:", error);
+            alert("Impossibile spostare il task. Ricarica la pagina.");
+            await ricaricaBoard(); // Ripristina stato corretto in caso di errore
+        }
+    });
 }
 
 /**

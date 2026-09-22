@@ -4,7 +4,7 @@
 import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 import { mostraAvviso } from './shared-ui.js';
-import { creaCartaAttivita } from './attivita-carta.js';
+import { creaCartaAttivita, collegaTrascinamento } from './attivita-carta.js';
 
 const TaskApp = {
     state: {
@@ -150,7 +150,14 @@ const TaskApp = {
                 apriIspettore: (id) => this.renderInspectorView(id),
             })));
 
-            this.setupDragDrop(container);
+            collegaTrascinamento({
+                container,
+                apriTrasferimento: (task) => {
+                    this.state.currentTask = task;
+                    this.renderTransferMode();
+                },
+                ricaricaBoard: () => this.refreshBoard(),
+            });
             this.dom.taskView.appendChild(columnEl);
         });
 
@@ -158,74 +165,18 @@ const TaskApp = {
         if (arcBtn) arcBtn.addEventListener('click', () => this.openArchive());
     },
 
-    // La carta sta in `js/attivita-carta.js` dal 20/09/2026 (task 4.7).
-    // `createTaskCard` (134 righe) costruiva un elemento del DOM da un oggetto
-    // `task` e lo restituiva: niente `this.dom`, niente API. Con lei se n'e'
-    // andato `isLate`, suo unico chiamante in tutto il repository, che la' e'
-    // privato come `inRitardo`.
+    // Il trascinamento Kanban sta tutto in `js/attivita-carta.js`: la carta dal
+    // 20/09/2026, la zona di rilascio dal 22/09.
     //
-    // Lo stato passa per RIFERIMENTO perche' `draggedTaskAssignee` e' un canale
-    // verso `setupDragDrop`, qui sotto: la carta lo scrive su `dragstart`, il
-    // rilascio lo rilegge. Una copia romperebbe il canale in silenzio.
-    setupDragDrop: function (container) {
-        // Drag Over
-        container.addEventListener('dragover', e => {
-            e.preventDefault();
-            container.classList.add('drag-over');
-        });
-
-        // Drag Leave
-        container.addEventListener('dragleave', () => {
-            container.classList.remove('drag-over');
-        });
-
-        // DROP EVENT
-        container.addEventListener('drop', async e => {
-            e.preventDefault();
-            container.classList.remove('drag-over');
-
-            const taskId = e.dataTransfer.getData('text/plain');
-            if (!taskId) return; // Sicurezza
-
-            const targetColumn = container.closest('.task-column');
-            if (!targetColumn) return;
-
-            const newStatusKey = container.dataset.statusKey; // es: 'todo', 'doing'
-            const newStatusLabel = targetColumn.dataset.status; // es: 'Da Fare'
-
-            // --- INTERCEZIONE DRAG VERSO COLONNA 'review' (Delegati) ---
-            if (newStatusKey === 'review') {
-                this.state.currentTask = {
-                    id_task: taskId,
-                    id_assegnatario_fk: this.state.draggedTaskAssignee
-                };
-                this.renderTransferMode();
-                return;
-            }
-
-            try {
-                // TRUCCO VISIVO: Spostiamo la card nel DOM *subito*, senza aspettare il server.
-                const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-                if (card) {
-                    container.appendChild(card); // La sposta nella nuova colonna visivamente
-                }
-
-                // Ora chiamiamo il server per salvare
-                await apiFetch(`/api/tasks/${taskId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ stato: newStatusLabel })
-                });
-
-                // Infine sincronizziamo i dati veri (silenziosamente)
-                await this.refreshBoard();
-
-            } catch (error) {
-                console.error("Errore Drop:", error);
-                alert("Impossibile spostare il task. Ricarica la pagina.");
-                await this.refreshBoard(); // Ripristina stato corretto in caso di errore
-            }
-        });
-    },
+    // Erano usciti separati, e per un giorno i due capi hanno comunicato
+    // attraverso `state.draggedTaskAssignee` — un canale che attraversava due
+    // file, che costringeva a passare l'oggetto di stato per riferimento e che
+    // una copia avrebbe interrotto in silenzio. Rimessi insieme, quel campo non
+    // esiste piu': e' una variabile privata di quel modulo.
+    //
+    // `currentTask` resta qui, perche' lo leggono `renderTransferMode`,
+    // `executeTransfer` e altri: arriva dal callback `apriTrasferimento`,
+    // invece di essere scritto da fuori.
 
 
     // =================================================================
