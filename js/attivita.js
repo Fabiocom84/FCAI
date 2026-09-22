@@ -4,7 +4,8 @@
 import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 import { mostraAvviso } from './shared-ui.js';
-import { creaCartaAttivita } from './attivita-carta.js';
+import { creaCartaAttivita, collegaTrascinamento } from './attivita-carta.js';
+import { apriArchivio } from './attivita-archivio.js';
 
 const TaskApp = {
     state: {
@@ -150,82 +151,35 @@ const TaskApp = {
                 apriIspettore: (id) => this.renderInspectorView(id),
             })));
 
-            this.setupDragDrop(container);
+            collegaTrascinamento({
+                container,
+                apriTrasferimento: (task) => {
+                    this.state.currentTask = task;
+                    this.renderTransferMode();
+                },
+                ricaricaBoard: () => this.refreshBoard(),
+            });
             this.dom.taskView.appendChild(columnEl);
         });
 
         const arcBtn = document.getElementById('openArchiveBtn');
-        if (arcBtn) arcBtn.addEventListener('click', () => this.openArchive());
+        if (arcBtn) arcBtn.addEventListener('click', () => apriArchivio({
+            apriIspettore: (id) => this.renderInspectorView(id),
+        }));
     },
 
-    // La carta sta in `js/attivita-carta.js` dal 20/09/2026 (task 4.7).
-    // `createTaskCard` (134 righe) costruiva un elemento del DOM da un oggetto
-    // `task` e lo restituiva: niente `this.dom`, niente API. Con lei se n'e'
-    // andato `isLate`, suo unico chiamante in tutto il repository, che la' e'
-    // privato come `inRitardo`.
+    // Il trascinamento Kanban sta tutto in `js/attivita-carta.js`: la carta dal
+    // 20/09/2026, la zona di rilascio dal 22/09.
     //
-    // Lo stato passa per RIFERIMENTO perche' `draggedTaskAssignee` e' un canale
-    // verso `setupDragDrop`, qui sotto: la carta lo scrive su `dragstart`, il
-    // rilascio lo rilegge. Una copia romperebbe il canale in silenzio.
-    setupDragDrop: function (container) {
-        // Drag Over
-        container.addEventListener('dragover', e => {
-            e.preventDefault();
-            container.classList.add('drag-over');
-        });
-
-        // Drag Leave
-        container.addEventListener('dragleave', () => {
-            container.classList.remove('drag-over');
-        });
-
-        // DROP EVENT
-        container.addEventListener('drop', async e => {
-            e.preventDefault();
-            container.classList.remove('drag-over');
-
-            const taskId = e.dataTransfer.getData('text/plain');
-            if (!taskId) return; // Sicurezza
-
-            const targetColumn = container.closest('.task-column');
-            if (!targetColumn) return;
-
-            const newStatusKey = container.dataset.statusKey; // es: 'todo', 'doing'
-            const newStatusLabel = targetColumn.dataset.status; // es: 'Da Fare'
-
-            // --- INTERCEZIONE DRAG VERSO COLONNA 'review' (Delegati) ---
-            if (newStatusKey === 'review') {
-                this.state.currentTask = {
-                    id_task: taskId,
-                    id_assegnatario_fk: this.state.draggedTaskAssignee
-                };
-                this.renderTransferMode();
-                return;
-            }
-
-            try {
-                // TRUCCO VISIVO: Spostiamo la card nel DOM *subito*, senza aspettare il server.
-                const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-                if (card) {
-                    container.appendChild(card); // La sposta nella nuova colonna visivamente
-                }
-
-                // Ora chiamiamo il server per salvare
-                await apiFetch(`/api/tasks/${taskId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ stato: newStatusLabel })
-                });
-
-                // Infine sincronizziamo i dati veri (silenziosamente)
-                await this.refreshBoard();
-
-            } catch (error) {
-                console.error("Errore Drop:", error);
-                alert("Impossibile spostare il task. Ricarica la pagina.");
-                await this.refreshBoard(); // Ripristina stato corretto in caso di errore
-            }
-        });
-    },
+    // Erano usciti separati, e per un giorno i due capi hanno comunicato
+    // attraverso `state.draggedTaskAssignee` — un canale che attraversava due
+    // file, che costringeva a passare l'oggetto di stato per riferimento e che
+    // una copia avrebbe interrotto in silenzio. Rimessi insieme, quel campo non
+    // esiste piu': e' una variabile privata di quel modulo.
+    //
+    // `currentTask` resta qui, perche' lo leggono `renderTransferMode`,
+    // `executeTransfer` e altri: arriva dal callback `apriTrasferimento`,
+    // invece di essere scritto da fuori.
 
 
     // =================================================================
@@ -887,66 +841,13 @@ const TaskApp = {
         }).join('');
     },
 
-    openArchive: async function (query = '') {
-        const container = document.getElementById('archiveTasksContainer');
-        const modal = document.getElementById('archiveModal');
-        modal.style.display = 'flex';
-        document.getElementById('modalOverlay').style.display = 'block';
-
-        container.innerHTML = 'Caricamento...';
-
-        // Setup Event Listeners Search (solo la prima volta o sempre? Meglio proteggere da duplicati)
-        const btnSearch = document.getElementById('btnArchiveSearch');
-        const inpSearch = document.getElementById('inpArchiveSearch');
-
-        // Rimuoviamo vecchi listener clonando o usando proprietà one-shot? 
-        // Usiamo un flag o riassegnazione diretta onclick per semplicità nel contesto
-        btnSearch.onclick = () => this.openArchive(inpSearch.value);
-        inpSearch.onkeydown = (e) => { if (e.key === 'Enter') this.openArchive(inpSearch.value); };
-
-        try {
-            // Se c'è una query, la passiamo
-            const qs = query ? `&q=${encodeURIComponent(query)}` : '';
-            const res = await apiFetch(`/api/tasks/completed?page=1${qs}`);
-            const tasks = await res.json();
-
-            // Render HTML
-            container.innerHTML = tasks.length
-                ? tasks.map(t => `
-                    <div class="archive-task-item" data-task="${t.id_task}" style="cursor:pointer;">
-                        <div class="archive-task-title" style="pointer-events:none;">
-                            <i class="fas fa-check-circle" style="color:var(--col-2ecc71);"></i> 
-                            ${t.titolo}
-                        </div>
-                        <div class="archive-task-date" style="pointer-events:none;">
-                            <i class="far fa-calendar-alt"></i> 
-                            ${new Date(t.data_ultima_modifica).toLocaleDateString()}
-                        </div>
-                        <div style="font-size:0.8rem; color:var(--col-666666); pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                           ${t.descrizione || ''}
-                        </div>
-                    </div>`).join('')
-                : `
-                    <div class="empty-archive">
-                        <i class="fas fa-folder-open fa-3x"></i>
-                        <p>${query ? 'Nessun risultato trovato.' : 'Nessun task completato in archivio.'}</p>
-                    </div>`;
-
-            // [NEW] Event Listener per click su task archiviati
-            container.onclick = (e) => {
-                const item = e.target.closest('.archive-task-item');
-                if (item) {
-                    const tId = item.dataset.task;
-                    // Chiudi modale (stile e overlay)
-                    modal.style.display = 'none';
-                    document.getElementById('modalOverlay').style.display = 'none';
-                    // Apri ispettore
-                    this.renderInspectorView(tId);
-                }
-            };
-
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:var(--col-e74c3c)"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
-    },
+    // L'archivio sta in `js/attivita-archivio.js` dal 22/09/2026 (task 4.7).
+    // `openArchive` erano 60 righe con zero accessi a `this.state` e zero
+    // letture da `this.dom`: apriva un modale, chiedeva una pagina all'API,
+    // disegnava un elenco. Le due chiamate ricorsive — il pulsante «Cerca» e il
+    // tasto Invio — passavano da `TaskApp` per tornare dentro se stesse: la'
+    // sono interne, e `TaskApp` non ha piu' motivo di conoscere l'archivio
+    // tranne che per aprirlo la prima volta.
 
     // =================================================================
     // == APERTURA DIRETTA TASK DA URL (?commessa_id=X)               ==
