@@ -24,11 +24,22 @@
 
 import { apiFetch } from './api-client.js';
 
+// Il gestore che chiude il popup quando si clicca altrove, tenuto qui per
+// poterlo TOGLIERE alla chiusura. Se restasse attaccato, se ne accumulerebbe
+// uno per ogni apertura — la stessa famiglia di difetto del modale
+// dell'archivio in `attivita-archivio.js`, dove l'assegnazione diretta a
+// `onclick` esiste proprio per evitarla.
+let chiusuraDaFuori = null;
+
 /** Toglie il popup dal DOM, se c'e'. Nessuno stato, nessuna dipendenza. */
 export function chiudiPopupFiltro() {
     const existingPopup = document.querySelector('.column-filter-popup');
     if (existingPopup) {
         existingPopup.remove();
+    }
+    if (chiusuraDaFuori) {
+        document.removeEventListener('click', chiusuraDaFuori);
+        chiusuraDaFuori = null;
     }
 }
 
@@ -61,6 +72,27 @@ export async function apriPopupFiltro({ iconElement, columnKey, config, vista, s
     popup.style.left = `${rect.right + window.scrollX - popup.offsetWidth}px`;
     popup.style.visibility = 'visible';
     popup.innerHTML = `<div class="loader-small"></div>`;
+
+    // CHIUSURA CLICCANDO FUORI — aggiunta il 22/09/2026.
+    //
+    // PERCHE' L'ICONA E' ESCLUSA ESPLICITAMENTE, e non con un `setTimeout`.
+    // Il click che ha APERTO il popup sta ancora risalendo verso `document`
+    // mentre questa riga esegue: senza l'esclusione, il gestore riceverebbe
+    // quello stesso click e chiuderebbe subito cio' che ha appena aperto.
+    // Rinviare la registrazione di un giro d'orologio funzionerebbe, ma
+    // funzionerebbe per un motivo che non si controlla — l'ordine fra due code
+    // del browser. Guardare da dove viene il click e' una condizione, non una
+    // corsa.
+    //
+    // Il gestore si toglie in `chiudiPopupFiltro`, sempre: quella funzione e'
+    // l'unico modo in cui il popup sparisce, compreso quando ne viene aperto
+    // un altro, perche' `apriPopupFiltro` comincia chiamandola.
+    chiusuraDaFuori = (e) => {
+        if (popup.contains(e.target)) return;
+        if (iconElement === e.target || iconElement.contains(e.target)) return;
+        chiudiPopupFiltro();
+    };
+    document.addEventListener('click', chiusuraDaFuori);
 
     try {
         let optionsData;
