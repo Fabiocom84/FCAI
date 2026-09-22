@@ -5,6 +5,7 @@ import { apiFetch, segnala } from './api-client.js';
 import { IsAdmin } from './core-init.js';
 import { mostraAvviso } from './shared-ui.js';
 import { creaCartaAttivita, collegaTrascinamento } from './attivita-carta.js';
+import { apriArchivio } from './attivita-archivio.js';
 
 const TaskApp = {
     state: {
@@ -162,7 +163,9 @@ const TaskApp = {
         });
 
         const arcBtn = document.getElementById('openArchiveBtn');
-        if (arcBtn) arcBtn.addEventListener('click', () => this.openArchive());
+        if (arcBtn) arcBtn.addEventListener('click', () => apriArchivio({
+            apriIspettore: (id) => this.renderInspectorView(id),
+        }));
     },
 
     // Il trascinamento Kanban sta tutto in `js/attivita-carta.js`: la carta dal
@@ -838,66 +841,13 @@ const TaskApp = {
         }).join('');
     },
 
-    openArchive: async function (query = '') {
-        const container = document.getElementById('archiveTasksContainer');
-        const modal = document.getElementById('archiveModal');
-        modal.style.display = 'flex';
-        document.getElementById('modalOverlay').style.display = 'block';
-
-        container.innerHTML = 'Caricamento...';
-
-        // Setup Event Listeners Search (solo la prima volta o sempre? Meglio proteggere da duplicati)
-        const btnSearch = document.getElementById('btnArchiveSearch');
-        const inpSearch = document.getElementById('inpArchiveSearch');
-
-        // Rimuoviamo vecchi listener clonando o usando proprietà one-shot? 
-        // Usiamo un flag o riassegnazione diretta onclick per semplicità nel contesto
-        btnSearch.onclick = () => this.openArchive(inpSearch.value);
-        inpSearch.onkeydown = (e) => { if (e.key === 'Enter') this.openArchive(inpSearch.value); };
-
-        try {
-            // Se c'è una query, la passiamo
-            const qs = query ? `&q=${encodeURIComponent(query)}` : '';
-            const res = await apiFetch(`/api/tasks/completed?page=1${qs}`);
-            const tasks = await res.json();
-
-            // Render HTML
-            container.innerHTML = tasks.length
-                ? tasks.map(t => `
-                    <div class="archive-task-item" data-task="${t.id_task}" style="cursor:pointer;">
-                        <div class="archive-task-title" style="pointer-events:none;">
-                            <i class="fas fa-check-circle" style="color:var(--col-2ecc71);"></i> 
-                            ${t.titolo}
-                        </div>
-                        <div class="archive-task-date" style="pointer-events:none;">
-                            <i class="far fa-calendar-alt"></i> 
-                            ${new Date(t.data_ultima_modifica).toLocaleDateString()}
-                        </div>
-                        <div style="font-size:0.8rem; color:var(--col-666666); pointer-events:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                           ${t.descrizione || ''}
-                        </div>
-                    </div>`).join('')
-                : `
-                    <div class="empty-archive">
-                        <i class="fas fa-folder-open fa-3x"></i>
-                        <p>${query ? 'Nessun risultato trovato.' : 'Nessun task completato in archivio.'}</p>
-                    </div>`;
-
-            // [NEW] Event Listener per click su task archiviati
-            container.onclick = (e) => {
-                const item = e.target.closest('.archive-task-item');
-                if (item) {
-                    const tId = item.dataset.task;
-                    // Chiudi modale (stile e overlay)
-                    modal.style.display = 'none';
-                    document.getElementById('modalOverlay').style.display = 'none';
-                    // Apri ispettore
-                    this.renderInspectorView(tId);
-                }
-            };
-
-        } catch (e) { container.innerHTML = '<div class="empty-archive" style="color:var(--col-e74c3c)"><i class="fas fa-exclamation-triangle"></i> Errore caricamento archivi: ' + e.message + '</div>'; }
-    },
+    // L'archivio sta in `js/attivita-archivio.js` dal 22/09/2026 (task 4.7).
+    // `openArchive` erano 60 righe con zero accessi a `this.state` e zero
+    // letture da `this.dom`: apriva un modale, chiedeva una pagina all'API,
+    // disegnava un elenco. Le due chiamate ricorsive — il pulsante «Cerca» e il
+    // tasto Invio — passavano da `TaskApp` per tornare dentro se stesse: la'
+    // sono interne, e `TaskApp` non ha piu' motivo di conoscere l'archivio
+    // tranne che per aprirlo la prima volta.
 
     // =================================================================
     // == APERTURA DIRETTA TASK DA URL (?commessa_id=X)               ==
