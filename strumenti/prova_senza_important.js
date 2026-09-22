@@ -91,15 +91,28 @@ async function provaSenzaImportant(nomeFoglio, opzioni) {
     const d = f.contentDocument, w = f.contentWindow;
     const prima = misura(d, w);
 
-    let tolte = 0, fogliTrovati = 0;
+    let tolte = 0, fogliTrovati = 0, regoleViste = 0;
     const dichiarazioni = [];
     for (const s of d.styleSheets) {
         if (!(s.href || '').includes(nomeFoglio)) continue;
         fogliTrovati++;
         const scorri = (lista) => {
             for (const r of lista) {
-                if (r.cssRules) { scorri(r.cssRules); continue; }
+                // `r.cssRules && r.cssRules.length`, NON il solo `r.cssRules`.
+                //
+                // In Chrome ogni `CSSStyleRule` espone una lista `cssRules`
+                // VUOTA ma vera, perche' il browser supporta l'annidamento CSS.
+                // Con il solo controllo di verita' la ricorsione entrava nel
+                // nulla e il `continue` saltava **la regola stessa**: nessuna
+                // dichiarazione raggiunta, zero cambiamenti, e un risultato che
+                // si legge «nessun !important serve» — falso e credibile.
+                //
+                // Corretto il 22/09/2026. Misurato sulla console prima di
+                // toccare il codice: sulla prima regola semplice della pagina,
+                // `:root`, `cssRules` risulta vero con lunghezza 0.
+                if (r.cssRules && r.cssRules.length) { scorri(r.cssRules); continue; }
                 if (!r.style) continue;
+                regoleViste++;
                 const props = [];
                 for (let i = 0; i < r.style.length; i++) props.push(r.style[i]);
                 for (const p of props) {
@@ -123,6 +136,24 @@ async function provaSenzaImportant(nomeFoglio, opzioni) {
         return { errore: `nessun foglio caricato corrisponde a "${nomeFoglio}"` };
     }
 
+    // GUARDIA CONTRO LO ZERO FALSO — aggiunta il 22/09/2026, dopo che il
+    // difetto qui sopra e' rimasto nel file per un mese.
+    //
+    // «Foglio trovato, nessuna dichiarazione esaminata» e' lo stato esatto che
+    // produceva il difetto, e si presentava come un risultato normale: zero
+    // cambiamenti, che si legge «si possono togliere tutti». Un controllo che
+    // sbaglia restituendo un errore fa perdere dieci minuti; uno che sbaglia
+    // restituendo ZERO fa togliere ottantacinque dichiarazioni da un foglio in
+    // produzione. Qui si rifiuta di rispondere.
+    if (!regoleViste) {
+        return {
+            errore: `foglio "${nomeFoglio}" trovato, ma NESSUNA regola esaminata: ` +
+                `la visita non raggiunge le dichiarazioni. Un risultato a zero ` +
+                `sarebbe indistinguibile da «nessun !important serve», quindi ` +
+                `non se ne restituisce nessuno.`
+        };
+    }
+
     const cambiamenti = [];
     for (const firma of new Set([...Object.keys(prima), ...Object.keys(dopo)])) {
         const a = prima[firma] || {}, b = dopo[firma] || {};
@@ -140,6 +171,9 @@ async function provaSenzaImportant(nomeFoglio, opzioni) {
     return {
         foglio: nomeFoglio,
         pagina: opzioni.pagina || location.pathname,
+        // Quante regole sono state davvero raggiunte. Se fosse 0 la funzione
+        // non arriverebbe qui: vedi la guardia contro lo zero falso.
+        regoleEsaminate: regoleViste,
         dichiarazioniSenzaPriorita: tolte,
         firmeToccate: new Set(cambiamenti.map(c => c.firma)).size,
         cambiamenti: cambiamenti.length,
