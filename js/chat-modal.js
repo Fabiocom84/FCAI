@@ -48,29 +48,77 @@ let chatHistory = [];
 // │ l'unica traccia scritta del fatto che la chiusura dovesse salvare.
 // │ Cancellarla senza guardare avrebbe sepolto la domanda insieme al codice.
 // │
-// │ Rimedio possibile, non applicato oggi perche' e' una decisione e non una
-// │ riga: un `visibilitychange` o un `pagehide` che salvi, con l'accortezza
-// │ che quegli eventi non garantiscono il completamento di una chiamata di
-// │ rete — servirebbe `navigator.sendBeacon`, che cambia il percorso di
-// │ salvataggio lato backend. Annotato in `04a_esercizio_e_debito.md`.
+// │ ✅ CHIUSO IL 24/09/2026 — e il blocco che era scritto qui non esisteva.
+// │
+// │ Diceva: «servirebbe `navigator.sendBeacon`, che cambia il percorso di
+// │ salvataggio lato backend». Vero di `sendBeacon`, che non puo' mettere
+// │ l'intestazione `Authorization`. Ma **`fetch` con `keepalive: true` puo'**:
+// │ sopravvive alla pagina allo stesso modo e porta le intestazioni normali.
+// │ `apiFetch` inoltra le opzioni a `fetch`, quindi passa senza toccare nulla
+// │ lato server.
+// └────────────────────────────────────────────────────────────────────────
+//
+// ┌ PERCHE' C'E' UN GUARDIANO, e non solo un evento in piu' ────────────────
+// │ `visibilitychange` a stato `hidden` scatta a OGNI passaggio in secondo
+// │ piano: cambio di scheda, telefono bloccato, app cambiata. Registrarlo e
+// │ basta significherebbe un POST ogni volta che qualcuno guarda altrove, e
+// │ la stessa conversazione salvata dieci volte.
+// │
+// │ Il rimedio non e' scegliere un evento piu' raro — sarebbe meno affidabile
+// │ proprio quando serve — ma **non rispedire cio' che non e' cambiato**:
+// │ `ultimaCronologiaSalvata` tiene il testo dell'ultimo invio.
+// │
+// │ Il segno si aggiorna PRIMA della conferma, di proposito: serve a
+// │ deduplicare, non a contabilizzare la riuscita. Se un invio fallisce e la
+// │ conversazione prosegue, il testo cambia e si riprova; se fallisce mentre
+// │ la pagina muore si perde — che e' cio' che succede oggi in ogni caso.
+// │
+// │ LIMITE NOTO: `keepalive` ha un tetto di 64 KB sul corpo. Una conversazione
+// │ di circa diecimila parole lo supererebbe e il browser rifiuterebbe la
+// │ richiesta. Annotato, non aggirato.
 // └────────────────────────────────────────────────────────────────────────
 
-// Funzione per salvare la cronologia
-async function saveChatHistory() {
+// Il testo dell'ultimo invio, per non rispedire cio' che non e' cambiato.
+// Vedi il riquadro in testa: senza, ogni passaggio in secondo piano salverebbe.
+let ultimaCronologiaSalvata = '';
+
+/**
+ * Salva la conversazione, se e' cambiata da quando fu salvata l'ultima volta.
+ *
+ * @param {object}  [o]
+ * @param {boolean} [o.inChiusura]  la pagina sta per sparire: si usa
+ *                                  `keepalive`, cosi' la richiesta sopravvive.
+ *                                  L'esito non e' osservabile, e va bene.
+ */
+async function saveChatHistory({ inChiusura = false } = {}) {
     if (chatHistory.length <= 1) return;
 
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
 
+    if (chatTranscription === ultimaCronologiaSalvata) return;
+    ultimaCronologiaSalvata = chatTranscription;
+
     try {
         const response = await apiFetch(`/api/save-chat`, {
             method: 'POST',
-            body: JSON.stringify({ chatTranscription: chatTranscription })
+            body: JSON.stringify({ chatTranscription: chatTranscription }),
+            ...(inChiusura ? { keepalive: true } : {})
         });
         if (!response.ok) throw new Error(`Errore server: ${response.status}`);
     } catch (error) {
         if (error.message !== "Unauthorized") console.error("Errore salvataggio chat:", error);
     }
 }
+
+// I DUE EVENTI INSIEME, e non uno scelto fra i due.
+// `visibilitychange` copre la chiusura della scheda e il passaggio in secondo
+// piano su mobile, dove `pagehide` a volte non arriva; `pagehide` copre le
+// navigazioni dove il primo puo' mancare. Chiamarli entrambi e' innocuo:
+// il guardiano fa uscire subito la seconda chiamata.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveChatHistory({ inChiusura: true });
+});
+window.addEventListener('pagehide', () => saveChatHistory({ inChiusura: true }));
 
 // Funzione per aggiungere messaggio UI
 function addMessage(sender, text) {
