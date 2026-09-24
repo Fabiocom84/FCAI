@@ -58,15 +58,17 @@ let chatHistory = [];
 // │ lato server.
 // └────────────────────────────────────────────────────────────────────────
 //
-// ┌ PERCHE' C'E' UN GUARDIANO, e non solo un evento in piu' ────────────────
-// │ `visibilitychange` a stato `hidden` scatta a OGNI passaggio in secondo
-// │ piano: cambio di scheda, telefono bloccato, app cambiata. Registrarlo e
-// │ basta significherebbe un POST ogni volta che qualcuno guarda altrove, e
-// │ la stessa conversazione salvata dieci volte.
+// ┌ PERCHE' C'E' UN GUARDIANO ──────────────────────────────────────────────
+// │ Il pulsante Home salva e poi naviga; la navigazione solleva `pagehide`,
+// │ che salverebbe di nuovo lo stesso testo. `ultimaCronologiaSalvata` tiene
+// │ l'ultimo invio e fa uscire subito la seconda chiamata.
 // │
-// │ Il rimedio non e' scegliere un evento piu' raro — sarebbe meno affidabile
-// │ proprio quando serve — ma **non rispedire cio' che non e' cambiato**:
-// │ `ultimaCronologiaSalvata` tiene il testo dell'ultimo invio.
+// │ NON BASTA A EVITARE I DOPPIONI in generale, e questo va capito prima di
+// │ aggiungere altri eventi: trattiene solo il testo IDENTICO. Se fra due
+// │ salvataggi la conversazione cresce — la risposta di Frank che arriva in
+// │ streaming — i due testi differiscono e passano entrambi, correttamente.
+// │ Finche' `/api/save-chat` inserisce invece di aggiornare, la sola difesa
+// │ contro le righe multiple e' **salvare una volta sola**.
 // │
 // │ Il segno si aggiorna PRIMA della conferma, di proposito: serve a
 // │ deduplicare, non a contabilizzare la riuscita. Se un invio fallisce e la
@@ -110,14 +112,29 @@ async function saveChatHistory({ inChiusura = false } = {}) {
     }
 }
 
-// I DUE EVENTI INSIEME, e non uno scelto fra i due.
-// `visibilitychange` copre la chiusura della scheda e il passaggio in secondo
-// piano su mobile, dove `pagehide` a volte non arriva; `pagehide` copre le
-// navigazioni dove il primo puo' mancare. Chiamarli entrambi e' innocuo:
-// il guardiano fa uscire subito la seconda chiamata.
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveChatHistory({ inChiusura: true });
-});
+// SOLO `pagehide`, e non anche `visibilitychange`. Misurato il 24/09/2026.
+//
+// La prima stesura registrava entrambi, «per sicurezza». Sbagliato, e il
+// database l'ha mostrato subito: `visibilitychange` scatta a ogni passaggio in
+// secondo piano, e ogni conversazione lasciava una riga in piu' in `chat_logs`.
+// Il guardiano funzionava — provato, 38 caratteri contro 62 fra due righe a
+// dieci secondi — ma non poteva trattenerle: **erano due stati diversi**, la
+// risposta di Frank era arrivata nel frattempo. Ed e' il punto: fintanto che
+// `/api/save-chat` INSERISCE invece di aggiornare, qualunque strategia che
+// salvi piu' di una volta produce N righe per una conversazione.
+//
+// I tre casi del difetto originale — chiudere la scheda, tornare indietro col
+// browser, cliccare un altro collegamento — sollevano TUTTI `pagehide`.
+// `visibilitychange` aggiungeva solo il caso in cui il sistema uccide una
+// scheda in secondo piano senza preavviso: un prezzo certo per un guadagno
+// raro.
+//
+// COSA RESTA SCOPERTO, e cosa costerebbe coprirlo: se il sistema operativo
+// elimina la scheda mentre e' in secondo piano, `pagehide` non arriva e la
+// conversazione si perde. Coprirlo richiede che il salvataggio sia
+// **idempotente** — un identificativo di conversazione nel corpo e un upsert
+// lato backend — e allora `visibilitychange` tornerebbe a essere gratuito.
+// E' un cambiamento di schema e di endpoint, quindi una decisione a parte.
 window.addEventListener('pagehide', () => saveChatHistory({ inChiusura: true }));
 
 // Funzione per aggiungere messaggio UI
