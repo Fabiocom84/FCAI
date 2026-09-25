@@ -147,7 +147,7 @@ const TaskApp = {
             const container = columnEl.querySelector('.tasks-container');
             tasksInCol.forEach(task => container.appendChild(creaCartaAttivita({
                 task,
-                stato: this.state,
+                mioId: this.state.currentUserProfile.id_personale,
                 apriIspettore: (id) => this.renderInspectorView(id),
             })));
 

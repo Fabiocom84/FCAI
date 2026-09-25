@@ -39,10 +39,13 @@
 // proprietario lo deposita dove vuole. Cosi' il trascinamento non tocca stato
 // condiviso per niente.
 //
-// RESTA `stato` fra i parametri della carta, ma ora solo per LEGGERE
-// `currentUserProfile`. La ragione «per riferimento perche' lo scrive» non vale
-// piu': una copia funzionerebbe. Passare l'intero oggetto di stato per leggere
-// un campo e' largo, e andrebbe stretto a `mioId` — annotato, non fatto qui.
+// LA CARTA NON RICEVE PIU' LO STATO, dal 25/09/2026.
+// Finche' scriveva `draggedTaskAssignee` doveva ricevere l'oggetto vero. Tolta
+// quella scrittura, restava una sola LETTURA — l'id di chi sta guardando — e
+// passare l'intero oggetto di stato per leggere un campo e' largo: un parametro
+// che dichiara di volere «lo stato» puo' leggere e scrivere qualunque cosa, e
+// nessuno se ne accorge finche' non lo fa. Ora arriva `mioId`, e la firma dice
+// da se' l'intera dipendenza di questo modulo verso il resto della pagina.
 //
 // COSA E' PRIVATO
 // `inRitardo` era `isLate`, e il suo unico chiamante in tutto il repository era
@@ -89,17 +92,17 @@ const COLORI_CATEGORIA = {
  *
  * @param {object}   o
  * @param {object}   o.task           l'attivita', come arriva dall'API.
- * @param {object}   o.stato          serve solo per leggere `currentUserProfile`.
- *                                    Dal 22/09/2026 non si scrive piu' niente
- *                                    qui dentro: vedi il commento in testa.
+ * @param {number|string} o.mioId     l'id_personale di chi sta guardando la
+ *                                    board: serve a distinguere le carte
+ *                                    delegate da quelle in arrivo.
  * @param {Function} o.apriIspettore  riceve l'id del task quando si clicca.
  * @returns {HTMLElement} la carta, pronta da appendere.
  */
-export function creaCartaAttivita({ task, stato, apriIspettore }) {
+export function creaCartaAttivita({ task, mioId, apriIspettore }) {
     const el = document.createElement('div');
 
     // 1. Conversione sicura degli ID in numeri per evitare errori di confronto (String vs Int)
-    const myId = parseInt(stato.currentUserProfile.id_personale, 10);
+    const myId = parseInt(mioId, 10);
     const taskCreatorId = parseInt(task.id_creatore_fk, 10);
     const taskAssigneeId = parseInt(task.id_assegnatario_fk, 10);
 
