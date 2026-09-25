@@ -48,29 +48,94 @@ let chatHistory = [];
 // │ l'unica traccia scritta del fatto che la chiusura dovesse salvare.
 // │ Cancellarla senza guardare avrebbe sepolto la domanda insieme al codice.
 // │
-// │ Rimedio possibile, non applicato oggi perche' e' una decisione e non una
-// │ riga: un `visibilitychange` o un `pagehide` che salvi, con l'accortezza
-// │ che quegli eventi non garantiscono il completamento di una chiamata di
-// │ rete — servirebbe `navigator.sendBeacon`, che cambia il percorso di
-// │ salvataggio lato backend. Annotato in `04a_esercizio_e_debito.md`.
+// │ ✅ CHIUSO IL 24/09/2026 — e il blocco che era scritto qui non esisteva.
+// │
+// │ Diceva: «servirebbe `navigator.sendBeacon`, che cambia il percorso di
+// │ salvataggio lato backend». Vero di `sendBeacon`, che non puo' mettere
+// │ l'intestazione `Authorization`. Ma **`fetch` con `keepalive: true` puo'**:
+// │ sopravvive alla pagina allo stesso modo e porta le intestazioni normali.
+// │ `apiFetch` inoltra le opzioni a `fetch`, quindi passa senza toccare nulla
+// │ lato server.
+// └────────────────────────────────────────────────────────────────────────
+//
+// ┌ PERCHE' C'E' UN GUARDIANO ──────────────────────────────────────────────
+// │ Il pulsante Home salva e poi naviga; la navigazione solleva `pagehide`,
+// │ che salverebbe di nuovo lo stesso testo. `ultimaCronologiaSalvata` tiene
+// │ l'ultimo invio e fa uscire subito la seconda chiamata.
+// │
+// │ NON BASTA A EVITARE I DOPPIONI in generale, e questo va capito prima di
+// │ aggiungere altri eventi: trattiene solo il testo IDENTICO. Se fra due
+// │ salvataggi la conversazione cresce — la risposta di Frank che arriva in
+// │ streaming — i due testi differiscono e passano entrambi, correttamente.
+// │ Finche' `/api/save-chat` inserisce invece di aggiornare, la sola difesa
+// │ contro le righe multiple e' **salvare una volta sola**.
+// │
+// │ Il segno si aggiorna PRIMA della conferma, di proposito: serve a
+// │ deduplicare, non a contabilizzare la riuscita. Se un invio fallisce e la
+// │ conversazione prosegue, il testo cambia e si riprova; se fallisce mentre
+// │ la pagina muore si perde — che e' cio' che succede oggi in ogni caso.
+// │
+// │ LIMITE NOTO: `keepalive` ha un tetto di 64 KB sul corpo. Una conversazione
+// │ di circa diecimila parole lo supererebbe e il browser rifiuterebbe la
+// │ richiesta. Annotato, non aggirato.
 // └────────────────────────────────────────────────────────────────────────
 
-// Funzione per salvare la cronologia
-async function saveChatHistory() {
+// Il testo dell'ultimo invio, per non rispedire cio' che non e' cambiato.
+// Vedi il riquadro in testa: senza, ogni passaggio in secondo piano salverebbe.
+let ultimaCronologiaSalvata = '';
+
+/**
+ * Salva la conversazione, se e' cambiata da quando fu salvata l'ultima volta.
+ *
+ * @param {object}  [o]
+ * @param {boolean} [o.inChiusura]  la pagina sta per sparire: si usa
+ *                                  `keepalive`, cosi' la richiesta sopravvive.
+ *                                  L'esito non e' osservabile, e va bene.
+ */
+async function saveChatHistory({ inChiusura = false } = {}) {
     if (chatHistory.length <= 1) return;
 
     const chatTranscription = chatHistory.map(msg => `${msg.role === 'user' ? 'Utente' : 'Frank'}: ${msg.content}`).join('\n\n');
 
+    if (chatTranscription === ultimaCronologiaSalvata) return;
+    ultimaCronologiaSalvata = chatTranscription;
+
     try {
         const response = await apiFetch(`/api/save-chat`, {
             method: 'POST',
-            body: JSON.stringify({ chatTranscription: chatTranscription })
+            body: JSON.stringify({ chatTranscription: chatTranscription }),
+            ...(inChiusura ? { keepalive: true } : {})
         });
         if (!response.ok) throw new Error(`Errore server: ${response.status}`);
     } catch (error) {
         if (error.message !== "Unauthorized") console.error("Errore salvataggio chat:", error);
     }
 }
+
+// SOLO `pagehide`, e non anche `visibilitychange`. Misurato il 24/09/2026.
+//
+// La prima stesura registrava entrambi, «per sicurezza». Sbagliato, e il
+// database l'ha mostrato subito: `visibilitychange` scatta a ogni passaggio in
+// secondo piano, e ogni conversazione lasciava una riga in piu' in `chat_logs`.
+// Il guardiano funzionava — provato, 38 caratteri contro 62 fra due righe a
+// dieci secondi — ma non poteva trattenerle: **erano due stati diversi**, la
+// risposta di Frank era arrivata nel frattempo. Ed e' il punto: fintanto che
+// `/api/save-chat` INSERISCE invece di aggiornare, qualunque strategia che
+// salvi piu' di una volta produce N righe per una conversazione.
+//
+// I tre casi del difetto originale — chiudere la scheda, tornare indietro col
+// browser, cliccare un altro collegamento — sollevano TUTTI `pagehide`.
+// `visibilitychange` aggiungeva solo il caso in cui il sistema uccide una
+// scheda in secondo piano senza preavviso: un prezzo certo per un guadagno
+// raro.
+//
+// COSA RESTA SCOPERTO, e cosa costerebbe coprirlo: se il sistema operativo
+// elimina la scheda mentre e' in secondo piano, `pagehide` non arriva e la
+// conversazione si perde. Coprirlo richiede che il salvataggio sia
+// **idempotente** — un identificativo di conversazione nel corpo e un upsert
+// lato backend — e allora `visibilitychange` tornerebbe a essere gratuito.
+// E' un cambiamento di schema e di endpoint, quindi una decisione a parte.
+window.addEventListener('pagehide', () => saveChatHistory({ inChiusura: true }));
 
 // Funzione per aggiungere messaggio UI
 function addMessage(sender, text) {
